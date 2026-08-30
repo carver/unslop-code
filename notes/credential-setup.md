@@ -169,3 +169,25 @@ after the first run ("No such file or directory: 'uvx'"). Fix applied:
 `~/.local/bin/uvx` is a two-line shim that execs `uv tool run "$@"`, which is
 what `uvx` is. Re-running `metrics static` on the run directory filled in
 erosion/verbosity. Worth adding to sandbox-setup so a recreate keeps it.
+
+## Benchmark patch for Claude Code 2.1.251 (2026-08-30)
+
+The only edit to the benchmark source, applied for the Opus 5 / Fable 5 runs on
+current Claude Code: `patches/claude-code-stream-parser-string-message.patch`.
+`ClaudeCodeAgent._run()` assumed every stream-json payload's `message` is a
+dict; 2.1.251 emits payloads where it is a string, which raised
+`AttributeError: 'str' object has no attribute 'get'` and failed the problem
+(file_merger checkpoint 2 in the first Opus 5 run). The guard treats a
+non-dict message as empty. The 2.1.44 leaderboard reproduction never hit
+this and was run on unpatched code. Re-apply after any `git pull` of the
+benchmark: `git -C slop-code-bench apply ../patches/claude-code-stream-parser-string-message.patch`.
+
+Two harness behaviours worth knowing from the same incident:
+
+- A checkpoint whose `claude` process is killed from outside (SIGTERM to the
+  runner) is recorded as a clean completion (`had_error: false`) and evaluated;
+  `--resume` then treats it as done. Delete such checkpoint directories before
+  resuming.
+- When `_run()` raises mid-stream, `stdout.jsonl` for that checkpoint is a copy
+  of the previous checkpoint's stream (`reset()` does not clear
+  `final_result`). Do not trust the transcript of an errored checkpoint.

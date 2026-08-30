@@ -1,0 +1,17 @@
+# Fable 5 dev6 baseline on current Claude Code (no leaderboard counterpart).
+agent: /home/carver/code/claudedev/unslop-code-bench/configs/agents/claude_code-2.1.251-fable.yaml
+environment: docker-python3.12-uv
+prompt: just-solve
+model:
+  provider: claude_code_oauth
+  name: fable-5
+thinking: high
+problems:
+  - datagate
+  - file_merger
+  - mvvault
+  - rejector
+  - sith
+  - xjq
+save_dir: /home/carver/code/claudedev/unslop-code-bench/outputs
+save_template: dev6-fable5/${model.name}_${agent.version}_${thinking}_${prompt}/${now:%Y%m%dT%H%M}

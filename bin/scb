@@ -36,4 +36,8 @@ case "$CLAUDE_CODE_OAUTH_TOKEN" in
   *) echo "scb: token in $token_file does not look like a Claude OAuth token (sk-ant-oat01-...)" >&2; exit 2 ;;
 esac
 
+# Sandbox-local venv, outside the host-mounted tree. The project dir is mounted from
+# the host, and a `uv run` on the host rebuilds slop-code-bench/.venv for the host's
+# Python, which wiped it under a running sandbox worker on 2026-08-30.
+export UV_PROJECT_ENVIRONMENT="${UV_PROJECT_ENVIRONMENT:-$HOME/.venvs/slop-code-bench}"
 exec uv run --project "$here/slop-code-bench" slop-code "$@"

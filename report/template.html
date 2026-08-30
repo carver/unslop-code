@@ -1,0 +1,275 @@
+<title>SCBench Sonnet 4.6 Baseline</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root {
+  color-scheme: light;
+  --ground: #f4f6f4;
+  --surface: #ffffff;
+  --ink: #1a1f22;
+  --muted: #5a6670;
+  --rule: #d5dcd8;
+  --rule-soft: #e6ebe8;
+  --accent: #1f6f8b;
+  --accent-ink: #145066;
+  --accent-soft: #dfeef3;
+  --good: #1e7b2f;
+  --good-soft: #e1f2e3;
+  --miss: #b8433c;
+  --miss-soft: #f8e4e2;
+  --warn: #9a6a00;
+  --warn-soft: #f7ecd0;
+  --shadow: 0 1px 2px rgba(20,30,35,.06), 0 4px 16px rgba(20,30,35,.05);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --ground: #14191b;
+    --surface: #1c2326;
+    --ink: #e7ecea;
+    --muted: #9aa7ab;
+    --rule: #303b40;
+    --rule-soft: #26302f;
+    --accent: #62b3cb;
+    --accent-ink: #9dd3e3;
+    --accent-soft: #1d3a45;
+    --good: #5fc46f;
+    --good-soft: #1f3a27;
+    --miss: #ef7d74;
+    --miss-soft: #47272a;
+    --warn: #e0b24a;
+    --warn-soft: #3f3418;
+    --shadow: 0 1px 2px rgba(0,0,0,.35), 0 4px 16px rgba(0,0,0,.25);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --ground: #14191b;
+  --surface: #1c2326;
+  --ink: #e7ecea;
+  --muted: #9aa7ab;
+  --rule: #303b40;
+  --rule-soft: #26302f;
+  --accent: #62b3cb;
+  --accent-ink: #9dd3e3;
+  --accent-soft: #1d3a45;
+  --good: #5fc46f;
+  --good-soft: #1f3a27;
+  --miss: #ef7d74;
+  --miss-soft: #47272a;
+  --warn: #e0b24a;
+  --warn-soft: #3f3418;
+  --shadow: 0 1px 2px rgba(0,0,0,.35), 0 4px 16px rgba(0,0,0,.25);
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--ground); color: var(--ink);
+  font-family: "Source Serif 4", Georgia, "Times New Roman", serif;
+  font-size: 17px; line-height: 1.55;
+}
+.wrap { max-width: 1120px; margin: 0 auto; padding: 40px 28px 80px; }
+h1, h2, h3, .eyebrow, .tile .label, th, .chip, .cap, nav, .bars .lbl, .bars .val, .verdict-tag {
+  font-family: "Bricolage Grotesque", "Helvetica Neue", Arial, sans-serif;
+}
+h1 { font-size: clamp(34px, 5vw, 52px); line-height: 1.02; font-weight: 700; letter-spacing: -.01em; margin: 6px 0 14px; text-wrap: balance; max-width: 20ch; }
+h2 { font-size: 26px; font-weight: 700; letter-spacing: -.005em; margin: 0 0 14px; text-wrap: balance; }
+h3 { font-size: 18px; font-weight: 700; margin: 26px 0 8px; }
+.eyebrow { font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin: 0 0 6px; }
+p, li, dd, dt { max-width: 66ch; }
+p { margin: 0 0 14px; }
+a { color: var(--accent-ink); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+code { font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; font-size: .86em; background: var(--rule-soft); padding: 1px 5px; border-radius: 3px; }
+header { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 24px 48px; align-items: end; padding-bottom: 28px; border-bottom: 1px solid var(--rule); margin-bottom: 36px; }
+header .lede { font-size: 19px; color: var(--muted); max-width: 58ch; margin: 0; }
+.verdict { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 18px 20px; max-width: 340px; box-shadow: var(--shadow); }
+.verdict-tag { display: inline-block; font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--good); background: var(--good-soft); padding: 3px 9px; border-radius: 999px; margin-bottom: 10px; }
+.verdict p { font-size: 15.5px; margin: 0; color: var(--ink); }
+nav { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13.5px; font-weight: 500; margin: -16px 0 40px; }
+nav a { color: var(--muted); text-decoration: none; }
+nav a:hover, nav a:focus-visible { color: var(--accent-ink); text-decoration: underline; }
+section { margin-bottom: 56px; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 18px 0 10px; }
+.tile { background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: 14px 16px 12px; box-shadow: var(--shadow); }
+.tile .label { font-size: 12.5px; font-weight: 500; color: var(--muted); letter-spacing: .02em; }
+.tile .value { font-family: "Bricolage Grotesque", "Helvetica Neue", Arial, sans-serif; font-size: 34px; font-weight: 700; line-height: 1.1; margin: 4px 0 6px; letter-spacing: -.01em; }
+.tile .value small { font-size: 16px; font-weight: 500; color: var(--muted); margin-left: 2px; }
+.tile .ref { font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; font-size: 12.5px; color: var(--muted); }
+.tile .ref b { color: var(--ink); font-weight: 500; }
+.caption { font-size: 14px; color: var(--muted); max-width: 72ch; margin: 8px 0 0; }
+.tablewrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; box-shadow: var(--shadow); margin: 14px 0 8px; }
+table { border-collapse: collapse; width: 100%; font-size: 14.5px; }
+th, td { padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--rule-soft); white-space: nowrap; vertical-align: top; }
+thead th { font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); background: var(--surface); position: sticky; top: 0; }
+tbody th { font-weight: 500; }
+td.n, th.n { text-align: right; font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; font-size: 13.5px; font-variant-numeric: tabular-nums; }
+tr.total th, tr.total td { border-top: 2px solid var(--rule); font-weight: 600; }
+tr:last-child th, tr:last-child td { border-bottom: 0; }
+tbody tr:hover th, tbody tr:hover td { background: var(--rule-soft); }
+.idx { font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; font-size: 12.5px; color: var(--muted); }
+.chip { display: inline-block; font-size: 11.5px; font-weight: 700; letter-spacing: .04em; padding: 2px 8px; border-radius: 999px; line-height: 1.5; }
+.chip.ok { color: var(--good); background: var(--good-soft); }
+.chip.miss { color: var(--muted); background: var(--rule-soft); }
+.cap { font-size: 10.5px; font-weight: 700; letter-spacing: .06em; color: var(--warn); background: var(--warn-soft); padding: 1px 6px; border-radius: 999px; margin-left: 4px; }
+.compare { display: grid; grid-template-columns: 1fr; gap: 0; }
+.compare table td:nth-child(2) { font-weight: 600; }
+.bars { list-style: none; padding: 0; margin: 14px 0 0; display: grid; gap: 8px; max-width: 720px; }
+.bars li { display: grid; grid-template-columns: 170px 1fr 64px; align-items: center; gap: 12px; }
+.bars .lbl { font-size: 14px; font-weight: 500; }
+.bars .lbl em { font-style: normal; color: var(--muted); font-weight: 400; font-size: 12.5px; margin-left: 4px; }
+.bars .track { display: block; height: 14px; background: var(--rule-soft); border-radius: 0 4px 4px 0; }
+.bars .bar { display: block; height: 100%; background: var(--accent); border-radius: 0 4px 4px 0; min-width: 3px; }
+.bars .bar:hover, .bars .bar:focus-visible { background: var(--accent-ink); outline: none; box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent); }
+.bars .val { font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; font-size: 13.5px; text-align: right; font-variant-numeric: tabular-nums; }
+dl.manifest { display: grid; grid-template-columns: max-content 1fr; gap: 6px 22px; font-size: 15px; margin: 14px 0 0; }
+dl.manifest dt { font-family: "Bricolage Grotesque", "Helvetica Neue", Arial, sans-serif; font-weight: 700; font-size: 13px; color: var(--muted); padding-top: 3px; letter-spacing: .02em; }
+dl.manifest dd { margin: 0; max-width: 78ch; }
+ol.issues { padding-left: 0; list-style: none; counter-reset: issue; display: grid; gap: 16px; max-width: 72ch; }
+ol.issues li { position: relative; padding-left: 0; }
+ol.issues li b { font-family: "Bricolage Grotesque", "Helvetica Neue", Arial, sans-serif; display: block; font-size: 16.5px; margin-bottom: 3px; }
+.callout { border-left: 3px solid var(--accent); background: var(--accent-soft); padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 18px 0; max-width: 72ch; }
+.callout p:last-child { margin-bottom: 0; }
+.rec { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin-top: 16px; }
+.rec > div { background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: 16px 18px; box-shadow: var(--shadow); }
+.rec h3 { margin-top: 0; }
+.rec p:last-child { margin-bottom: 0; }
+footer { border-top: 1px solid var(--rule); padding-top: 18px; font-size: 13.5px; color: var(--muted); }
+@media (max-width: 720px) {
+  header { grid-template-columns: 1fr; }
+  .bars li { grid-template-columns: 120px 1fr 56px; }
+  dl.manifest { grid-template-columns: 1fr; gap: 2px 0; }
+  dl.manifest dd { margin-bottom: 10px; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .bars .bar { transition: background .15s ease; }
+}
+</style>
+
+<div class="wrap">
+<header>
+  <div>
+    <p class="eyebrow">SlopCodeBench &middot; Phase 0 control</p>
+    <h1>Sonnet 4.6 on Claude Code 2.1.44, reproduced on a Max subscription</h1>
+    <p class="lede">Six dev problems, 33 checkpoints, unmodified benchmark, no API-key spend. Compared against the leaderboard's 36-problem row and the paper's Table 1.</p>
+  </div>
+  <aside class="verdict">
+    <span class="verdict-tag">Verdict</span>
+    <p>Reproduced well enough to proceed. Cost per checkpoint lands within 10% of the leaderboard and the extrapolated net cost within 5% of the paper; solve-rate gaps sit inside what 33 checkpoints can resolve. Two fixes first: lift the turn cap, then measure run-to-run noise.</p>
+  </aside>
+</header>
+
+<nav aria-label="Sections">
+  <a href="#scorecard">Scorecard</a><a href="#problems">Per problem</a><a href="#checkpoints">Per checkpoint</a><a href="#smoke">Smoke run</a><a href="#surprises">Surprises</a><a href="#budget">Budget</a><a href="#recommendation">Recommendation</a><a href="#manifest">Manifest</a>
+</nav>
+
+<section id="scorecard">
+  <p class="eyebrow">Scorecard</p>
+  <h2>dev6 subset against the leaderboard aggregate</h2>
+  <div class="tiles">
+    <div class="tile"><div class="label">Strict solve</div><div class="value">{{S_STRICT}}<small>%</small></div><div class="ref">{{N_STRICT}} of 33 &middot; board <b>7.14</b></div></div>
+    <div class="tile"><div class="label">Isolated solve</div><div class="value">{{S_ISO}}<small>%</small></div><div class="ref">{{N_ISO}} of 33 &middot; board <b>16.84</b></div></div>
+    <div class="tile"><div class="label">Core solve</div><div class="value">{{S_CORE}}<small>%</small></div><div class="ref">{{N_CORE}} of 33 &middot; board <b>56.12</b></div></div>
+    <div class="tile"><div class="label">Cost per checkpoint</div><div class="value">${{S_CPC}}</div><div class="ref">list price &middot; board <b>$1.96</b></div></div>
+    <div class="tile"><div class="label">Erosion</div><div class="value">{{S_EROSION}}</div><div class="ref">board <b>0.741</b> &middot; paper 0.75</div></div>
+    <div class="tile"><div class="label">Verbosity</div><div class="value">{{S_VERB}}</div><div class="ref">board <b>0.316</b> &middot; paper 0.44</div></div>
+    <div class="tile"><div class="label">AST-grep flagged</div><div class="value">{{S_AST}}</div><div class="ref">board <b>0.298</b></div></div>
+    <div class="tile"><div class="label">Cloned</div><div class="value">{{S_CLONED}}</div><div class="ref">board <b>0.093</b></div></div>
+  </div>
+  <p class="caption">Leaderboard values are the published 36-problem, 196-checkpoint aggregates for the same row; no per-problem leaderboard numbers exist, so a 6-problem subset has no exact counterpart. At n = 33, a binomial 95% interval around the board's 16.8% isolated rate spans roughly 4% to 30%, and around 56.1% core roughly 39% to 73%. Every solve-rate gap above sits inside those intervals.</p>
+  <div class="callout">
+    <p><strong>Quality scale caveat.</strong> The leaderboard's verbosity (0.316) disagrees with the paper's own value for the same row (0.44), and the repository switched its composite metrics to <code>scb-check</code> after the v0.3 release the paper used. Our verbosity is near the paper's number and far from the board's; erosion and cloned % match both. Treat erosion and cloned % as comparable, verbosity and AST-grep as "same ballpark, unknown scale".</p>
+  </div>
+</section>
+
+<section id="problems">
+  <p class="eyebrow">Per problem</p>
+  <h2>Where the cost and the solves came from</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th>problem</th><th>difficulty</th><th class="n">ckpts</th><th class="n">strict</th><th class="n">iso</th><th class="n">core</th><th class="n">cost $</th><th class="n">$/ckpt</th><th class="n">min/ckpt</th><th class="n">steps/ckpt</th><th class="n">turn-capped</th></tr></thead>
+    <tbody>{{PROB_TABLE}}</tbody>
+  </table></div>
+  <p class="caption">Solve columns count checkpoints. "Turn-capped" counts checkpoints ended by the repo-default <code>--max-turns 100</code>; all four were on Hard problems.</p>
+  <h3>Cost per checkpoint by problem</h3>
+  <ul class="bars" aria-label="Cost per checkpoint by problem, dollars at list price">{{BARS}}</ul>
+  <p class="caption">Means by difficulty: Easy $0.56, Medium $1.41, Hard $3.45. Hard problems drive both the cost and the turn-cap hits; sith alone was $26.31 of the $58.81.</p>
+</section>
+
+<section id="checkpoints">
+  <p class="eyebrow">Per checkpoint</p>
+  <h2>All 33 checkpoints</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th>checkpoint</th><th>strict</th><th>iso</th><th>core</th><th class="n">core rate</th><th class="n">steps</th><th class="n">out tok</th><th class="n">cache read</th><th class="n">cache write</th><th class="n">cost $</th><th class="n">min</th><th class="n">erosion</th><th class="n">verbosity</th><th class="n">ast %</th><th class="n">cloned %</th></tr></thead>
+    <tbody>{{CK_TABLE}}</tbody>
+  </table></div>
+  <p class="caption">Cost is what Claude Code reported (list price, including Haiku sub-agent calls and 1-hour cache writes). Quality columns come from <code>scb-check 0.1.3</code> on each checkpoint's snapshot. Tokens for the run: input {{T_IN}}, output {{T_OUT}}, cache read {{T_CR}}, cache write {{T_CW}} ({{T_ALL}} total).</p>
+</section>
+
+<section id="smoke">
+  <p class="eyebrow">Smoke run</p>
+  <h2>file_backup, four checkpoints, before the subset</h2>
+  <p>The first end-to-end run on the subscription path: strict 0/4, isolated 0/4, core 4/4, $3.06 total ($0.77 per checkpoint), 22 minutes. The agent passed the single core test every time but never all functionality tests (23/27, 9/17, 11/17, 16/20) and regressions crept in from checkpoint 2 on (28/32, 38/50, 50/68). Thinking blocks appeared in every checkpoint; no errors, empty stderr.</p>
+  <p>file_backup is a holdout problem that the plan named for the smoke run before the split existed. Its run outputs (transcripts, snapshots, per-test results) were deleted on 2026-08-30 so nothing from a holdout problem sits on disk; the summary above is the surviving record.</p>
+</section>
+
+<section id="surprises">
+  <p class="eyebrow">Surprises</p>
+  <h2>Things that looked wrong or need remembering</h2>
+  <ol class="issues">
+    <li><b>The turn cap bound on 4 of 33 checkpoints.</b> rejector 5 and sith 1, 3, 4 ended with <code>error_max_turns</code> at 101 turns. The repo default <code>step_limit: 100</code> becomes <code>--max-turns 100</code>, but the paper's setup says "no turn or cost cap" with a two-hour wall clock. Each capped checkpoint had already cost $4 to $6.50 and 20 to 34 minutes; the snapshot at the cap was still evaluated and three of the four count as core-solved. Fixed in the agent config after this run.</li>
+    <li><b>The agent killed its own harness once.</b> On datagate checkpoint 1 it ran <code>pkill -f "datagate.py start"</code>. The harness passes the whole prompt as an argument to the <code>claude</code> process, so the pattern matched Claude Code itself: tool result "Exit code 144", transcript ends with no result payload. The runner evaluated the snapshot anyway (48/50, core solved, $0.14). The leaderboard's harness has the same hazard.</li>
+    <li><b><code>uvx</code> was missing on the host.</b> The static-metrics step shells out to <code>uvx scb-check==0.1.3</code>; this box had <code>uv</code> without the <code>uvx</code> binary, so the first report silently lacked erosion and verbosity. A two-line shim fixed it, and <code>bin/scbcheck</code> writes per-checkpoint reports because <code>metrics static</code> keeps them only in the aggregate.</li>
+    <li><b>Haiku sub-agents and 1-hour cache are Claude Code's own choices.</b> 26 of 37 checkpoints across both runs include <code>claude-haiku-4-5</code> messages from Task sub-agents, and most checkpoints wrote to the 1-hour prompt cache. Both are part of the leaderboard's cost too and explain why Claude Code's reported cost runs about 10% above a Sonnet-only recomputation.</li>
+    <li><b>Nothing else went wrong.</b> No rate-limit hits, retries, timeouts, Docker failures or eval failures: zero error-level lines in <code>run_agent.log</code> and empty stderr on every checkpoint.</li>
+  </ol>
+</section>
+
+<section id="budget">
+  <p class="eyebrow">Budget</p>
+  <h2>What a full run and three seeds would take</h2>
+  <p>Difficulty-weighted from the dev6 per-checkpoint means over the v1.0 set's 67 Easy, 57 Medium and 72 Hard checkpoints. The run used 8 points of the Max 20x weekly window for $58.81 of list-price traffic, about 0.14 points per dollar.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>quantity</th><th>one seed, 196 checkpoints</th><th>three seeds</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">cost at list price</th><td>about $367 (naive 196/33 scaling $349; paper's net cost for this row $383.83)</td><td>about $1,100</td></tr>
+      <tr><th scope="row">tokens</th><td>about 550M, 98% cache reads</td><td>about 1.65B</td></tr>
+      <tr><th scope="row">wall time, one worker</th><td>about 37 h</td><td>about 112 h</td></tr>
+      <tr><th scope="row">wall time, two workers</th><td>about 19 h</td><td>about 56 h</td></tr>
+      <tr><th scope="row">weekly window</th><td>about 50 points</td><td>about 150 points: at least two weekly windows. One seed per week is comfortable; two per week leaves no headroom</td></tr>
+      <tr><th scope="row">5-hour window</th><td>one worker peaked at 35% on a Hard problem; a sequential run stays under about 40% per window. Two workers roughly doubles that</td><td>same per window</td></tr>
+    </tbody>
+  </table></div>
+  <p class="caption">Lifting the turn cap raises Hard-problem cost; the capped checkpoints were already the most expensive, so budget an extra 10 to 20% on top.</p>
+</section>
+
+<section id="recommendation">
+  <p class="eyebrow">Recommendation</p>
+  <h2>Proceed, after two fixes</h2>
+  <p>What matched: cost per checkpoint ($1.78 vs $1.96), extrapolated net cost ($367 vs $383.83), erosion (0.80 vs 0.74), cloned % (0.088 vs 0.093), the shape of the results (core solves common, strict rare, regressions accumulating from checkpoint 2 on), and model, version, thinking and prompt confirmed from every transcript. Subscription auth worked with zero API-key exposure. Solve rates are lower than the board (isolated 9.1% vs 16.8%, core 48.5% vs 56.1%) but inside what 33 checkpoints can resolve.</p>
+  <div class="rec">
+    <div><h3>1. Lift the turn cap (done)</h3><p>Agent config now uses <code>step_limit: 0</code> (no <code>--max-turns</code>), <code>timeout: 7200</code> to mirror the paper's two-hour limit, and a per-problem <code>net_cost_limit: 60</code> as the rate-limit guard. Twelve percent of checkpoints hit the old cap, all Hard, which is where a skills intervention would most plausibly move isolated and core solves. The run above is therefore a capped reference, not seed 1 of a noise estimate.</p></div>
+    <div><h3>2. Measure noise before any treatment</h3><p>With strict at 2/33 and isolated at 3/33, a skills effect on those columns is not measurable on the dev set; core (16/33) and the quality scores are the dev-set signals. Two more dev6 control runs under the new config (about $59, 6 h and 8 weekly points each) give a variance estimate. The holdout (30 problems, 163 checkpoints) is where strict and isolated can be judged, at about $310 and 31 h per seed.</p></div>
+  </div>
+  <p class="caption" style="margin-top:14px">Still to decide: whether the primary outcome for the skills experiment is core solve plus erosion and verbosity rather than strict solve.</p>
+</section>
+
+<section id="manifest">
+  <p class="eyebrow">Manifest</p>
+  <h2>Exactly what ran</h2>
+  <dl class="manifest">
+    <dt>benchmark</dt><dd>slop-code-bench commit <code>06b5c06</code> (main, 2026-08-04; 12 commits after tag v0.3), unmodified</dd>
+    <dt>problems</dt><dd>scb-problems v1.0, commit <code>4d38d30</code>, 36 problems / 196 checkpoints; dev set datagate, file_merger, mvvault, rejector, sith, xjq (split seed 20260829, 2 per difficulty)</dd>
+    <dt>agent</dt><dd>claude_code 2.1.44 (npm <code>@anthropic-ai/claude-code@2.1.44</code>), image <code>slop-code:claude_code-2.1.44-python3.12</code></dd>
+    <dt>model</dt><dd><code>claude-sonnet-4-6</code>, thinking high (<code>MAX_THINKING_TOKENS=31999</code>, <code>CLAUDE_CODE_EFFORT_LEVEL=high</code>); no substitution needed</dd>
+    <dt>prompt / environment</dt><dd><code>configs/prompts/just-solve.jinja</code> and <code>configs/environments/docker-python3.12-uv.yaml</code>, both unmodified; pass_policy any</dd>
+    <dt>agent config (this run)</dt><dd>repo default plus <code>version: 2.1.44</code>, <code>timeout: 3600</code>, <code>cost_limit: 20</code>, <code>step_limit: 100</code>. Changed after the run to <code>step_limit: 0</code>, <code>timeout: 7200</code>, <code>net_cost_limit: 60</code></dd>
+    <dt>auth</dt><dd>subscription only: <code>CLAUDE_CODE_OAUTH_TOKEN</code> from <code>claude setup-token</code>, injected by the repo's existing <code>claude_code_oauth</code> provider. <code>apiKeySource: none</code> in every transcript; no <code>ANTHROPIC_API_KEY</code> in any container or claude process environment, checked live during both runs. No benchmark code changed</dd>
+    <dt>host fixes</dt><dd><code>uvx</code> shim at <code>~/.local/bin/uvx</code> (uv 0.9.26 shipped without it)</dd>
+    <dt>when</dt><dd>smoke 2026-08-29 18:10 to 18:34 PDT; dev6 2026-08-29 19:10 to 2026-08-30 01:14 PDT ({{WALL}} h)</dd>
+    <dt>cost</dt><dd>dev6 ${{COST}} as reported by Claude Code ($52.73 recomputed at Sonnet 5-minute-cache list prices); smoke $3.06</dd>
+    <dt>subscription usage</dt><dd>dev6: 7-day window 2% to 10%, 5-hour window peaked at 35% and reset twice mid-run; smoke: 5-hour 8% to 11%. Extra usage is disabled on the account, so overage billing was impossible</dd>
+    <dt>quality tooling</dt><dd><code>scb-check 0.1.3</code> (the repo's pin) for erosion, verbosity, AST-grep and cloned %</dd>
+    <dt>run directory</dt><dd><code>{{RUNDIR}}</code></dd>
+  </dl>
+</section>
+
+<footer>Sources: snorkel.ai/leaderboard/slopcode-bench and scbench.ai/leaderboard payloads (target row), arXiv 2603.24755v2 Tables 1, 7 and 8. Full write-ups in the project's <code>baseline-report.md</code> and <code>notes/</code>.</footer>
+</div>

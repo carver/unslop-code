@@ -32,6 +32,7 @@ that needed no code edits in the benchmark repo.
 | substitutions | none. Sonnet 4.6 is available on the subscription |
 | scb-check | 0.1.3 (repo pin) for erosion / verbosity / ast-grep / cloned |
 | seed | slop-code default 42; problem split seed 20260829 |
+| config change after this run | 2026-08-30: agent config now has `step_limit: 0` (no turn cap), `timeout: 7200`, `net_cost_limit: 60`; the dev6 run above used `step_limit: 100`, `timeout: 3600`, `net_cost_limit: 0` (saved verbatim in the run dir's config.yaml). Future control and treatment runs use the new file, so the run above is a capped reference, not seed 1 of the noise estimate |
 
 ## Headline comparison (dev6 subset vs. leaderboard 36-problem aggregate)
 

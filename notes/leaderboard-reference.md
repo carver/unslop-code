@@ -50,3 +50,10 @@ JSON), https://scbench.ai/leaderboard (Next.js payload), arXiv 2603.24755v2
    leaderboard counterpart; the comparison is subset-vs-36 with the caveat stated.
 4. scbench.ai/problems lists file_backup as "medium" (v0.2 metadata); the v1.0
    catalog config says Easy. Cosmetic, but note the site is not the source of truth.
+
+## Published page
+
+The report is also an artifact: https://claude.ai/code/artifact/d4db605f-59b1-4a23-aa50-6ae72dc36dc1
+(private until shared). Regenerate with `python3 report/build.py` (reads the latest
+outputs/dev6 run and report/template.html, writes report/scbench-baseline.html) and republish
+to the same URL.

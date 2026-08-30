@@ -1,0 +1,275 @@
+<title>SCBench Sonnet 4.6 Baseline</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root {
+  color-scheme: light;
+  --ground: #f4f6f4;
+  --surface: #ffffff;
+  --ink: #1a1f22;
+  --muted: #5a6670;
+  --rule: #d5dcd8;
+  --rule-soft: #e6ebe8;
+  --accent: #1f6f8b;
+  --accent-ink: #145066;
+  --accent-soft: #dfeef3;
+  --good: #1e7b2f;
+  --good-soft: #e1f2e3;
+  --miss: #b8433c;
+  --miss-soft: #f8e4e2;
+  --warn: #9a6a00;
+  --warn-soft: #f7ecd0;
+  --shadow: 0 1px 2px rgba(20,30,35,.06), 0 4px 16px rgba(20,30,35,.05);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --ground: #14191b;
+    --surface: #1c2326;
+    --ink: #e7ecea;
+    --muted: #9aa7ab;
+    --rule: #303b40;
+    --rule-soft: #26302f;
+    --accent: #62b3cb;
+    --accent-ink: #9dd3e3;
+    --accent-soft: #1d3a45;
+    --good: #5fc46f;
+    --good-soft: #1f3a27;
+    --miss: #ef7d74;
+    --miss-soft: #47272a;
+    --warn: #e0b24a;
+    --warn-soft: #3f3418;
+    --shadow: 0 1px 2px rgba(0,0,0,.35), 0 4px 16px rgba(0,0,0,.25);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --ground: #14191b;
+  --surface: #1c2326;
+  --ink: #e7ecea;
+  --muted: #9aa7ab;
+  --rule: #303b40;
+  --rule-soft: #26302f;
+  --accent: #62b3cb;
+  --accent-ink: #9dd3e3;
+  --accent-soft: #1d3a45;
+  --good: #5fc46f;
+  --good-soft: #1f3a27;
+  --miss: #ef7d74;
+  --miss-soft: #47272a;
+  --warn: #e0b24a;
+  --warn-soft: #3f3418;
+  --shadow: 0 1px 2px rgba(0,0,0,.35), 0 4px 16px rgba(0,0,0,.25);
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--ground); color: var(--ink);
+  font-family: "Source Serif 4", Georgia, "Times New Roman", serif;
+  font-size: 17px; line-height: 1.55;
+}
+.wrap { max-width: 1120px; margin: 0 auto; padding: 40px 28px 80px; }
+h1, h2, h3, .eyebrow, .tile .label, th, .chip, .cap, nav, .bars .lbl, .bars .val, .verdict-tag {
+  font-family: "Bricolage Grotesque", "Helvetica Neue", Arial, sans-serif;
+}
+h1 { font-size: clamp(34px, 5vw, 52px); line-height: 1.02; font-weight: 700; letter-spacing: -.01em; margin: 6px 0 14px; text-wrap: balance; max-width: 20ch; }
+h2 { font-size: 26px; font-weight: 700; letter-spacing: -.005em; margin: 0 0 14px; text-wrap: balance; }
+h3 { font-size: 18px; font-weight: 700; margin: 26px 0 8px; }
+.eyebrow { font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin: 0 0 6px; }
+p, li, dd, dt { max-width: 66ch; }
+p { margin: 0 0 14px; }
+a { color: var(--accent-ink); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+code { font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; font-size: .86em; background: var(--rule-soft); padding: 1px 5px; border-radius: 3px; }
+header { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 24px 48px; align-items: end; padding-bottom: 28px; border-bottom: 1px solid var(--rule); margin-bottom: 36px; }
+header .lede { font-size: 19px; color: var(--muted); max-width: 58ch; margin: 0; }
+.verdict { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 18px 20px; max-width: 340px; box-shadow: var(--shadow); }
+.verdict-tag { display: inline-block; font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--good); background: var(--good-soft); padding: 3px 9px; border-radius: 999px; margin-bottom: 10px; }
+.verdict p { font-size: 15.5px; margin: 0; color: var(--ink); }
+nav { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13.5px; font-weight: 500; margin: -16px 0 40px; }
+nav a { color: var(--muted); text-decoration: none; }
+nav a:hover, nav a:focus-visible { color: var(--accent-ink); text-decoration: underline; }
+section { margin-bottom: 56px; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 18px 0 10px; }
+.tile { background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: 14px 16px 12px; box-shadow: var(--shadow); }
+.tile .label { font-size: 12.5px; font-weight: 500; color: var(--muted); letter-spacing: .02em; }
+.tile .value { font-family: "Bricolage Grotesque", "Helvetica Neue", Arial, sans-serif; font-size: 34px; font-weight: 700; line-height: 1.1; margin: 4px 0 6px; letter-spacing: -.01em; }
+.tile .value small { font-size: 16px; font-weight: 500; color: var(--muted); margin-left: 2px; }
+.tile .ref { font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; font-size: 12.5px; color: var(--muted); }
+.tile .ref b { color: var(--ink); font-weight: 500; }
+.caption { font-size: 14px; color: var(--muted); max-width: 72ch; margin: 8px 0 0; }
+.tablewrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; box-shadow: var(--shadow); margin: 14px 0 8px; }
+table { border-collapse: collapse; width: 100%; font-size: 14.5px; }
+th, td { padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--rule-soft); white-space: nowrap; vertical-align: top; }
+thead th { font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); background: var(--surface); position: sticky; top: 0; }
+tbody th { font-weight: 500; }
+td.n, th.n { text-align: right; font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; font-size: 13.5px; font-variant-numeric: tabular-nums; }
+tr.total th, tr.total td { border-top: 2px solid var(--rule); font-weight: 600; }
+tr:last-child th, tr:last-child td { border-bottom: 0; }
+tbody tr:hover th, tbody tr:hover td { background: var(--rule-soft); }
+.idx { font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; font-size: 12.5px; color: var(--muted); }
+.chip { display: inline-block; font-size: 11.5px; font-weight: 700; letter-spacing: .04em; padding: 2px 8px; border-radius: 999px; line-height: 1.5; }
+.chip.ok { color: var(--good); background: var(--good-soft); }
+.chip.miss { color: var(--muted); background: var(--rule-soft); }
+.cap { font-size: 10.5px; font-weight: 700; letter-spacing: .06em; color: var(--warn); background: var(--warn-soft); padding: 1px 6px; border-radius: 999px; margin-left: 4px; }
+.compare { display: grid; grid-template-columns: 1fr; gap: 0; }
+.compare table td:nth-child(2) { font-weight: 600; }
+.bars { list-style: none; padding: 0; margin: 14px 0 0; display: grid; gap: 8px; max-width: 720px; }
+.bars li { display: grid; grid-template-columns: 170px 1fr 64px; align-items: center; gap: 12px; }
+.bars .lbl { font-size: 14px; font-weight: 500; }
+.bars .lbl em { font-style: normal; color: var(--muted); font-weight: 400; font-size: 12.5px; margin-left: 4px; }
+.bars .track { display: block; height: 14px; background: var(--rule-soft); border-radius: 0 4px 4px 0; }
+.bars .bar { display: block; height: 100%; background: var(--accent); border-radius: 0 4px 4px 0; min-width: 3px; }
+.bars .bar:hover, .bars .bar:focus-visible { background: var(--accent-ink); outline: none; box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent); }
+.bars .val { font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; font-size: 13.5px; text-align: right; font-variant-numeric: tabular-nums; }
+dl.manifest { display: grid; grid-template-columns: max-content 1fr; gap: 6px 22px; font-size: 15px; margin: 14px 0 0; }
+dl.manifest dt { font-family: "Bricolage Grotesque", "Helvetica Neue", Arial, sans-serif; font-weight: 700; font-size: 13px; color: var(--muted); padding-top: 3px; letter-spacing: .02em; }
+dl.manifest dd { margin: 0; max-width: 78ch; }
+ol.issues { padding-left: 0; list-style: none; counter-reset: issue; display: grid; gap: 16px; max-width: 72ch; }
+ol.issues li { position: relative; padding-left: 0; }
+ol.issues li b { font-family: "Bricolage Grotesque", "Helvetica Neue", Arial, sans-serif; display: block; font-size: 16.5px; margin-bottom: 3px; }
+.callout { border-left: 3px solid var(--accent); background: var(--accent-soft); padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 18px 0; max-width: 72ch; }
+.callout p:last-child { margin-bottom: 0; }
+.rec { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin-top: 16px; }
+.rec > div { background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: 16px 18px; box-shadow: var(--shadow); }
+.rec h3 { margin-top: 0; }
+.rec p:last-child { margin-bottom: 0; }
+footer { border-top: 1px solid var(--rule); padding-top: 18px; font-size: 13.5px; color: var(--muted); }
+@media (max-width: 720px) {
+  header { grid-template-columns: 1fr; }
+  .bars li { grid-template-columns: 120px 1fr 56px; }
+  dl.manifest { grid-template-columns: 1fr; gap: 2px 0; }
+  dl.manifest dd { margin-bottom: 10px; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .bars .bar { transition: background .15s ease; }
+}
+</style>
+
+<div class="wrap">
+<header>
+  <div>
+    <p class="eyebrow">SlopCodeBench &middot; Phase 0 control</p>
+    <h1>Sonnet 4.6 on Claude Code 2.1.44, reproduced on a Max subscription</h1>
+    <p class="lede">Six dev problems, 33 checkpoints, unmodified benchmark, no API-key spend. Compared against the leaderboard's 36-problem row and the paper's Table 1.</p>
+  </div>
+  <aside class="verdict">
+    <span class="verdict-tag">Verdict</span>
+    <p>Reproduced well enough to proceed. Cost per checkpoint lands within 10% of the leaderboard and the extrapolated net cost within 5% of the paper; solve-rate gaps sit inside what 33 checkpoints can resolve. Two fixes first: lift the turn cap, then measure run-to-run noise.</p>
+  </aside>
+</header>
+
+<nav aria-label="Sections">
+  <a href="#scorecard">Scorecard</a><a href="#problems">Per problem</a><a href="#checkpoints">Per checkpoint</a><a href="#smoke">Smoke run</a><a href="#surprises">Surprises</a><a href="#budget">Budget</a><a href="#recommendation">Recommendation</a><a href="#manifest">Manifest</a>
+</nav>
+
+<section id="scorecard">
+  <p class="eyebrow">Scorecard</p>
+  <h2>dev6 subset against the leaderboard aggregate</h2>
+  <div class="tiles">
+    <div class="tile"><div class="label">Strict solve</div><div class="value">6.1<small>%</small></div><div class="ref">2 of 33 &middot; board <b>7.14</b></div></div>
+    <div class="tile"><div class="label">Isolated solve</div><div class="value">9.1<small>%</small></div><div class="ref">3 of 33 &middot; board <b>16.84</b></div></div>
+    <div class="tile"><div class="label">Core solve</div><div class="value">48.5<small>%</small></div><div class="ref">16 of 33 &middot; board <b>56.12</b></div></div>
+    <div class="tile"><div class="label">Cost per checkpoint</div><div class="value">$1.78</div><div class="ref">list price &middot; board <b>$1.96</b></div></div>
+    <div class="tile"><div class="label">Erosion</div><div class="value">0.798</div><div class="ref">board <b>0.741</b> &middot; paper 0.75</div></div>
+    <div class="tile"><div class="label">Verbosity</div><div class="value">0.484</div><div class="ref">board <b>0.316</b> &middot; paper 0.44</div></div>
+    <div class="tile"><div class="label">AST-grep flagged</div><div class="value">0.417</div><div class="ref">board <b>0.298</b></div></div>
+    <div class="tile"><div class="label">Cloned</div><div class="value">0.088</div><div class="ref">board <b>0.093</b></div></div>
+  </div>
+  <p class="caption">Leaderboard values are the published 36-problem, 196-checkpoint aggregates for the same row; no per-problem leaderboard numbers exist, so a 6-problem subset has no exact counterpart. At n = 33, a binomial 95% interval around the board's 16.8% isolated rate spans roughly 4% to 30%, and around 56.1% core roughly 39% to 73%. Every solve-rate gap above sits inside those intervals.</p>
+  <div class="callout">
+    <p><strong>Quality scale caveat.</strong> The leaderboard's verbosity (0.316) disagrees with the paper's own value for the same row (0.44), and the repository switched its composite metrics to <code>scb-check</code> after the v0.3 release the paper used. Our verbosity is near the paper's number and far from the board's; erosion and cloned % match both. Treat erosion and cloned % as comparable, verbosity and AST-grep as "same ballpark, unknown scale".</p>
+  </div>
+</section>
+
+<section id="problems">
+  <p class="eyebrow">Per problem</p>
+  <h2>Where the cost and the solves came from</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th>problem</th><th>difficulty</th><th class="n">ckpts</th><th class="n">strict</th><th class="n">iso</th><th class="n">core</th><th class="n">cost $</th><th class="n">$/ckpt</th><th class="n">min/ckpt</th><th class="n">steps/ckpt</th><th class="n">turn-capped</th></tr></thead>
+    <tbody><tr><th scope=row>datagate</th><td>Easy</td><td class=n>7</td><td class=n>0</td><td class=n>1</td><td class=n>5</td><td class=n>3.83</td><td class=n>0.55</td><td class=n>4.3</td><td class=n>19</td><td class=n></td></tr><tr><th scope=row>file_merger</th><td>Medium</td><td class=n>4</td><td class=n>0</td><td class=n>0</td><td class=n>1</td><td class=n>6.15</td><td class=n>1.54</td><td class=n>11.4</td><td class=n>35</td><td class=n></td></tr><tr><th scope=row>mvvault</th><td>Medium</td><td class=n>6</td><td class=n>0</td><td class=n>0</td><td class=n>3</td><td class=n>7.93</td><td class=n>1.32</td><td class=n>8.9</td><td class=n>31</td><td class=n></td></tr><tr><th scope=row>rejector</th><td>Hard</td><td class=n>5</td><td class=n>1</td><td class=n>1</td><td class=n>3</td><td class=n>11.67</td><td class=n>2.33</td><td class=n>14.9</td><td class=n>37</td><td class=n>1</td></tr><tr><th scope=row>sith</th><td>Hard</td><td class=n>6</td><td class=n>0</td><td class=n>0</td><td class=n>1</td><td class=n>26.31</td><td class=n>4.38</td><td class=n>22.4</td><td class=n>89</td><td class=n>3</td></tr><tr><th scope=row>xjq</th><td>Easy</td><td class=n>5</td><td class=n>1</td><td class=n>1</td><td class=n>3</td><td class=n>2.93</td><td class=n>0.59</td><td class=n>5.0</td><td class=n>19</td><td class=n></td></tr><tr class=total><th scope=row>all six</th><td>2E / 2M / 2H</td><td class=n>33</td><td class=n>2</td><td class=n>3</td><td class=n>16</td><td class=n>58.81</td><td class=n>1.78</td><td class=n>11.0</td><td class=n>39</td><td class=n>4</td></tr></tbody>
+  </table></div>
+  <p class="caption">Solve columns count checkpoints. "Turn-capped" counts checkpoints ended by the repo-default <code>--max-turns 100</code>; all four were on Hard problems.</p>
+  <h3>Cost per checkpoint by problem</h3>
+  <ul class="bars" aria-label="Cost per checkpoint by problem, dollars at list price"><li><span class=lbl>sith <em>Hard</em></span><span class=track><span class=bar style="width:100.0%" tabindex=0 title="sith: $4.38 per checkpoint over 6 checkpoints"></span></span><span class=val>$4.38</span></li><li><span class=lbl>rejector <em>Hard</em></span><span class=track><span class=bar style="width:53.2%" tabindex=0 title="rejector: $2.33 per checkpoint over 5 checkpoints"></span></span><span class=val>$2.33</span></li><li><span class=lbl>file_merger <em>Medium</em></span><span class=track><span class=bar style="width:35.1%" tabindex=0 title="file_merger: $1.54 per checkpoint over 4 checkpoints"></span></span><span class=val>$1.54</span></li><li><span class=lbl>mvvault <em>Medium</em></span><span class=track><span class=bar style="width:30.1%" tabindex=0 title="mvvault: $1.32 per checkpoint over 6 checkpoints"></span></span><span class=val>$1.32</span></li><li><span class=lbl>xjq <em>Easy</em></span><span class=track><span class=bar style="width:13.4%" tabindex=0 title="xjq: $0.59 per checkpoint over 5 checkpoints"></span></span><span class=val>$0.59</span></li><li><span class=lbl>datagate <em>Easy</em></span><span class=track><span class=bar style="width:12.5%" tabindex=0 title="datagate: $0.55 per checkpoint over 7 checkpoints"></span></span><span class=val>$0.55</span></li></ul>
+  <p class="caption">Means by difficulty: Easy $0.56, Medium $1.41, Hard $3.45. Hard problems drive both the cost and the turn-cap hits; sith alone was $26.31 of the $58.81.</p>
+</section>
+
+<section id="checkpoints">
+  <p class="eyebrow">Per checkpoint</p>
+  <h2>All 33 checkpoints</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th>checkpoint</th><th>strict</th><th>iso</th><th>core</th><th class="n">core rate</th><th class="n">steps</th><th class="n">out tok</th><th class="n">cache read</th><th class="n">cache write</th><th class="n">cost $</th><th class="n">min</th><th class="n">erosion</th><th class="n">verbosity</th><th class="n">ast %</th><th class="n">cloned %</th></tr></thead>
+    <tbody><tr><th scope=row>datagate <span class=idx>1</span></th><td><span class="chip miss">missed</span></td><td><span class="chip miss">missed</span></td><td><span class="chip ok">solved</span></td><td class=n>1.00</td><td class=n>13</td><td class=n>43</td><td class=n>0.31M</td><td class=n>13k</td><td class=n>0.14</td><td class=n>2.4</td><td class=n>0.807</td><td class=n>0.503</td><td class=n>0.466</td><td class=n>0.000</td></tr><tr><th scope=row>datagate <span class=idx>2</span></th><td><span class="chip miss">missed</span></td><td><span class="chip miss">missed</span></td><td><span class="chip miss">missed</span></td><td class=n>0.78</td><td class=n>13</td><td class=n>9,793</td><td class=n>0.31M</td><td class=n>19k</td><td class=n>0.36</td><td class=n>2.9</td><td class=n>0.887</td><td class=n>0.408</td><td class=n>0.383</td><td class=n>0.000</td></tr><tr><th scope=row>datagate <span class=idx>3</span></th><td><span class="chip miss">missed</span></td><td><span class="chip miss">missed</span></td><td><span class="chip ok">solved</span></td><td class=n>1.00</td><td class=n>18</td><td class=n>13,096</td><td class=n>0.44M</td><td class=n>23k</td><td class=n>0.46</td><td class=n>3.3</td><td class=n>0.946</td><td class=n>0.765</td><td class=n>0.746</td><td class=n>0.031</td></tr><tr><th scope=row>datagate <span class=idx>4</span></th><td><span class="chip miss">missed</span></td><td><span class="chip miss">missed</span></td><td><span class="chip miss">missed</span></td><td class=n>0.92</td><td class=n>24</td><td class=n>23,816</td><td class=n>0.95M</td><td class=n>42k</td><td class=n>0.86</td><td class=n>6.3</td><td class=n>0.869</td><td class=n>0.497</td><td class=n>0.472</td><td class=n>0.000</td></tr><tr><th scope=row>datagate <span class=idx>5</span></th><td><span class="chip miss">missed</span></td><td><span class="chip miss">missed</span></td><td><span class="chip ok">solved</span></td><td class=n>1.00</td><td class=n>26</td><td class=n>9,453</td><td class=n>0.58M</td><td class=n>25k</td><td class=n>0.54</td><td class=n>3.6</td><td class=n>0.864</td><td class=n>0.482</td><td class=n>0.459</td><td class=n>0.000</td></tr><tr><th scope=row>datagate <span class=idx>6</span></th><td><span class="chip miss">missed</span></td><td><span class="chip ok">solved</span></td><td><span class="chip ok">solved</span></td><td class=n>1.00</td><td class=n>20</td><td class=n>26,620</td><td class=n>0.45M</td><td class=n>51k</td><td class=n>0.83</td><td class=n>7.0</td><td class=n>0.835</td><td class=n>0.465</td><td class=n>0.444</td><td class=n>0.025</td></tr><tr><th scope=row>datagate <span class=idx>7</span></th><td><span class="chip miss">missed</span></td><td><span class="chip miss">missed</span></td><td><span class="chip ok">solved</span></td><td class=n>1.00</td><td class=n>21</td><td class=n>13,302</td><td class=n>0.77M</td><td class=n>35k</td><td class=n>0.64</td><td class=n>4.7</td><td class=n>0.861</td><td class=n>0.449</td><td class=n>0.429</td><td class=n>0.023</td></tr><tr><th scope=row>file_merger <span class=idx>1</span></th><td><span class="chip miss">missed</span></td><td><span class="chip miss">missed</span></td><td><span class="chip miss">missed</span></td><td class=n>0.89</td><td class=n>31</td><td class=n>48,182</td><td class=n>1.68M</td><td class=n>55k</td><td class=n>1.48</td><td class=n>13.1</td><td class=n>0.602</td><td class=n>0.256</td><td class=n>0.208</td><td class=n>0.060</td></tr><tr><th scope=row>file_merger <span class=idx>2</span></th><td><span class="chip miss">missed</span></td><td><span class="chip miss">missed</span></td><td><span class="chip miss">missed</span></td><td class=n>0.91</td><td class=n>27</td><td class=n>40,470</td><td class=n>1.59M</td><td class=n>72k</td><td class=n>1.45</td><td class=n>10.8</td><td class=n>0.687</td><td class=n>0.420</td><td class=n>0.380</td><td class=n>0.091</td></tr><tr><th scope=row>file_merger <span class=idx>3</span></th><td><span class="chip miss">missed</span></td><td><span class="chip miss">missed</span></td><td><span class="chip ok">solved</span></td><td class=n>1.00</td><td class=n>44</td><td class=n>25,009</td><td class=n>2.47M</td><td class=n>55k</td><td class=n>1.40</td><td class=n>7.2</td><td class=n>0.696</td><td class=n>0.409</td><td class=n>0.371</td><td class=n>0.097</td></tr><tr><th scope=row>file_merger <span class=idx>4</span></th><td><span class="chip miss">missed</span></td><td><span class="chip miss">missed</span></td><td><span class="chip miss">missed</span></td><td class=n>0.58</td><td class=n>39</td><td class=n>52,842</td><td class=n>1.31M</td><td class=n>85k</td><td class=n>1.82</td><td class=n>14.5</td><td class=n>0.742</td><td class=n>0.462</td><td class=n>0.422</td><td class=n>0.104</td></tr><tr><th scope=row>mvvault <span class=idx>1</span></th><td><span class="chip miss">missed</span></td><td><span class="chip miss">missed</span></td><td><span class="chip miss">missed</span></td><td class=n>0.75</td><td class=n>19</td><td class=n>26,150</td><td class=n>0.74M</td><td class=n>34k</td><td class=n>0.76</td><td class=n>6.9</td><td class=n>0.802</td><td class=n>0.307</td><td class=n>0.268</td><td class=n>0.000</td></tr><tr><th scope=row>mvvault <span class=idx>2</span></th><td><span class="chip miss">missed</span></td><td><span class="chip miss">missed</span></td><td><span class="chip miss">missed</span></td><td class=n>0.80</td><td class=n>11</td><td class=n>25,067</td><td class=n>0.47M</td><td class=n>43k</td><td class=n>0.70</td><td class=n>6.0</td><td class=n>0.703</td><td class=n>0.613</td><td class=n>0.560</td><td class=n>0.117</td></tr><tr><th scope=row>mvvault <span class=idx>3</span></th><td><span class="chip miss">missed</span></td><td><span class="chip miss">missed</span></td><td><span class="chip ok">solved</span></td><td class=n>1.00</td><td class=n>51</td><td class=n>53,622</td><td class=n>4.45M</td><td class=n>92k</td><td class=n>2.52</td><td class=n>14.7</td><td class=n>0.578</td><td class=n>0.451</td><td class=n>0.360</td><td class=n>0.131</td></tr><tr><th scope=row>mvvault <span class=idx>4</span></th><td><span class="chip miss">missed</span></td><td><span class="chip miss">missed</span></td><td><span class="chip miss">missed</span></td><td class=n>0.91</td><td class=n>37</td><td class=n>36,461</td><td class=n>1.79M</td><td class=n>59k</td><td class=n>1.45</td><td class=n>10.0</td><td class=n>0.604</td><td class=n>0.374</td><td class=n>0.279</td><td class=n>0.122</td></tr><tr><th scope=row>mvvault <span class=idx>5</span></th><td><span class="chip miss">missed</span></td><td><span class="chip miss">missed</span></td><td><span class="chip ok">solved</span></td><td class=n>1.00</td><td class=n>29</td><td class=n>21,459</td><td class=n>1.26M</td><td class=n>57k</td><td class=n>1.05</td><td class=n>6.3</td><td class=n>0.614</td><td class=n>0.357</td><td class=n>0.267</td><td class=n>0.120</td></tr><tr><th scope=row>mvvault <span class=idx>6</span></th><td><span class="chip miss">missed</span></td><td><span class="chip miss">missed</span></td><td><span class="chip ok">solved</span></td><td class=n>1.00</td><td class=n>40</td><td class=n>33,285</td><td class=n>1.85M</td><td class=n>59k</td><td class=n>1.44</td><td class=n>9.4</td><td class=n>0.709</td><td class=n>0.539</td><td class=n>0.473</td><td class=n>0.162</td></tr><tr><th scope=row>rejector <span class=idx>1</span></th><td><span class="chip ok">solved</span></td><td><span class="chip ok">solved</span></td><td><span class="chip ok">solved</span></td><td class=n>1.00</td><td class=n>17</td><td class=n>29,250</td><td class=n>0.46M</td><td class=n>44k</td><td class=n>1.00</td><td class=n>7.4</td><td class=n>0.403</td><td class=n>0.279</td><td class=n>0.183</td><td class=n>0.094</td></tr><tr><th scope=row>rejector <span class=idx>2</span></th><td><span class="chip miss">missed</span></td><td><span class="chip miss">missed</span></td><td><span class="chip miss">missed</span></td><td class=n>0.80</td><td class=n>28</td><td class=n>44,367</td><td class=n>1.51M</td><td class=n>72k</td><td class=n>1.48</td><td class=n>12.0</td><td class=n>0.728</td><td class=n>0.340</td><td class=n>0.218</td><td class=n>0.121</td></tr><tr><th scope=row>rejector <span class=idx>3</span></th><td><span class="chip miss">missed</span></td><td><span class="chip miss">missed</span></td><td><span class="chip ok">solved</span></td><td class=n>1.00</td><td class=n>16</td><td class=n>36,368</td><td class=n>0.78M</td><td class=n>74k</td><td class=n>1.15</td><td class=n>9.1</td><td class=n>0.867</td><td class=n>0.373</td><td class=n>0.221</td><td class=n>0.184</td></tr><tr><th scope=row>rejector <span class=idx>4</span></th><td><span class="chip miss">missed</span></td><td><span class="chip miss">missed</span></td><td><span class="chip miss">missed</span></td><td class=n>0.90</td><td class=n>23</td><td class=n>49,450</td><td class=n>1.96M</td><td class=n>109k</td><td class=n>1.84</td><td class=n>12.2</td><td class=n>0.871</td><td class=n>0.347</td><td class=n>0.230</td><td class=n>0.147</td></tr><tr><th scope=row>rejector <span class=idx>5</span></th><td><span class="chip miss">missed</span></td><td><span class="chip miss">missed</span></td><td><span class="chip ok">solved</span></td><td class=n>1.00</td><td class=n>103 <span class=cap title="ended by --max-turns 100">cap</span></td><td class=n>120,385</td><td class=n>9.37M</td><td class=n>189k</td><td class=n>6.19</td><td class=n>33.6</td><td class=n>0.865</td><td class=n>0.295</td><td class=n>0.188</td><td class=n>0.136</td></tr><tr><th scope=row>sith <span class=idx>1</span></th><td><span class="chip miss">missed</span></td><td><span class="chip miss">missed</span></td><td><span class="chip ok">solved</span></td><td class=n>1.00</td><td class=n>116 <span class=cap title="ended by --max-turns 100">cap</span></td><td class=n>61,462</td><td class=n>7.26M</td><td class=n>98k</td><td class=n>4.13</td><td class=n>19.9</td><td class=n>0.769</td><td class=n>0.464</td><td class=n>0.420</td><td class=n>0.090</td></tr><tr><th scope=row>sith <span class=idx>2</span></th><td><span class="chip miss">missed</span></td><td><span class="chip miss">missed</span></td><td><span class="chip miss">missed</span></td><td class=n>0.00</td><td class=n>72</td><td class=n>85,279</td><td class=n>7.53M</td><td class=n>128k</td><td class=n>4.16</td><td class=n>22.5</td><td class=n>0.879</td><td class=n>0.595</td><td class=n>0.477</td><td class=n>0.194</td></tr><tr><th scope=row>sith <span class=idx>3</span></th><td><span class="chip miss">missed</span></td><td><span class="chip miss">missed</span></td><td><span class="chip miss">missed</span></td><td class=n>0.33</td><td class=n>107 <span class=cap title="ended by --max-turns 100">cap</span></td><td class=n>101,369</td><td class=n>11.13M</td><td class=n>164k</td><td class=n>6.52</td><td class=n>33.7</td><td class=n>0.869</td><td class=n>0.564</td><td class=n>0.460</td><td class=n>0.181</td></tr><tr><th scope=row>sith <span class=idx>4</span></th><td><span class="chip miss">missed</span></td><td><span class="chip miss">missed</span></td><td><span class="chip miss">missed</span></td><td class=n>0.64</td><td class=n>107 <span class=cap title="ended by --max-turns 100">cap</span></td><td class=n>107,498</td><td class=n>10.32M</td><td class=n>176k</td><td class=n>6.17</td><td class=n>29.8</td><td class=n>0.874</td><td class=n>0.487</td><td class=n>0.377</td><td class=n>0.172</td></tr><tr><th scope=row>sith <span class=idx>5</span></th><td><span class="chip miss">missed</span></td><td><span class="chip miss">missed</span></td><td><span class="chip miss">missed</span></td><td class=n>0.14</td><td class=n>62</td><td class=n>63,742</td><td class=n>4.54M</td><td class=n>89k</td><td class=n>2.85</td><td class=n>17.0</td><td class=n>0.870</td><td class=n>0.476</td><td class=n>0.347</td><td class=n>0.184</td></tr><tr><th scope=row>sith <span class=idx>6</span></th><td><span class="chip miss">missed</span></td><td><span class="chip miss">missed</span></td><td><span class="chip miss">missed</span></td><td class=n>0.71</td><td class=n>71</td><td class=n>39,780</td><td class=n>4.81M</td><td class=n>82k</td><td class=n>2.48</td><td class=n>11.7</td><td class=n>0.866</td><td class=n>0.511</td><td class=n>0.397</td><td class=n>0.187</td></tr><tr><th scope=row>xjq <span class=idx>1</span></th><td><span class="chip ok">solved</span></td><td><span class="chip ok">solved</span></td><td><span class="chip ok">solved</span></td><td class=n>1.00</td><td class=n>15</td><td class=n>11,971</td><td class=n>0.40M</td><td class=n>16k</td><td class=n>0.37</td><td class=n>3.4</td><td class=n>0.995</td><td class=n>0.940</td><td class=n>0.916</td><td class=n>0.000</td></tr><tr><th scope=row>xjq <span class=idx>2</span></th><td><span class="chip miss">missed</span></td><td><span class="chip miss">missed</span></td><td><span class="chip miss">missed</span></td><td class=n>0.92</td><td class=n>20</td><td class=n>21,320</td><td class=n>0.57M</td><td class=n>28k</td><td class=n>0.64</td><td class=n>6.0</td><td class=n>0.943</td><td class=n>0.698</td><td class=n>0.687</td><td class=n>0.000</td></tr><tr><th scope=row>xjq <span class=idx>3</span></th><td><span class="chip miss">missed</span></td><td><span class="chip miss">missed</span></td><td><span class="chip ok">solved</span></td><td class=n>1.00</td><td class=n>14</td><td class=n>13,550</td><td class=n>0.45M</td><td class=n>24k</td><td class=n>0.44</td><td class=n>3.8</td><td class=n>0.895</td><td class=n>0.564</td><td class=n>0.504</td><td class=n>0.045</td></tr><tr><th scope=row>xjq <span class=idx>4</span></th><td><span class="chip miss">missed</span></td><td><span class="chip miss">missed</span></td><td><span class="chip ok">solved</span></td><td class=n>1.00</td><td class=n>21</td><td class=n>14,117</td><td class=n>0.57M</td><td class=n>27k</td><td class=n>0.54</td><td class=n>4.2</td><td class=n>0.923</td><td class=n>0.624</td><td class=n>0.572</td><td class=n>0.039</td></tr><tr><th scope=row>xjq <span class=idx>5</span></th><td><span class="chip miss">missed</span></td><td><span class="chip miss">missed</span></td><td><span class="chip miss">missed</span></td><td class=n>0.89</td><td class=n>26</td><td class=n>24,407</td><td class=n>1.13M</td><td class=n>45k</td><td class=n>0.94</td><td class=n>7.8</td><td class=n>0.901</td><td class=n>0.651</td><td class=n>0.594</td><td class=n>0.060</td></tr></tbody>
+  </table></div>
+  <p class="caption">Cost is what Claude Code reported (list price, including Haiku sub-agent calls and 1-hour cache writes). Quality columns come from <code>scb-check 0.1.3</code> on each checkpoint's snapshot. Tokens for the run: input 9,056, output 1,282,985, cache read 84,204,034, cache write 2,186,494 (87.7M total).</p>
+</section>
+
+<section id="smoke">
+  <p class="eyebrow">Smoke run</p>
+  <h2>file_backup, four checkpoints, before the subset</h2>
+  <p>The first end-to-end run on the subscription path: strict 0/4, isolated 0/4, core 4/4, $3.06 total ($0.77 per checkpoint), 22 minutes. The agent passed the single core test every time but never all functionality tests (23/27, 9/17, 11/17, 16/20) and regressions crept in from checkpoint 2 on (28/32, 38/50, 50/68). Thinking blocks appeared in every checkpoint; no errors, empty stderr.</p>
+  <p>file_backup is a holdout problem that the plan named for the smoke run before the split existed. Its run outputs (transcripts, snapshots, per-test results) were deleted on 2026-08-30 so nothing from a holdout problem sits on disk; the summary above is the surviving record.</p>
+</section>
+
+<section id="surprises">
+  <p class="eyebrow">Surprises</p>
+  <h2>Things that looked wrong or need remembering</h2>
+  <ol class="issues">
+    <li><b>The turn cap bound on 4 of 33 checkpoints.</b> rejector 5 and sith 1, 3, 4 ended with <code>error_max_turns</code> at 101 turns. The repo default <code>step_limit: 100</code> becomes <code>--max-turns 100</code>, but the paper's setup says "no turn or cost cap" with a two-hour wall clock. Each capped checkpoint had already cost $4 to $6.50 and 20 to 34 minutes; the snapshot at the cap was still evaluated and three of the four count as core-solved. Fixed in the agent config after this run.</li>
+    <li><b>The agent killed its own harness once.</b> On datagate checkpoint 1 it ran <code>pkill -f "datagate.py start"</code>. The harness passes the whole prompt as an argument to the <code>claude</code> process, so the pattern matched Claude Code itself: tool result "Exit code 144", transcript ends with no result payload. The runner evaluated the snapshot anyway (48/50, core solved, $0.14). The leaderboard's harness has the same hazard.</li>
+    <li><b><code>uvx</code> was missing on the host.</b> The static-metrics step shells out to <code>uvx scb-check==0.1.3</code>; this box had <code>uv</code> without the <code>uvx</code> binary, so the first report silently lacked erosion and verbosity. A two-line shim fixed it, and <code>bin/scbcheck</code> writes per-checkpoint reports because <code>metrics static</code> keeps them only in the aggregate.</li>
+    <li><b>Haiku sub-agents and 1-hour cache are Claude Code's own choices.</b> 26 of 37 checkpoints across both runs include <code>claude-haiku-4-5</code> messages from Task sub-agents, and most checkpoints wrote to the 1-hour prompt cache. Both are part of the leaderboard's cost too and explain why Claude Code's reported cost runs about 10% above a Sonnet-only recomputation.</li>
+    <li><b>Nothing else went wrong.</b> No rate-limit hits, retries, timeouts, Docker failures or eval failures: zero error-level lines in <code>run_agent.log</code> and empty stderr on every checkpoint.</li>
+  </ol>
+</section>
+
+<section id="budget">
+  <p class="eyebrow">Budget</p>
+  <h2>What a full run and three seeds would take</h2>
+  <p>Difficulty-weighted from the dev6 per-checkpoint means over the v1.0 set's 67 Easy, 57 Medium and 72 Hard checkpoints. The run used 8 points of the Max 20x weekly window for $58.81 of list-price traffic, about 0.14 points per dollar.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>quantity</th><th>one seed, 196 checkpoints</th><th>three seeds</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">cost at list price</th><td>about $367 (naive 196/33 scaling $349; paper's net cost for this row $383.83)</td><td>about $1,100</td></tr>
+      <tr><th scope="row">tokens</th><td>about 550M, 98% cache reads</td><td>about 1.65B</td></tr>
+      <tr><th scope="row">wall time, one worker</th><td>about 37 h</td><td>about 112 h</td></tr>
+      <tr><th scope="row">wall time, two workers</th><td>about 19 h</td><td>about 56 h</td></tr>
+      <tr><th scope="row">weekly window</th><td>about 50 points</td><td>about 150 points: at least two weekly windows. One seed per week is comfortable; two per week leaves no headroom</td></tr>
+      <tr><th scope="row">5-hour window</th><td>one worker peaked at 35% on a Hard problem; a sequential run stays under about 40% per window. Two workers roughly doubles that</td><td>same per window</td></tr>
+    </tbody>
+  </table></div>
+  <p class="caption">Lifting the turn cap raises Hard-problem cost; the capped checkpoints were already the most expensive, so budget an extra 10 to 20% on top.</p>
+</section>
+
+<section id="recommendation">
+  <p class="eyebrow">Recommendation</p>
+  <h2>Proceed, after two fixes</h2>
+  <p>What matched: cost per checkpoint ($1.78 vs $1.96), extrapolated net cost ($367 vs $383.83), erosion (0.80 vs 0.74), cloned % (0.088 vs 0.093), the shape of the results (core solves common, strict rare, regressions accumulating from checkpoint 2 on), and model, version, thinking and prompt confirmed from every transcript. Subscription auth worked with zero API-key exposure. Solve rates are lower than the board (isolated 9.1% vs 16.8%, core 48.5% vs 56.1%) but inside what 33 checkpoints can resolve.</p>
+  <div class="rec">
+    <div><h3>1. Lift the turn cap (done)</h3><p>Agent config now uses <code>step_limit: 0</code> (no <code>--max-turns</code>), <code>timeout: 7200</code> to mirror the paper's two-hour limit, and a per-problem <code>net_cost_limit: 60</code> as the rate-limit guard. Twelve percent of checkpoints hit the old cap, all Hard, which is where a skills intervention would most plausibly move isolated and core solves. The run above is therefore a capped reference, not seed 1 of a noise estimate.</p></div>
+    <div><h3>2. Measure noise before any treatment</h3><p>With strict at 2/33 and isolated at 3/33, a skills effect on those columns is not measurable on the dev set; core (16/33) and the quality scores are the dev-set signals. Two more dev6 control runs under the new config (about $59, 6 h and 8 weekly points each) give a variance estimate. The holdout (30 problems, 163 checkpoints) is where strict and isolated can be judged, at about $310 and 31 h per seed.</p></div>
+  </div>
+  <p class="caption" style="margin-top:14px">Still to decide: whether the primary outcome for the skills experiment is core solve plus erosion and verbosity rather than strict solve.</p>
+</section>
+
+<section id="manifest">
+  <p class="eyebrow">Manifest</p>
+  <h2>Exactly what ran</h2>
+  <dl class="manifest">
+    <dt>benchmark</dt><dd>slop-code-bench commit <code>06b5c06</code> (main, 2026-08-04; 12 commits after tag v0.3), unmodified</dd>
+    <dt>problems</dt><dd>scb-problems v1.0, commit <code>4d38d30</code>, 36 problems / 196 checkpoints; dev set datagate, file_merger, mvvault, rejector, sith, xjq (split seed 20260829, 2 per difficulty)</dd>
+    <dt>agent</dt><dd>claude_code 2.1.44 (npm <code>@anthropic-ai/claude-code@2.1.44</code>), image <code>slop-code:claude_code-2.1.44-python3.12</code></dd>
+    <dt>model</dt><dd><code>claude-sonnet-4-6</code>, thinking high (<code>MAX_THINKING_TOKENS=31999</code>, <code>CLAUDE_CODE_EFFORT_LEVEL=high</code>); no substitution needed</dd>
+    <dt>prompt / environment</dt><dd><code>configs/prompts/just-solve.jinja</code> and <code>configs/environments/docker-python3.12-uv.yaml</code>, both unmodified; pass_policy any</dd>
+    <dt>agent config (this run)</dt><dd>repo default plus <code>version: 2.1.44</code>, <code>timeout: 3600</code>, <code>cost_limit: 20</code>, <code>step_limit: 100</code>. Changed after the run to <code>step_limit: 0</code>, <code>timeout: 7200</code>, <code>net_cost_limit: 60</code></dd>
+    <dt>auth</dt><dd>subscription only: <code>CLAUDE_CODE_OAUTH_TOKEN</code> from <code>claude setup-token</code>, injected by the repo's existing <code>claude_code_oauth</code> provider. <code>apiKeySource: none</code> in every transcript; no <code>ANTHROPIC_API_KEY</code> in any container or claude process environment, checked live during both runs. No benchmark code changed</dd>
+    <dt>host fixes</dt><dd><code>uvx</code> shim at <code>~/.local/bin/uvx</code> (uv 0.9.26 shipped without it)</dd>
+    <dt>when</dt><dd>smoke 2026-08-29 18:10 to 18:34 PDT; dev6 2026-08-29 19:10 to 2026-08-30 01:14 PDT (6.1 h)</dd>
+    <dt>cost</dt><dd>dev6 $58.81 as reported by Claude Code ($52.73 recomputed at Sonnet 5-minute-cache list prices); smoke $3.06</dd>
+    <dt>subscription usage</dt><dd>dev6: 7-day window 2% to 10%, 5-hour window peaked at 35% and reset twice mid-run; smoke: 5-hour 8% to 11%. Extra usage is disabled on the account, so overage billing was impossible</dd>
+    <dt>quality tooling</dt><dd><code>scb-check 0.1.3</code> (the repo's pin) for erosion, verbosity, AST-grep and cloned %</dd>
+    <dt>run directory</dt><dd><code>outputs/dev6/sonnet-4.6_2.1.44_high_just-solve/20260829T1910</code></dd>
+  </dl>
+</section>
+
+<footer>Sources: snorkel.ai/leaderboard/slopcode-bench and scbench.ai/leaderboard payloads (target row), arXiv 2603.24755v2 Tables 1, 7 and 8. Full write-ups in the project's <code>baseline-report.md</code> and <code>notes/</code>.</footer>
+</div>

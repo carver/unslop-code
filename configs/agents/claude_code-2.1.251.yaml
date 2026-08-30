@@ -1,0 +1,22 @@
+# Current Claude Code (2.1.251, same as the host) for the Opus 5 / Fable 5 baselines. Not a
+# leaderboard match; the leaderboard rows predate these models. Limits mirror claude_code-2.1.44.yaml.
+#
+# Matches the paper's published setup: no turn cap, two-hour wall clock per checkpoint.
+# How each limit actually behaves for the claude_code agent (agent.py, runner):
+#   step_limit 0     -> no --max-turns flag. The dev6 control run of 2026-08-29 used the repo
+#                       default of 100 and hit it on 4/33 checkpoints; see baseline-report.md.
+#   timeout 7200     -> hard kill of the checkpoint's claude process. This is the real guard.
+#   cost_limit       -> not enforced for claude_code (only other agents check it per checkpoint);
+#                       kept at 20 so the value still documents the intended ceiling.
+#   net_cost_limit   -> checked between checkpoints against the problem's cumulative cost; 60 is
+#                       about 2x the most expensive dev6 problem (sith, $26). Protects the
+#                       rate-limit window from a runaway problem without touching normal runs.
+type: claude_code
+binary: claude
+permission_mode: bypassPermissions
+version: 2.1.251
+timeout: 7200
+cost_limits:
+  cost_limit: 20
+  step_limit: 0
+  net_cost_limit: 60

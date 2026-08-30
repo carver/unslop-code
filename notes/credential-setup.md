@@ -191,3 +191,20 @@ Two harness behaviours worth knowing from the same incident:
 - When `_run()` raises mid-stream, `stdout.jsonl` for that checkpoint is a copy
   of the previous checkpoint's stream (`reset()` does not clear
   `final_result`). Do not trust the transcript of an errored checkpoint.
+
+## Host and sandbox must not share the benchmark venv (2026-08-30)
+
+The project directory is mounted from the host. A `uv run ...` on the host
+rebuilt `slop-code-bench/.venv` for the host's Python (pyvenv.cfg showed
+`uv = 0.12.6`, `home = /usr/bin`, 3.12.3; the sandbox has uv 0.9.26 and
+Python 3.14) while an Opus 5 run was in progress. The worker crashed at the
+next problem hand-off with `BrokenProcessPool`, and the run's own crash
+handler failed with `cannot import name 'rich_utils' from 'typer'`.
+
+Fix: `bin/scb` exports `UV_PROJECT_ENVIRONMENT=$HOME/.venvs/slop-code-bench`,
+a sandbox-local venv outside the mount. Run every benchmark command through
+`bin/scb` (or with that variable set). The host may keep its own
+`slop-code-bench/.venv`; nothing in the sandbox uses it any more. For
+read-only tools from the host (viz, eval on finished runs) that is fine;
+do not run `uv sync`/`uv run` on the host while a sandbox run is live if the
+two ever point at the same directory.

@@ -225,17 +225,26 @@ chmod 600 "$TOKEN_FILE"
 printf '  %s✓ wrote%s %s (mode 600)\n' "$GREEN" "$RESET" "$TOKEN_FILE"
 
 stage "Verify"
-say "Checking the token against the subscription usage endpoint and Claude Code."
-if SCB_OAUTH_TOKEN_FILE="$TOKEN_FILE" "$HERE/bin/usage"; then
-  printf '  %s✓ usage endpoint accepted the token%s\n' "$GREEN" "$RESET"
-else
-  warn "usage endpoint rejected the token"; SKIPPED+=("token verification failed; re-run the wizard")
-fi
+say "The only real check is a model request, so this sends one tiny prompt"
+say "through Claude Code with the new token (about 20k tokens, list price ~\$0.07)."
+note "A setup-token cannot query the usage endpoint (inference scope only); bin/usage uses the login token instead."
 auth=$(CLAUDE_CODE_OAUTH_TOKEN="$SCB_TOKEN" claude auth status 2>/dev/null || true)
 if grep -q '"authMethod": *"oauth_token"' <<<"$auth"; then
   printf '  %s✓ claude auth status: oauth_token%s\n' "$GREEN" "$RESET"
 else
   warn "claude auth status did not report oauth_token:"; note "$auth"
+fi
+if confirm "Send the test prompt now?"; then
+  reply=$(CLAUDE_CODE_OAUTH_TOKEN="$SCB_TOKEN" claude --print --model claude-sonnet-4-6 --max-turns 1 --output-format json \
+            -- "Reply with exactly the word ok and nothing else." 2>&1 || true)
+  if grep -q '"is_error": *false' <<<"$reply" && grep -q '"result": *"ok' <<<"$reply"; then
+    printf '  %s✓ model request succeeded on the subscription token%s\n' "$GREEN" "$RESET"
+  else
+    warn "model request did not succeed:"; note "$(sed -E 's/sk-ant-[A-Za-z0-9_-]{8,}/<redacted>/g' <<<"$reply" | head -c 600)"
+    SKIPPED+=("token verification failed; re-run the wizard")
+  fi
+else
+  note "skipped; the smoke run's first checkpoint will be the first real test"
 fi
 say "Next: bin/scb run --config configs/runs/smoke-file_backup.yaml"
 

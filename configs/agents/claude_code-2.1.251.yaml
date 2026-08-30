@@ -8,9 +8,10 @@
 #   timeout 7200     -> hard kill of the checkpoint's claude process. This is the real guard.
 #   cost_limit       -> not enforced for claude_code (only other agents check it per checkpoint);
 #                       kept at 20 so the value still documents the intended ceiling.
-#   net_cost_limit   -> checked between checkpoints against the problem's cumulative cost; 60 is
-#                       about 2x the most expensive dev6 problem (sith, $26). Protects the
+#   net_cost_limit   -> checked between checkpoints against the problem's cumulative cost; 100 keeps
+#                       headroom above the priciest Opus-class problem (sith at $52). Protects the
 #                       rate-limit window from a runaway problem without touching normal runs.
+#                       (raised 60 -> 100 on 2026-08-30: Opus 5 spent $51.77 on sith)
 type: claude_code
 binary: claude
 permission_mode: bypassPermissions
@@ -19,4 +20,4 @@ timeout: 7200
 cost_limits:
   cost_limit: 20
   step_limit: 0
-  net_cost_limit: 60
+  net_cost_limit: 100

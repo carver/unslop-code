@@ -36,7 +36,7 @@ def main():
     tot = collections.Counter(); n = 0; sol = collections.Counter(); er = []; vb = []; cl = []; ag = []
     for r in rows:
         c = cost(r); n += 1
-        s = r.get("pass_rate") == 1.0; i = r.get("checkpoint_pass_rate") == 1.0; k = r.get("core_pass_rate") == 1.0
+        s = r.get("strict_pass_rate", r.get("pass_rate")) == 1.0; i = r.get("isolated_pass_rate", r.get("checkpoint_pass_rate")) == 1.0; k = r.get("core_pass_rate") == 1.0
         sol["strict"] += s; sol["iso"] += i; sol["core"] += k
         for kk in PRICE: tot[kk] += r.get(kk) or 0
         tot["cost"] += c; tot["cc_cost"] += r.get("cost") or 0; tot["elapsed"] += elapsed(r); tot["steps"] += r.get("steps") or 0

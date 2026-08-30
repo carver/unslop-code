@@ -141,6 +141,16 @@ Observed:
 Sonnet 4.6 is available on this Max subscription, so no model substitution
 is needed.
 
+Re-run on 2026-08-29 with the real `claude setup-token` token from
+`~/.config/scbench/claude-oauth-token`: identical result (`authMethod:
+oauth_token`, `apiKeySource: none`, `hello`, exit 0). The full init payload
+is recorded in `notes/control-isolation.md`.
+
+Caveat found on the way: a setup-token has inference scope only, so
+`GET /api/oauth/usage` answers 403 for it. `bin/usage` therefore reads the
+login access token from `~/.claude/.credentials.json` (same account, same
+numbers). The wizard's verify stage sends one tiny model request instead.
+
 ## Operating procedure
 
 1. Once: `bin/setup-token-wizard` (runs `claude setup-token`, needs a TTY and

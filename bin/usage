@@ -1,0 +1,25 @@
+#!/usr/bin/env python3
+"""Print subscription rate-limit utilization (what Claude Code's /usage shows).
+
+Token: $SCB_OAUTH_TOKEN_FILE or ~/.config/scbench/claude-oauth-token, else the live
+access token in ~/.claude/.credentials.json. The token is never printed.
+"""
+import json, os, pathlib, sys, urllib.request, datetime
+
+tf = pathlib.Path(os.environ.get("SCB_OAUTH_TOKEN_FILE", "~/.config/scbench/claude-oauth-token")).expanduser()
+if tf.exists():
+    tok = tf.read_text().strip()
+else:
+    tok = json.load(open(pathlib.Path("~/.claude/.credentials.json").expanduser()))["claudeAiOauth"]["accessToken"]
+req = urllib.request.Request(
+    "https://api.anthropic.com/api/oauth/usage",
+    headers={"Authorization": "Bearer " + tok, "anthropic-beta": "oauth-2025-04-20", "User-Agent": "claude-code/2.1.251"},
+)
+with urllib.request.urlopen(req, timeout=20) as r:
+    d = json.load(r)
+now = datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")
+row = {"at": now}
+for w in ("five_hour", "seven_day", "seven_day_sonnet"):
+    v = d.get(w)
+    row[w] = None if v is None else {"pct": v["utilization"], "resets_at": v["resets_at"]}
+print(json.dumps(row))

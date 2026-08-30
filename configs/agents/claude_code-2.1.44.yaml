@@ -1,0 +1,12 @@
+# Leaderboard-matching Claude Code agent config (Sonnet 4.6 / thinking=high entry uses 2.1.44).
+# Identical to the repo's configs/agents/claude_code.yaml except for the pinned version
+# and the hard caps (see notes/credential-setup.md).
+type: claude_code
+binary: claude
+permission_mode: bypassPermissions
+version: 2.1.44
+timeout: 3600
+cost_limits:
+  cost_limit: 20
+  step_limit: 100
+  net_cost_limit: 0

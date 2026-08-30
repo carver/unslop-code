@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+# Run `slop-code` with subscription auth only.
+#
+# - Drops ANTHROPIC_API_KEY (and every other ANTHROPIC_* variable) from the environment.
+# - Exports CLAUDE_CODE_OAUTH_TOKEN from a 0600 file written by `claude setup-token`.
+# - Refuses to start if any Anthropic API key is still visible.
+#
+# Usage: bin/scb run --model claude_code_oauth/sonnet-4.6 ...
+set -euo pipefail
+
+here="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+token_file="${SCB_OAUTH_TOKEN_FILE:-$HOME/.config/scbench/claude-oauth-token}"
+
+if [[ ! -f "$token_file" ]]; then
+  echo "scb: no subscription token at $token_file" >&2
+  echo "scb: run 'claude setup-token' and save the printed token there (chmod 600)" >&2
+  exit 2
+fi
+if [[ "$(stat -c %a "$token_file")" != "600" ]]; then
+  echo "scb: $token_file must be mode 600" >&2
+  exit 2
+fi
+
+for var in $(env | grep -i '^ANTHROPIC' | cut -d= -f1); do
+  unset "$var"
+done
+if env | grep -qi 'sk-ant-api'; then
+  echo "scb: an Anthropic API key is still in the environment, refusing to run" >&2
+  exit 2
+fi
+
+CLAUDE_CODE_OAUTH_TOKEN="$(tr -d '[:space:]' < "$token_file")"
+export CLAUDE_CODE_OAUTH_TOKEN
+case "$CLAUDE_CODE_OAUTH_TOKEN" in
+  sk-ant-oat01-*) ;;
+  *) echo "scb: token in $token_file does not look like a Claude OAuth token (sk-ant-oat01-...)" >&2; exit 2 ;;
+esac
+
+exec uv run --project "$here/slop-code-bench" slop-code "$@"

@@ -1,6 +1,6 @@
 # Step 5 smoke run: file_backup (2026-08-29)
 
-Run dir: `outputs/smoke/sonnet-4.6_2.1.44_high_just-solve/20260829T1810/`
+Run dir: deleted on 2026-08-30 for holdout hygiene (see control-isolation.md); the tables below are the surviving record.
 Config: `configs/runs/smoke-file_backup.yaml` (claude_code 2.1.44, claude-sonnet-4-6,
 thinking high = MAX_THINKING_TOKENS 31999 + CLAUDE_CODE_EFFORT_LEVEL high, just-solve,
 docker-python3.12-uv, pass_policy any, step_limit 100, cost_limit 20, timeout 3600).

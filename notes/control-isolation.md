@@ -55,3 +55,14 @@ Claude Code 2.1.44; nothing from this host appears.
 - The agent config differs from the repo default only in `version: 2.1.44`,
   `timeout: 3600` and `cost_limit: 20` (a safety cap 10x above the
   leaderboard mean; it never binds in a normal checkpoint).
+
+## Smoke-run outputs deleted (2026-08-30)
+
+`outputs/smoke/` (the file_backup smoke run: transcripts, snapshots,
+per-test results) and `outputs/logs/smoke-*` were deleted on purpose.
+file_backup is a holdout problem and the plan named it for the smoke run
+before the split existed, so its run artifacts were the one holdout leak on
+disk. The numbers that matter survive in notes/smoke-run.md and
+baseline-report.md (tokens, cost, pass counts by group, quality scores),
+none of which contain spec text, test names or code. Do not try to recover
+the directory, and do not run file_backup again outside the holdout eval.

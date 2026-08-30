@@ -1,14 +1,50 @@
 #!/usr/bin/env python3
-"""Compare failing tests for one problem across two runs.
+"""Failing tests for a problem, from one run or side by side from two.
 
-Usage: bin/failures <run_a> <run_b> <problem> [--messages]
-Prints, per checkpoint, every test that fails in either run, tagged a / b / both,
-with its group. --messages adds the tail of each failure's pytest output for run b.
+Usage:
+  bin/failures                                interactive: pick run(s) and problem
+  bin/failures <run> [problem]                single-run failure listing
+  bin/failures <run_a> <run_b> [problem]      compare two runs (a vs b)
+Options:
+  --messages    include the tail of each failure's pytest output (from the last
+                run given, or the only run)
+
+With no problem, all problems in the run are shown. A "run" is a directory like
+outputs/dev6-opus5/opus-5_2.1.251_high_just-solve/20260830T0354.
 """
 import json, sys, pathlib
 
+OUTPUTS = pathlib.Path(__file__).resolve().parent.parent / "outputs"
+
+
+def discover_runs():
+    return sorted(
+        (p.parent for p in OUTPUTS.glob("*/*/*/checkpoint_results.jsonl")),
+        key=lambda p: p.name,
+    )
+
+
+def problems_in(run):
+    return sorted(d.name for d in run.iterdir() if (d / "problem.yaml").exists())
+
+
+def pick(prompt, options, allow_all=False):
+    print(f"\n{prompt}")
+    if allow_all:
+        print("   0) all")
+    for i, o in enumerate(options, 1):
+        print(f"  {i:2d}) {o}")
+    while True:
+        raw = input("> ").strip()
+        if allow_all and raw in ("0", "", "all"):
+            return None
+        if raw.isdigit() and 1 <= int(raw) <= len(options):
+            return options[int(raw) - 1]
+        print("pick a number from the list")
+
+
 def fails(run, problem, ck):
-    p = pathlib.Path(run) / problem / f"checkpoint_{ck}" / "evaluation.json"
+    p = run / problem / f"checkpoint_{ck}" / "evaluation.json"
     if not p.exists():
         return None
     out = {}
@@ -19,29 +55,65 @@ def fails(run, problem, ck):
                     out[n] = (grp, st)
     return out
 
+
 def messages(run, problem, ck):
-    p = pathlib.Path(run) / problem / f"checkpoint_{ck}" / "evaluation" / "report.json"
+    p = run / problem / f"checkpoint_{ck}" / "evaluation" / "report.json"
     if not p.exists():
         return {}
-    d = json.load(open(p))
     return {t["nodeid"].split("::", 1)[-1]: str((t.get("call") or {}).get("longrepr", ""))[-500:]
-            for t in d.get("tests", []) if t.get("outcome") != "passed"}
+            for t in json.load(open(p)).get("tests", []) if t.get("outcome") != "passed"}
+
+
+def show_problem(a, b, problem, with_messages):
+    msg_run = b or a
+    ncks = len(list((msg_run / problem).glob("checkpoint_*")))
+    for ck in range(1, ncks + 1):
+        fa = fails(a, problem, ck)
+        fb = fails(b, problem, ck) if b else None
+        if fa is None or (b and fb is None):
+            print(f"\n== {problem} checkpoint {ck}: missing evaluation"); continue
+        if b:
+            print(f"\n== {problem} checkpoint {ck}: a fails {len(fa)}, b fails {len(fb)}, shared {len(set(fa) & set(fb))}")
+        else:
+            print(f"\n== {problem} checkpoint {ck}: {len(fa)} failing")
+        msgs = messages(msg_run, problem, ck) if with_messages else {}
+        for n in sorted(set(fa) | set(fb or {})):
+            grp, st = (fb or fa).get(n) or fa[n]
+            tag = "" if not b else ("both" if n in fa and n in fb else ("a   " if n in fa else "b   ")) + " "
+            print(f"   {tag}{grp:28s} {st:8s} {n}")
+            if n in msgs and (not b or n in fb):
+                print("        " + msgs[n].strip().replace("\n", "\n        ")[-400:])
+
 
 def main():
-    a, b, problem = sys.argv[1:4]
-    show = "--messages" in sys.argv
-    ncks = len(list((pathlib.Path(b) / problem).glob("checkpoint_*")))
-    for ck in range(1, ncks + 1):
-        fa, fb = fails(a, problem, ck), fails(b, problem, ck)
-        if fa is None or fb is None:
-            print(f"\n== {problem} checkpoint {ck}: missing in {'a' if fa is None else 'b'}"); continue
-        print(f"\n== {problem} checkpoint {ck}: a fails {len(fa)}, b fails {len(fb)}, shared {len(set(fa) & set(fb))}")
-        msgs = messages(b, problem, ck) if show else {}
-        for n in sorted(set(fa) | set(fb)):
-            who = "both" if n in fa and n in fb else ("a" if n in fa else "b")
-            grp = (fb.get(n) or fa.get(n))[0]
-            print(f"   {who:4s} {grp:28s} {n}")
-            if show and who != "a" and n in msgs:
-                print("        " + msgs[n].strip().replace("\n", "\n        ")[-400:])
+    args = [a for a in sys.argv[1:] if a != "--messages"]
+    with_messages = "--messages" in sys.argv
+    runs = [pathlib.Path(a) for a in args if (pathlib.Path(a) / "checkpoint_results.jsonl").exists()
+            or pathlib.Path(a).is_dir() and any(pathlib.Path(a).glob("*/checkpoint_1"))]
+    rest = [a for a in args if pathlib.Path(a) not in runs]
+
+    if not runs:
+        found = discover_runs()
+        if not found:
+            sys.exit("no runs under outputs/")
+        labels = [str(r.relative_to(OUTPUTS)) for r in found]
+        if not sys.stdin.isatty():
+            print("runs available (pass one or two as arguments):")
+            for label in labels:
+                print("  outputs/" + label)
+            return
+        first = found[labels.index(pick("Run:", labels))]
+        second_label = pick("Compare against (0 = none):", labels, allow_all=True)
+        runs = [first] + ([found[labels.index(second_label)]] if second_label else [])
+
+    a = runs[0]
+    b = runs[1] if len(runs) > 1 else None
+    problem = rest[0] if rest else None
+    if problem is None and sys.stdin.isatty() and len(sys.argv) == 1:
+        problem = pick("Problem (0 = all):", problems_in(b or a), allow_all=True)
+
+    for p in ([problem] if problem else problems_in(b or a)):
+        show_problem(a, b, p, with_messages)
+
 
 main()

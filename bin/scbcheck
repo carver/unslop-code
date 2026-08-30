@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# Run the pinned scb-check on every checkpoint snapshot in a run directory and
+# store the JSON report as <checkpoint>/quality_analysis/scb_check.json.
+# `slop-code metrics static` only keeps these scores in the aggregated
+# result.json; bin/summarize reads the per-checkpoint files this writes.
+set -euo pipefail
+run="${1:?usage: bin/scbcheck <run_dir>}"
+version="${SCB_CHECK_VERSION:-0.1.3}"
+for snap in "$run"/*/checkpoint_*/snapshot; do
+  ck="$(dirname "$snap")"
+  mkdir -p "$ck/quality_analysis"
+  if uvx "scb-check==$version" check --report --include-all "$snap" > "$ck/quality_analysis/scb_check.json" 2>/dev/null; then
+    printf '%s ok\n' "${ck#"$run"/}"
+  else
+    printf '%s FAILED\n' "${ck#"$run"/}" >&2
+  fi
+done

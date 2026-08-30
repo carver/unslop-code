@@ -23,10 +23,17 @@ def elapsed(r):
 def main():
     run = pathlib.Path(sys.argv[1]); md = "--md" in sys.argv
     rows = [json.loads(l) for l in (run / "checkpoint_results.jsonl").read_text().splitlines() if l.strip()]
+    for r in rows:
+        scb = run / r["problem"] / r["checkpoint"] / "quality_analysis" / "scb_check.json"
+        if scb.exists():
+            d = json.loads(scb.read_text()); t = d.get("total_loc") or 0
+            r["verbosity"] = d.get("verbosity"); r["erosion"] = d.get("erosion")
+            r["cloned_pct"] = (d.get("clone_loc") or 0) / t if t else None
+            r["ast_grep_pct"] = (d.get("ast_grep_flagged_loc") or 0) / t if t else None
     rows.sort(key=lambda r: (r["problem"], r["idx"]))
-    hdr = ["problem", "ckpt", "state", "strict", "iso", "core", "core_pr", "steps", "in", "out", "cache_r", "cache_w", "cc_$", "list_$", "elapsed_s", "erosion", "verbosity", "cloned%"]
+    hdr = ["problem", "ckpt", "state", "strict", "iso", "core", "core_pr", "steps", "in", "out", "cache_r", "cache_w", "cc_$", "list_$", "elapsed_s", "erosion", "verbosity", "ast%", "cloned%"]
     out = []
-    tot = collections.Counter(); n = 0; sol = collections.Counter(); er = []; vb = []; cl = []
+    tot = collections.Counter(); n = 0; sol = collections.Counter(); er = []; vb = []; cl = []; ag = []
     for r in rows:
         c = cost(r); n += 1
         s = r.get("pass_rate") == 1.0; i = r.get("checkpoint_pass_rate") == 1.0; k = r.get("core_pass_rate") == 1.0
@@ -36,9 +43,10 @@ def main():
         if r.get("erosion") is not None: er.append(r["erosion"])
         if r.get("verbosity") is not None: vb.append(r["verbosity"])
         if r.get("cloned_pct") is not None: cl.append(r["cloned_pct"])
+        if r.get("ast_grep_pct") is not None: ag.append(r["ast_grep_pct"])
         out.append([r["problem"], r["idx"], r.get("state"), "Y" if s else "n", "Y" if i else "n", "Y" if k else "n",
                     f"{(r.get('core_pass_rate') or 0):.2f}", r.get("steps"), r.get("input"), r.get("output"), r.get("cache_read"), r.get("cache_write"),
-                    f"{(r.get('cost') or 0):.2f}", f"{c:.2f}", f"{elapsed(r):.0f}", fmt(r.get("erosion")), fmt(r.get("verbosity")), fmt(r.get("cloned_pct"))])
+                    f"{(r.get('cost') or 0):.2f}", f"{c:.2f}", f"{elapsed(r):.0f}", fmt(r.get("erosion")), fmt(r.get("verbosity")), fmt(r.get("ast_grep_pct")), fmt(r.get("cloned_pct"))])
     sep = " | " if md else "  "
     print(sep.join(hdr));
     if md: print("|".join(["---"] * len(hdr)))
@@ -50,7 +58,7 @@ def main():
     print(f"cost at Sonnet list price from token counts (list_$): ${tot['cost']:.2f} total, ${tot['cost']/n:.2f}/ckpt")
     print(f"wall time: {tot['elapsed']/60:.1f} min total, {tot['elapsed']/n/60:.1f} min/ckpt; steps/ckpt {tot['steps']/n:.1f}")
     mean = lambda xs: sum(xs) / len(xs) if xs else float("nan")
-    print(f"erosion mean {mean(er):.3f} (target 0.741)  verbosity mean {mean(vb):.3f} (target 0.316)  cloned mean {mean(cl):.3f} (target 0.093)")
+    print(f"erosion mean {mean(er):.3f} (target 0.741)  verbosity mean {mean(vb):.3f} (target 0.316)  ast-grep mean {mean(ag):.3f} (target 0.298)  cloned mean {mean(cl):.3f} (target 0.093)")
 
 def fmt(v):
     return "-" if v is None else f"{v:.3f}"

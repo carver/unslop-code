@@ -159,3 +159,13 @@ numbers). The wizard's verify stage sends one tiny model request instead.
 2. Every run: `bin/scb run --config configs/runs/<name>.yaml`.
 3. During a run: `docker exec <container> env | grep -i anthropic` must print
    nothing; `bin/usage` before and after gives the rate-limit cost.
+
+## Host prerequisite found during the smoke run
+
+`slop-code metrics static` (and the post-run report inside `slop-code run`)
+shells out to `uvx scb-check==0.1.3`. This box has `uv` 0.9.26 at
+`/usr/local/bin/uv` but no `uvx` binary, so the composite scores were missing
+after the first run ("No such file or directory: 'uvx'"). Fix applied:
+`~/.local/bin/uvx` is a two-line shim that execs `uv tool run "$@"`, which is
+what `uvx` is. Re-running `metrics static` on the run directory filled in
+erosion/verbosity. Worth adding to sandbox-setup so a recreate keeps it.

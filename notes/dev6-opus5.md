@@ -80,7 +80,16 @@ control if the model-vs-model number matters.
    the worker (BrokenProcessPool); benchmark commands now use a
    sandbox-local venv via UV_PROJECT_ENVIRONMENT.
 3. Killed checkpoints get recorded as clean completions; two truncated
-   mvvault checkpoints were deleted before resuming.
+   mvvault checkpoints were deleted before resuming. A retroactive scan on
+   2026-08-31 (transcripts with no `"type": "result"` entry in
+   `agent/stdout.jsonl`) found one more that survived into the final
+   artifacts: mvvault/checkpoint_4 killed itself with a
+   `ps | grep "mvault\.py serve" | kill` self-match (exit 137) during
+   post-implementation cleanup. All 11 core tests pass, so core scoring is
+   unaffected; 1 functionality + 2 regression failures stand that the agent
+   might have fixed with its remaining time, so its strict/iso miss and its
+   cost (606s) are slightly pessimistic. The
+   agent-death-detection patch now fails such checkpoints at run time.
 4. file_merger's four rows carry `state: unknown` in checkpoint_results.jsonl
    because its stale run_info.yaml (from the crashed first attempt) was set
    aside; pass rates and costs are correct.

@@ -1,0 +1,178 @@
+diff --git a/src/slop_code/entrypoints/commands/run_agent.py b/src/slop_code/entrypoints/commands/run_agent.py
+index b864abf..68b03f1 100644
+--- a/src/slop_code/entrypoints/commands/run_agent.py
++++ b/src/slop_code/entrypoints/commands/run_agent.py
+@@ -886,6 +886,7 @@ def _create_task_config(
+     resume: bool,
+     *,
+     concurrent_evaluation: bool = False,
++    stop_after_checkpoint: int | None = None,
+ ) -> problem_runner.RunTaskConfig:
+     """Create task configuration for problem execution.
+ 
+@@ -928,6 +929,7 @@ def _create_task_config(
+         image=image_name,
+         resume=resume,
+         one_shot=run_cfg.one_shot,
++        stop_after_checkpoint=stop_after_checkpoint,
+     )
+ 
+ 
+@@ -1114,6 +1116,14 @@ def run_agent(
+         "-n",
+         help="Number of parallel workers for running problems",
+     ),
++    stop_after_checkpoint: int | None = typer.Option(
++        None,
++        "--stop-after-checkpoint",
++        min=1,
++        help="Run each problem only through this checkpoint order; later "
++        "checkpoints are left for a future --resume. CLI-only, so a plain "
++        "--resume later continues to the end.",
++    ),
+     evaluate: bool = typer.Option(  # noqa: FBT001, FBT002
+         True,  # noqa: FBT003
+         "--evaluate/--no-evaluate",
+@@ -1421,6 +1431,7 @@ def run_agent(
+         live_progress=live_progress,
+         image_name=image_name,
+         resume=is_resuming,
++        stop_after_checkpoint=stop_after_checkpoint,
+     )
+ 
+     # 15. Run problems
+diff --git a/src/slop_code/entrypoints/problem_runner/driver.py b/src/slop_code/entrypoints/problem_runner/driver.py
+index ae47cd2..dd9c01a 100644
+--- a/src/slop_code/entrypoints/problem_runner/driver.py
++++ b/src/slop_code/entrypoints/problem_runner/driver.py
+@@ -294,6 +294,10 @@ def run_problems(
+         problem_config = apply_one_shot_mode(
+             problem_config=problem_config, one_shot=config.one_shot
+         )
++        if config.stop_after_checkpoint is not None:
++            problem_config = problem_config.limit_checkpoints(
++                config.stop_after_checkpoint
++            )
+         checkpoint_names = [
+             name for name, _ in problem_config.iterate_checkpoint_items()
+         ]
+diff --git a/src/slop_code/entrypoints/problem_runner/models.py b/src/slop_code/entrypoints/problem_runner/models.py
+index 673f7a0..a36ce8a 100644
+--- a/src/slop_code/entrypoints/problem_runner/models.py
++++ b/src/slop_code/entrypoints/problem_runner/models.py
+@@ -88,6 +88,7 @@ class RunTaskConfig:
+     resume: bool = False
+     dry_run: bool = False
+     one_shot: OneShotConfig = field(default_factory=OneShotConfig)
++    stop_after_checkpoint: int | None = None
+ 
+ 
+ class ProblemState(BaseModel):
+diff --git a/src/slop_code/entrypoints/problem_runner/worker.py b/src/slop_code/entrypoints/problem_runner/worker.py
+index 78cc068..23c86e1 100644
+--- a/src/slop_code/entrypoints/problem_runner/worker.py
++++ b/src/slop_code/entrypoints/problem_runner/worker.py
+@@ -117,6 +117,10 @@ def run_agent_on_problem(
+     problem_config = apply_one_shot_mode(
+         problem_config=problem_config, one_shot=config.one_shot
+     )
++    if config.stop_after_checkpoint is not None:
++        problem_config = problem_config.limit_checkpoints(
++            config.stop_after_checkpoint
++        )
+ 
+     # Detect resume point if resume mode is enabled
+     resume_info: ResumeInfo | None = None
+diff --git a/src/slop_code/evaluation/config.py b/src/slop_code/evaluation/config.py
+index bad364a..a4a50c1 100644
+--- a/src/slop_code/evaluation/config.py
++++ b/src/slop_code/evaluation/config.py
+@@ -819,6 +819,29 @@ class ProblemConfig(BaseConfig):
+         for name, checkpoint in ordered:
+             yield name, checkpoint
+ 
++    def limit_checkpoints(self, max_order: int) -> ProblemConfig:
++        """Return a copy keeping only checkpoints with order <= max_order.
++
++        Later checkpoints are dropped entirely, so downstream code (resume
++        detection, progress totals, evaluation) behaves as if the problem
++        ended at max_order.
++
++        Raises:
++            ConfigError: If no checkpoint has order <= max_order.
++        """
++        kept = {
++            name: checkpoint
++            for name, checkpoint in self.checkpoints.items()
++            if checkpoint.order <= max_order
++        }
++        if not kept:
++            raise ConfigError(
++                f"No checkpoint in problem {self.name} has order <= {max_order}"
++            )
++        if len(kept) == len(self.checkpoints):
++            return self
++        return self.model_copy(deep=True, update={"checkpoints": kept})
++
+     def get_checkpoint_spec(self, checkpoint_name: str) -> str:
+         """Get the specification text for a checkpoint.
+ 
+diff --git a/tests/evaluation/config_test.py b/tests/evaluation/config_test.py
+index 9c48b6c..e7fffff 100644
+--- a/tests/evaluation/config_test.py
++++ b/tests/evaluation/config_test.py
+@@ -230,3 +230,54 @@ class TestProblemConfigTestDependencies:
+             test_dependencies=["requests"],
+         )
+         assert config.test_dependencies == ["requests"]
++
++
++# ============================================================================
++# ProblemConfig.limit_checkpoints Tests
++# ============================================================================
++
++import pytest
++
++from slop_code.evaluation.config import ConfigError
++
++
++class TestProblemConfigLimitCheckpoints:
++    """Tests for ProblemConfig.limit_checkpoints."""
++
++    def _problem(self) -> ProblemConfig:
++        return ProblemConfig(
++            name="test",
++            path=Path("/test"),
++            version=1,
++            description="Test problem",
++            entry_file="main.py",
++            tags=["test"],
++            checkpoints={
++                name: CheckpointConfig(name=name, version=1, order=order)
++                for order, name in enumerate(
++                    ["checkpoint_1", "checkpoint_2", "checkpoint_3"], start=1
++                )
++            },
++        )
++
++    def test_drops_checkpoints_past_max_order(self):
++        limited = self._problem().limit_checkpoints(2)
++        assert [name for name, _ in limited.iterate_checkpoint_items()] == [
++            "checkpoint_1",
++            "checkpoint_2",
++        ]
++
++    def test_max_order_at_or_past_end_keeps_all(self):
++        problem = self._problem()
++        assert problem.limit_checkpoints(3) is problem
++        assert problem.limit_checkpoints(99) is problem
++
++    def test_raises_when_nothing_kept(self):
++        problem = self._problem()
++        with pytest.raises(ConfigError):
++            problem.limit_checkpoints(0)
++
++    def test_original_config_unchanged(self):
++        problem = self._problem()
++        problem.limit_checkpoints(1)
++        assert len(problem.checkpoints) == 3

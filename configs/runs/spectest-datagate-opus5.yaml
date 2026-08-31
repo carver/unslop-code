@@ -1,0 +1,21 @@
+# Spectest prompt experiment: datagate only, Opus 5, advanced one checkpoint at a time.
+# The spectest prompt (configs/prompts/spectest.jinja, from spectest-prompt.txt) asks for
+# spec-phrase test sections, hypothesis tests, and library research before implementing.
+#
+#   start:    bin/scb run --config configs/runs/spectest-datagate-opus5.yaml \
+#               --no-live-progress --stop-after-checkpoint 1
+#   continue: bin/scb run --resume <run_dir> --no-live-progress [--stop-after-checkpoint N]
+#
+# --stop-after-checkpoint is CLI-only (patches/stop-after-checkpoint.patch), so resumes
+# reuse the same run dir and a plain --resume runs to the end.
+agent: /home/carver/code/claudedev/unslop-code-bench/configs/agents/claude_code-2.1.251.yaml
+environment: docker-python3.12-uv
+prompt: /home/carver/code/claudedev/unslop-code-bench/configs/prompts/spectest.jinja
+model:
+  provider: claude_code_oauth
+  name: opus-5
+thinking: high
+problems:
+  - datagate
+save_dir: /home/carver/code/claudedev/unslop-code-bench/outputs
+save_template: spectest/${model.name}_${agent.version}_${thinking}_${prompt}/${now:%Y%m%dT%H%M}

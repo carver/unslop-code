@@ -1,0 +1,19 @@
+# Spectest v2 prompt experiment: datagate only, Opus 5, advanced one checkpoint at a time.
+# v2 (configs/prompts/spectest-v2.jinja, written by hand) adds IN_PROGRESS/COMPLETED marker
+# files, a pgrep-then-kill rule, file/devnull logging for long-lived processes, and a
+# continuation branch for checkpoints 2+.
+#
+#   start:    bin/scb run --config configs/runs/spectest-v2-datagate-opus5.yaml \
+#               --no-live-progress --stop-after-checkpoint 1
+#   continue: bin/scb run --resume <run_dir> --no-live-progress [--stop-after-checkpoint N]
+agent: /home/carver/code/claudedev/unslop-code-bench/configs/agents/claude_code-2.1.251.yaml
+environment: docker-python3.12-uv
+prompt: /home/carver/code/claudedev/unslop-code-bench/configs/prompts/spectest-v2.jinja
+model:
+  provider: claude_code_oauth
+  name: opus-5
+thinking: high
+problems:
+  - datagate
+save_dir: /home/carver/code/claudedev/unslop-code-bench/outputs
+save_template: spectest/${model.name}_${agent.version}_${thinking}_${prompt}/${now:%Y%m%dT%H%M}

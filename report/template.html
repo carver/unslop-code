@@ -158,7 +158,7 @@ footer { border-top: 1px solid var(--rule); padding-top: 18px; font-size: 13.5px
 </header>
 
 <nav aria-label="Sections">
-  <a href="#scorecard">Scorecard</a><a href="#problems">Per problem</a><a href="#checkpoints">Per checkpoint</a><a href="#opus5">Opus 5 probe</a><a href="#smoke">Smoke run</a><a href="#surprises">Surprises</a><a href="#budget">Budget</a><a href="#recommendation">Recommendation</a><a href="#manifest">Manifest</a>
+  <a href="#scorecard">Scorecard</a><a href="#problems">Per problem</a><a href="#checkpoints">Per checkpoint</a><a href="#probes">Model probes</a><a href="#smoke">Smoke run</a><a href="#surprises">Surprises</a><a href="#budget">Budget</a><a href="#recommendation">Recommendation</a><a href="#manifest">Manifest</a>
 </nav>
 
 <section id="scorecard">
@@ -203,19 +203,19 @@ footer { border-top: 1px solid var(--rule); padding-top: 18px; font-size: 13.5px
   <p class="caption">Cost is what Claude Code reported (list price, including Haiku sub-agent calls and 1-hour cache writes). Quality columns come from <code>scb-check 0.1.3</code> on each checkpoint's snapshot. Tokens for the run: input {{T_IN}}, output {{T_OUT}}, cache read {{T_CR}}, cache write {{T_CW}} ({{T_ALL}} total).</p>
 </section>
 
-<section id="opus5">
-  <p class="eyebrow">Opus 5 probe</p>
-  <h2>Same six problems on Opus 5, uncapped</h2>
-  <p>One dev6 run on <code>claude-opus-5</code>, Claude Code 2.1.251, thinking high, no turn cap, run 2026-08-30 to decide the workhorse model for the skills experiment. Not a leaderboard row; there is none for Opus 5.</p>
-  <div class="tablewrap" style="max-width:560px"><table>
-    <thead><tr><th>metric</th><th class="n">Sonnet 4.6 (capped)</th><th class="n">Opus 5 (uncapped)</th></tr></thead>
-    <tbody>{{OPUS_HEAD}}</tbody>
+<section id="probes">
+  <p class="eyebrow">Model probes</p>
+  <h2>The same six problems on Opus 5 and Fable 5</h2>
+  <p>One dev6 run each on current Claude Code (2.1.251), thinking high, no turn cap, 2026-08-30/31, to pick the workhorse model for the skills experiment. Neither model has a leaderboard row.</p>
+  <div class="tablewrap" style="max-width:640px"><table>
+    <thead><tr><th>metric</th>{{PROBE_COLS}}</tr></thead>
+    <tbody>{{PROBE_HEAD}}</tbody>
   </table></div>
   <div class="tablewrap"><table>
-    <thead><tr><th>problem</th><th>difficulty</th><th class="n">Sonnet strict/iso/core</th><th class="n">Sonnet $</th><th class="n">Opus strict/iso/core</th><th class="n">Opus $</th></tr></thead>
-    <tbody>{{OPUS_PROB}}</tbody>
+    <thead><tr><th>problem</th><th>difficulty</th><th class="n">Sonnet s/i/c</th><th class="n">$</th><th class="n">Opus s/i/c</th><th class="n">$</th><th class="n">Fable s/i/c</th><th class="n">$</th></tr></thead>
+    <tbody>{{PROBE_PROB}}</tbody>
   </table></div>
-  <p class="caption">Isolated solve rose 9.1% to 24.2% and every quality score improved (Opus's final sith snapshot passes 191/228 tests vs Sonnet's 115/228), at 2.5x the dollars but roughly the same weekly rate-limit points (~9 vs ~8): the weekly window tracks tokens, not list price. Two confounds keep this from being a clean model comparison: Sonnet ran with the old 100-turn cap (it bound on 4 checkpoints) and on CLI 2.1.44, while Opus ran uncapped on 2.1.251. The strict/iso gap stays wide open on Opus, and its one outright loss (datagate) traces to a single invented constraint at checkpoint 1 - an over-strict delimiter check that 400s single-column CSVs - carried as regressions through all seven checkpoints. Details in <code>notes/dev6-opus5.md</code>.</p>
+  <p class="caption">The 5-generation models triple the isolated solve rate (9.1% to 24.2% Opus, 27.3% Fable) and improve every quality score; the strict/iso gap stays wide open on all three, and each model's losses trace to a few early misreadings carried forward as regressions. Fable uses the fewest tokens and steps of the three (its token count priced at Sonnet rates is $1.45/ckpt, below Sonnet's own $1.60) - its $5.31/ckpt is purely the $10/$50 list price. Budget notes: the weekly rate-limit window weights models (~3x per token for Fable: ~22 points for this run vs ~8-9 for the others), so full-holdout seeds fit on Opus (~55 points) but not comfortably on Fable (~130); Fable also fills a 5-hour window in about 4 hours of work, handled here by pausing at problem boundaries and auto-resuming after resets. The Sonnet column is the capped 2.1.44 control, so cross-model deltas carry that confound. Details in <code>notes/dev6-opus5.md</code> and <code>notes/dev6-fable5.md</code>.</p>
 </section>
 
 <section id="smoke">

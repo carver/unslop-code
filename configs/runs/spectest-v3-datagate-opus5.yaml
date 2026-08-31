@@ -1,7 +1,8 @@
 # Spectest v3 prompt experiment: datagate only, Opus 5, advanced one checkpoint at a time.
-# v3 = v2 plus one rule from the v2 post-run Q&A: a failing generated input is evidence about
-# the spec - never narrow a generator or test to dodge it (the v2 agent set headers(n_min=2)
-# to silence its own single-column failures, which cost the core pass).
+# v3 (hand-written, commit b4c57ff) = v2 plus the lesson from the v2 post-run Q&A: spec tests
+# may not be changed, and a failing generated input is evidence the implementation misses the
+# spec - never narrow a generator or test to dodge it (the v2 agent set headers(n_min=2) to
+# silence its own single-column failures, which cost the core pass).
 #
 #   start:    bin/scb run --config configs/runs/spectest-v3-datagate-opus5.yaml \
 #               --no-live-progress --stop-after-checkpoint 1

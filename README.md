@@ -24,7 +24,13 @@ and the sandbox-local venv):
     bin/scbcheck <run_dir>                   # per-checkpoint scb-check quality reports
     bin/failures [run_a [run_b]] [problem]   # failing tests, one run or side by side
 
-The benchmark clone in `slop-code-bench/` carries exactly one source patch
-(`patches/claude-code-stream-parser-string-message.patch`); re-apply after any pull.
+The benchmark clone in `slop-code-bench/` carries two source patches; re-apply
+both after any pull:
+
+- `patches/claude-code-stream-parser-string-message.patch`
+- `patches/stop-after-checkpoint.patch` — adds `--stop-after-checkpoint N` to
+  `scb run` (works with `--resume`), for advancing a run one checkpoint at a time
+  in the same run dir.
+
 `outputs/` holds the three dev6 baseline runs. The setup-token lives at
 `~/.config/scbench/claude-oauth-token` (mint a new one with `bin/setup-token-wizard`).

@@ -23,6 +23,8 @@ and the sandbox-local venv):
     bin/summarize <run_dir> [--md]           # per-checkpoint table (needs bin/scbcheck first)
     bin/scbcheck <run_dir>                   # per-checkpoint scb-check quality reports
     bin/failures [run_a [run_b]] [problem]   # failing tests, one run or side by side
+    bin/askrun <checkpoint_dir> [question]   # resume that checkpoint's Claude session
+                                             # for post-run Q&A (no args = interactive)
 
 The benchmark clone in `slop-code-bench/` carries three source patches; after
 any pull, re-apply them in this order:

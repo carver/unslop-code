@@ -1,0 +1,89 @@
+#!/usr/bin/env bash
+# Resume the Claude session that ran a benchmark checkpoint, for post-run Q&A.
+#
+# Restores the checkpoint's workspace snapshot to /workspace, registers the
+# saved session file under ~/.claude/projects/-workspace, and resumes the
+# session on subscription auth (same hygiene as bin/scb). With a question it
+# answers once in print mode; without one it opens an interactive chat.
+#
+# Usage:
+#   bin/askrun <checkpoint_dir>                 # interactive chat
+#   bin/askrun <checkpoint_dir> <question...>   # one-shot answer
+#
+# <checkpoint_dir> is a run artifact dir like:
+#   outputs/spectest/opus-5_2.1.251_high_spectest-v2/20260831T1519/datagate/checkpoint_1
+set -euo pipefail
+
+ckpt="${1:?usage: askrun <checkpoint_dir> [question...]}"
+shift || true
+
+snapshot="$ckpt/snapshot"
+stdout_log="$ckpt/agent/stdout.jsonl"
+sessions_dir="$ckpt/agent/workspace/projects/-workspace"
+run_config="$ckpt/../../config.yaml"
+
+for path in "$snapshot" "$stdout_log" "$sessions_dir"; do
+  if [[ ! -e "$path" ]]; then
+    echo "askrun: missing $path" >&2
+    exit 2
+  fi
+done
+
+sid="$(head -1 "$stdout_log" | python3 -c 'import json,sys; print(json.load(sys.stdin).get("session_id",""))')"
+if [[ -z "$sid" || ! -f "$sessions_dir/$sid.jsonl" ]]; then
+  # Continuation checkpoints resume an earlier session; fall back to the
+  # newest saved session file.
+  sid="$(ls -t "$sessions_dir"/*.jsonl | head -1 | xargs -n1 basename | sed 's/\.jsonl$//')"
+fi
+if [[ -z "$sid" ]]; then
+  echo "askrun: no saved session file under $sessions_dir" >&2
+  exit 2
+fi
+
+model_name="$(grep -A2 '^model:' "$run_config" | sed -n 's/^ *name: *//p' | head -1)"
+model="claude-${model_name#claude-}"
+if [[ -z "$model_name" ]]; then
+  echo "askrun: could not read model name from $run_config" >&2
+  exit 2
+fi
+
+# The session ran with cwd /workspace inside the container; recreate it so
+# file references resolve and claude finds the session by project dir.
+if [[ ! -d /workspace ]]; then
+  sudo mkdir -p /workspace
+  sudo chown "$(id -u):$(id -g)" /workspace
+fi
+find /workspace -mindepth 1 -delete
+cp -r "$snapshot/." /workspace/
+mkdir -p "$HOME/.claude/projects/-workspace"
+cp "$sessions_dir/$sid.jsonl" "$HOME/.claude/projects/-workspace/"
+
+# Subscription-only auth, same rules as bin/scb.
+token_file="${SCB_OAUTH_TOKEN_FILE:-$HOME/.config/scbench/claude-oauth-token}"
+if [[ ! -f "$token_file" ]]; then
+  echo "askrun: no subscription token at $token_file (see bin/scb)" >&2
+  exit 2
+fi
+if [[ "$(stat -c %a "$token_file")" != "600" ]]; then
+  echo "askrun: $token_file must be mode 600" >&2
+  exit 2
+fi
+for var in $(env | grep -i '^ANTHROPIC' | cut -d= -f1); do
+  unset "$var"
+done
+if env | grep -qi 'sk-ant-api'; then
+  echo "askrun: an Anthropic API key is still in the environment, refusing to run" >&2
+  exit 2
+fi
+CLAUDE_CODE_OAUTH_TOKEN="$(tr -d '[:space:]' < "$token_file")"
+export CLAUDE_CODE_OAUTH_TOKEN
+case "$CLAUDE_CODE_OAUTH_TOKEN" in
+  sk-ant-oat01-*) ;;
+  *) echo "askrun: token in $token_file does not look like a Claude OAuth token" >&2; exit 2 ;;
+esac
+
+cd /workspace
+if [[ $# -gt 0 ]]; then
+  exec claude --resume "$sid" --model "$model" -p "$*"
+fi
+exec claude --resume "$sid" --model "$model"

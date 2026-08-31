@@ -1,0 +1,589 @@
+diff --git a/src/slop_code/agent_runner/agents/claude_code/agent.py b/src/slop_code/agent_runner/agents/claude_code/agent.py
+index d909921..a85fb3c 100644
+--- a/src/slop_code/agent_runner/agents/claude_code/agent.py
++++ b/src/slop_code/agent_runner/agents/claude_code/agent.py
+@@ -554,6 +554,29 @@ class ClaudeCodeAgent(Agent):
+             self._had_error = True
+             self.log.error("Claude Code process had an error", error=payload)
+ 
++    def _raise_if_result_payload_missing(
++        self, result: RuntimeResult, *, retrying: bool = False
++    ) -> None:
++        """Raise if the process ended without emitting any result payload.
++
++        A killed process (e.g. a stray pkill from inside the workspace)
++        passes the timeout and error-payload checks: the stream just ends.
++        The missing final result payload is the reliable signature.
++        """
++        if self._got_successful_result:
++            return
++        phase = "retry process" if retrying else "process"
++        message = (
++            f"Claude Code {phase} ended without a result payload "
++            f"(exit code {result.exit_code}); it was likely killed"
++        )
++        self.log.error(
++            "agent.claude_code.missing_result_payload",
++            error_message=message,
++            exit_code=result.exit_code,
++        )
++        raise AgentError(message)
++
+     def _resolve_result_usage(
+         self,
+         payload: dict[str, tp.Any],
+@@ -704,6 +727,8 @@ class ClaudeCodeAgent(Agent):
+         self._last_prompt = task
+         self._last_steps = []
+         self._last_command = None
++        self._had_error = False
++        self._got_successful_result = False
+ 
+         log_kwargs: dict[str, tp.Any] = {
+             "workspace": str(self.workspace),
+@@ -775,6 +800,8 @@ class ClaudeCodeAgent(Agent):
+             )
+             raise AgentError(message)
+ 
++        self._raise_if_result_payload_missing(result)
++
+     def retry(self) -> None:
+         self.log.debug(
+             "Starting retry...",
+@@ -830,6 +857,8 @@ class ClaudeCodeAgent(Agent):
+             )
+             raise AgentError(message)
+ 
++        self._raise_if_result_payload_missing(result, retrying=True)
++
+     def _prepare_runtime_execution(
+         self,
+         task: str,
+diff --git a/src/slop_code/agent_runner/resume.py b/src/slop_code/agent_runner/resume.py
+index 577a711..5f16188 100644
+--- a/src/slop_code/agent_runner/resume.py
++++ b/src/slop_code/agent_runner/resume.py
+@@ -20,6 +20,7 @@ from slop_code.common import INFERENCE_RESULT_FILENAME
+ from slop_code.common import PROMPT_FILENAME
+ from slop_code.common import RUN_INFO_FILENAME
+ from slop_code.common import SNAPSHOT_DIR_NAME
++from slop_code.common import build_prompt_context
+ from slop_code.common import render_prompt
+ from slop_code.common.llms import TokenUsage
+ from slop_code.evaluation.config import CheckpointConfig
+@@ -80,22 +81,39 @@ def _generate_expected_prompt(
+     entry_file: str,
+     *,
+     is_first_checkpoint: bool,
++    agent_type: str | None = None,
++    agent_version: str | None = None,
++    model_name: str | None = None,
+ ) -> str:
+     """Generate what the prompt SHOULD be for a checkpoint.
+ 
++    Must render byte-identically to the live prompt from
++    `runner.get_task_for_checkpoint`, or valid checkpoints get invalidated:
++    both build their context via `build_prompt_context`.
++
+     Args:
+         checkpoint: Checkpoint configuration
+         prompt_template: Jinja2 template string for prompts
+         environment: Environment specification
+         entry_file: Entry file path
+         is_first_checkpoint: Whether this is the first checkpoint
++        agent_type: Agent type identifier, as passed to the live renderer
++        agent_version: Agent version, as passed to the live renderer
++        model_name: Model name, as passed to the live renderer
+ 
+     Returns:
+         Rendered prompt string
+     """
+     return render_prompt(
+         spec_text=problem_config.get_checkpoint_spec(checkpoint.name),
+-        context={"is_continuation": not is_first_checkpoint},
++        context=build_prompt_context(
++            is_continuation=not is_first_checkpoint,
++            checkpoint_name=checkpoint.name,
++            checkpoint_number=checkpoint.order,
++            agent_type=agent_type,
++            agent_version=agent_version,
++            model_name=model_name,
++        ),
+         prompt_template=prompt_template,
+         entry_file=environment.format_entry_file(entry_file),
+         entry_command=environment.get_command(entry_file, is_agent_run=True),
+@@ -124,6 +142,9 @@ def _check_prompt_mismatch(
+     environment: EnvironmentSpec,
+     entry_file: str,
+     checkpoints: list[CheckpointConfig],
++    agent_type: str | None = None,
++    agent_version: str | None = None,
++    model_name: str | None = None,
+ ) -> bool:
+     """Check if saved prompt matches expected prompt for a checkpoint.
+ 
+@@ -165,6 +186,9 @@ def _check_prompt_mismatch(
+         environment,
+         entry_file,
+         is_first_checkpoint=is_first,
++        agent_type=agent_type,
++        agent_version=agent_version,
++        model_name=model_name,
+     )
+ 
+     if not _prompts_match(saved_prompt, expected):
+@@ -185,6 +209,9 @@ def _detect_resume_from_artifacts(
+     environment: EnvironmentSpec | None = None,
+     entry_file: str | None = None,
+     checkpoints: list[CheckpointConfig] | None = None,
++    agent_type: str | None = None,
++    agent_version: str | None = None,
++    model_name: str | None = None,
+ ) -> ResumeInfo | None:
+     """Fallback resume detection when run_info.yaml is missing.
+ 
+@@ -296,6 +323,9 @@ def _detect_resume_from_artifacts(
+             environment,  # type: ignore[arg-type]
+             entry_file,  # type: ignore[arg-type]
+             checkpoints,  # type: ignore[arg-type]
++            agent_type=agent_type,
++            agent_version=agent_version,
++            model_name=model_name,
+         ):
+             first_invalid_reason = InvalidationReason.SPEC_CHANGED
+             statuses.append(
+@@ -369,6 +399,9 @@ def detect_resume_point(
+     environment: EnvironmentSpec | None = None,
+     entry_file: str | None = None,
+     checkpoints: list[CheckpointConfig] | None = None,
++    agent_type: str | None = None,
++    agent_version: str | None = None,
++    model_name: str | None = None,
+ ) -> ResumeInfo | None:
+     """Detect where to resume from based on existing output.
+ 
+@@ -401,6 +434,9 @@ def detect_resume_point(
+             environment=environment,
+             entry_file=entry_file,
+             checkpoints=checkpoints,
++            agent_type=agent_type,
++            agent_version=agent_version,
++            model_name=model_name,
+         )
+ 
+     try:
+@@ -471,6 +507,9 @@ def detect_resume_point(
+                 environment,  # type: ignore[arg-type]
+                 entry_file,  # type: ignore[arg-type]
+                 checkpoints,  # type: ignore[arg-type]
++                agent_type=agent_type,
++                agent_version=agent_version,
++                model_name=model_name,
+             ):
+                 # Prompt mismatch - invalidate this and all subsequent
+                 logger.debug(
+diff --git a/src/slop_code/agent_runner/runner.py b/src/slop_code/agent_runner/runner.py
+index 2801a34..8fa8068 100644
+--- a/src/slop_code/agent_runner/runner.py
++++ b/src/slop_code/agent_runner/runner.py
+@@ -175,6 +175,7 @@ def get_task_for_checkpoint(
+     *,
+     is_first_checkpoint: bool,
+     output_path: Path,
++    checkpoint_number: int | None = None,
+     agent_type: str | None = None,
+     agent_version: str | None = None,
+     model_name: str | None = None,
+@@ -203,12 +204,14 @@ def get_task_for_checkpoint(
+         checkpoint=checkpoint_name,
+         is_first=is_first_checkpoint,
+     )
+-    context = {
+-        "is_continuation": not is_first_checkpoint,
+-        "agent_type": agent_type,
+-        "agent_version": agent_version or "",
+-        "model_name": model_name,
+-    }
++    context = common.build_prompt_context(
++        is_continuation=not is_first_checkpoint,
++        checkpoint_name=checkpoint_name,
++        checkpoint_number=checkpoint_number,
++        agent_type=agent_type,
++        agent_version=agent_version,
++        model_name=model_name,
++    )
+     prompt = common.render_prompt(
+         spec_text=spec_text,
+         context=context,
+@@ -423,6 +426,7 @@ def run_checkpoint(
+         environment=environment,
+         is_first_checkpoint=is_first_checkpoint,
+         output_path=save_dir,
++        checkpoint_number=checkpoint.order,
+         agent_type=agent_type,
+         agent_version=agent_version,
+         model_name=model_name,
+diff --git a/src/slop_code/common/__init__.py b/src/slop_code/common/__init__.py
+index 3fd0f10..df2de41 100644
+--- a/src/slop_code/common/__init__.py
++++ b/src/slop_code/common/__init__.py
+@@ -44,6 +44,7 @@ from slop_code.common.paths import serialize_path_dict
+ from slop_code.common.paths import to_relative_path
+ 
+ # Rendering utilities
++from slop_code.common.render import build_prompt_context
+ from slop_code.common.render import get_file_params
+ from slop_code.common.render import render_criteria_text
+ from slop_code.common.render import render_multi_file_prefix
+@@ -79,6 +80,7 @@ __all__ = [
+     "WORKSPACE_TEST_DIR",
+     "get_save_spec_dump",
+     # Rendering
++    "build_prompt_context",
+     "get_file_params",
+     "render_criteria_text",
+     "render_multi_file_prefix",
+diff --git a/src/slop_code/common/render.py b/src/slop_code/common/render.py
+index a894279..7910b5a 100644
+--- a/src/slop_code/common/render.py
++++ b/src/slop_code/common/render.py
+@@ -170,6 +170,38 @@ def replace_spec_placeholders(
+     return ENTRYPOINT_COMMAND_PLACEHOLDER_PATTERN.sub(entry_command, spec_text)
+ 
+ 
++def build_prompt_context(
++    *,
++    is_continuation: bool,
++    checkpoint_name: str = "",
++    checkpoint_number: int | None = None,
++    agent_type: str | None = None,
++    agent_version: str | None = None,
++    model_name: str | None = None,
++) -> dict[str, Any]:
++    """Build the context dict passed to prompt templates.
++
++    Every renderer must build its context here: resume validation compares
++    the saved prompt against a re-render, so a template variable available
++    in one renderer but not another silently invalidates completed
++    checkpoints and re-runs them.
++
++    Returns:
++        Mapping of template variable name to value. Unknown values render
++        as empty strings rather than being omitted.
++    """
++    return {
++        "is_continuation": is_continuation,
++        "checkpoint_name": checkpoint_name,
++        "checkpoint_number": checkpoint_number
++        if checkpoint_number is not None
++        else "",
++        "agent_type": agent_type or "",
++        "agent_version": agent_version or "",
++        "model_name": model_name or "",
++    }
++
++
+ def render_prompt(
+     spec_text: str,
+     context: dict[str, Any],
+diff --git a/src/slop_code/entrypoints/commands/render_prompts.py b/src/slop_code/entrypoints/commands/render_prompts.py
+index 83375b0..7db7683 100644
+--- a/src/slop_code/entrypoints/commands/render_prompts.py
++++ b/src/slop_code/entrypoints/commands/render_prompts.py
+@@ -8,6 +8,7 @@ from typing import Annotated
+ import typer
+ from rich.console import Console
+ 
++from slop_code.common.render import build_prompt_context
+ from slop_code.common.render import render_prompt
+ from slop_code.entrypoints.commands import common
+ from slop_code.entrypoints.commands.common import load_problem_config_or_exit
+@@ -66,7 +67,7 @@ def _render_checkpoint_prompt(
+ 
+     return render_prompt(
+         spec_text=spec_text,
+-        context={"is_continuation": is_continuation},
++        context=build_prompt_context(is_continuation=is_continuation),
+         prompt_template=prompt_template,
+         entry_file=formatted_entry_file,
+         entry_command=entry_command,
+diff --git a/src/slop_code/entrypoints/commands/run_agent.py b/src/slop_code/entrypoints/commands/run_agent.py
+index 68b03f1..f4c6103 100644
+--- a/src/slop_code/entrypoints/commands/run_agent.py
++++ b/src/slop_code/entrypoints/commands/run_agent.py
+@@ -181,6 +181,9 @@ def _check_problem_needs_rerun(
+     problem_path: Path,
+     prompt_template: str,
+     environment: EnvironmentSpecType,
++    agent_type: str | None = None,
++    agent_version: str | None = None,
++    model_name: str | None = None,
+ ) -> tuple[bool, str | None]:
+     """Check if a problem needs to be run based on checkpoint state.
+ 
+@@ -230,6 +233,9 @@ def _check_problem_needs_rerun(
+         environment=environment,
+         entry_file=problem_config.entry_file,
+         checkpoints=checkpoints,
++        agent_type=agent_type,
++        agent_version=agent_version,
++        model_name=model_name,
+     )
+ 
+     # No valid state found at all
+@@ -258,6 +264,9 @@ def _filter_problems_for_execution(
+     *,
+     overwrite: bool,
+     resume: bool,
++    agent_type: str | None = None,
++    agent_version: str | None = None,
++    model_name: str | None = None,
+ ) -> tuple[list[str], list[str], dict[str, str]]:
+     """Filter problems based on completion status and prompt changes.
+ 
+@@ -294,6 +303,9 @@ def _filter_problems_for_execution(
+             problem_path / p,
+             prompt_template,
+             environment,
++            agent_type=agent_type,
++            agent_version=agent_version,
++            model_name=model_name,
+         )
+         if needs_rerun:
+             to_run.append(p)
+@@ -1350,6 +1362,9 @@ def run_agent(
+             env_spec,
+             overwrite=ctx.obj.overwrite,
+             resume=is_resuming,
++            agent_type=agent_config.type,
++            agent_version=agent_config.version,
++            model_name=run_cfg.model.name,
+         )
+ 
+         if not ctx.obj.overwrite:
+diff --git a/src/slop_code/entrypoints/problem_runner/worker.py b/src/slop_code/entrypoints/problem_runner/worker.py
+index 23c86e1..7556b5f 100644
+--- a/src/slop_code/entrypoints/problem_runner/worker.py
++++ b/src/slop_code/entrypoints/problem_runner/worker.py
+@@ -136,6 +136,9 @@ def run_agent_on_problem(
+             environment=config.env_spec,
+             entry_file=problem_config.entry_file,
+             checkpoints=checkpoints,
++            agent_type=config.agent_config.type,
++            agent_version=config.agent_config.version,
++            model_name=config.model_def.name,
+         )
+         if resume_info:
+             # Check if all checkpoints are already completed
+diff --git a/tests/agent_runner/agents/claude_code_agent_test.py b/tests/agent_runner/agents/claude_code_agent_test.py
+index d63cec9..77090eb 100644
+--- a/tests/agent_runner/agents/claude_code_agent_test.py
++++ b/tests/agent_runner/agents/claude_code_agent_test.py
+@@ -1623,3 +1623,82 @@ class TestOpenRouterMode:
+         assert env["ANTHROPIC_API_KEY"] == ""
+         assert env["ANTHROPIC_BASE_URL"] == "https://openrouter.ai/api"
+         assert env["ANTHROPIC_DEFAULT_OPUS_MODEL"] == "z-ai/glm-5"
++
++
++class TestMissingResultPayloadDetection:
++    """A killed claude process ends the stream with no result payload.
++
++    That passes the timeout and error-payload checks, so the missing final
++    result payload must fail the run on its own.
++    """
++
++    def _make_agent(
++        self, mock_cost_limits, mock_pricing, mock_credential
++    ) -> ClaudeCodeAgent:
++        return ClaudeCodeAgent(
++            problem_name="test-problem",
++            image="test-image",
++            verbose=False,
++            cost_limits=mock_cost_limits,
++            pricing=mock_pricing,
++            credential=mock_credential,
++            binary="claude",
++            model="claude-test",
++            timeout=None,
++            settings={},
++            env={},
++            extra_args=[],
++            append_system_prompt=None,
++            allowed_tools=[],
++            disallowed_tools=[],
++            permission_mode=None,
++            base_url=None,
++            thinking=None,
++            max_thinking_tokens=None,
++            max_output_tokens=None,
++        )
++
++    @staticmethod
++    def _runtime_result(exit_code: int) -> RuntimeResult:
++        return RuntimeResult(
++            exit_code=exit_code,
++            stdout="",
++            stderr="",
++            setup_stdout="",
++            setup_stderr="",
++            elapsed=1.0,
++            timed_out=False,
++        )
++
++    def test_raises_with_exit_code_when_no_result_payload(
++        self, mock_cost_limits, mock_pricing, mock_credential
++    ):
++        agent = self._make_agent(
++            mock_cost_limits, mock_pricing, mock_credential
++        )
++        with pytest.raises(AgentError, match=r"without a result payload"):
++            agent._raise_if_result_payload_missing(self._runtime_result(137))
++
++    def test_error_message_names_the_exit_code(
++        self, mock_cost_limits, mock_pricing, mock_credential
++    ):
++        agent = self._make_agent(
++            mock_cost_limits, mock_pricing, mock_credential
++        )
++        with pytest.raises(AgentError, match=r"exit code 144"):
++            agent._raise_if_result_payload_missing(self._runtime_result(144))
++
++    def test_passes_after_successful_result_payload(
++        self, mock_cost_limits, mock_pricing, mock_credential
++    ):
++        agent = self._make_agent(
++            mock_cost_limits, mock_pricing, mock_credential
++        )
++        agent._process_payload_for_error(
++            {
++                "type": "result",
++                "total_cost_usd": 0.5,
++                "usage": {"input_tokens": 1, "output_tokens": 1},
++            }
++        )
++        agent._raise_if_result_payload_missing(self._runtime_result(0))
+diff --git a/tests/agent_runner/prompt_context_test.py b/tests/agent_runner/prompt_context_test.py
+new file mode 100644
+index 0000000..609cce7
+--- /dev/null
++++ b/tests/agent_runner/prompt_context_test.py
+@@ -0,0 +1,107 @@
++"""Live prompt rendering and resume validation must agree.
++
++Resume compares each saved prompt against a re-render; any context variable
++available to one renderer but not the other silently invalidates completed
++checkpoints. These tests pin the two renderers to identical output.
++"""
++
++from __future__ import annotations
++
++from pathlib import Path
++
++from slop_code.agent_runner import runner
++from slop_code.agent_runner.resume import _generate_expected_prompt
++from slop_code.evaluation.config import CheckpointConfig
++from slop_code.evaluation.config import ProblemConfig
++from slop_code.execution import LocalEnvironmentSpec
++from slop_code.execution.models import CommandConfig
++from slop_code.execution.models import EnvironmentConfig
++from slop_code.execution.models import SetupConfig
++
++TEMPLATE = (
++    "checkpoint={{ checkpoint_name }}#{{ checkpoint_number }} "
++    "continuation={{ is_continuation }} "
++    "agent={{ agent_type }}@{{ agent_version }} model={{ model_name }}\n"
++    "{{ spec.strip() }}"
++)
++
++
++def _environment() -> LocalEnvironmentSpec:
++    return LocalEnvironmentSpec(
++        name="local",
++        type="local",
++        setup=SetupConfig(eval_commands=[]),
++        environment=EnvironmentConfig(include_os_env=True),
++        commands=CommandConfig(command="uv run", entry_file="{entry_file}.py"),
++    )
++
++
++def _problem() -> ProblemConfig:
++    return ProblemConfig(
++        name="test",
++        path=Path("/test"),
++        version=1,
++        description="Test problem",
++        entry_file="main",
++        tags=["test"],
++        checkpoints={
++            "checkpoint_2": CheckpointConfig(
++                name="checkpoint_2",
++                version=1,
++                order=2,
++                spec_override="Do the thing.",
++            )
++        },
++    )
++
++
++def test_live_and_resume_renders_are_identical(tmp_path: Path) -> None:
++    problem = _problem()
++    environment = _environment()
++    checkpoint = problem.checkpoints["checkpoint_2"]
++
++    live = runner.get_task_for_checkpoint(
++        checkpoint_name=checkpoint.name,
++        spec_text=problem.get_checkpoint_spec(checkpoint.name),
++        template=TEMPLATE,
++        entry_file=problem.entry_file,
++        environment=environment,
++        is_first_checkpoint=False,
++        output_path=tmp_path,
++        checkpoint_number=checkpoint.order,
++        agent_type="claude_code",
++        agent_version="2.1.251",
++        model_name="opus-5",
++    )
++    expected = _generate_expected_prompt(
++        problem,
++        checkpoint,
++        TEMPLATE,
++        environment,
++        problem.entry_file,
++        is_first_checkpoint=False,
++        agent_type="claude_code",
++        agent_version="2.1.251",
++        model_name="opus-5",
++    )
++
++    assert live == expected
++    assert "checkpoint=checkpoint_2#2" in live
++    assert "agent=claude_code@2.1.251 model=opus-5" in live
++
++
++def test_unset_identity_fields_render_blank(tmp_path: Path) -> None:
++    problem = _problem()
++    checkpoint = problem.checkpoints["checkpoint_2"]
++
++    expected = _generate_expected_prompt(
++        problem,
++        checkpoint,
++        TEMPLATE,
++        _environment(),
++        problem.entry_file,
++        is_first_checkpoint=True,
++    )
++
++    assert "agent=@ model=" in expected
++    assert "checkpoint=checkpoint_2#2" in expected
+diff --git a/tests/agent_runner/test_runner_integration.py b/tests/agent_runner/test_runner_integration.py
+index 91a832f..1adfc1f 100644
+--- a/tests/agent_runner/test_runner_integration.py
++++ b/tests/agent_runner/test_runner_integration.py
+@@ -50,6 +50,7 @@ class FakeSession:
+ class StubCheckpoint:
+     name: str
+     spec_text: str
++    order: int = 1
+ 
+     def get_spec_text(self) -> str:
+         return self.spec_text

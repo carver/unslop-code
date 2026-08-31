@@ -24,13 +24,19 @@ and the sandbox-local venv):
     bin/scbcheck <run_dir>                   # per-checkpoint scb-check quality reports
     bin/failures [run_a [run_b]] [problem]   # failing tests, one run or side by side
 
-The benchmark clone in `slop-code-bench/` carries two source patches; re-apply
-both after any pull:
+The benchmark clone in `slop-code-bench/` carries three source patches; after
+any pull, re-apply them in this order:
 
 - `patches/claude-code-stream-parser-string-message.patch`
 - `patches/stop-after-checkpoint.patch` — adds `--stop-after-checkpoint N` to
   `scb run` (works with `--resume`), for advancing a run one checkpoint at a time
   in the same run dir.
+- `patches/agent-death-detection-and-prompt-context.patch` — a claude process
+  that ends without a result payload (killed mid-checkpoint) now fails the
+  checkpoint loudly instead of being scored as a completion, and `--resume`
+  re-runs it. Also gives prompt templates `checkpoint_name`,
+  `checkpoint_number`, `agent_type`, `agent_version`, and `model_name`, rendered
+  identically at run and resume-validation time.
 
 `outputs/` holds the three dev6 baseline runs. The setup-token lives at
 `~/.config/scbench/claude-oauth-token` (mint a new one with `bin/setup-token-wizard`).

@@ -53,27 +53,35 @@ def run_stats(R):
         core=100*sum(r['core_pass_rate']==1 for r in rows2)/n2,
         cpc=sum(r['cost'] for r in rows2)/n2, erosion=m('erosion'), verbosity=m('verbosity'), ast=m('ast'), cloned=m('cloned'))
 
-opus_runs = sorted(p.parent for p in pathlib.Path('outputs/dev6-opus5').glob('*/*/checkpoint_results.jsonl'))
-OPUS_HEAD = OPUS_PROB = ''
-if opus_runs:
-    orows, ost = run_stats(opus_runs[-1])
-    sst = run_stats(R)[1]
-    head = [('Strict solve', f"{sst['strict']:.1f}%", f"{ost['strict']:.1f}%"), ('Isolated solve', f"{sst['iso']:.1f}%", f"{ost['iso']:.1f}%"),
-            ('Core solve', f"{sst['core']:.1f}%", f"{ost['core']:.1f}%"), ('$ / checkpoint', f"${sst['cpc']:.2f}", f"${ost['cpc']:.2f}"),
-            ('Erosion', f"{sst['erosion']:.3f}", f"{ost['erosion']:.3f}"), ('Verbosity', f"{sst['verbosity']:.3f}", f"{ost['verbosity']:.3f}"),
-            ('AST-grep flagged', f"{sst['ast']:.3f}", f"{ost['ast']:.3f}"), ('Cloned', f"{sst['cloned']:.3f}", f"{ost['cloned']:.3f}")]
-    OPUS_HEAD = ''.join(f"<tr><th scope=row>{k}</th><td class=n>{a}</td><td class=n>{b}</td></tr>" for k,a,b in head)
+def latest(pattern):
+    hits = sorted(q.parent for q in pathlib.Path('.').glob(pattern + '/*/*/checkpoint_results.jsonl'))
+    return hits[-1] if hits else None
+
+probe_runs = [('Opus 5', latest('outputs/dev6-opus5')), ('Fable 5', latest('outputs/dev6-fable5'))]
+probe_runs = [(name, r) for name, r in probe_runs if r]
+PROBE_HEAD = PROBE_PROB = PROBE_COLS = ''
+if probe_runs:
+    probe_stats = [('Sonnet 4.6', run_stats(R)[1])] + [(name, run_stats(r)[1]) for name, r in probe_runs]
+    PROBE_COLS = ''.join(f"<th class=n>{name}</th>" for name, _ in probe_stats)
+    def fmt_rows(picks):
+        out = ''
+        for label, key, f in picks:
+            out += f"<tr><th scope=row>{label}</th>" + ''.join(f"<td class=n>{f(st[1][key])}</td>" for st in probe_stats) + "</tr>"
+        return out
+    PROBE_HEAD = fmt_rows([
+        ('Strict solve', 'strict', lambda v: f"{v:.1f}%"), ('Isolated solve', 'iso', lambda v: f"{v:.1f}%"),
+        ('Core solve', 'core', lambda v: f"{v:.1f}%"), ('$ / checkpoint', 'cpc', lambda v: f"${v:.2f}"),
+        ('Erosion', 'erosion', lambda v: f"{v:.3f}"), ('Verbosity', 'verbosity', lambda v: f"{v:.3f}"),
+        ('AST-grep flagged', 'ast', lambda v: f"{v:.3f}"), ('Cloned', 'cloned', lambda v: f"{v:.3f}")])
     def per_problem(rws):
-        by=collections.defaultdict(list)
+        by = collections.defaultdict(list)
         for r in rws: by[r['problem']].append(r)
-        return {p:(sum(r['strict_pass_rate']==1 for r in rs), sum(r['isolated_pass_rate']==1 for r in rs),
-                   sum(r['core_pass_rate']==1 for r in rs), len(rs), sum(r['cost'] for r in rs)) for p,rs in by.items()}
-    ps, po = per_problem(rows), per_problem(orows)
-    OPUS_PROB = ''.join(
-        f"<tr><th scope=row>{p}</th><td>{diff[p]}</td>"
-        f"<td class=n>{ps[p][0]}/{ps[p][1]}/{ps[p][2]} of {ps[p][3]}</td><td class=n>{ps[p][4]:.2f}</td>"
-        f"<td class=n>{po[p][0]}/{po[p][1]}/{po[p][2]} of {po[p][3]}</td><td class=n>{po[p][4]:.2f}</td></tr>"
-        for p in sorted(ps))
+        return {p: (sum(r['strict_pass_rate']==1 for r in rs), sum(r['isolated_pass_rate']==1 for r in rs),
+                    sum(r['core_pass_rate']==1 for r in rs), len(rs), sum(r['cost'] for r in rs)) for p, rs in by.items()}
+    tables = [per_problem(rows)] + [per_problem(run_stats(r)[0]) for _, r in probe_runs]
+    for p in sorted(tables[0]):
+        PROBE_PROB += f"<tr><th scope=row>{p}</th><td>{diff[p]}</td>" + ''.join(
+            f"<td class=n>{t[p][0]}/{t[p][1]}/{t[p][2]} of {t[p][3]}</td><td class=n>{t[p][4]:.2f}</td>" for t in tables) + "</tr>"
 
 page = open('report/template.html').read()
 for k, v in dict(PROB_TABLE=prob_table, CK_TABLE=ck_table, BARS=bars,
@@ -81,7 +89,7 @@ for k, v in dict(PROB_TABLE=prob_table, CK_TABLE=ck_table, BARS=bars,
                  S_EROSION=f"{stats['erosion']:.3f}", S_VERB=f"{stats['verbosity']:.3f}", S_AST=f"{stats['ast']:.3f}", S_CLONED=f"{stats['cloned']:.3f}",
                  T_IN=f"{toks['input']:,}", T_OUT=f"{toks['output']:,}", T_CR=f"{toks['cache_read']:,}", T_CW=f"{toks['cache_write']:,}", T_ALL=f"{sum(toks.values())/1e6:.1f}M",
                  N_STRICT=str(tot['s']), N_ISO=str(tot['i']), N_CORE=str(tot['c']), COST=f"{tot['cost']:.2f}", WALL=f"{tot['el']/3600:.1f}", RUNDIR=str(R),
-                 OPUS_HEAD=OPUS_HEAD, OPUS_PROB=OPUS_PROB).items():
+                 PROBE_HEAD=PROBE_HEAD, PROBE_PROB=PROBE_PROB, PROBE_COLS=PROBE_COLS).items():
     page = page.replace('{{'+k+'}}', v)
 assert '{{' not in page, [l for l in page.splitlines() if '{{' in l][:3]
 out = pathlib.Path('report/scbench-baseline.html')

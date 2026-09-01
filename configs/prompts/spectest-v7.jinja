@@ -1,0 +1,75 @@
+# Task Directions
+
+Fully implement the following spec, without questions. Use the approach:
+- Environment setup
+- Write tests from the spec
+- Research helpful libraries
+- Implement with Red Green testing
+- Declare complete
+
+Specifically:
+
+# Environment
+
+{% if not is_continuation -%}
+Use a virtual environment and ensure that a `requirements.txt` is present with any dependencies you need to solve the problem.
+{% else -%}
+Keep using the same virtual environment you started with, update `requirements.txt` with any new dependencies you need.
+{% endif -%}
+
+Touch an IN_PROGRESS file. Delete any COMPLETED file.
+
+When killing a process never run a pkill. Instead, pgrep. Make sure only one process is found, then
+kill that one. Why? It's too easy to pkill your own Bash argv.
+
+For long-lived processes, log to a file or /dev/null instead of an undrained pipe.
+
+Only a background task notification can wake you after you end your turn. Ending your turn to wait is fine while the task is verifiably still running. Never end your turn waiting on a file or any other signal.
+
+# Testing
+
+Launch a sub-agent to do this testing section. Its success is based on how broadly it tests. Do not consider implementation-time difficulty. Pass it this Testing section verbatim, along with the full spec. If the tester asks how to resolve an ambiguity, do not decide for it - point it back at the AMBIGUITIES.md procedure.
+
+If you are the tester: your turn end is your final report. Do not end your turn until the tests are written and you have run them.
+
+Split the spec file into minimal possible logical phrases and minimal context, and iterate through each phrase.
+For each phrase, add a test section with a comment of the phrase & context.
+
+Add hypothesis tests covering each phrase, if at all possible. Every generator must be able to produce the smallest inputs the spec doesn't quotably exclude — empty, one element, one row, one column.
+Add e2e tests. Don't mock. Use libraries or build any missing pieces.
+
+Critically: The only time a test should expect an error result is if the spec specifically requires an error. You should be able to quote where the spec demands it.
+
+Sometimes, a phrase will impact how other parts of the spec work. Add sub-notes in the test section
+mentioning the phrase and add a test confirming that the spec phrase is always true.
+If there are existing property or e2e tests, and there is a logical ambiguity, prefer to intepret in
+a way that both the old spec and new spec can be true. If absolutely necessary, merge the new spec
+in, preferring the new understanding.
+
+If the spec is non-trivially under-specified, such that alternative interpretations would change the behavior of a conforming implementation on some input, then never ask for clarification. Instead, make your best choice at how to interpret the intention of the spec. Then, add a numbered entry to an AMBIGUITIES.md file, starting with T1. The entry must have sections for Spec Text, Alternatives, and Choice. The entry will quote the relevant spec source, explain the reasonable alternative interpretations, and your choice & why it seems to best fit the spec. If a previous ambiguity is resolved by the current spec, annotate the entry instead of removing it.
+
+# Research
+
+Research existing libraries that accomplish any subgoals of the spec. If there is a quality
+library that can help solve any sub-problem, use it. If there is a library that solves a
+parallel problem, consider using it with a shim to make a comparison test with hypothesis, like:
+generate arbitrary inputs for this implementation, then translate them to the parallel problem in
+the other library, and make sure that the outputs are equivalent.
+
+# Implement
+Code until the tests pass. Do not change the spec, or the tests written from the spec.
+
+Use red/green testing as you add libraries or features. Consider these unit tests as disposable,
+though, if they exist from previous implementations. If they ever disagree with the spec, these are
+the tests to change.
+
+Critically: when a generated input makes a spec test fail, treat it as evidence that the implementation is not satisfying the spec. Never narrow the generator or the test to avoid the input.
+
+For new ambiguities that arise during implementation that aren't resolved by the spec tests, follow the same procedure: chose, and record it in AMBIGUITIES.md numbered starting at I1.
+
+# Declare complete
+
+touch a COMPLETED file. rm the IN_PROGRESS file.
+
+# Spec
+{{ spec.strip() }}

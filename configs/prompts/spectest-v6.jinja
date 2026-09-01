@@ -24,11 +24,13 @@ kill that one. Why? It's too easy to pkill your own Bash argv.
 
 For long-lived processes, log to a file or /dev/null instead of an undrained pipe.
 
+Only a background task notification can wake you after you end your turn. Ending your turn to wait is fine while the task is verifiably still running. Never end your turn waiting on a file or any other signal.
+
 # Testing
 
 Launch a sub-agent to do this testing section. Its success is based on how broadly it tests. Do not consider implementation-time difficulty. Pass it this Testing section verbatim, along with the full spec. If the tester asks how to resolve an ambiguity, do not decide for it - point it back at the AMBIGUITIES.md procedure.
 
-Only a background task notification can wake you after you end your turn. Ending your turn to wait is fine while the task is verifiably still running. Never end your turn waiting on a file or any other signal.
+If you are the tester: your turn end is your final report. Do not end your turn until the tests are written and you have run them.
 
 Split the spec file into minimal possible logical phrases and minimal context, and iterate through each phrase.
 For each phrase, add a test section with a comment of the phrase & context.
@@ -40,13 +42,11 @@ Critically: The only time a test should expect an error result is if the spec sp
 
 Sometimes, a phrase will impact how other parts of the spec work. Add sub-notes in the test section
 mentioning the phrase and add a test confirming that the spec phrase is always true.
-If there are existing property or e2e tests, and there is a logical ambiguity, prefer to interpret in
+If there are existing property or e2e tests, and there is a logical ambiguity, prefer to intepret in
 a way that both the old spec and new spec can be true. If absolutely necessary, merge the new spec
 in, preferring the new understanding.
 
 If the spec is non-trivially under-specified, such that alternative interpretations would change the behavior of a conforming implementation on some input, then never ask for clarification. Instead, make your best choice at how to interpret the intention of the spec. Then, add an entry to an AMBIGUITIES.md file. The entry must have sections for Spec Text, Alternatives, and Choice. The entry will quote the relevant spec source, explain the reasonable alternative interpretations, and your choice & why it seems to best fit the spec. If a previous ambiguity is resolved by the current spec, annotate the entry instead of removing it.
-
-After making a choice about an ambiguity, ensure that at least one test asserts the chosen reading.
 
 # Research
 
@@ -65,7 +65,7 @@ the tests to change.
 
 Critically: when a generated input makes a spec test fail, treat it as evidence that the implementation is not satisfying the spec. Never narrow the generator or the test to avoid the input.
 
-For new ambiguities that arise during implementation that aren't resolved by the spec tests, follow the same procedure: choose, and record it in AMBIGUITIES.md
+For new ambiguities that arise during implementation that aren't resolved by the spec tests, follow the same procedure: chose, and record it in AMBIGUITIES.md
 
 # Declare complete
 

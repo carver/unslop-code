@@ -16,6 +16,7 @@ set -euo pipefail
 
 ckpt="${1:?usage: askrun <checkpoint_dir> [question...]}"
 shift || true
+ckpt_abs="$(cd "$ckpt" && pwd)"
 
 snapshot="$ckpt/snapshot"
 stdout_log="$ckpt/agent/stdout.jsonl"
@@ -84,6 +85,13 @@ esac
 
 cd /workspace
 if [[ $# -gt 0 ]]; then
-  exec claude --resume "$sid" --model "$model" -p "$*"
+  # Keep the interrogation with the run artifacts; -p forks a session whose
+  # transcript otherwise lives only on this machine.
+  qa_dir="$ckpt_abs/qa"
+  mkdir -p "$qa_dir"
+  qa_file="$qa_dir/$(date +%Y%m%dT%H%M%S).md"
+  printf '# Question\n\n%s\n\n# Answer\n\n' "$*" > "$qa_file"
+  claude --resume "$sid" --model "$model" -p "$*" | tee -a "$qa_file"
+  exit "${PIPESTATUS[0]}"
 fi
 exec claude --resume "$sid" --model "$model"

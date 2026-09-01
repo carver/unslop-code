@@ -28,6 +28,8 @@ For long-lived processes, log to a file or /dev/null instead of an undrained pip
 
 Launch a sub-agent to do this testing section. Its success is based on how broadly it tests. Do not consider implementation-time difficulty. Pass it this Testing section verbatim, along with the full spec. If the tester asks how to resolve an ambiguity, do not decide for it - point it back at the AMBIGUITIES.md procedure.
 
+Only a background task notification can wake you after you end your turn. Ending your turn to wait is fine while the task is verifiably still running. Never end your turn waiting on a file or any other signal.
+
 Split the spec file into minimal possible logical phrases and minimal context, and iterate through each phrase.
 For each phrase, add a test section with a comment of the phrase & context.
 

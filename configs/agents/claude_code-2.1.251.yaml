@@ -17,6 +17,13 @@ binary: claude
 permission_mode: bypassPermissions
 version: 2.1.251
 timeout: 7200
+# Print mode kills still-running background tasks 600s after the parent ends its turn and takes
+# the parent's last text as the final result. That silently produced a zero-implementation
+# checkpoint in the v5 run (datagate checkpoint_2: parent ended its turn "waiting" on the test
+# sub-agent, which was killed mid-pytest). 0 = wait indefinitely; a true hang is still bounded
+# by the 7200s checkpoint timeout above.
+env:
+  CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS: "0"
 cost_limits:
   cost_limit: 20
   step_limit: 0

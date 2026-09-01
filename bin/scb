@@ -40,4 +40,12 @@ esac
 # the host, and a `uv run` on the host rebuilds slop-code-bench/.venv for the host's
 # Python, which wiped it under a running sandbox worker on 2026-08-30.
 export UV_PROJECT_ENVIRONMENT="${UV_PROJECT_ENVIRONMENT:-$HOME/.venvs/slop-code-bench}"
+
+# Container commands outside evaluation (notably the env's resume_commands) run as
+# get_actual_user(), which falls back to root when HUID/HGID are unset. A root-owned
+# .venv in the mounted temp workspace then breaks host-side cleanup and marks the
+# problem failed after its artifacts were already saved (seen 2026-08-31 on a
+# --resume). The agent itself already runs as 1000:1000; make everything match.
+export HUID="${HUID:-$(id -u)}"
+export HGID="${HGID:-$(id -g)}"
 exec uv run --project "$here/slop-code-bench" slop-code "$@"

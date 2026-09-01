@@ -1,0 +1,19 @@
+# Spectest v5 prompt experiment: all 7 datagate checkpoints, Opus 5, run overnight in one go.
+# v5 (hand-written, fa41ed1) = v4 plus the AMBIGUITIES.md procedure: under-specified spec
+# points get a best-guess interpretation recorded with alternatives (tester and implementer
+# both), later spec versions annotate rather than delete entries, and the parent must not
+# resolve ambiguities for the tester. The registry doubles as a critique of the paper's specs.
+#
+#   full run: bin/scb run --config configs/runs/spectest-v5-datagate-opus5.yaml --no-live-progress
+#   resume:   bin/scb run --resume <run_dir> --no-live-progress   (--dry-run first after a crash)
+agent: /home/carver/code/claudedev/unslop-code-bench/configs/agents/claude_code-2.1.251.yaml
+environment: docker-python3.12-uv
+prompt: /home/carver/code/claudedev/unslop-code-bench/configs/prompts/spectest-v5.jinja
+model:
+  provider: claude_code_oauth
+  name: opus-5
+thinking: high
+problems:
+  - datagate
+save_dir: /home/carver/code/claudedev/unslop-code-bench/outputs
+save_template: spectest/${model.name}_${agent.version}_${thinking}_${prompt}/${now:%Y%m%dT%H%M}

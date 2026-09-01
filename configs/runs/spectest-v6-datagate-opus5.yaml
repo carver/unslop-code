@@ -1,0 +1,25 @@
+# Spectest v6 prompt experiment: all 7 datagate checkpoints, Opus 5.
+# v6 (hand-written, 622e772) = v5 with the ambiguity gate decoupled from the written tests
+# (record when interpretations would change a conforming implementation's behavior on some
+# input, not when they would change test outcomes - the old gate was circular for the tester)
+# and a required entry format: Spec Text / Alternatives / Choice, always quoting the spec.
+# The agent config now sets CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=0 so print mode no longer
+# kills background sub-agents 600s after the parent ends its turn (v5 checkpoint_2 shipped
+# zero implementation that way).
+#
+# A full 7-checkpoint run does not fit one 5h rate-limit window (v5 burned $104 by
+# checkpoint 4); expect to resume at least once.
+#
+#   full run: bin/scb run --config configs/runs/spectest-v6-datagate-opus5.yaml --no-live-progress
+#   resume:   bin/scb run --resume <run_dir> --no-live-progress   (--dry-run first after a crash)
+agent: /home/carver/code/claudedev/unslop-code-bench/configs/agents/claude_code-2.1.251.yaml
+environment: docker-python3.12-uv
+prompt: /home/carver/code/claudedev/unslop-code-bench/configs/prompts/spectest-v6.jinja
+model:
+  provider: claude_code_oauth
+  name: opus-5
+thinking: high
+problems:
+  - datagate
+save_dir: /home/carver/code/claudedev/unslop-code-bench/outputs
+save_template: spectest/${model.name}_${agent.version}_${thinking}_${prompt}/${now:%Y%m%dT%H%M}

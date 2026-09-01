@@ -1,0 +1,175 @@
+--- a/src/slop_code/agent_runner/resume.py
++++ b/src/slop_code/agent_runner/resume.py
+@@ -16,6 +16,7 @@
+ 
+ from slop_code.agent_runner.models import UsageTracker
+ from slop_code.agent_runner.reporting import CheckpointState
++from slop_code.common import EVALUATION_FILENAME
+ from slop_code.common import INFERENCE_RESULT_FILENAME
+ from slop_code.common import PROMPT_FILENAME
+ from slop_code.common import RUN_INFO_FILENAME
+@@ -40,6 +41,7 @@
+     MISSING_RESULT = "missing_result"
+     MISSING_DIR = "missing_directory"
+     UNREADABLE_RESULT = "unreadable_result"
++    INFRA_FAILED = "infrastructure_failure"
+     DEPENDS_ON_INVALID = "depends_on_invalid"
+ 
+ 
+@@ -73,6 +75,30 @@
+     invalidated_checkpoints: list[str] = field(default_factory=list)
+ 
+ 
++
++def _has_infrastructure_failure(checkpoint_dir: Path) -> bool:
++    """True when a saved evaluation exists but cannot be trusted.
++
++    A checkpoint evaluated in a broken environment (e.g. offline dependency
++    installs) records infrastructure_failure in its evaluation.json; its
++    scores are meaningless even though the checkpoint state says "ran", so it
++    must be re-run. A missing evaluation.json is fine: runs started with
++    skip_evaluation never write one. An unreadable one is treated as failed,
++    since its scores cannot be trusted either.
++    """
++    eval_path = checkpoint_dir / EVALUATION_FILENAME
++    if not eval_path.exists():
++        return False
++    try:
++        with eval_path.open() as f:
++            evaluation = json.load(f)
++    except (OSError, json.JSONDecodeError):
++        return True
++    if not isinstance(evaluation, dict):
++        return True
++    return bool(evaluation.get("infrastructure_failure", False))
++
++
+ def _generate_expected_prompt(
+     problem_config: ProblemConfig,
+     checkpoint: CheckpointConfig,
+@@ -313,6 +339,17 @@
+             )
+             continue
+ 
++        if _has_infrastructure_failure(checkpoint_dir):
++            first_invalid_reason = InvalidationReason.INFRA_FAILED
++            statuses.append(
++                CheckpointStatus(
++                    name=name,
++                    is_valid=False,
++                    reason=InvalidationReason.INFRA_FAILED,
++                )
++            )
++            continue
++
+         # Check prompt matches if validation is enabled
+         if can_validate_prompts and _check_prompt_mismatch(
+             problem_config,
+@@ -497,6 +534,21 @@
+             continue
+ 
+         if state == CheckpointState.RAN and snapshot_dir.exists():
++            if _has_infrastructure_failure(checkpoint_dir):
++                logger.debug(
++                    "Checkpoint evaluation had infrastructure failure",
++                    checkpoint=name,
++                )
++                first_invalid_reason = InvalidationReason.INFRA_FAILED
++                statuses.append(
++                    CheckpointStatus(
++                        name=name,
++                        is_valid=False,
++                        reason=InvalidationReason.INFRA_FAILED,
++                    )
++                )
++                continue
++
+             # Check prompt matches if validation is enabled
+             if can_validate_prompts and _check_prompt_mismatch(
+                 problem_config,
+--- a/tests/agent_runner/resume_test.py
++++ b/tests/agent_runner/resume_test.py
+@@ -15,6 +15,7 @@
+ from slop_code.agent_runner.resume import _aggregate_prior_usage
+ from slop_code.agent_runner.resume import _detect_resume_from_artifacts
+ from slop_code.agent_runner.resume import detect_resume_point
++from slop_code.common import EVALUATION_FILENAME
+ from slop_code.common import INFERENCE_RESULT_FILENAME
+ from slop_code.common import RUN_INFO_FILENAME
+ from slop_code.common import SNAPSHOT_DIR_NAME
+@@ -262,6 +263,48 @@
+         assert result.completed_checkpoints == []
+ 
+ 
++    def test_invalidates_ran_checkpoint_with_infrastructure_failure(
++        self, tmp_path: Path
++    ) -> None:
++        """A checkpoint marked ran but with an infra-failed evaluation re-runs."""
++        run_info = {
++            "summary": {
++                "checkpoints": {
++                    "checkpoint_1": CheckpointState.RAN,
++                    "checkpoint_2": CheckpointState.RAN,
++                }
++            }
++        }
++        with (tmp_path / RUN_INFO_FILENAME).open("w") as f:
++            yaml.dump(run_info, f)
++
++        for i in (1, 2):
++            checkpoint_dir = tmp_path / f"checkpoint_{i}"
++            (checkpoint_dir / SNAPSHOT_DIR_NAME).mkdir(parents=True)
++            inference_result = {"usage": {"cost": 0.5, "steps": 5}}
++            with (checkpoint_dir / INFERENCE_RESULT_FILENAME).open("w") as f:
++                json.dump(inference_result, f)
++
++        # checkpoint_1 evaluated cleanly; checkpoint_2 was scored while the
++        # environment was broken
++        with (tmp_path / "checkpoint_1" / EVALUATION_FILENAME).open("w") as f:
++            json.dump({"infrastructure_failure": False}, f)
++        with (tmp_path / "checkpoint_2" / EVALUATION_FILENAME).open("w") as f:
++            json.dump({"infrastructure_failure": True}, f)
++
++        result = detect_resume_point(
++            tmp_path, ["checkpoint_1", "checkpoint_2", "checkpoint_3"]
++        )
++
++        assert result is not None
++        assert result.resume_from_checkpoint == "checkpoint_2"
++        assert result.completed_checkpoints == ["checkpoint_1"]
++        assert result.invalidated_checkpoints == [
++            "checkpoint_2",
++            "checkpoint_3",
++        ]
++
++
+ class TestDetectResumeFromArtifacts:
+     """Tests for _detect_resume_from_artifacts fallback function."""
+ 
+@@ -480,6 +523,26 @@
+         assert result.completed_checkpoints == ["checkpoint_1"]
+ 
+ 
++    def test_resumes_from_checkpoint_with_infrastructure_failure(
++        self, tmp_path: Path
++    ) -> None:
++        """Artifact detection re-runs a checkpoint whose evaluation infra-failed."""
++        checkpoint_dir = tmp_path / "checkpoint_1"
++        (checkpoint_dir / SNAPSHOT_DIR_NAME).mkdir(parents=True)
++        with (checkpoint_dir / INFERENCE_RESULT_FILENAME).open("w") as f:
++            json.dump({"had_error": False, "usage": {"cost": 0.5}}, f)
++        with (checkpoint_dir / EVALUATION_FILENAME).open("w") as f:
++            json.dump({"infrastructure_failure": True}, f)
++
++        result = _detect_resume_from_artifacts(
++            tmp_path, ["checkpoint_1", "checkpoint_2"]
++        )
++
++        assert result is not None
++        assert result.resume_from_checkpoint == "checkpoint_1"
++        assert result.completed_checkpoints == []
++
++
+ class TestAggregatePriorUsage:
+     """Tests for _aggregate_prior_usage function."""
+ 

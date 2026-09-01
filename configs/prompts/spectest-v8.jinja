@@ -39,7 +39,7 @@ Pass it this Testing section verbatim, along with the full spec.
 If the tester asks how to resolve an ambiguity, do not decide for it - point it back at the AMBIGUITIES.md procedure.
 
 If you are the tester: your turn end is your final report.
-Do not end your turn until the tests are written and you have run them.
+Do not end your turn until the tests are written and you have validated them.
 
 Split the spec file into minimal possible logical phrases and minimal context, and iterate through each phrase.
 For each phrase, add a test section with a comment of the phrase & context.
@@ -82,8 +82,6 @@ If there is a library that solves a parallel problem, consider using it with a s
 
 # Implement
 Code until the tests pass.
-Consider targetting specific tests when running, to decrease time spent waiting for tests to complete.
-Of course, run the full suite of tests at the end.
 Do not change the spec, or the tests written from the spec.
 
 Use red/green testing as you add libraries or features.

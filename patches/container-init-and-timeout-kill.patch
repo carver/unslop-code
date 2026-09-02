@@ -1,0 +1,379 @@
+diff --git a/src/slop_code/execution/docker_runtime/streaming.py b/src/slop_code/execution/docker_runtime/streaming.py
+index d91c030..3f27c36 100644
+--- a/src/slop_code/execution/docker_runtime/streaming.py
++++ b/src/slop_code/execution/docker_runtime/streaming.py
+@@ -10,6 +10,7 @@ import contextlib
+ import queue
+ import subprocess
+ import threading
++import uuid
+ from collections.abc import Iterator
+ from pathlib import Path
+ from typing import TYPE_CHECKING
+@@ -36,6 +37,11 @@ if TYPE_CHECKING:
+ 
+ logger = get_logger(__name__)
+ 
++# Every `docker exec` gets a unique value under this name. `docker exec` does
++# not forward signals, so a timed-out command is found and killed inside the
++# container by this marker instead (see `_kill_exec_processes`).
++EXEC_ID_ENV = "SLOP_EXEC_ID"
++
+ 
+ class DockerStreamingRuntime(StreamingRuntime):
+     """Docker-based streaming runtime for agent execution.
+@@ -97,6 +103,7 @@ class DockerStreamingRuntime(StreamingRuntime):
+         self._disable_setup = disable_setup
+         self._network_mode = self.spec.effective_network_mode()
+         self._active_exec_process: subprocess.Popen[bytes] | None = None
++        self._active_exec_id: str | None = None
+ 
+     @property
+     def client(self) -> docker.DockerClient:
+@@ -267,6 +274,10 @@ class DockerStreamingRuntime(StreamingRuntime):
+             detach=True,
+             stdin_open=False,
+             environment=container_env,
++            # An init as PID 1 reaps orphans. With `sleep infinity` as PID 1
++            # every finished orphan stays a zombie, and an agent that waits on
++            # one with `pgrep` or `tail --pid` waits forever.
++            init=True,
+             **kwargs,
+         )
+         if container is None:
+@@ -291,6 +302,7 @@ class DockerStreamingRuntime(StreamingRuntime):
+         self,
+         command: str,
+         env: dict[str, str],
++        exec_id: str,
+     ) -> list[str]:
+         """Build docker exec command arguments."""
+         container = self._ensure_container_running()
+@@ -301,6 +313,7 @@ class DockerStreamingRuntime(StreamingRuntime):
+             args.extend(["--user", self.user])
+         for key, value in exec_env.items():
+             args.extend(["--env", f"{key}={value}"])
++        args.extend(["--env", f"{EXEC_ID_ENV}={exec_id}"])
+         args.append(container.id)
+         args.extend(["/bin/sh", "-c", command])
+         logger.debug(
+@@ -317,7 +330,8 @@ class DockerStreamingRuntime(StreamingRuntime):
+     ) -> subprocess.Popen[bytes]:
+         """Start a docker exec process."""
+         prepared_command = self._prepare_command(command)
+-        exec_args = self._build_exec_command(prepared_command, env)
++        exec_id = uuid.uuid4().hex
++        exec_args = self._build_exec_command(prepared_command, env, exec_id)
+         logger.debug(
+             "Launching docker exec process",
+             command=prepared_command[:200],
+@@ -333,6 +347,7 @@ class DockerStreamingRuntime(StreamingRuntime):
+         except OSError as exc:
+             raise SolutionRuntimeError("Failed to launch docker exec") from exc
+         self._active_exec_process = proc
++        self._active_exec_id = exec_id
+         self._exit_code = None
+         return proc
+ 
+@@ -388,7 +403,7 @@ class DockerStreamingRuntime(StreamingRuntime):
+         stderr_thread.join(timeout=0.1)
+ 
+     def _stop_active_exec_process(self) -> None:
+-        """Stop the active docker exec process if running."""
++        """Stop the active docker exec, client side and inside the container."""
+         proc = self._active_exec_process
+         if proc is None:
+             return
+@@ -398,6 +413,39 @@ class DockerStreamingRuntime(StreamingRuntime):
+         with contextlib.suppress(Exception):
+             proc.wait(timeout=5)
+         self._active_exec_process = None
++        exec_id = self._active_exec_id
++        self._active_exec_id = None
++        if exec_id is not None:
++            self._kill_exec_processes(exec_id)
++
++    def _kill_exec_processes(self, exec_id: str) -> None:
++        """Kill every process the exec tagged `exec_id` spawned in the container.
++
++        Killing the `docker exec` client does not touch the command inside the
++        container, which then runs on unobserved; for an agent that means a
++        retried attempt races the timed-out one for the same workspace. The
++        exec's processes all inherit the marker in their environment, so they
++        are found through /proc. Runs as root so every environ is readable.
++        """
++        container = self._container
++        if container is None:
++            return
++        script = (
++            'for p in /proc/[0-9]*; do '
++            'if tr "\\0" "\\n" < "$p/environ" 2>/dev/null | grep -qx "$1"; then '
++            'kill -9 "${p#/proc/}" 2>/dev/null; fi; done'
++        )
++        try:
++            container.exec_run(
++                ["/bin/sh", "-c", script, "sh", f"{EXEC_ID_ENV}={exec_id}"],
++                user="root",
++            )
++        except (DockerException, APIError):
++            logger.warning(
++                "Failed to kill timed-out exec inside container",
++                container_id=container.id[:12],
++                verbose=True,
++            )
+ 
+     def stream(
+         self,
+@@ -430,11 +478,9 @@ class DockerStreamingRuntime(StreamingRuntime):
+             timeout,
+             lambda: self.poll(),
+             yield_only_after=SPLIT_STRING if not self._disable_setup else None,
++            on_timeout=self._stop_active_exec_process,
+         )
+ 
+-        if result.timed_out:
+-            self._stop_active_exec_process()
+-
+         if self._active_exec_process is proc:
+             self._active_exec_process = None
+ 
+diff --git a/src/slop_code/execution/local_streaming.py b/src/slop_code/execution/local_streaming.py
+index dcf7984..4c145ee 100644
+--- a/src/slop_code/execution/local_streaming.py
++++ b/src/slop_code/execution/local_streaming.py
+@@ -192,13 +192,14 @@ class LocalStreamingRuntime(StreamingRuntime):
+         )
+ 
+         stream = self._create_demuxed_stream(proc)
+-        result = yield from process_stream(stream, timeout, self.poll)
+-
+-        # Kill process if it timed out
+-        if result.timed_out:
++        def stop_timed_out() -> None:
+             logger.warning("local_runtime.timeout", command=command)
+             self.kill()
+ 
++        result = yield from process_stream(
++            stream, timeout, self.poll, on_timeout=stop_timed_out
++        )
++
+         # Get exit code
+         exit_code = proc.wait()
+ 
+diff --git a/src/slop_code/execution/stream_processor.py b/src/slop_code/execution/stream_processor.py
+index 6e5497f..542a7f2 100644
+--- a/src/slop_code/execution/stream_processor.py
++++ b/src/slop_code/execution/stream_processor.py
+@@ -89,7 +89,16 @@ def process_stream(
+     timeout: float | None,
+     poll_fn: Callable[[], int | None],
+     yield_only_after: str | None = None,
++    on_timeout: Callable[[], None] | None = None,
+ ) -> Generator[RuntimeEvent, None, RuntimeResult]:
++    """Yield a command's output as events; return its result when it ends.
++
++    `on_timeout` runs the moment the deadline passes and must stop the
++    underlying process. The pump thread sits in a blocking read that only
++    returns when that process ends, and this generator joins the thread
++    before returning, so a timed-out command that is not killed here is
++    simply waited out instead.
++    """
+     logger.debug("Starting to consume events with timeout", timeout=timeout)
+     start_time = time.monotonic()
+     timeout_fn = make_timeout_fn(timeout, start_time)
+@@ -148,6 +157,8 @@ def process_stream(
+     while (exit_code := poll_fn()) is None:
+         if (remaining := timeout_fn()) <= 0:
+             timed_out = True
++            if on_timeout is not None:
++                on_timeout()
+             break
+ 
+         try:
+diff --git a/tests/execution/docker_runtime/streaming_test.py b/tests/execution/docker_runtime/streaming_test.py
+index 11df755..8b48f8e 100644
+--- a/tests/execution/docker_runtime/streaming_test.py
++++ b/tests/execution/docker_runtime/streaming_test.py
+@@ -2,6 +2,7 @@
+ 
+ from __future__ import annotations
+ 
++import time
+ from pathlib import Path
+ from unittest.mock import MagicMock
+ from unittest.mock import patch
+@@ -10,6 +11,7 @@ import pytest
+ 
+ from slop_code.execution.docker_runtime.models import DockerConfig
+ from slop_code.execution.docker_runtime.models import DockerEnvironmentSpec
++from slop_code.execution.docker_runtime.streaming import EXEC_ID_ENV
+ from slop_code.execution.docker_runtime.streaming import DockerStreamingRuntime
+ from slop_code.execution.models import CommandConfig
+ from slop_code.execution.runtime import RuntimeEvent
+@@ -242,6 +244,61 @@ class TestDockerStreamingRuntimeEnsureContainerRunning:
+             mock_docker_client_with_container.containers.create.assert_called_once()
+ 
+ 
++    def test_creates_container_with_init_process(
++        self,
++        docker_spec: DockerEnvironmentSpec,
++        tmp_path: Path,
++        mock_docker_client_with_container: MagicMock,
++    ) -> None:
++        """The container runs an init so orphaned children get reaped.
++
++        Without one, PID 1 is `sleep infinity`, every orphan stays a zombie,
++        and an agent that waits with `pgrep` or `tail --pid` waits forever.
++        """
++        with patch(
++            "slop_code.execution.docker_runtime.streaming.docker.from_env",
++            return_value=mock_docker_client_with_container,
++        ):
++            runtime = DockerStreamingRuntime(
++                spec=docker_spec,
++                working_dir=tmp_path,
++                static_assets={},
++                is_evaluation=False,
++                ports={},
++                mounts={},
++                env_vars={},
++                setup_command=None,
++            )
++            runtime._ensure_container_running()
++            kwargs = mock_docker_client_with_container.containers.create.call_args.kwargs
++            assert kwargs.get("init") is True
++
++    def test_exec_command_carries_its_id_in_the_environment(
++        self,
++        docker_spec: DockerEnvironmentSpec,
++        tmp_path: Path,
++        mock_docker_client_with_container: MagicMock,
++    ) -> None:
++        """Each exec is tagged so a timeout can find and kill it in the container."""
++        with patch(
++            "slop_code.execution.docker_runtime.streaming.docker.from_env",
++            return_value=mock_docker_client_with_container,
++        ):
++            runtime = DockerStreamingRuntime(
++                spec=docker_spec,
++                working_dir=tmp_path,
++                static_assets={},
++                is_evaluation=False,
++                ports={},
++                mounts={},
++                env_vars={},
++                setup_command=None,
++            )
++            args = runtime._build_exec_command("echo hi", {}, exec_id="abc123")
++            assert f"{EXEC_ID_ENV}=abc123" in args
++            assert args[args.index(f"{EXEC_ID_ENV}=abc123") - 1] == "--env"
++
++
+ class TestDockerStreamingRuntimePrepareCommand:
+     """Tests for _prepare_command method."""
+ 
+@@ -612,3 +669,52 @@ class TestDockerStreamingRuntimeIntegration:
+             assert "streaming test" in stdout_text
+         finally:
+             runtime.cleanup()
++
++    def test_orphaned_children_are_reaped(
++        self, integration_spec: DockerEnvironmentSpec, tmp_path: Path
++    ) -> None:
++        """A finished orphan must not linger as a zombie that pgrep still sees."""
++        runtime = DockerStreamingRuntime.spawn(
++            environment=integration_spec,
++            working_dir=tmp_path,
++            disable_setup=True,
++        )
++        try:
++            list(runtime.stream("sh -c 'sleep 0.1 &'", env={}, timeout=30))
++            events = list(
++                runtime.stream(
++                    "sleep 1; grep -l '^State:.*Z' /proc/[0-9]*/status 2>/dev/null | wc -l",
++                    env={},
++                    timeout=30,
++                )
++            )
++            assert events[-1].result.stdout.strip() == "0"
++        finally:
++            runtime.cleanup()
++
++    def test_timeout_kills_the_command_inside_the_container(
++        self, integration_spec: DockerEnvironmentSpec, tmp_path: Path
++    ) -> None:
++        """Killing the docker exec client alone leaves the command running."""
++        runtime = DockerStreamingRuntime.spawn(
++            environment=integration_spec,
++            working_dir=tmp_path,
++            disable_setup=True,
++        )
++        try:
++            started = time.monotonic()
++            events = list(runtime.stream("sleep 600", env={}, timeout=1))
++            assert events[-1].result.timed_out is True
++            assert time.monotonic() - started < 30
++            events = list(
++                runtime.stream(
++                    # `[6]00` keeps this checker's own cmdline from matching itself.
++                    "for p in /proc/[0-9]*; do tr '\\0' ' ' < $p/cmdline 2>/dev/null; echo; done"
++                    " | grep -c 'sleep [6]00' || true",
++                    env={},
++                    timeout=30,
++                )
++            )
++            assert events[-1].result.stdout.strip() == "0"
++        finally:
++            runtime.cleanup()
+diff --git a/tests/execution/stream_processor_test.py b/tests/execution/stream_processor_test.py
+index b37e555..939e144 100644
+--- a/tests/execution/stream_processor_test.py
++++ b/tests/execution/stream_processor_test.py
+@@ -2,7 +2,11 @@
+ 
+ from __future__ import annotations
+ 
++import threading
++import time
++
+ from slop_code.execution.stream_processor import ensure_string
++from slop_code.execution.stream_processor import process_stream
+ 
+ 
+ def test_ensure_string_preserves_text_around_invalid_utf8_bytes() -> None:
+@@ -10,3 +14,35 @@ def test_ensure_string_preserves_text_around_invalid_utf8_bytes() -> None:
+ 
+     assert '{"type":"message_update","data":"ok"}' in decoded
+     assert decoded.endswith("\n")
++
++
++def test_timeout_calls_on_timeout_before_waiting_for_the_stream() -> None:
++    """A silent command must be stopped by the hook, not waited out.
++
++    The pump thread blocks in a read until the underlying process ends, so
++    without the hook a timed-out `sleep 600` holds process_stream for 600s.
++    """
++    released = threading.Event()
++    hook_calls: list[float] = []
++
++    def silent_stream():
++        released.wait()
++        yield from ()
++
++    def on_timeout() -> None:
++        hook_calls.append(time.monotonic())
++        released.set()
++
++    start = time.monotonic()
++    gen = process_stream(silent_stream(), 0.2, lambda: None, on_timeout=on_timeout)
++    events = []
++    try:
++        while True:
++            events.append(next(gen))
++    except StopIteration as stop:
++        result = stop.value
++
++    assert result.timed_out is True
++    assert len(hook_calls) == 1
++    assert time.monotonic() - start < 5
++    assert events == []

@@ -79,7 +79,7 @@ details.entry summary:focus-visible { outline:2px solid var(--ins); outline-offs
 <p>The v7 run of the spectest prompt on datagate, Opus 5 under Claude Code 2.1.251, ran seven checkpoints against 405 hidden tests with zero process failures and solved checkpoints 3, 6 and 7 in isolation. It lost 14 tests. Every one of the 14 traces to a single sentence the model reads one way and the test author meant the other way, and the tester had written each reading down in its ambiguity registry before any implementation existed.</p>
 
 <div class="strip">
-<div class="cell"><span class="k">ckpt 1</span><span class="v7">49/50</span><span class="v8">50/50</span></div><div class="cell"><span class="k">ckpt 2</span><span class="v7">118/122</span><span class="v8">122/122</span></div><div class="cell"><span class="k">ckpt 3</span><span class="v7">170/174</span><span class="v8">174/174</span></div><div class="cell"><span class="k">ckpt 4</span><span class="v7">224/233</span><span class="v8">233/233</span></div><div class="cell"><span class="k">ckpt 5</span><span class="v7">262/276</span><span class="v8">276/276</span></div><div class="cell"><span class="k">ckpt 6</span><span class="v7">339/353</span><span class="v8">353/353</span></div><div class="cell"><span class="k">ckpt 7</span><span class="v7">391/405</span><span class="v8">running</span></div>
+<div class="cell"><span class="k">ckpt 1</span><span class="v7">49/50</span><span class="v8">50/50</span></div><div class="cell"><span class="k">ckpt 2</span><span class="v7">118/122</span><span class="v8">122/122</span></div><div class="cell"><span class="k">ckpt 3</span><span class="v7">170/174</span><span class="v8">174/174</span></div><div class="cell"><span class="k">ckpt 4</span><span class="v7">224/233</span><span class="v8">233/233</span></div><div class="cell"><span class="k">ckpt 5</span><span class="v7">262/276</span><span class="v8">276/276</span></div><div class="cell"><span class="k">ckpt 6</span><span class="v7">339/353</span><span class="v8">353/353</span></div><div class="cell"><span class="k">ckpt 7</span><span class="v7">391/405</span><span class="v8">405/405</span></div>
 </div>
 <div class="strip-legend"><span><b class="a">v7</b> original spec</span><span><b class="b">v8 disambiguated</b> five sentences reworded, same prompt family</span></div>
 
@@ -92,7 +92,7 @@ details.entry summary:focus-visible { outline:2px solid var(--ins); outline-offs
 <tr><td>T74</td><td>“Any additional <code>force</code> value is HTTP 400” (5)</td><td>5</td><td>delete “additional”</td></tr>
 </table></div>
 
-<p>Three pieces of evidence sit behind each section. The tester's registry entry, verbatim, shows the reading was a considered choice. A blind judge, 5360 fresh judgments across eight prompt variants, shows the same model makes the same choice from the spec alone: 195 of 200 on these five entries. And the patched run shows the reworded sentences flip the outcome.</p>
+<p>Three pieces of evidence sit behind each section. The tester's registry entry, verbatim, shows the reading was a considered choice. A blind judge, 5360 fresh judgments across eight prompt variants, shows the same model makes the same choice from the spec alone: 195 of 200 on these five entries. And the patched run shows the reworded sentences flip the outcome: all seven checkpoints strict, 405 of 405 at the end, where v7 had no strict checkpoint at all.</p>
 
 
 <section class="fam" id="T22">

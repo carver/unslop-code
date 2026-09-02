@@ -1,0 +1,411 @@
+#!/usr/bin/env python3
+"""Blind-judge the readings a tester recorded in AMBIGUITIES.md.
+
+For every entry the judge sees the cumulative spec up to that entry's checkpoint,
+the quoted spec text and the candidate readings, and nothing else: not the
+tester's choice, its rationale, its tests, or the implementation. It answers with
+the reading it thinks the spec author intended. Alternatives are shuffled per
+sample so a position preference shows up as noise rather than as a vote.
+
+Eight variants, three binary switches:
+  mode    choose   answer with a reading number (or "other" + the rule)
+          rule     write the intended rule first, then map it to a reading
+  both    add: readings may not be exclusive; "all of them at once" is a reading
+  impl    add: implementability is the implementer's problem, judge the text only
+
+Judging runs through Claude Code print mode on the subscription token, the same
+auth path as bin/scb; no API key is used.
+
+  bin/judge-ambiguities plan   <run_dir> --out <dir> [--entries T74,T27] [--variants ...] [--samples 5]
+  bin/judge-ambiguities run    <run_dir> --out <dir> [same filters] [--workers 4] [--pause-at 85]
+  bin/judge-ambiguities summarize <dir>
+
+<run_dir> is a slop-code run dir holding datagate/checkpoint_N/snapshot/AMBIGUITIES.md.
+Results append to <dir>/judgments.jsonl; a re-run skips judgments already there.
+"""
+from __future__ import annotations
+
+import argparse
+import collections
+import dataclasses
+import datetime as dt
+import hashlib
+import json
+import os
+import random
+import re
+import subprocess
+import sys
+import threading
+import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from pathlib import Path
+
+HERE = Path(__file__).resolve().parent
+REPO = HERE.parent
+PROBLEM_DIR = Path.home() / ".cache/scbench/problems/datagate"
+TOKEN_FILE = Path(os.environ.get("SCB_OAUTH_TOKEN_FILE", Path.home() / ".config/scbench/claude-oauth-token"))
+MODEL = "claude-opus-5"
+
+# Readings the hidden tests turned out to want, for the entries whose choice cost
+# tests in the v7 run. A judge answer in the set counts as matching the hidden
+# reading. T74's hidden tests reject a value-bearing force AND a repeated one,
+# so "both" is right there too.
+HIDDEN_OK = {"T22": {1}, "T27": {1}, "T56": {1}, "T63": {1}, "T74": {1, "both"}}
+
+VARIANTS = {
+    f"{mode}{'+both' if both else ''}{'+impl' if impl else ''}": (mode, both, impl)
+    for mode in ("choose", "rule")
+    for both in (False, True)
+    for impl in (False, True)
+}
+
+BOTH_TEXT = (
+    "The listed readings may not be mutually exclusive. If more than one of them "
+    "can hold at the same time, treat \"all of them together\" as a further reading, "
+    "and choose it (answer \"both\") if that is what the author most plausibly meant."
+)
+IMPL_TEXT = (
+    "Do not weigh how hard, or even how possible, a reading is to implement. That "
+    "is the implementer's problem, not yours: if the text says it, the implementer "
+    "will find a way. Judge only what the author most plausibly meant."
+)
+
+
+@dataclasses.dataclass
+class Entry:
+    id: str
+    title: str
+    spec_text: str
+    alternatives: list[str]
+    choice: int | None
+    choice_raw: str
+    checkpoint: int = 0
+
+
+# --------------------------------------------------------------------------- parsing
+
+ENTRY_RE = re.compile(r"^## (?P<id>[TI]\d+) — (?P<title>.*)$", re.M)
+
+
+def parse_registry(text: str) -> list[Entry]:
+    heads = list(ENTRY_RE.finditer(text))
+    entries = []
+    for i, m in enumerate(heads):
+        body = text[m.end(): heads[i + 1].start() if i + 1 < len(heads) else len(text)]
+        spec = _section(body, "Spec Text")
+        alts = _section(body, "Alternatives")
+        choice_raw = _section(body, "Choice")
+        alternatives = _split_alternatives(alts)
+        cm = re.match(r"\s*—\s*\((\d+)\)", choice_raw)
+        entries.append(Entry(
+            id=m.group("id"), title=m.group("title").strip(), spec_text=spec.strip(),
+            alternatives=alternatives, choice=int(cm.group(1)) if cm else None,
+            choice_raw=choice_raw.strip(),
+        ))
+    return entries
+
+
+def _section(body: str, name: str) -> str:
+    m = re.search(rf"^\*\*{re.escape(name)}\*\*(.*?)(?=^\*\*[A-Z][^*]*\*\*|^---|\Z)", body, re.M | re.S)
+    return m.group(1) if m else ""
+
+
+def _split_alternatives(block: str) -> list[str]:
+    alts: list[str] = []
+    for line in block.strip().splitlines():
+        if re.match(r"^\d+\. ", line):
+            alts.append(re.sub(r"^\d+\. ", "", line).strip())
+        elif alts and line.strip():
+            alts[-1] += " " + line.strip()
+    return alts
+
+
+def load_entries(run_dir: Path) -> list[Entry]:
+    """Entries from the last checkpoint's registry, each tagged with the checkpoint
+    it first appeared in, so the judge sees the spec the tester had."""
+    snaps = sorted((p for p in run_dir.glob("datagate/checkpoint_*/snapshot/AMBIGUITIES.md")
+                    if re.fullmatch(r"checkpoint_\d+", p.parts[-3])),  # skip *.partial dirs
+                   key=lambda p: int(p.parts[-3].split("_")[1]))
+    if not snaps:
+        sys.exit(f"no AMBIGUITIES.md snapshots under {run_dir}")
+    first_seen: dict[str, int] = {}
+    for snap in snaps:
+        n = int(snap.parts[-3].split("_")[1])
+        for e in parse_registry(snap.read_text()):
+            first_seen.setdefault(e.id, n)
+    entries = parse_registry(snaps[-1].read_text())
+    for e in entries:
+        e.checkpoint = first_seen[e.id]
+    return entries
+
+
+def cumulative_spec(checkpoint: int) -> str:
+    parts = []
+    for n in range(1, checkpoint + 1):
+        parts.append(f"<!-- checkpoint {n} -->\n" + (PROBLEM_DIR / f"checkpoint_{n}.md").read_text().strip())
+    return "\n\n".join(parts)
+
+
+# --------------------------------------------------------------------------- prompts
+
+def system_prompt(spec: str, variant: str) -> str:
+    mode, both, impl = VARIANTS[variant]
+    lines = [
+        "You are judging how the author of a software specification intended an "
+        "under-specified passage to be read. You will see the specification and one "
+        "ambiguity: the quoted passage and candidate readings, numbered. Decide which "
+        "reading the author most plausibly intended.",
+    ]
+    if both:
+        lines.append(BOTH_TEXT)
+    if impl:
+        lines.append(IMPL_TEXT)
+    if mode == "rule":
+        lines.append(
+            "Answer with JSON only, keys in this order: "
+            '{"rule": <the behaviour the author intended, one sentence, written from '
+            'the specification before consulting the candidate readings>, '
+            '"choice": <the number of the reading that matches your rule, or "other">}.'
+        )
+    else:
+        lines.append(
+            "Answer with JSON only: "
+            '{"choice": <the number of the intended reading, or "other">, '
+            '"rule": <the intended behaviour in one sentence>}.'
+        )
+    lines.append("SPECIFICATION (all checkpoints so far, cumulative):\n\n" + spec)
+    return "\n\n".join(lines)
+
+
+def user_prompt(entry: Entry, order: list[int]) -> str:
+    alts = "\n".join(f"{i + 1}. {entry.alternatives[j]}" for i, j in enumerate(order))
+    return (
+        f"AMBIGUITY: {entry.title}\n\nSpec text:\n{entry.spec_text}\n\n"
+        f"Candidate readings:\n{alts}\n\nWhich reading did the author intend?"
+    )
+
+
+def shuffled_order(entry: Entry, variant: str, sample: int) -> list[int]:
+    seed = int(hashlib.sha256(f"{entry.id}|{variant}|{sample}".encode()).hexdigest(), 16)
+    order = list(range(len(entry.alternatives)))
+    random.Random(seed).shuffle(order)
+    return order
+
+
+def normalize_choice(raw, order: list[int]):
+    """Map the judge's answer (numbered in shuffled order) back to the entry's numbering."""
+    if isinstance(raw, bool):
+        return "other"
+    if isinstance(raw, int):
+        return order[raw - 1] + 1 if 1 <= raw <= len(order) else "other"
+    s = str(raw).strip().lower()
+    if re.fullmatch(r"\d+", s):
+        return normalize_choice(int(s), order)
+    if s in ("both", "all") or re.search(r"\b(both|all|and)\b", s):
+        return "both"
+    return "other"
+
+
+def parse_result(text: str) -> dict | None:
+    m = re.search(r"\{.*\}", text, re.S)
+    if not m:
+        return None
+    try:
+        return json.loads(m.group(0))
+    except json.JSONDecodeError:
+        return None
+
+
+# --------------------------------------------------------------------------- judging
+
+def claude_env() -> dict[str, str]:
+    env = {k: v for k, v in os.environ.items() if not k.upper().startswith("ANTHROPIC")}
+    token = TOKEN_FILE.read_text().strip()
+    if not token.startswith("sk-ant-oat01-"):
+        sys.exit(f"{TOKEN_FILE} does not hold a Claude OAuth token")
+    env["CLAUDE_CODE_OAUTH_TOKEN"] = token
+    return env
+
+
+def judge_once(system: str, user: str, env: dict[str, str], timeout: int = 240) -> dict:
+    cmd = ["claude", "-p", "--model", MODEL, "--system-prompt", system, "--tools", "",
+           "--no-session-persistence", "--output-format", "json", user]
+    t0 = time.monotonic()
+    proc = subprocess.run(cmd, env=env, stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=timeout)
+    elapsed = time.monotonic() - t0
+    if proc.returncode != 0:
+        return {"error": f"exit {proc.returncode}: {proc.stderr.strip()[:300]}", "elapsed": elapsed}
+    try:
+        out = json.loads(proc.stdout)
+    except json.JSONDecodeError:
+        return {"error": "non-json output: " + proc.stdout[:200], "elapsed": elapsed}
+    usage = out.get("usage") or {}
+    return {
+        "result": out.get("result", ""), "cost": out.get("total_cost_usd"), "elapsed": elapsed,
+        "cache_read": usage.get("cache_read_input_tokens"), "cache_write": usage.get("cache_creation_input_tokens"),
+        "output_tokens": usage.get("output_tokens"),
+    }
+
+
+def five_hour_pct() -> tuple[float, str] | None:
+    try:
+        out = subprocess.run([str(HERE / "usage")], capture_output=True, text=True, timeout=30).stdout
+        d = json.loads(out)["five_hour"]
+        return float(d["pct"]), d["resets_at"]
+    except Exception:
+        return None
+
+
+def wait_for_reset(resets_at: str) -> None:
+    until = dt.datetime.fromisoformat(resets_at) + dt.timedelta(seconds=90)
+    while dt.datetime.now(dt.timezone.utc) < until:
+        time.sleep(60)
+
+
+def build_plan(entries: list[Entry], variants: list[str], samples: int) -> list[tuple[Entry, str, int]]:
+    plan = [(e, v, s) for e in entries for v in variants for s in range(samples)]
+    plan.sort(key=lambda t: (t[0].checkpoint, t[1], t[0].id, t[2]))  # same system prompt back to back
+    return plan
+
+
+def done_keys(out: Path) -> set[tuple[str, str, int]]:
+    f = out / "judgments.jsonl"
+    if not f.exists():
+        return set()
+    keys = set()
+    for line in f.read_text().splitlines():
+        if line.strip():
+            r = json.loads(line)
+            if "error" not in r:
+                keys.add((r["entry"], r["variant"], r["sample"]))
+    return keys
+
+
+def cmd_run(args, dry: bool) -> None:
+    entries = select_entries(load_entries(Path(args.run_dir)), args.entries)
+    variants = args.variants.split(",") if args.variants else list(VARIANTS)
+    for v in variants:
+        if v not in VARIANTS:
+            sys.exit(f"unknown variant {v}; choose from {', '.join(VARIANTS)}")
+    out = Path(args.out); out.mkdir(parents=True, exist_ok=True)
+    plan = build_plan(entries, variants, args.samples)
+    done = done_keys(out)
+    todo = [t for t in plan if (t[0].id, t[1], t[2]) not in done]
+    print(f"{len(entries)} entries x {len(variants)} variants x {args.samples} samples = {len(plan)} judgments; "
+          f"{len(done)} done, {len(todo)} to run", flush=True)
+    if dry:
+        for e in entries:
+            print(f"  {e.id} ckpt{e.checkpoint} alts={len(e.alternatives)} tester={e.choice} :: {e.title[:70]}")
+        return
+    env = claude_env()
+    specs = {n: cumulative_spec(n) for n in {e.checkpoint for e in entries}}
+    lock = threading.Lock()
+    state = {"n": 0, "cost": 0.0, "errors": 0, "paused": False}
+    log = (out / "judgments.jsonl").open("a")
+
+    def one(task):
+        e, v, s = task
+        while state["paused"]:
+            time.sleep(15)
+        order = shuffled_order(e, v, s)
+        res = judge_once(system_prompt(specs[e.checkpoint], v), user_prompt(e, order), env)
+        rec = {"entry": e.id, "checkpoint": e.checkpoint, "variant": v, "sample": s, "order": order,
+               "tester": e.choice, "at": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"), **res}
+        if "error" not in res:
+            parsed = parse_result(res["result"])
+            if parsed is None:
+                rec["error"] = "unparsable result"
+            else:
+                rec["choice"] = normalize_choice(parsed.get("choice"), order)
+                rec["choice_raw"] = parsed.get("choice")
+                rec["rule"] = parsed.get("rule")
+        with lock:
+            log.write(json.dumps(rec) + "\n"); log.flush()
+            state["n"] += 1; state["cost"] += res.get("cost") or 0.0; state["errors"] += "error" in rec
+            n = state["n"]
+            if n % 10 == 0 or n == len(todo):
+                print(f"[{n}/{len(todo)}] cost=${state['cost']:.2f} errors={state['errors']} "
+                      f"last={e.id}/{v}#{s} -> {rec.get('choice', 'ERR')} ({res.get('elapsed', 0):.0f}s)", flush=True)
+            if n % args.check_every == 0:
+                u = five_hour_pct()
+                if u and u[0] >= args.pause_at:
+                    print(f"5h window at {u[0]}%, pausing until {u[1]}", flush=True)
+                    state["paused"] = True
+                    threading.Thread(target=lambda: (wait_for_reset(u[1]), state.update(paused=False),
+                                                     print("resumed", flush=True)), daemon=True).start()
+        return rec
+
+    with ThreadPoolExecutor(max_workers=args.workers) as pool:
+        futures = [pool.submit(one, t) for t in todo]
+        for f in as_completed(futures):
+            f.result()
+    log.close()
+    print(f"done: {state['n']} judgments, ${state['cost']:.2f}, {state['errors']} errors", flush=True)
+
+
+def select_entries(entries: list[Entry], spec: str | None) -> list[Entry]:
+    if not spec:
+        return entries
+    wanted = set(spec.split(","))
+    chosen = [e for e in entries if e.id in wanted]
+    missing = wanted - {e.id for e in chosen}
+    if missing:
+        sys.exit(f"unknown entries: {', '.join(sorted(missing))}")
+    return chosen
+
+
+# --------------------------------------------------------------------------- summary
+
+def cmd_summarize(args) -> None:
+    out = Path(args.out)
+    recs = [json.loads(l) for l in (out / "judgments.jsonl").read_text().splitlines() if l.strip()]
+    recs = [r for r in recs if "error" not in r]
+    by = collections.defaultdict(list)
+    for r in recs:
+        by[(r["entry"], r["variant"])].append(r)
+    entries = sorted({r["entry"] for r in recs}, key=lambda s: (s[0], int(s[1:])))
+    variants = [v for v in VARIANTS if any((e, v) in by for e in entries)]
+    cost = sum(r.get("cost") or 0 for r in recs)
+    print(f"{len(recs)} judgments, ${cost:.2f}; entries={len(entries)} variants={variants}\n")
+    print("Per variant: share of votes agreeing with the tester, and on the 5 known entries with the hidden reading")
+    for v in variants:
+        vs = [r for r in recs if r["variant"] == v]
+        agree = sum(r["choice"] == r["tester"] for r in vs)
+        known = [r for r in vs if r["entry"] in HIDDEN_OK]
+        hidden = sum(r["choice"] in HIDDEN_OK[r["entry"]] for r in known)
+        pos1 = sum(r.get("choice_raw") in (1, "1") for r in vs)
+        print(f"  {v:18s} agree_with_tester={agree}/{len(vs)}  hidden_reading={hidden}/{len(known)}  "
+              f"picked_position_1={pos1}/{len(vs)}")
+    print("\nPer entry (vote = choice:count over all samples of the variant)")
+    print(f"  {'entry':6s} {'tester':6s} {'hidden':7s} " + " ".join(f"{v[:14]:14s}" for v in variants))
+    for e in entries:
+        hidden = ",".join(str(x) for x in sorted(HIDDEN_OK.get(e, set()), key=str)) or "-"
+        tester = by[(e, variants[0])][0]["tester"] if (e, variants[0]) in by else "?"
+        cells = []
+        for v in variants:
+            c = collections.Counter(r["choice"] for r in by.get((e, v), []))
+            cells.append(",".join(f"{k}:{n}" for k, n in sorted(c.items(), key=lambda kv: -kv[1]))[:14].ljust(14))
+        flag = " <- MISS" if e in HIDDEN_OK else ""
+        print(f"  {e:6s} {str(tester):6s} {hidden:7s} " + " ".join(cells) + flag)
+
+
+def main() -> None:
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    sub = ap.add_subparsers(dest="cmd", required=True)
+    for name in ("plan", "run"):
+        p = sub.add_parser(name)
+        p.add_argument("run_dir"); p.add_argument("--out", required=True)
+        p.add_argument("--entries"); p.add_argument("--variants"); p.add_argument("--samples", type=int, default=5)
+        p.add_argument("--workers", type=int, default=4); p.add_argument("--pause-at", type=float, default=85)
+        p.add_argument("--check-every", type=int, default=20)
+    s = sub.add_parser("summarize"); s.add_argument("out")
+    args = ap.parse_args()
+    if args.cmd == "summarize":
+        cmd_summarize(args)
+    else:
+        cmd_run(args, dry=args.cmd == "plan")
+
+
+if __name__ == "__main__":
+    main()

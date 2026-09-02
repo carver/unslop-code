@@ -1,0 +1,73 @@
+Spec clarifications for datagate: the five sentences whose hidden-test reading
+Opus 5 gets wrong every time (v7 run, 14 of 14 misses; blind judge 195/200,
+see notes/ambiguity-judge.md). Each hunk changes one sentence, and each is
+worded to match what the hidden tests and the reference solution do, not to
+change the required behaviour.
+
+  checkpoint_1  T22  "detect encoding" -> a fixed UTF-8 / latin-1 ladder
+  checkpoint_2  T27  rowid counts the header as row 1
+  checkpoint_4  T56  /upload honours the charset query parameter
+  checkpoint_4  T63  charset is ignored, not validated, for spreadsheets
+  checkpoint_5  T74  a value-bearing force is 400 (drop "additional")
+
+Apply to a copy of the problem, never to the cache in place:
+
+  cp -r ~/.cache/scbench/problems/datagate <root>/datagate
+  patch -p1 -d <root> < configs/specs/datagate-clarified.patch
+
+then run with SCBENCH_PROBLEMS_PATH=<root> so the catalog reads the copy. Any run against
+this copy is a spec-clarification experiment, not a benchmark score.
+
+--- a/datagate/checkpoint_1.md
++++ b/datagate/checkpoint_1.md
+@@ -18,7 +18,7 @@
+ | Parameter | Required | Description |
+ | --------- | -------- | ----------- |
+ | `source`  | yes      | URL of the remote CSV file |
+-| `charset` | no       | Character encoding for decoding CSV bytes. If omitted, detect encoding from content. |
++| `charset` | no       | Character encoding for decoding CSV bytes. If omitted, detect unambiguous encoding from content, else latin-1. |
+ 
+ Success (`HTTP 200`):
+ 
+--- a/datagate/checkpoint_2.md
++++ b/datagate/checkpoint_2.md
+@@ -30,7 +30,7 @@
+ 
+ `_shape=lists` (default): `rows` is arrays.
+ 
+-`_shape=objects`: `rows` is objects and includes `rowid` (1-based source-file row number). `rowid` is not in `columns`.
++`_shape=objects`: `rows` is objects and includes `rowid` (1-based source-file row number, starting at the header). `rowid` is not in `columns`.
+ 
+ ### Visibility toggles
+ 
+--- a/datagate/checkpoint_4.md
++++ b/datagate/checkpoint_4.md
+@@ -13,7 +13,7 @@
+ 
+ ### File Upload
+ 
+-`POST /upload` accepts multipart form with field `file` or `attachment`.
++`POST /upload` accepts multipart form with field `file` or `attachment`, and `charset` query parameter.
+ 
+ Success:
+ 
+@@ -33,7 +33,7 @@
+ `/convert` and `/upload` accept CSV, `.xls`, and `.xlsx`.
+ Only the first worksheet is ingested.
+ The first sheet must be tabular (header + at least one data row) or `HTTP 400`.
+-`charset` applies only to text CSV sources.
++`charset` applies and validates only for text CSV sources.
+ Unrecognized format: `HTTP 400`.
+ 
+ Formula/computed-cell behavior is not required.
+--- a/datagate/checkpoint_5.md
++++ b/datagate/checkpoint_5.md
+@@ -23,7 +23,7 @@
+ ### Per-request bypass
+ 
+ `force` is a presence flag. If present once, it forces re-ingestion and replaces the cached dataset.
+-Any additional `force` value is `HTTP 400`.
++Any `force` value is `HTTP 400`.
+ 
+ If caching is disabled, `force` has no additional effect.
+ 

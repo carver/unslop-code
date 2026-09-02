@@ -61,6 +61,11 @@ Done when the driver prints DONE, or halted with the failing tests, which go bac
 
 - Judge cost is about a cent per judgment batched; single-entry calls cost ten times
   that because Claude Code print mode does not cache a custom system prompt.
+- Step 3 judge runs finish in minutes: run them in the foreground. A full-registry pass
+  (all entries, all variants) takes about 40 minutes: `nohup` it, then watch with a poll
+  loop that ends itself on the script's final `done:` line, such as
+  `until grep -q '^done:' <log>; do sleep 60; done; tail -1 <log>`. A `tail -F`
+  monitor never ends on its own and outlives the job.
 - Alternatives are shuffled per sample; the datagate tester listed its favourite reading
   second in 102 of 130 entries, which is not a position effect.
 - Read files the user just edited on the host only after `refresh-mount`.

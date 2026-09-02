@@ -1,0 +1,113 @@
+#!/usr/bin/env python3
+"""Extend a run that stopped early: resume it one checkpoint at a time, between 5-hour windows.
+
+Usage: bin/scb-extend <run_dir> <problem> <n_checkpoints>
+
+Each checkpoint is its own `scb run --resume --stop-after-checkpoint N`, so a halt lands
+between checkpoints and never inside one. Before each checkpoint the 5-hour window is read
+(bin/usage); if the checkpoint might not fit before the reset, sleep through the reset
+rather than have the agent die rate-limited mid-checkpoint. The reading before and after
+every checkpoint is appended to <run_dir>/<problem>/window_usage.jsonl, so the window cost
+of a checkpoint is measured, and the reserve kept for the next one is 1.25x the largest
+measured cost (default 30 points until one is measured).
+
+Unlike bin/scb-strict, a failing test does not halt; these runs are expected to miss.
+Only a missing evaluation, an infrastructure failure, or scb itself failing halts.
+Progress lines start with EXTEND: so a log watcher can filter on them.
+Exit codes: 0 all checkpoints ran   3 checkpoint left no usable evaluation   4 scb failed
+"""
+import datetime, json, pathlib, subprocess, sys, time
+
+HERE = pathlib.Path(__file__).resolve().parent
+DEFAULT_RESERVE = 30.0
+RESET_SLACK_S = 90
+
+
+def next_checkpoint(problem_dir, total):
+    for n in range(1, total + 1):
+        if not (problem_dir / f"checkpoint_{n}" / "evaluation.json").exists():
+            return n
+    return None
+
+
+def outcome(problem_dir, n):
+    ev = problem_dir / f"checkpoint_{n}" / "evaluation.json"
+    if not ev.exists():
+        return None
+    d = json.loads(ev.read_text())
+    return sum(d["pass_counts"].values()), sum(d["total_counts"].values()), bool(d.get("infrastructure_failure"))
+
+
+def window_costs(records):
+    """Points of the 5-hour window each finished checkpoint used, from before/after readings in the same window."""
+    before = {}
+    costs = []
+    for r in records:
+        key = (r["checkpoint"], r["five_hour"]["resets_at"])
+        if r["phase"] == "before":
+            before[key] = r["five_hour"]["pct"]
+        elif key in before:
+            costs.append(r["five_hour"]["pct"] - before[key])
+    return [c for c in costs if c > 0]
+
+
+def reserve(records):
+    costs = window_costs(records)
+    return max(costs) * 1.25 if costs else DEFAULT_RESERVE
+
+
+def seconds_until_room(reading, needed, now):
+    w = reading["five_hour"]
+    if w["pct"] + needed <= 100:
+        return 0
+    resets = datetime.datetime.fromisoformat(w["resets_at"])
+    return max(0, (resets - now).total_seconds()) + RESET_SLACK_S
+
+
+def usage():
+    return json.loads(subprocess.run([HERE / "usage"], check=True, capture_output=True, text=True).stdout)
+
+
+def say(msg):
+    print(f"EXTEND: {msg} {datetime.datetime.now(datetime.timezone.utc):%H:%M:%SZ}", flush=True)
+
+
+def main():
+    run_dir = pathlib.Path(sys.argv[1]).resolve(); problem = sys.argv[2]; total = int(sys.argv[3])
+    problem_dir = run_dir / problem
+    log = problem_dir / "window_usage.jsonl"
+    records = [json.loads(l) for l in log.read_text().splitlines() if l.strip()] if log.exists() else []
+
+    def record(n, phase):
+        r = {"checkpoint": n, "phase": phase, **usage()}
+        records.append(r)
+        with log.open("a") as f:
+            f.write(json.dumps(r) + "\n")
+        return r
+
+    while (n := next_checkpoint(problem_dir, total)) is not None:
+        reading = record(n, "before")
+        wait = seconds_until_room(reading, reserve(records), datetime.datetime.now(datetime.timezone.utc))
+        if wait:
+            say(f"window at {reading['five_hour']['pct']}% with {reserve(records):.0f} needed; sleeping {wait/60:.0f} min until reset")
+            time.sleep(wait)
+            reading = record(n, "before")
+        say(f"starting checkpoint_{n} (window {reading['five_hour']['pct']}%)")
+        proc = subprocess.run([HERE / "scb", "run", "--resume", str(run_dir), "--no-live-progress", "--stop-after-checkpoint", str(n)])
+        after = record(n, "after")
+        if proc.returncode != 0:
+            say(f"scb exited {proc.returncode} on checkpoint_{n}")
+        res = outcome(problem_dir, n)
+        if res is None:
+            say(f"checkpoint_{n} left no evaluation; halting (run_dir={run_dir})"); sys.exit(3)
+        passed, tests, infra = res
+        say(f"checkpoint_{n} {passed}/{tests} infra_fail={infra} window {reading['five_hour']['pct']}% -> {after['five_hour']['pct']}%")
+        if infra:
+            say(f"checkpoint_{n} infrastructure failure; halting (run_dir={run_dir})"); sys.exit(3)
+        if proc.returncode != 0:
+            sys.exit(4)
+    say(f"DONE, {total} checkpoints present (run_dir={run_dir})")
+
+
+if __name__ == "__main__":
+    main()

@@ -52,9 +52,6 @@ disambiguated spec under the patched harness (`spectest-v7-disambiguated`).
 - **v8-disambiguated, second run.** Run-to-run noise: the latin-1 test has flipped between
   runs before. Needed before leaning on "strict" in public.
 - **v7 prompt on the disambiguated spec.** Isolates the v8 prompt's effect on time and cost.
-- **Judge T22 with a third alternative.** The registry's two alternatives don't describe the
-  fallback ladder, so the vote reads 0/20 while every rule agrees. Add "UTF-8 else latin-1"
-  as alternative 3 for the judge only and rerun T22.
 - **The method on a second problem.** The reusable thing is registry → blind judge → patch
   the sentences the model reads one way and the tests the other, not the datagate patch
   itself. xjq or mvvault from the dev split are the candidates.

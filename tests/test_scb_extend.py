@@ -108,3 +108,32 @@ def test_repair_leaves_a_consistent_run_info_alone(tmp_path):
 def test_repair_without_run_info_is_a_noop(tmp_path):
     finished_checkpoint(tmp_path, 1)
     assert ext.repair_run_info(tmp_path, 7) == []
+
+
+PREVIEW = """Resume preview for /runs/x
+datagate:
+  Resume from: checkpoint_1
+  Completed: 
+  Would delete and re-run:
+    - checkpoint_1 (missing results)
+    - checkpoint_2 (depends on invalid checkpoint)
+  Directories to delete:
+    - /runs/x/datagate/checkpoint_1
+    - /runs/x/datagate/checkpoint_2
+
+No changes made (dry run).
+"""
+
+
+def test_deletions_lists_the_directories_a_preview_would_remove():
+    assert ext.deletions(PREVIEW) == [Path("/runs/x/datagate/checkpoint_1"), Path("/runs/x/datagate/checkpoint_2")]
+
+
+def test_deletions_empty_when_preview_keeps_everything():
+    assert ext.deletions("datagate:\n  Resume from: checkpoint_3\n  Completed: checkpoint_1, checkpoint_2\n\nNo changes made (dry run).\n") == []
+
+
+def test_finished_dir_needs_evaluation_result_and_snapshot(tmp_path):
+    finished_checkpoint(tmp_path, 1); (tmp_path / "checkpoint_2").mkdir(); (tmp_path / "checkpoint_2" / "prompt.txt").write_text("x")
+    assert ext.finished_dir(tmp_path / "checkpoint_1")
+    assert not ext.finished_dir(tmp_path / "checkpoint_2")

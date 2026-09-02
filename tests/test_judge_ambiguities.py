@@ -89,7 +89,12 @@ def test_parse_result_extracts_the_array_keyed_by_label():
     assert parsed["A1"] == {"id": "A1", "choice": 2, "rule": "x"}
     assert parsed["A2"]["choice"] == "other"
     assert judge.parse_result("no json here") is None
-    assert judge.parse_result('{"id": "A1"}') is None
+    assert judge.parse_result('{"choice": 1}') is None
+
+
+def test_parse_result_accepts_bare_objects_without_an_array():
+    parsed = judge.parse_result('{"id":"A1","choice":1,"rule":"x [1] y"}\n{"id":"A2","choice":"other","rule":"z"}\n')
+    assert parsed["A1"]["choice"] == 1 and parsed["A2"]["choice"] == "other"
 
 
 def test_user_prompt_labels_entries_and_numbers_alternatives_in_shuffled_order():

@@ -1,2 +1,4 @@
 outputs/
 slop-code-bench/
+__pycache__/
+.pytest_cache/

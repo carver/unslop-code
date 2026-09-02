@@ -2,6 +2,7 @@
 import datetime
 import yaml
 import json
+import subprocess
 import sys
 import types
 from pathlib import Path
@@ -155,3 +156,20 @@ def test_backup_tars_each_finished_checkpoint_once(tmp_path, monkeypatch):
     assert ext.backup_finished(run_dir, "datagate", 7) == []
     import tarfile
     assert sorted(tarfile.open(tgz).getnames())[:2] == ["checkpoint_1", "checkpoint_1/evaluation.json"]
+
+
+def test_unknown_reading_never_waits_and_is_skipped_in_costs():
+    now = datetime.datetime(2026, 9, 2, 21, 0, tzinfo=UTC)
+    assert ext.seconds_until_room({"five_hour": None}, 30, now) == 0
+    records = [{"checkpoint": 1, "phase": "before", "five_hour": None}, rec(1, "after", 40), rec(2, "before", 40), rec(2, "after", 46)]
+    assert ext.window_costs(records) == [6]
+    assert ext.pct({"five_hour": None}) == "unknown"
+
+
+def test_usage_retries_then_gives_up(monkeypatch):
+    calls = []
+    def run(cmd, **kw):
+        calls.append(cmd); return subprocess.CompletedProcess(cmd, 1, stdout="", stderr="HTTP Error 502")
+    monkeypatch.setattr(subprocess, "run", run); monkeypatch.setattr(ext.time, "sleep", lambda s: None)
+    assert ext.usage(attempts=3, pause=0) is None
+    assert len(calls) == 3

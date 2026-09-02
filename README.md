@@ -20,6 +20,7 @@ and the sandbox-local venv):
     bin/scb run --config configs/runs/<name>.yaml --no-live-progress
     bin/scb run --resume <run_dir>           # after any interruption
     bin/usage                                # 5h/7d rate-limit windows
+    bin/scb-extend <run_dir> <problem> <n>    # resume a stopped run one checkpoint at a time, waiting out the 5h window
     bin/summarize <run_dir> [--md]           # per-checkpoint table; runs scb-check on snapshots as needed
     bin/failures [run_a [run_b]] [problem]   # failing tests, one run or side by side
     bin/askrun <checkpoint_dir> [question]   # resume that checkpoint's Claude session

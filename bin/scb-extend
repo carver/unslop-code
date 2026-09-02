@@ -132,6 +132,8 @@ def window_costs(records):
     before = {}
     costs = []
     for r in records:
+        if not r.get("five_hour"):
+            continue
         key = (r["checkpoint"], r["five_hour"]["resets_at"])
         if r["phase"] == "before":
             before[key] = r["five_hour"]["pct"]
@@ -146,15 +148,30 @@ def reserve(records):
 
 
 def seconds_until_room(reading, needed, now):
-    w = reading["five_hour"]
+    w = reading.get("five_hour")
+    if not w:
+        return 0
     if w["pct"] + needed <= 100:
         return 0
     resets = datetime.datetime.fromisoformat(w["resets_at"])
     return max(0, (resets - now).total_seconds()) + RESET_SLACK_S
 
 
-def usage():
-    return json.loads(subprocess.run([HERE / "usage"], check=True, capture_output=True, text=True).stdout)
+def usage(attempts=5, pause=30):
+    """The 5-hour window reading, or None if bin/usage keeps failing (the endpoint has brief outages)."""
+    for i in range(attempts):
+        proc = subprocess.run([HERE / "usage"], capture_output=True, text=True)
+        if proc.returncode == 0:
+            return json.loads(proc.stdout)
+        say(f"bin/usage failed (attempt {i + 1}/{attempts}): {proc.stderr.strip()[-200:]}")
+        if i + 1 < attempts:
+            time.sleep(pause)
+    return None
+
+
+def pct(reading):
+    w = reading.get("five_hour")
+    return f"{w['pct']}%" if w else "unknown"
 
 
 def say(msg):
@@ -171,7 +188,7 @@ def main():
     log = None
 
     def record(n, phase):
-        r = {"checkpoint": n, "phase": phase, **usage()}
+        r = {"checkpoint": n, "phase": phase, **(usage() or {"five_hour": None})}
         records.append(r)
         if log is not None:
             with log.open("a") as f:
@@ -182,14 +199,14 @@ def main():
         reading = record(n, "before")
         wait = seconds_until_room(reading, reserve(records), datetime.datetime.now(datetime.timezone.utc))
         if wait:
-            say(f"window at {reading['five_hour']['pct']}% with {reserve(records):.0f} needed; sleeping {wait/60:.0f} min until reset")
+            say(f"window at {pct(reading)} with {reserve(records):.0f} needed; sleeping {wait/60:.0f} min until reset")
             time.sleep(wait)
             reading = record(n, "before")
         return reading
 
     if fresh:
         reading = wait_for_room(1)
-        say(f"starting a fresh run from {target.name}, checkpoint_1 (window {reading['five_hour']['pct']}%)")
+        say(f"starting a fresh run from {target.name}, checkpoint_1 (window {pct(reading)})")
         run_dir, code = start_run(target)
         if run_dir is None:
             say(f"scb printed no output directory (exit {code}); halting"); sys.exit(4)
@@ -208,7 +225,7 @@ def main():
         res = outcome(problem_dir, 1)
         if res is None:
             say(f"checkpoint_1 left no evaluation; halting (run_dir={run_dir})"); sys.exit(3)
-        say(f"checkpoint_1 {res[0]}/{res[1]} infra_fail={res[2]} window {reading['five_hour']['pct']}% -> {after['five_hour']['pct']}%")
+        say(f"checkpoint_1 {res[0]}/{res[1]} infra_fail={res[2]} window {pct(reading)} -> {pct(after)}")
         if res[2] or code != 0:
             sys.exit(3 if res[2] else 4)
 
@@ -225,7 +242,7 @@ def main():
             say(f"resume preview would delete finished {[d.name for d in doomed]} (exit {preview.returncode}); halting")
             print(preview.stdout[-2000:], preview.stderr[-1000:], sep="\n", flush=True)
             sys.exit(5)
-        say(f"starting checkpoint_{n} (window {reading['five_hour']['pct']}%)")
+        say(f"starting checkpoint_{n} (window {pct(reading)})")
         proc = subprocess.run(resume)
         after = record(n, "after")
         if proc.returncode != 0:
@@ -234,7 +251,7 @@ def main():
         if res is None:
             say(f"checkpoint_{n} left no evaluation; halting (run_dir={run_dir})"); sys.exit(3)
         passed, tests, infra = res
-        say(f"checkpoint_{n} {passed}/{tests} infra_fail={infra} window {reading['five_hour']['pct']}% -> {after['five_hour']['pct']}%")
+        say(f"checkpoint_{n} {passed}/{tests} infra_fail={infra} window {pct(reading)} -> {pct(after)}")
         if infra:
             say(f"checkpoint_{n} infrastructure failure; halting (run_dir={run_dir})"); sys.exit(3)
         if proc.returncode != 0:

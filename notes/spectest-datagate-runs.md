@@ -47,14 +47,22 @@ the harness: v7's parent waited an hour on `tail --pid` of a zombie pytest, whic
 container init fix removes. A clean split would be one run of the v7 prompt on the
 disambiguated spec under the patched harness (`spectest-v7-disambiguated`).
 
-## Experiments worth running next, with what each isolates
+## Experiments worth running soon, with what each isolates
 
-- **v8-disambiguated, second run.** Run-to-run noise: the latin-1 test has flipped between
-  runs before. Needed before leaning on "strict" in public.
-- **v7 prompt on the disambiguated spec.** Isolates the v8 prompt's effect on time and cost.
+Next:
 - **The method on a second problem.** The reusable thing is registry → blind judge → patch
   the sentences the model reads one way and the tests the other, not the datagate patch
-  itself. xjq or mvvault from the dev split are the candidates.
+  itself. xjq is the obvious candidate, as a matched difficulty of "Easy"
+
+Soon:
+- **v8-disambiguated, second run.** Run-to-run noise: the latin-1 test has flipped between
+  runs before. Needed before leaning on "strict" in public.
+- **Stop encouraging libraries** Now that tests are passing, we could do a v9.
+  In this version we would remove any special encouragement to use libraries at implementation time.
+  Then we could see the impact on the code quality metrics and see if the spec change is worth the tokens.
+
+In a later phase:
+- **v7 prompt on the disambiguated spec.** Isolates the v8 prompt's effect on time and cost.
 - **Spec lint.** The judge already answers "which sentences does this model read
   differently from its own tester?" for any spec before implementation. Sentences where
   votes split or where the tester's choice is unanimous-but-untested are the lint output.

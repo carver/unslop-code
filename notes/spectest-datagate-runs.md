@@ -9,8 +9,8 @@ tests passed / total at each checkpoint (regressions included), from each checkp
 | just-solve control | `../dev6-opus5/…` | benchmark's own prompt | 42/50 at ckpt 1 | dev6 sweep |
 | v1 | `opus-5_…_spectest/20260831T1136` | first spec-test prompt | 44/50 | ckpt 1 only |
 | v2 | `…spectest-v2/20260831T1519` | testing section tweaks | 44/50 | ckpt 1 only; agent pkill self-match |
-| v3 | `…spectest-v3/20260831T1647` | | 44/50 | ckpt 1 only |
-| v4 | `…spectest-v4/20260831T2022` | tester as a sub-agent judged on breadth | 50/50, 119/122 | stopped after ckpt 2 |
+| v3 | `…spectest-v3/20260831T1647` | | 44/50 | ckpt 1 only; extension to 7 started 2026-09-02 21:00Z via `bin/scb-extend` (log `outputs/logs/spectest-v3-extend-20260902.log`) |
+| v4 | `…spectest-v4/20260831T2022` | tester as a sub-agent judged on breadth | 50/50, 119/122 | stopped after ckpt 2; **checkpoint dirs 1-2 deleted 2026-09-02** (see below), scores survive in checkpoint_results.jsonl |
 | v5 | `…spectest-v5/20260831T2310` | AMBIGUITIES.md procedure | 49/50, 66/122, 170/174, 224/233 | rate-limited after ckpt 4; ckpt 2 was a zero-implementation checkpoint (print-mode killed the bg tester) |
 | v6 | `…spectest-v6/20260901T0618` | bg-task ceiling env, "at least one test asserts the chosen reading" | 50/50, 119/122 | killed mid-ckpt 3 to fix the turn-ending rule |
 | v7 | `…spectest-v7/20260901T0726` | numbered entries, foreground-wait rule | 49/50, 118/122, 170/174, 224/233, 262/276, 339/353, 391/405 | complete; 14 misses, all five spec sentences |
@@ -75,3 +75,16 @@ kills inside the container. One known bug not yet patched: `retry()` resets the 
 tracker, so a checkpoint that timed out and continued under-reports its cost (v7 ckpt 6
 recorded $3 of roughly $15). Candidates for upstream PRs, along with documenting
 `SCBENCH_PROBLEMS_PATH` for running against a modified problem copy.
+
+## v4 lost its checkpoints 1 and 2 (2026-09-02 20:56Z)
+
+A `scb run --resume` on the v4 run dir deleted `checkpoint_1` and `checkpoint_2` before
+running anything. Cause: the Ctrl-C'd resume on 2026-09-01 05:23 rewrote `run_info.yaml`
+with every checkpoint it had not itself run marked `skipped`; the next resume trusts those
+states, invalidates the checkpoints, and `rmtree`s their directories. What survives: the
+two rows in the run dir's `checkpoint_results.jsonl` (scores, tokens, cost, code metrics),
+`result.json`, and the aborted checkpoint 3 workspace (code after checkpoint 2 plus partial
+checkpoint 3 work) in `outputs/aborted/spectest-v4-20260831T2022-checkpoint_3`. Agent
+transcripts, snapshots, per-test evaluations and diffs for checkpoints 1-2 are gone from
+the mount. `bin/scb-extend` now repairs `run_info.yaml` before every resume, and v3's
+checkpoint 1 was tarred to `outputs/backups/` before its extension started.

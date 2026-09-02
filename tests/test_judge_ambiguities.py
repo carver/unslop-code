@@ -135,3 +135,29 @@ def test_variants_are_the_eight_combinations():
     assert judge.VARIANTS["choose"] == ("choose", False, False)
     sp = judge.system_prompt("SPEC", "choose+impl")
     assert judge.IMPL_TEXT in sp and judge.BOTH_TEXT not in sp and sp.endswith("SPEC")
+
+
+PATCH = """--- a/datagate/checkpoint_2.md
++++ b/datagate/checkpoint_2.md
+@@ -30,7 +30,7 @@
+ context
+-`_shape=objects`: `rows` is objects and includes `rowid` (1-based source-file row number). `rowid` is not in `columns`.
++`_shape=objects`: `rows` is objects and includes `rowid` (1-based source-file row number, starting at the header). `rowid` is not in `columns`.
+ context
+"""
+
+
+def test_patch_sentences_pairs_removed_and_added_lines():
+    pairs = judge.patch_sentences(PATCH)
+    assert len(pairs) == 1
+    assert pairs[0][0].startswith("`_shape=objects`") and "starting at the header" in pairs[0][1]
+
+
+def test_rewrite_quotes_replaces_a_wrapped_quoted_sentence():
+    e = judge.parse_registry(SAMPLE)[0]
+    e.spec_text = "> `_shape=objects`: `rows` is objects and includes `rowid` (1-based\n> source-file row number)."
+    untouched = judge.parse_registry(SAMPLE)[1]
+    changed = judge.rewrite_quotes([e, untouched], judge.patch_sentences(PATCH))
+    assert changed == ["T7"]
+    assert e.spec_text == "> `_shape=objects`: `rows` is objects and includes `rowid` (1-based source-file row number, starting at the header)."
+    assert untouched.spec_text == "> text"

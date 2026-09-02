@@ -25,6 +25,10 @@ auth path as bin/scb; no API key is used.
   bin/judge-ambiguities run    <run_dir> --out <dir> [same filters] [--batch 15] [--workers 4] [--pause-at 85]
   bin/judge-ambiguities summarize <dir>
 
+To judge against a clarified spec, point SCBENCH_PROBLEMS_PATH at a problem root
+holding the patched copy and pass --spec-patch <patch>: entries whose quoted
+spec text contains a sentence the patch rewrote get the new wording too.
+
 <run_dir> is a slop-code run dir holding datagate/checkpoint_N/snapshot/AMBIGUITIES.md.
 Results append to <dir>/judgments.jsonl; a re-run skips judgments already there.
 """
@@ -48,7 +52,8 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parent
-PROBLEM_DIR = Path.home() / ".cache/scbench/problems/datagate"
+PROBLEM_ROOT = Path(os.environ.get("SCBENCH_PROBLEMS_PATH") or Path.home() / ".cache/scbench/problems")
+PROBLEM_DIR = PROBLEM_ROOT / "datagate"  # the benchmark's own override variable, so a patched copy works the same way
 TOKEN_FILE = Path(os.environ.get("SCB_OAUTH_TOKEN_FILE", Path.home() / ".config/scbench/claude-oauth-token"))
 MODEL = "claude-opus-5"
 
@@ -143,6 +148,54 @@ def load_entries(run_dir: Path) -> list[Entry]:
     for e in entries:
         e.checkpoint = first_seen[e.id]
     return entries
+
+
+def patch_sentences(patch_text: str) -> list[tuple[str, str]]:
+    """(old, new) line pairs from a unified diff, whitespace-normalized."""
+    pairs, minus = [], []
+    for line in patch_text.splitlines():
+        if line.startswith("---") or line.startswith("+++"):
+            continue
+        if line.startswith("-"):
+            minus.append(_squash(line[1:]))
+        elif line.startswith("+") and minus:
+            pairs.append((minus.pop(0), _squash(line[1:])))
+        else:
+            minus = []
+    return pairs
+
+
+def _squash(text: str) -> str:
+    return re.sub(r"\s+", " ", text).strip()
+
+
+def rewrite_quotes(entries: list[Entry], pairs: list[tuple[str, str]]) -> list[str]:
+    """Replace patched sentences inside each entry's quoted spec text. The quote
+    is unwrapped first, since the tester wrapped sentences across '> ' lines.
+    Returns the ids of the entries that changed."""
+    changed = []
+    for e in entries:
+        flat = _squash(re.sub(r"(?m)^>\s?", "", e.spec_text))
+        new = flat
+        for old, repl in pairs:
+            if old in new:
+                new = new.replace(old, repl)
+                continue
+            # The patched line may be a whole table row; the entry usually quotes
+            # one sentence of it. Substitute sentence by sentence when they align.
+            olds, news = _sentences(old), _sentences(repl)
+            if len(olds) == len(news):
+                for o, n in zip(olds, news):
+                    if o != n and o in new:
+                        new = new.replace(o, n)
+        if new != flat:
+            e.spec_text = "> " + new
+            changed.append(e.id)
+    return changed
+
+
+def _sentences(line: str) -> list[str]:
+    return [f.strip() for f in re.split(r"(?<=[.!?])\s+", line) if f.strip()]
 
 
 def cumulative_spec(checkpoint: int) -> str:
@@ -328,6 +381,9 @@ def done_keys(out: Path) -> set[tuple[str, str, int]]:
 
 def cmd_run(args, dry: bool) -> None:
     entries = select_entries(load_entries(Path(args.run_dir)), args.entries)
+    if args.spec_patch:
+        changed = rewrite_quotes(entries, patch_sentences(Path(args.spec_patch).read_text()))
+        print(f"spec patch {args.spec_patch}: problem root {PROBLEM_ROOT}; rewrote quotes in {', '.join(changed) or 'no entries'}", flush=True)
     variants = args.variants.split(",") if args.variants else list(VARIANTS)
     for v in variants:
         if v not in VARIANTS:
@@ -457,6 +513,7 @@ def main() -> None:
         p.add_argument("run_dir"); p.add_argument("--out", required=True)
         p.add_argument("--entries"); p.add_argument("--variants"); p.add_argument("--samples", type=int, default=5)
         p.add_argument("--batch", type=int, default=15)
+        p.add_argument("--spec-patch", help="unified diff of the specs; rewrites matching quoted sentences in entries")
         p.add_argument("--workers", type=int, default=4); p.add_argument("--pause-at", type=float, default=85)
         p.add_argument("--check-every", type=int, default=5)
     s = sub.add_parser("summarize"); s.add_argument("out")

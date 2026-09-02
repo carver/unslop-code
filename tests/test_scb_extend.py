@@ -1,5 +1,6 @@
 """Checkpoint selection and window-guard tests for bin/scb-extend."""
 import datetime
+import yaml
 import json
 import sys
 import types
@@ -72,3 +73,38 @@ def test_wait_runs_until_reset_plus_slack():
 def test_wait_is_only_slack_when_reset_already_passed():
     now = datetime.datetime(2026, 9, 2, 22, 0, tzinfo=UTC)
     assert ext.seconds_until_room(reading(75), 30, now) == ext.RESET_SLACK_S
+
+
+def finished_checkpoint(problem_dir, n):
+    d = problem_dir / f"checkpoint_{n}"; d.mkdir(parents=True, exist_ok=True)
+    (d / "evaluation.json").write_text("{}"); (d / "inference_result.json").write_text("{}"); (d / "snapshot").mkdir()
+
+
+def write_run_info(problem_dir, states):
+    (problem_dir / "run_info.yaml").write_text(yaml.safe_dump({"seed": 42, "summary": {"checkpoints": states, "state": "error"}}))
+
+
+def test_repair_marks_finished_checkpoints_ran_and_keeps_a_backup(tmp_path):
+    finished_checkpoint(tmp_path, 1); finished_checkpoint(tmp_path, 2); (tmp_path / "checkpoint_3").mkdir()
+    write_run_info(tmp_path, {"checkpoint_1": "skipped", "checkpoint_2": "skipped", "checkpoint_3": "error"})
+    now = datetime.datetime(2026, 9, 2, 21, 0, 0, tzinfo=UTC)
+    assert ext.repair_run_info(tmp_path, 7, now) == ["checkpoint_1", "checkpoint_2"]
+    info = yaml.safe_load((tmp_path / "run_info.yaml").read_text())
+    assert info["summary"]["checkpoints"] == {"checkpoint_1": "ran", "checkpoint_2": "ran", "checkpoint_3": "error"}
+    assert info["seed"] == 42 and info["summary"]["state"] == "error"
+    backup = yaml.safe_load((tmp_path / "run_info.yaml.bak-20260902T210000").read_text())
+    assert backup["summary"]["checkpoints"]["checkpoint_1"] == "skipped"
+
+
+def test_repair_leaves_a_consistent_run_info_alone(tmp_path):
+    finished_checkpoint(tmp_path, 1)
+    write_run_info(tmp_path, {"checkpoint_1": "ran", "checkpoint_2": "skipped"})
+    before = (tmp_path / "run_info.yaml").read_text()
+    assert ext.repair_run_info(tmp_path, 7) == []
+    assert (tmp_path / "run_info.yaml").read_text() == before
+    assert not list(tmp_path.glob("run_info.yaml.bak-*"))
+
+
+def test_repair_without_run_info_is_a_noop(tmp_path):
+    finished_checkpoint(tmp_path, 1)
+    assert ext.repair_run_info(tmp_path, 7) == []

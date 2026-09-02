@@ -1,0 +1,296 @@
+<title>The Five Sentences</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root {
+  --bg:#F3F4F1; --ink:#1C2129; --muted:#5E6673; --rule:#D9D6CC; --panel:#FBFBF8;
+  --del:#A63D2F; --del-bg:#F4E1DC; --ins:#0E6F6B; --ins-bg:#D9ECE9; --bar:#C9CBC3;
+  --serif:"Newsreader", Georgia, "Times New Roman", serif;
+  --sans:"Source Sans 3", "Segoe UI", Helvetica, Arial, sans-serif;
+  --mono:"JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg:#161A1F; --ink:#E6E4DC; --muted:#A0A6AF; --rule:#343A42; --panel:#1E2329;
+  --del:#E58A7C; --del-bg:#3A2420; --ins:#5FC3BC; --ins-bg:#173432; --bar:#3B414A; } }
+:root[data-theme="dark"] {
+  --bg:#161A1F; --ink:#E6E4DC; --muted:#A0A6AF; --rule:#343A42; --panel:#1E2329;
+  --del:#E58A7C; --del-bg:#3A2420; --ins:#5FC3BC; --ins-bg:#173432; --bar:#3B414A; }
+body { background:var(--bg); color:var(--ink); font-family:var(--sans); font-size:17px; line-height:1.55; margin:0; }
+main { max-width:72ch; margin:0 auto; padding:3rem 1.25rem 5rem; }
+h1,h2,h3 { font-family:var(--serif); font-weight:500; text-wrap:balance; margin:0; }
+h1 { font-size:2.6rem; line-height:1.1; }
+h2 { font-size:1.7rem; }
+h3 { font-size:1.05rem; font-family:var(--sans); font-weight:600; letter-spacing:.01em; margin-bottom:.35rem; }
+p { margin:.5rem 0 .9rem; }
+code { font-family:var(--mono); font-size:.86em; }
+.lede { font-family:var(--serif); font-size:1.25rem; color:var(--muted); margin:.75rem 0 2rem; }
+.eyebrow { display:flex; gap:1rem; font-family:var(--mono); font-size:.78rem; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); }
+.eyebrow .id { color:var(--ink); font-weight:500; }
+.strip { display:grid; grid-template-columns:repeat(7,1fr); gap:.4rem; margin:1.5rem 0 .5rem; font-variant-numeric:tabular-nums; }
+.strip .cell { background:var(--panel); border:1px solid var(--rule); padding:.55rem .5rem; text-align:center; }
+.strip .cell .k { font-family:var(--mono); font-size:.72rem; color:var(--muted); letter-spacing:.06em; }
+.strip .cell .v7 { display:block; color:var(--del); font-family:var(--mono); font-size:.88rem; margin-top:.25rem; }
+.strip .cell .v8 { display:block; color:var(--ins); font-family:var(--mono); font-size:.88rem; font-weight:500; }
+.strip-legend { font-size:.85rem; color:var(--muted); margin:0 0 2.5rem; display:flex; gap:1.5rem; }
+.strip-legend b { font-weight:600; } .strip-legend .a { color:var(--del); } .strip-legend .b { color:var(--ins); }
+table.sum { border-collapse:collapse; width:100%; font-size:.95rem; margin:1rem 0 2rem; }
+table.sum th, table.sum td { text-align:left; padding:.45rem .5rem; border-bottom:1px solid var(--rule); vertical-align:top; }
+table.sum th { font-family:var(--mono); font-size:.74rem; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); font-weight:500; }
+table.sum td:nth-child(3) { font-variant-numeric:tabular-nums; white-space:nowrap; }
+.tablewrap { overflow-x:auto; }
+section.fam { border-top:1px solid var(--rule); padding-top:2rem; margin-top:3rem; }
+.fam-head h2 { margin-top:.4rem; }
+figure.diff { margin:1.5rem 0; background:var(--panel); border:1px solid var(--rule); padding:1rem 1.15rem; }
+figure.diff figcaption { font-family:var(--mono); font-size:.74rem; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); }
+figure.diff .ctx { color:var(--muted); font-size:.95rem; margin:.5rem 0 .35rem; }
+figure.diff .sent { font-family:var(--mono); font-size:.95rem; line-height:1.7; margin:0; }
+figure.diff del { color:var(--del); background:var(--del-bg); text-decoration:line-through; text-decoration-thickness:1.5px; padding:.05em .15em; }
+figure.diff ins { color:var(--ins); background:var(--ins-bg); text-decoration:none; padding:.05em .15em; font-weight:500; }
+.cols { display:grid; grid-template-columns:1fr 1fr; gap:2rem; }
+@media (max-width:640px) { .cols { grid-template-columns:1fr; } .strip { grid-template-columns:repeat(4,1fr); } }
+ul.tests { list-style:none; padding:0; margin:.25rem 0 0; display:grid; gap:.5rem; }
+ul.tests li { display:grid; gap:.1rem; font-size:.92rem; }
+ul.tests li span { color:var(--muted); }
+code.t { font-size:.78rem; word-break:break-all; }
+details.entry { margin:1.5rem 0; border:1px solid var(--rule); }
+details.entry summary { cursor:pointer; padding:.7rem 1rem; font-weight:600; font-size:.95rem; }
+details.entry summary:focus-visible { outline:2px solid var(--ins); outline-offset:-2px; }
+.entry-body { padding:0 1.15rem 1rem; font-size:.95rem; }
+.entry-body blockquote { margin:.6rem 0; padding:.4rem .9rem; border-left:3px solid var(--rule); color:var(--muted); font-family:var(--mono); font-size:.84rem; }
+.entry-body ol { padding-left:1.3rem; } .entry-body li { margin:.3rem 0; }
+.evidence { margin-top:1.25rem; }
+.votes { display:grid; gap:.5rem; margin:.5rem 0 .75rem; }
+.vote { display:grid; grid-template-columns:10rem 1fr; gap:.25rem .9rem; align-items:center; font-size:.88rem; }
+.vote .lbl { color:var(--muted); font-family:var(--mono); font-size:.76rem; }
+.vote .num { grid-column:2; color:var(--muted); font-variant-numeric:tabular-nums; }
+.bar { height:.55rem; background:var(--bar); position:relative; }
+.bar i { position:absolute; inset:0 auto 0 0; background:var(--del); }
+.bar.ok i { background:var(--ins); }
+.close { border-top:1px solid var(--rule); margin-top:3rem; padding-top:2rem; }
+.src { font-size:.85rem; color:var(--muted); }
+@media (prefers-reduced-motion: no-preference) { details.entry[open] .entry-body { animation: fade .2s ease-out; } }
+@keyframes fade { from { opacity:.4 } to { opacity:1 } }
+</style>
+<main>
+<div class="eyebrow"><span class="id">datagate</span><span>slop code bench</span><span>spectest v7 → v8 disambiguated</span></div>
+<h1>The Five Sentences</h1>
+<p class="lede">Where the datagate spec and its hidden tests disagree, and what it took to fix each one.</p>
+
+<p>The v7 run of the spectest prompt on datagate, Opus 5 under Claude Code 2.1.251, ran seven checkpoints against 405 hidden tests with zero process failures and solved checkpoints 3, 6 and 7 in isolation. It lost 14 tests. Every one of the 14 traces to a single sentence the model reads one way and the test author meant the other way, and the tester had written each reading down in its ambiguity registry before any implementation existed.</p>
+
+<div class="strip">
+<div class="cell"><span class="k">ckpt 1</span><span class="v7">49/50</span><span class="v8">50/50</span></div><div class="cell"><span class="k">ckpt 2</span><span class="v7">118/122</span><span class="v8">122/122</span></div><div class="cell"><span class="k">ckpt 3</span><span class="v7">170/174</span><span class="v8">174/174</span></div><div class="cell"><span class="k">ckpt 4</span><span class="v7">224/233</span><span class="v8">233/233</span></div><div class="cell"><span class="k">ckpt 5</span><span class="v7">262/276</span><span class="v8">276/276</span></div><div class="cell"><span class="k">ckpt 6</span><span class="v7">339/353</span><span class="v8">353/353</span></div><div class="cell"><span class="k">ckpt 7</span><span class="v7">391/405</span><span class="v8">running</span></div>
+</div>
+<div class="strip-legend"><span><b class="a">v7</b> original spec</span><span><b class="b">v8 disambiguated</b> five sentences reworded, same prompt family</span></div>
+
+<div class="tablewrap"><table class="sum">
+<tr><th>entry</th><th>sentence (checkpoint)</th><th>tests lost</th><th>fix</th></tr>
+<tr><td>T22</td><td>“detect encoding from content” (1)</td><td>1, every checkpoint</td><td>name the fallback: unambiguous detection, else latin-1</td></tr>
+<tr><td>T27</td><td>“1-based source-file row number” (2)</td><td>4</td><td>“starting at the header”</td></tr>
+<tr><td>T63</td><td>“<code>charset</code> applies only to text CSV sources” (4)</td><td>2</td><td>“applies and validates only for”</td></tr>
+<tr><td>T56</td><td><code>/upload</code> lists no parameters (4)</td><td>2</td><td>“and <code>charset</code> query parameter”</td></tr>
+<tr><td>T74</td><td>“Any additional <code>force</code> value is HTTP 400” (5)</td><td>5</td><td>delete “additional”</td></tr>
+</table></div>
+
+<p>Three pieces of evidence sit behind each section. The tester's registry entry, verbatim, shows the reading was a considered choice. A blind judge, 5360 fresh judgments across eight prompt variants, shows the same model makes the same choice from the spec alone: 195 of 200 on these five entries. And the patched run shows the reworded sentences flip the outcome.</p>
+
+
+<section class="fam" id="T22">
+  <header class="fam-head">
+    <div class="eyebrow"><span class="id">T22</span><span>checkpoint 1</span><span>1 test, at every checkpoint</span></div>
+    <h2>Encoding detection</h2>
+  </header>
+  <figure class="diff">
+    <figcaption>the sentence, before and after</figcaption>
+    <p class="ctx">Character encoding for decoding CSV bytes.</p>
+    <p class="sent"><span>If omitted, </span><del>detect encoding from content.</del><ins>detect unambiguous encoding from content, else latin-1.</ins></p>
+  </figure>
+  <div class="cols">
+    <div>
+      <h3>What the hidden tests expect</h3>
+      <p>A six-byte latin-1 file decodes to the exact text without a hint. The reference solution has no detector at all: it tries UTF-8 with BOM, UTF-8, cp1252, then latin-1, and the first that decodes wins.</p>
+      <ul class="tests"><li><code class='t'>test_checkpoint_1.py::test_autodetect_latin1</code><span>bytes are <code>"name\ncafé\n"</code> in iso-8859-1, no <code>charset</code>; expects <code>[["café"]]</code></span></li></ul>
+    </div>
+    <div>
+      <h3>What got built</h3>
+      <p>The tester measured that charset-normalizer and chardet cannot tell latin-1 from cp1252 from cp1250, concluded exact round-trips were unachievable for 8-bit codepages, and asserted only structural correctness there. The implementation handed the bytes to charset-normalizer, which called the sample Arabic: <code>cafﻠ</code>.</p>
+    </div>
+  </div>
+  <details class="entry">
+    <summary>What the tester recorded, verbatim from AMBIGUITIES.md</summary>
+    <div class="entry-body"><p><strong>Spec Text</strong></p>
+<blockquote><code>charset</code> | no | ... If omitted, detect encoding from content. If <code>/convert</code> receives <code>charset</code>, use it to decode bytes. Otherwise detect encoding.</blockquote>
+<p><strong>Alternatives</strong></p>
+<ol><li>Detection must recover the exact original text for <em>any</em> encoding, including 8-bit codepages (latin-1, cp1252, cp1250, koi8-r, ...).</li><li>Detection must recover the exact text for self-describing byte streams (UTF-8, UTF-8+BOM, UTF-16/32 with BOM); for 8-bit codepages, which are not distinguishable in principle, only ingestion and structural correctness are required — that is what <code>charset</code> exists for.</li></ol>
+<p><strong>Choice</strong> — (2). Reading (1) is not achievable by any implementation: measured in this environment, both <code>charset_normalizer</code> and <code>chardet</code> identify a 36-row French CSV encoded as latin-1 <em>and</em> the same document encoded as cp1252 as <code>cp1250</code> — the byte sequences are genuinely ambiguous. SPEC pairs "detect" with an explicit <code>charset</code> override precisely for this case. Tests therefore assert exact round-trips for self-describing encodings, and for 8-bit codepages assert only that the file ingests with the right columns/row count and preserved ASCII skeleton — plus that an explicit <code>charset</code> does give an exact round trip. <em>Tests:</em> <code>test_06_csv_parsing.py::test_detection_on_larger_8bit_document</code>, <code>::test_8bit_document_round_trips_with_explicit_charset</code>, <code>::test_detects_utf8_with_bom</code>, <code>::test_detects_utf16_with_bom</code>, <code>test_08_properties.py::test_prop_encoding_detection_round_trips</code>, <code>test_09_comparison.py::test_agrees_with_charset_detectors</code>.</p>
+<p>---</p>
+<p># Ambiguities found during implementation</p></div>
+  </details>
+  <div class="evidence">
+    <h3>Blind judge, then the live run</h3>
+    <div class="votes">
+      <div class="vote"><span class="lbl">original sentence</span><div class="bar"><i style="width:100%"></i></div><span class="num">40/40 chose the tester's reading</span></div>
+      <div class="vote"><span class="lbl">patched sentence</span><div class="bar ok"><i style="width:100%"></i></div><span class="num">20/20 chose the hidden reading</span></div>
+    </div>
+    <p>The vote stayed at zero because neither registry alternative describes a fallback ladder. All ten rule-first answers described exactly that ladder, and the patched run's checkpoint 1 went 50 of 50, a first for the series. Live: <strong>50/50</strong> at checkpoint 1.</p>
+  </div>
+</section>
+<section class="fam" id="T27">
+  <header class="fam-head">
+    <div class="eyebrow"><span class="id">T27</span><span>checkpoint 2</span><span>4 tests</span></div>
+    <h2>Which row is row 1</h2>
+  </header>
+  <figure class="diff">
+    <figcaption>the sentence, before and after</figcaption>
+    <p class="ctx"><code>_shape=objects</code>: <code>rows</code> is objects and includes</p>
+    <p class="sent"><span><code>rowid</code> (1-based source-file row number</span><del>).</del><ins>, starting at the header).</ins></p>
+  </figure>
+  <div class="cols">
+    <div>
+      <h3>What the hidden tests expect</h3>
+      <p>The header line is row 1 of the source file, so the first data row is 2. It is a line number, not an index into <code>rows</code>.</p>
+      <ul class="tests"><li><code class='t'>test_checkpoint_2.py::test_shape_objects_includes_rowid</code><span>first object row has <code>rowid == 2</code></span></li><li><code class='t'>test_checkpoint_2.py::test_rowid_sequential_all_rows</code><span>rowids over the dataset are <code>[2, 3, 4, 5, 6]</code></span></li><li><code class='t'>test_checkpoint_2.py::test_rowid_ignores_sort</code><span>sorted by age, Bob keeps <code>rowid 3</code>, Diana <code>rowid 5</code></span></li><li><code class='t'>test_checkpoint_4.py::test_spreadsheet_query_controls</code><span>an <code>.xlsx</code> dataset's first data row is <code>{"rowid": 2, …}</code></span></li></ul>
+    </div>
+    <div>
+      <h3>What got built</h3>
+      <p>The tester read “1-based” as “the count starts at one” and “row” as “data row”, citing SQLite's rowid and the point that the other reading makes rowid useless as an index. Every data row came out one too low, at every checkpoint from 2 onward, and again through the spreadsheet path at 4.</p>
+    </div>
+  </div>
+  <details class="entry">
+    <summary>What the tester recorded, verbatim from AMBIGUITIES.md</summary>
+    <div class="entry-body"><p><strong>Spec Text</strong></p>
+<blockquote><code>_shape=objects</code>: <code>rows</code> is objects and includes <code>rowid</code> (1-based source-file row number).</blockquote>
+<p><strong>Alternatives</strong></p>
+<ol><li>The header is line 1 of the source file, so the first data row is <code>rowid</code> 2.</li><li><code>rowid</code> numbers the <em>data</em> rows: the first data row is <code>rowid</code> 1.</li></ol>
+<p><strong>Choice</strong> — (2). "1-based" only says the count starts at one, and a dataset holds data rows, not the header (which SPEC reports separately as <code>columns</code>). The parallel implementation named by this API surface (datasette) uses SQLite's <code>rowid</code>, which is 1 for the first inserted data row. Reading (1) would also make <code>rowid</code> unusable as an index into <code>rows</code>. <em>Tests:</em> <code>test_10_pagination_sorting_shape.py::test_rowid_is_the_one_based_source_row_number</code>, <code>::test_rowid_on_the_smallest_table_is_one</code>, <code>::test_rowid_follows_the_source_row_through_offset</code>, <code>test_11_control_properties.py::test_prop_objects_shape</code>, <code>::test_prop_rowid_tracks_the_source_row_under_pagination</code>.</p></div>
+  </details>
+  <div class="evidence">
+    <h3>Blind judge, then the live run</h3>
+    <div class="votes">
+      <div class="vote"><span class="lbl">original sentence</span><div class="bar"><i style="width:88%"></i></div><span class="num">35/40 chose the tester's reading</span></div>
+      <div class="vote"><span class="lbl">patched sentence</span><div class="bar ok"><i style="width:100%"></i></div><span class="num">20/20 chose the hidden reading</span></div>
+    </div>
+    <p>35 of 40 chose the data-row reading on the original; 20 of 20 chose the header reading on the patched sentence. Live: <strong>122/122</strong> at checkpoint 2.</p>
+  </div>
+</section>
+<section class="fam" id="T63">
+  <header class="fam-head">
+    <div class="eyebrow"><span class="id">T63</span><span>checkpoint 4</span><span>2 tests</span></div>
+    <h2>A bad charset on a spreadsheet</h2>
+  </header>
+  <figure class="diff">
+    <figcaption>the sentence, before and after</figcaption>
+    <p class="ctx">Multi-Format Ingestion. Checkpoint 1's error table, still in force: Unsupported or malformed <code>charset</code> → 400.</p>
+    <p class="sent"><span><code>charset</code> applies </span><del>only to</del><ins>and validates only for</ins><span> text CSV sources.</span></p>
+  </figure>
+  <div class="cols">
+    <div>
+      <h3>What the hidden tests expect</h3>
+      <p>For a spreadsheet the parameter is neither used nor looked at. An unusable value is not an error because nothing decodes with it.</p>
+      <ul class="tests"><li><code class='t'>test_checkpoint_4.py::test_convert_spreadsheet_invalid_charset_ignored[xls]</code><span><code>/convert?charset=bad-charset-name</code> on an <code>.xls</code> source succeeds</span></li><li><code class='t'>test_checkpoint_4.py::test_convert_spreadsheet_invalid_charset_ignored[xlsx]</code><span>same, <code>.xlsx</code></span></li></ul>
+    </div>
+    <div>
+      <h3>What got built</h3>
+      <p>The tester read the error row as unconditional: a malformed charset is a bad request whatever the source turns out to be, checked before the source is fetched. The implementation returned 400.</p>
+    </div>
+  </div>
+  <details class="entry">
+    <summary>What the tester recorded, verbatim from AMBIGUITIES.md</summary>
+    <div class="entry-body"><p><strong>Spec Text</strong></p>
+<blockquote><code>charset</code> applies only to text CSV sources. (earlier section) | Unsupported or malformed <code>charset</code> | 400 |</blockquote>
+<p><strong>Alternatives</strong></p>
+<ol><li>Since the charset "applies only to text CSV sources", it is not looked at for a spreadsheet, so <code>charset=not-a-charset</code> with an <code>.xlsx</code> source succeeds.</li><li>The earlier error row is unconditional: an unusable <code>charset</code> value is a bad request whatever the source turns out to be; the new sentence is about the <em>effect</em> of a usable charset, not about validating the parameter.</li></ol>
+<p><strong>Choice</strong> — (2). The error table entry is written about the parameter, not about the source, and it is reached before the source is even fetched; that also keeps the error deterministic for a URL whose content is unknown. The complementary half — a <em>valid</em> charset must not change a spreadsheet's parse — is asserted directly. <em>Tests:</em> <code>test_18_multiformat.py::test_malformed_charset_is_still_400_for_a_spreadsheet</code>, <code>::test_charset_does_not_change_a_spreadsheet</code>, <code>::test_charset_does_not_break_an_xls</code>, <code>test_19_export_upload_properties.py::test_prop_charset_does_not_change_a_spreadsheet</code>.</p></div>
+  </details>
+  <div class="evidence">
+    <h3>Blind judge, then the live run</h3>
+    <div class="votes">
+      <div class="vote"><span class="lbl">original sentence</span><div class="bar"><i style="width:100%"></i></div><span class="num">40/40 chose the tester's reading</span></div>
+      <div class="vote"><span class="lbl">patched sentence</span><div class="bar ok"><i style="width:100%"></i></div><span class="num">20/20 chose the hidden reading</span></div>
+    </div>
+    <p>“Elsewhere, ignore it” reached 13 of 20; “Elsewhere, drop it” fell to 5, the judge explaining that dropping a value is not the same as not checking it. “applies and validates only for” went 20 of 20. Live: <strong>233/233</strong> at checkpoint 4.</p>
+  </div>
+</section>
+<section class="fam" id="T56">
+  <header class="fam-head">
+    <div class="eyebrow"><span class="id">T56</span><span>checkpoint 4</span><span>2 tests</span></div>
+    <h2>Charset on upload</h2>
+  </header>
+  <figure class="diff">
+    <figcaption>the sentence, before and after</figcaption>
+    <p class="ctx">File Upload. The section lists two form fields and no parameters.</p>
+    <p class="sent"><span><code>POST /upload</code> accepts multipart form with field <code>file</code> or <code>attachment</code></span><del>.</del><ins>, and <code>charset</code> query parameter.</ins></p>
+  </figure>
+  <div class="cols">
+    <div>
+      <h3>What the hidden tests expect</h3>
+      <p><code>/upload</code> honours the same <code>charset</code> query parameter as <code>/convert</code>. The reference reads it from the query string on both routes.</p>
+      <ul class="tests"><li><code class='t'>test_checkpoint_4.py::test_upload_csv_charset_honored</code><span><code>POST /upload?charset=iso-8859-1</code> with a latin-1 file; expects <code>[["café"]]</code></span></li><li><code class='t'>test_checkpoint_4.py::test_export_charset_upload</code><span>same upload, then <code>/export</code> as UTF-8 CSV</span></li></ul>
+    </div>
+    <div>
+      <h3>What got built</h3>
+      <p>The tester noted the section names two fields and no parameters, and asserted only that detection works for uploads. The implementation never looked for charset on upload; a latin-1 upload came out mangled, on ingest and again on export.</p>
+    </div>
+  </div>
+  <details class="entry">
+    <summary>What the tester recorded, verbatim from AMBIGUITIES.md</summary>
+    <div class="entry-body"><p><strong>Spec Text</strong></p>
+<blockquote><code>charset</code> applies only to text CSV sources. (earlier section) <code>charset</code> | no | ... If omitted, detect encoding from content.</blockquote>
+<p><strong>Alternatives</strong></p>
+<ol><li><code>/upload</code> must accept a <code>charset</code> (query parameter or form field) with the same meaning it has on <code>/convert</code>.</li><li>SPEC gives <code>/upload</code> no parameters at all, so an upload is always decoded by detection; an extra <code>charset</code> field, if sent, is simply an unrelated form field.</li></ol>
+<p><strong>Choice</strong> — (2), for what is <em>asserted</em>. The upload section defines exactly two field names and no parameters. Tests therefore assert that detection works for uploads (self-describing encodings round-trip exactly; 8-bit codepages ingest structurally, as in T22) and that an extra <code>charset</code> field never breaks the upload — so an implementation that additionally honours it still passes. <em>Tests:</em> <code>test_17_upload.py::test_upload_detects_encoding</code>, <code>::test_upload_of_utf8_bom_csv</code>, <code>::test_upload_of_latin1_csv_is_structurally_correct</code>, <code>::test_upload_ignores_unrelated_extra_fields</code>.</p></div>
+  </details>
+  <div class="evidence">
+    <h3>Blind judge, then the live run</h3>
+    <div class="votes">
+      <div class="vote"><span class="lbl">original sentence</span><div class="bar"><i style="width:100%"></i></div><span class="num">40/40 chose the tester's reading</span></div>
+      <div class="vote"><span class="lbl">patched sentence</span><div class="bar ok"><i style="width:100%"></i></div><span class="num">20/20 chose the hidden reading</span></div>
+    </div>
+    <p>A first patch, “and <code>charset</code>”, won the vote 20 of 20 but every rule-first answer read it as a third multipart field. With “query parameter” added, every answer said query parameter. Live: <strong>233/233</strong> at checkpoint 4.</p>
+  </div>
+</section>
+<section class="fam" id="T74">
+  <header class="fam-head">
+    <div class="eyebrow"><span class="id">T74</span><span>checkpoint 5</span><span>5 tests</span></div>
+    <h2>A force with a value</h2>
+  </header>
+  <figure class="diff">
+    <figcaption>the sentence, before and after</figcaption>
+    <p class="ctx"><code>force</code> is a presence flag. If present once, it forces re-ingestion and replaces the cached dataset.</p>
+    <p class="sent"><span>Any </span><del>additional </del><span><code>force</code> value is <code>HTTP 400</code>.</span></p>
+  </figure>
+  <div class="cols">
+    <div>
+      <h3>What the hidden tests expect</h3>
+      <p>A bare <code>?force</code> forces. A force carrying any value is 400. A repeated force is also 400, and that half was never in doubt.</p>
+      <ul class="tests"><li><code class='t'>test_checkpoint_5.py::test_force_variants_trigger_refresh[true|1|yes|on]</code><span><code>/convert?force=true</code> and friends return the 400 envelope</span></li><li><code class='t'>test_checkpoint_5.py::test_arbitrary_force_triggers_refresh</code><span><code>/convert?force=ignored</code> returns the 400 envelope</span></li></ul>
+    </div>
+    <div>
+      <h3>What got built</h3>
+      <p>The tester read “additional value” as “a second occurrence”, arguing that a presence flag never examines its value and that the other reading was unimplementable because <code>?force</code> and <code>?force=</code> look identical to a parser. The rule the tests want, empty value forces and non-empty is 400, is expressible by any parser. The tests then asserted that <code>0</code>, <code>false</code>, <code>off</code> and arbitrary text all force, and the implementation did exactly that.</p>
+    </div>
+  </div>
+  <details class="entry">
+    <summary>What the tester recorded, verbatim from AMBIGUITIES.md</summary>
+    <div class="entry-body"><p><strong>Spec Text</strong></p>
+<blockquote><code>force</code> is a presence flag. If present once, it forces re-ingestion and replaces the cached dataset. Any additional <code>force</code> value is <code>HTTP 400</code>.</blockquote>
+<p><strong>Alternatives</strong></p>
+<ol><li>"additional value" = a value beyond mere presence, i.e. <code>?force</code> is fine but <code>?force=1</code> is <code>HTTP 400</code>.</li><li>"additional value" = an additional occurrence of the parameter, i.e. exactly one <code>force</code> (whatever its value, including none) is fine and <code>?force&amp;force</code> / <code>?force=1&amp;force=2</code> is <code>HTTP 400</code>.</li></ol>
+<p><strong>Choice</strong> — (2). "<code>force</code> is a <strong>presence</strong> flag" says the value is never examined, and "If present <strong>once</strong>" sets up the contrast that "additional" completes — once vs. more than once. Reading (1) also cannot be implemented coherently: a bare <code>?force</code> and <code>?force=</code> are the same thing to every standard query parser, so "presence without a value" is not a distinction the wire format reliably carries. This matches how the earlier section words its own repetition rule ("Any repeated control parameter ... is <code>HTTP 400</code>"). Consequence deliberately asserted: <code>force=0</code> and <code>force=false</code> still force — the value is not read. <em>Tests:</em> <code>test_21_cache.py::test_force_any_single_value_forces</code> (bare, empty, <code>0</code>, <code>false</code>, <code>off</code>, arbitrary text), <code>::test_repeated_force_is_400</code>, <code>::test_repeated_force_error_response_has_no_endpoint</code>, <code>test_23_cache_properties.py::test_prop_any_single_force_value_forces</code>, <code>::test_prop_repeated_force_is_400</code>.</p></div>
+  </details>
+  <div class="evidence">
+    <h3>Blind judge, then the live run</h3>
+    <div class="votes">
+      <div class="vote"><span class="lbl">original sentence</span><div class="bar"><i style="width:100%"></i></div><span class="num">40/40 chose the tester's reading</span></div>
+      <div class="vote"><span class="lbl">patched sentence</span><div class="bar ok"><i style="width:100%"></i></div><span class="num">20/20 chose the hidden reading</span></div>
+    </div>
+    <p>40 of 40 chose the second-occurrence reading, including the 20 told that both readings might hold and the 20 told that implementability was not their concern. Deleting one word flipped it to 20 of 20. Live: <strong>276/276</strong> at checkpoint 5.</p>
+  </div>
+</section>
+
+<section class="close">
+  <h2>What this says about the benchmark</h2>
+  <p>The hidden tests are the spec's real definition, and on these five points the written spec does not carry it. Three of the five are true forks a careful reader could take either way: rowid, spreadsheet charset, upload charset. Two are sentences where the literal noun points at the intended reading but a plausible argument talks the reader out of it: force, encoding. In every case the tester found the fork, wrote it down, argued for the wrong branch, and a blind re-reading by the same model picks the same branch. Prompt-level hints did not move it. One sentence did.</p>
+  <p class="src">Sources in the repo: the v7 run and its registry under <code>outputs/spectest/…spectest-v7/20260901T0726</code>, the judge in <code>notes/ambiguity-judge.md</code>, the fix in <code>problems/datagate-clarified.patch</code>, the patched run under <code>…spectest-v8-disambiguated/20260902T0555</code>, and this page's text in <code>notes/critical-ambiguities.md</code>.</p>
+</section>
+</main>

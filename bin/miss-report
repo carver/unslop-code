@@ -1,0 +1,140 @@
+#!/usr/bin/env python3
+"""Gather everything needed to explain a run's hidden-test misses.
+
+For a completed slop-code run, lists every hidden test that failed (once, however
+many checkpoints it failed at), and for each: the test's docstring and assertion
+lines from the problem's test file, the spec lines near the words in the test's
+name, and the registry entries (AMBIGUITIES.md) whose quoted spec text overlaps
+it most. It does the gathering; deciding which entry a test belongs to, and what
+the hidden reading is, is the reader's job.
+
+  bin/miss-report <run_dir> [--problem P] [--out report.md]
+
+Reads the problem's tests from the catalog root (SCBENCH_PROBLEMS_PATH or
+~/.cache/scbench/problems) and the registry from the run's last snapshot.
+"""
+from __future__ import annotations
+
+import argparse
+import collections
+import json
+import os
+import re
+import sys
+from pathlib import Path
+
+PROBLEM_ROOT = Path(os.environ.get("SCBENCH_PROBLEMS_PATH") or Path.home() / ".cache/scbench/problems")
+STOP = {"test", "the", "a", "an", "and", "or", "of", "to", "in", "is", "for", "with", "on", "by", "not", "all", "returns", "return"}
+
+
+def failing_tests(run_dir: Path, problem: str) -> dict[tuple[int, str], list[int]]:
+    """(origin checkpoint, test name) -> run checkpoints it failed at."""
+    fails: dict[tuple[int, str], list[int]] = collections.defaultdict(list)
+    for ev in sorted(run_dir.glob(f"{problem}/checkpoint_*/evaluation.json")):
+        if not re.fullmatch(r"checkpoint_\d+", ev.parent.name):
+            continue
+        n = int(ev.parent.name.split("_")[1])
+        data = json.loads(ev.read_text())
+        for group, res in (data.get("tests") or {}).items():
+            origin = int(re.match(r"checkpoint_(\d+)", group).group(1))
+            for name in (res.get("failed") or []):
+                fails[(origin, name.split("::")[-1])].append(n)
+    return fails
+
+
+def test_source(problem: str, origin: int, name: str) -> tuple[str, list[str]]:
+    """Docstring and the lines that carry the expectation."""
+    base = re.sub(r"\[.*\]$", "", name)
+    src = (PROBLEM_ROOT / problem / "tests" / f"test_checkpoint_{origin}.py").read_text()
+    m = re.search(rf"(?:^[ \t]*@[^\n]*\n)*^[ \t]*def {re.escape(base)}\(.*?(?=^[ \t]*(?:@|def )|^class |\Z)", src, re.S | re.M)
+    if not m:
+        return "(test not found in the problem's test file)", []
+    body = m.group(0)
+    doc = re.search(r'"""(.*?)"""', body, re.S)
+    keep = [l.strip() for l in body.splitlines()
+            if re.search(r"assert|params=|parametrize|encode\(|status_code|set_route|\.get\(|\.post\(", l)]
+    return (doc.group(1).strip() if doc else "-"), keep[:10]
+
+
+def spec_lines_near(problem: str, origin: int, words: set[str], radius: int = 1) -> list[str]:
+    lines = (PROBLEM_ROOT / problem / f"checkpoint_{origin}.md").read_text().splitlines()
+    hits = [i for i, l in enumerate(lines) if any(re.search(rf"\b{re.escape(w)}", l, re.I) for w in words)]
+    out, seen = [], set()
+    for i in hits:
+        for j in range(max(0, i - radius), min(len(lines), i + radius + 1)):
+            if j not in seen and lines[j].strip():
+                seen.add(j); out.append(f"{j + 1}: {lines[j]}")
+    return out[:12]
+
+
+def registry(run_dir: Path, problem: str) -> list[tuple[str, str, str]]:
+    """(id, title, quoted spec text) from the last checkpoint's AMBIGUITIES.md."""
+    snaps = sorted((p for p in run_dir.glob(f"{problem}/checkpoint_*/snapshot/AMBIGUITIES.md")
+                    if re.fullmatch(r"checkpoint_\d+", p.parts[-3])), key=lambda p: int(p.parts[-3].split("_")[1]))
+    if not snaps:
+        return []
+    text = snaps[-1].read_text()
+    heads = list(re.finditer(r"^## (?P<id>[TI]\d+) — (?P<title>.*)$", text, re.M))
+    out = []
+    for i, h in enumerate(heads):
+        body = text[h.end(): heads[i + 1].start() if i + 1 < len(heads) else len(text)]
+        q = re.search(r"\*\*Spec Text\*\*(.*?)(?=\*\*Alternatives\*\*|\Z)", body, re.S)
+        out.append((h.group("id"), h.group("title").strip(), (q.group(1) if q else "").strip()))
+    return out
+
+
+def words_of(*texts: str) -> set[str]:
+    w = set()
+    for t in texts:
+        w |= {x.lower() for x in re.findall(r"[A-Za-z][A-Za-z0-9]{2,}", t)}
+    return w - STOP
+
+
+def rank_entries(entries, words: set[str], k: int = 3):
+    scored = []
+    for id_, title, quote in entries:
+        ew = words_of(title, quote)
+        overlap = len(words & ew)
+        if overlap:
+            scored.append((overlap / (len(words) ** 0.5 * max(len(ew), 1) ** 0.5), overlap, id_, title))
+    return sorted(scored, reverse=True)[:k]
+
+
+def main() -> None:
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("run_dir"); ap.add_argument("--problem"); ap.add_argument("--out")
+    args = ap.parse_args()
+    run_dir = Path(args.run_dir)
+    problem = args.problem
+    if problem is None:
+        names = sorted({p.parent.parent.name for p in run_dir.glob("*/checkpoint_*/evaluation.json")})
+        if len(names) != 1:
+            sys.exit(f"pass --problem: found {names or 'no'} evaluated problems under {run_dir}")
+        problem = names[0]
+    fails = failing_tests(run_dir, problem)
+    entries = registry(run_dir, problem)
+    lines = [f"# Hidden-test misses: {problem}", f"", f"Run: `{run_dir}`", f"",
+             f"{len(fails)} distinct failing tests; {len(entries)} registry entries.", ""]
+    for (origin, name), at in sorted(fails.items()):
+        doc, keep = test_source(problem, origin, name)
+        words = words_of(name, doc)
+        lines += [f"## checkpoint {origin}: `{name}`", "",
+                  f"Failed at run checkpoints {', '.join(map(str, at))}.", "", f"> {doc}", ""]
+        lines += ["```", *keep, "```", ""] if keep else []
+        near = spec_lines_near(problem, origin, {w for w in words_of(name) if len(w) > 3} or words)
+        if near:
+            lines += ["Spec lines near the test's words:", "", "```", *near, "```", ""]
+        ranked = rank_entries(entries, words)
+        if ranked:
+            lines += ["Candidate registry entries (by overlap of the quoted spec text with the test):", ""]
+            lines += [f"- {id_} {title} (overlap {ov})" for _, ov, id_, title in ranked]
+            lines += [""]
+    text = "\n".join(lines)
+    if args.out:
+        Path(args.out).write_text(text); print(f"wrote {args.out}: {len(fails)} failing tests")
+    else:
+        print(text)
+
+
+if __name__ == "__main__":
+    main()

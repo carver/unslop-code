@@ -29,7 +29,8 @@ To judge against a clarified spec, point SCBENCH_PROBLEMS_PATH at a problem root
 holding the patched copy and pass --spec-patch <patch>: entries whose quoted
 spec text contains a sentence the patch rewrote get the new wording too.
 
-<run_dir> is a slop-code run dir holding datagate/checkpoint_N/snapshot/AMBIGUITIES.md.
+<run_dir> is a slop-code run dir holding <problem>/checkpoint_N/snapshot/AMBIGUITIES.md;
+the problem is inferred when the run has one, else pass --problem.
 Results append to <dir>/judgments.jsonl; a re-run skips judgments already there.
 """
 from __future__ import annotations
@@ -53,7 +54,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parent
 PROBLEM_ROOT = Path(os.environ.get("SCBENCH_PROBLEMS_PATH") or Path.home() / ".cache/scbench/problems")
-PROBLEM_DIR = PROBLEM_ROOT / "datagate"  # the benchmark's own override variable, so a patched copy works the same way
+# The benchmark's own override variable, so a patched copy works the same way.
 TOKEN_FILE = Path(os.environ.get("SCB_OAUTH_TOKEN_FILE", Path.home() / ".config/scbench/claude-oauth-token"))
 MODEL = "claude-opus-5"
 
@@ -61,7 +62,7 @@ MODEL = "claude-opus-5"
 # tests in the v7 run. A judge answer in the set counts as matching the hidden
 # reading. T74's hidden tests reject a value-bearing force AND a repeated one,
 # so "both" is right there too.
-HIDDEN_OK = {"T22": {1}, "T27": {1}, "T56": {1}, "T63": {1}, "T74": {1, "both"}}
+HIDDEN_OK = {"T22": {1}, "T27": {1}, "T56": {1}, "T63": {1}, "T74": {1, "both"}}  # datagate v7; other problems: --hidden
 
 VARIANTS = {
     f"{mode}{'+both' if both else ''}{'+impl' if impl else ''}": (mode, both, impl)
@@ -131,10 +132,18 @@ def _split_alternatives(block: str) -> list[str]:
     return alts
 
 
-def load_entries(run_dir: Path) -> list[Entry]:
+def infer_problem(run_dir: Path) -> str:
+    """The one problem in the run dir that has registry snapshots."""
+    names = sorted({p.parts[-4] for p in run_dir.glob("*/checkpoint_*/snapshot/AMBIGUITIES.md")})
+    if len(names) != 1:
+        sys.exit(f"pass --problem: found {names or 'no'} problems with AMBIGUITIES.md under {run_dir}")
+    return names[0]
+
+
+def load_entries(run_dir: Path, problem: str) -> list[Entry]:
     """Entries from the last checkpoint's registry, each tagged with the checkpoint
     it first appeared in, so the judge sees the spec the tester had."""
-    snaps = sorted((p for p in run_dir.glob("datagate/checkpoint_*/snapshot/AMBIGUITIES.md")
+    snaps = sorted((p for p in run_dir.glob(f"{problem}/checkpoint_*/snapshot/AMBIGUITIES.md")
                     if re.fullmatch(r"checkpoint_\d+", p.parts[-3])),  # skip *.partial dirs
                    key=lambda p: int(p.parts[-3].split("_")[1]))
     if not snaps:
@@ -198,10 +207,10 @@ def _sentences(line: str) -> list[str]:
     return [f.strip() for f in re.split(r"(?<=[.!?])\s+", line) if f.strip()]
 
 
-def cumulative_spec(checkpoint: int) -> str:
+def cumulative_spec(problem: str, checkpoint: int) -> str:
     parts = []
     for n in range(1, checkpoint + 1):
-        parts.append(f"<!-- checkpoint {n} -->\n" + (PROBLEM_DIR / f"checkpoint_{n}.md").read_text().strip())
+        parts.append(f"<!-- checkpoint {n} -->\n" + (PROBLEM_ROOT / problem / f"checkpoint_{n}.md").read_text().strip())
     return "\n\n".join(parts)
 
 
@@ -380,7 +389,8 @@ def done_keys(out: Path) -> set[tuple[str, str, int]]:
 
 
 def cmd_run(args, dry: bool) -> None:
-    entries = select_entries(load_entries(Path(args.run_dir)), args.entries)
+    problem = args.problem or infer_problem(Path(args.run_dir))
+    entries = select_entries(load_entries(Path(args.run_dir), problem), args.entries)
     if args.spec_patch:
         changed = rewrite_quotes(entries, patch_sentences(Path(args.spec_patch).read_text()))
         print(f"spec patch {args.spec_patch}: problem root {PROBLEM_ROOT}; rewrote quotes in {', '.join(changed) or 'no entries'}", flush=True)
@@ -400,7 +410,7 @@ def cmd_run(args, dry: bool) -> None:
             print(f"  {e.id} ckpt{e.checkpoint} alts={len(e.alternatives)} tester={e.choice} :: {e.title[:70]}")
         return
     env = claude_env()
-    specs = {n: cumulative_spec(n) for n in {e.checkpoint for e in entries}}
+    specs = {n: cumulative_spec(problem, n) for n in {e.checkpoint for e in entries}}
     lock = threading.Lock()
     state = {"n": 0, "cost": 0.0, "errors": 0, "paused": False}
     log = (out / "judgments.jsonl").open("a")
@@ -511,13 +521,18 @@ def main() -> None:
     for name in ("plan", "run"):
         p = sub.add_parser(name)
         p.add_argument("run_dir"); p.add_argument("--out", required=True)
+        p.add_argument("--problem", help="problem name inside the run dir (inferred when there is one)")
         p.add_argument("--entries"); p.add_argument("--variants"); p.add_argument("--samples", type=int, default=5)
         p.add_argument("--batch", type=int, default=15)
         p.add_argument("--spec-patch", help="unified diff of the specs; rewrites matching quoted sentences in entries")
         p.add_argument("--workers", type=int, default=4); p.add_argument("--pause-at", type=float, default=85)
         p.add_argument("--check-every", type=int, default=5)
     s = sub.add_parser("summarize"); s.add_argument("out")
+    s.add_argument("--hidden", help='JSON {"T7": [1], "T9": [2, "both"]}: readings the hidden tests take, per entry')
     args = ap.parse_args()
+    if getattr(args, "hidden", None):
+        HIDDEN_OK.clear()
+        HIDDEN_OK.update({k: set(v) for k, v in json.loads(args.hidden).items()})
     if args.cmd == "summarize":
         cmd_summarize(args)
     else:

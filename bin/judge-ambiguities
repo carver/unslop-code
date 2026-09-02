@@ -13,11 +13,16 @@ Eight variants, three binary switches:
   both    add: readings may not be exclusive; "all of them at once" is a reading
   impl    add: implementability is the implementer's problem, judge the text only
 
+Entries are judged in batches: one call takes up to --batch entries of the same
+checkpoint (a fresh random partition per variant and sample), because Claude Code
+print mode does not cache a custom system prompt between calls, so the spec is
+paid for once per call rather than once per entry.
+
 Judging runs through Claude Code print mode on the subscription token, the same
 auth path as bin/scb; no API key is used.
 
   bin/judge-ambiguities plan   <run_dir> --out <dir> [--entries T74,T27] [--variants ...] [--samples 5]
-  bin/judge-ambiguities run    <run_dir> --out <dir> [same filters] [--workers 4] [--pause-at 85]
+  bin/judge-ambiguities run    <run_dir> --out <dir> [same filters] [--batch 15] [--workers 4] [--pause-at 85]
   bin/judge-ambiguities summarize <dir>
 
 <run_dir> is a slop-code run dir holding datagate/checkpoint_N/snapshot/AMBIGUITIES.md.
@@ -79,7 +84,7 @@ class Entry:
     spec_text: str
     alternatives: list[str]
     choice: int | None
-    choice_raw: str
+    choice_raw: str = ""
     checkpoint: int = 0
 
 
@@ -153,9 +158,10 @@ def system_prompt(spec: str, variant: str) -> str:
     mode, both, impl = VARIANTS[variant]
     lines = [
         "You are judging how the author of a software specification intended an "
-        "under-specified passage to be read. You will see the specification and one "
-        "ambiguity: the quoted passage and candidate readings, numbered. Decide which "
-        "reading the author most plausibly intended.",
+        "under-specified passage to be read. You will see the specification and a "
+        "numbered list of ambiguities, each with the quoted passage and candidate "
+        "readings, numbered. For each ambiguity, independently, decide which reading "
+        "the author most plausibly intended.",
     ]
     if both:
         lines.append(BOTH_TEXT)
@@ -163,27 +169,29 @@ def system_prompt(spec: str, variant: str) -> str:
         lines.append(IMPL_TEXT)
     if mode == "rule":
         lines.append(
-            "Answer with JSON only, keys in this order: "
-            '{"rule": <the behaviour the author intended, one sentence, written from '
-            'the specification before consulting the candidate readings>, '
-            '"choice": <the number of the reading that matches your rule, or "other">}.'
+            "Answer with a JSON array only, one object per ambiguity, keys in this order: "
+            '{"id": <the ambiguity label>, "rule": <the behaviour the author intended, one '
+            'sentence, written from the specification before consulting the candidate '
+            'readings>, "choice": <the number of the reading that matches your rule, or "other">}.'
         )
     else:
         lines.append(
-            "Answer with JSON only: "
-            '{"choice": <the number of the intended reading, or "other">, '
-            '"rule": <the intended behaviour in one sentence>}.'
+            "Answer with a JSON array only, one object per ambiguity: "
+            '{"id": <the ambiguity label>, "choice": <the number of the intended reading, '
+            'or "other">, "rule": <the intended behaviour in one sentence>}.'
         )
     lines.append("SPECIFICATION (all checkpoints so far, cumulative):\n\n" + spec)
     return "\n\n".join(lines)
 
 
-def user_prompt(entry: Entry, order: list[int]) -> str:
-    alts = "\n".join(f"{i + 1}. {entry.alternatives[j]}" for i, j in enumerate(order))
-    return (
-        f"AMBIGUITY: {entry.title}\n\nSpec text:\n{entry.spec_text}\n\n"
-        f"Candidate readings:\n{alts}\n\nWhich reading did the author intend?"
-    )
+def user_prompt(batch: list[tuple[str, Entry, list[int]]]) -> str:
+    """batch: (label, entry, shuffled order) triples."""
+    blocks = []
+    for label, entry, order in batch:
+        alts = "\n".join(f"{i + 1}. {entry.alternatives[j]}" for i, j in enumerate(order))
+        blocks.append(f"### {label}: {entry.title}\n\nSpec text:\n{entry.spec_text}\n\n"
+                      f"Candidate readings:\n{alts}")
+    return "AMBIGUITIES\n\n" + "\n\n".join(blocks) + "\n\nFor each ambiguity, which reading did the author intend?"
 
 
 def shuffled_order(entry: Entry, variant: str, sample: int) -> list[int]:
@@ -207,14 +215,30 @@ def normalize_choice(raw, order: list[int]):
     return "other"
 
 
-def parse_result(text: str) -> dict | None:
-    m = re.search(r"\{.*\}", text, re.S)
+def parse_result(text: str) -> dict[str, dict] | None:
+    """The judge's JSON array, keyed by ambiguity label."""
+    m = re.search(r"\[.*\]", text, re.S)
     if not m:
         return None
     try:
-        return json.loads(m.group(0))
+        items = json.loads(m.group(0))
     except json.JSONDecodeError:
         return None
+    if not isinstance(items, list):
+        return None
+    return {str(it.get("id")).strip(): it for it in items if isinstance(it, dict)}
+
+
+def partition(entries: list[Entry], variant: str, sample: int, size: int) -> list[list[Entry]]:
+    """Near-equal random batches of one checkpoint's entries, fixed per (variant, sample)."""
+    if not entries:
+        return []
+    ckpt = entries[0].checkpoint
+    seed = int(hashlib.sha256(f"batch|{ckpt}|{variant}|{sample}".encode()).hexdigest(), 16)
+    pool = list(entries)
+    random.Random(seed).shuffle(pool)
+    n_batches = -(-len(pool) // size)
+    return [pool[i::n_batches] for i in range(n_batches)]
 
 
 # --------------------------------------------------------------------------- judging
@@ -263,9 +287,19 @@ def wait_for_reset(resets_at: str) -> None:
         time.sleep(60)
 
 
-def build_plan(entries: list[Entry], variants: list[str], samples: int) -> list[tuple[Entry, str, int]]:
-    plan = [(e, v, s) for e in entries for v in variants for s in range(samples)]
-    plan.sort(key=lambda t: (t[0].checkpoint, t[1], t[0].id, t[2]))  # same system prompt back to back
+def build_plan(entries: list[Entry], variants: list[str], samples: int, size: int,
+               done: set[tuple[str, str, int]]) -> list[tuple[list[Entry], str, int]]:
+    """Batches still to judge: entries of one checkpoint, per variant and sample,
+    minus those already judged."""
+    by_ckpt = collections.defaultdict(list)
+    for e in entries:
+        by_ckpt[e.checkpoint].append(e)
+    plan = []
+    for ckpt in sorted(by_ckpt):
+        for v in variants:
+            for s in range(samples):
+                todo = [e for e in by_ckpt[ckpt] if (e.id, v, s) not in done]
+                plan.extend((b, v, s) for b in partition(todo, v, s, size))
     return plan
 
 
@@ -289,11 +323,12 @@ def cmd_run(args, dry: bool) -> None:
         if v not in VARIANTS:
             sys.exit(f"unknown variant {v}; choose from {', '.join(VARIANTS)}")
     out = Path(args.out); out.mkdir(parents=True, exist_ok=True)
-    plan = build_plan(entries, variants, args.samples)
     done = done_keys(out)
-    todo = [t for t in plan if (t[0].id, t[1], t[2]) not in done]
-    print(f"{len(entries)} entries x {len(variants)} variants x {args.samples} samples = {len(plan)} judgments; "
-          f"{len(done)} done, {len(todo)} to run", flush=True)
+    todo = build_plan(entries, variants, args.samples, args.batch, done)
+    n_judgments = sum(len(b) for b, _, _ in todo)
+    print(f"{len(entries)} entries x {len(variants)} variants x {args.samples} samples = "
+          f"{len(entries) * len(variants) * args.samples} judgments; {len(done)} done, "
+          f"{n_judgments} to run in {len(todo)} calls of up to {args.batch}", flush=True)
     if dry:
         for e in entries:
             print(f"  {e.id} ckpt{e.checkpoint} alts={len(e.alternatives)} tester={e.choice} :: {e.title[:70]}")
@@ -305,28 +340,42 @@ def cmd_run(args, dry: bool) -> None:
     log = (out / "judgments.jsonl").open("a")
 
     def one(task):
-        e, v, s = task
+        batch, v, s = task
         while state["paused"]:
             time.sleep(15)
-        order = shuffled_order(e, v, s)
-        res = judge_once(system_prompt(specs[e.checkpoint], v), user_prompt(e, order), env)
-        rec = {"entry": e.id, "checkpoint": e.checkpoint, "variant": v, "sample": s, "order": order,
-               "tester": e.choice, "at": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"), **res}
-        if "error" not in res:
-            parsed = parse_result(res["result"])
-            if parsed is None:
-                rec["error"] = "unparsable result"
+        labelled = [(f"A{i + 1}", e, shuffled_order(e, v, s)) for i, e in enumerate(batch)]
+        ckpt = batch[0].checkpoint
+        res = judge_once(system_prompt(specs[ckpt], v), user_prompt(labelled), env)
+        parsed = parse_result(res["result"]) if "error" not in res else None
+        at = dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds")
+        batch_ids = [e.id for e in batch]
+        recs = []
+        for label, e, order in labelled:
+            rec = {"entry": e.id, "checkpoint": ckpt, "variant": v, "sample": s, "order": order,
+                   "tester": e.choice, "batch": batch_ids, "at": at,
+                   "cost": (res.get("cost") or 0.0) / len(batch), "elapsed": res.get("elapsed")}
+            if "error" in res:
+                rec["error"] = res["error"]
+            elif parsed is None:
+                rec["error"] = "unparsable result: " + res["result"][:200]
+            elif label not in parsed:
+                rec["error"] = f"no answer for {label}"
             else:
-                rec["choice"] = normalize_choice(parsed.get("choice"), order)
-                rec["choice_raw"] = parsed.get("choice")
-                rec["rule"] = parsed.get("rule")
+                item = parsed[label]
+                rec["choice"] = normalize_choice(item.get("choice"), order)
+                rec["choice_raw"] = item.get("choice")
+                rec["rule"] = item.get("rule")
+            recs.append(rec)
         with lock:
-            log.write(json.dumps(rec) + "\n"); log.flush()
-            state["n"] += 1; state["cost"] += res.get("cost") or 0.0; state["errors"] += "error" in rec
+            for rec in recs:
+                log.write(json.dumps(rec) + "\n")
+            log.flush()
+            state["n"] += 1; state["cost"] += res.get("cost") or 0.0
+            state["errors"] += sum("error" in r for r in recs)
             n = state["n"]
-            if n % 10 == 0 or n == len(todo):
-                print(f"[{n}/{len(todo)}] cost=${state['cost']:.2f} errors={state['errors']} "
-                      f"last={e.id}/{v}#{s} -> {rec.get('choice', 'ERR')} ({res.get('elapsed', 0):.0f}s)", flush=True)
+            if n % 5 == 0 or n == len(todo):
+                print(f"[{n}/{len(todo)} calls] cost=${state['cost']:.2f} errors={state['errors']} "
+                      f"last=ckpt{ckpt}/{v}#{s} x{len(batch)} ({res.get('elapsed', 0):.0f}s)", flush=True)
             if n % args.check_every == 0:
                 u = five_hour_pct()
                 if u and u[0] >= args.pause_at:
@@ -334,14 +383,14 @@ def cmd_run(args, dry: bool) -> None:
                     state["paused"] = True
                     threading.Thread(target=lambda: (wait_for_reset(u[1]), state.update(paused=False),
                                                      print("resumed", flush=True)), daemon=True).start()
-        return rec
+        return recs
 
     with ThreadPoolExecutor(max_workers=args.workers) as pool:
         futures = [pool.submit(one, t) for t in todo]
         for f in as_completed(futures):
             f.result()
     log.close()
-    print(f"done: {state['n']} judgments, ${state['cost']:.2f}, {state['errors']} errors", flush=True)
+    print(f"done: {state['n']} calls, ${state['cost']:.2f}, {state['errors']} errored judgments", flush=True)
 
 
 def select_entries(entries: list[Entry], spec: str | None) -> list[Entry]:
@@ -397,8 +446,9 @@ def main() -> None:
         p = sub.add_parser(name)
         p.add_argument("run_dir"); p.add_argument("--out", required=True)
         p.add_argument("--entries"); p.add_argument("--variants"); p.add_argument("--samples", type=int, default=5)
+        p.add_argument("--batch", type=int, default=15)
         p.add_argument("--workers", type=int, default=4); p.add_argument("--pause-at", type=float, default=85)
-        p.add_argument("--check-every", type=int, default=20)
+        p.add_argument("--check-every", type=int, default=5)
     s = sub.add_parser("summarize"); s.add_argument("out")
     args = ap.parse_args()
     if args.cmd == "summarize":

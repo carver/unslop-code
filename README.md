@@ -25,6 +25,15 @@ and the sandbox-local venv):
     bin/failures [run_a [run_b]] [problem]   # failing tests, one run or side by side
     bin/askrun <checkpoint_dir> [question]   # resume that checkpoint's Claude session
                                              # for post-run Q&A (no args = interactive)
+    bin/miss-report <run_dir>                # failing hidden tests with assertions, spec lines,
+                                             # candidate AMBIGUITIES entries
+    bin/judge-ambiguities run|summarize ...  # blind judges over a registry, optionally against
+                                             # a spec patch
+    bin/spec-patch <problem>                 # patched problem copy under problems/, for
+                                             # SCBENCH_PROBLEMS_PATH
+    bin/scb-strict <config> <problem> <n>    # one checkpoint per invocation, halt on any miss
+
+The loop that ties those together is the project skill `/spec-ambiguity-review`.
 
 The benchmark clone in `slop-code-bench/` carries five source patches; after
 any pull, re-apply them in this order:

@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# Materialize a patched copy of a benchmark problem under problems/ and verify it.
+#
+# Usage: bin/spec-patch <problem> [patch]      default patch: problems/<problem>-clarified.patch
+#
+# Copies ~/.cache/scbench/problems/<problem> to problems/<problem> (gitignored: benchmark
+# data), applies the patch, and prints the changed sentences. Run the benchmark against the
+# copy with SCBENCH_PROBLEMS_PATH=$PWD/problems. Re-run after every edit to the patch; the
+# copy is rebuilt from scratch each time.
+set -euo pipefail
+here="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+problem=$1; patch_file=${2:-$here/problems/$problem-clarified.patch}
+src="${SCBENCH_CACHE_PROBLEMS:-$HOME/.cache/scbench/problems}/$problem"
+[ -d "$src" ] || { echo "spec-patch: no cached problem at $src" >&2; exit 2; }
+[ -f "$patch_file" ] || { echo "spec-patch: no patch at $patch_file" >&2; exit 2; }
+grep -q "^problems/$problem/" "$here/.gitignore" || echo "problems/$problem/" >> "$here/.gitignore"
+rm -rf "$here/problems/$problem"
+cp -r "$src" "$here/problems/$problem"
+patch -p1 -d "$here/problems" --quiet < "$patch_file"
+echo "problems/$problem rebuilt from the cache with $(basename "$patch_file"); changed lines:"
+grep -E '^\+[^+]' "$patch_file" | cut -c1-140
+echo "run with: SCBENCH_PROBLEMS_PATH=$here/problems"

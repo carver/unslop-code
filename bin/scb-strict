@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+# Run a config one checkpoint at a time; halt at the first checkpoint that is not a strict solve.
+#
+# Usage: bin/scb-strict <run-config.yaml> <problem> <n_checkpoints>
+#
+# Each checkpoint is its own `scb run` (--stop-after-checkpoint N, then --resume with N+1),
+# so a halt lands between checkpoints and leaves no partial directory. A strict solve means
+# every test in the checkpoint's evaluation passed, regressions included. Exit codes:
+#   0 all checkpoints strict   2 halted on a non-strict checkpoint
+#   3 checkpoint left no evaluation   4 scb itself failed
+# Progress lines start with STRICT-RUN: so a log watcher can filter on them.
+set -uo pipefail
+here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+config=$1; problem=$2; total=$3
+run_dir=""
+for n in $(seq 1 "$total"); do
+  echo "STRICT-RUN: starting checkpoint_$n $(date -u +%H:%M:%SZ)"
+  if [ -z "$run_dir" ]; then
+    first_log=$(mktemp)
+    "$here/scb" run --config "$config" --no-live-progress --stop-after-checkpoint "$n" 2>&1 | tee "$first_log"
+    status=${PIPESTATUS[0]}
+    run_dir=$(grep -m1 '^Output directory:' "$first_log" | sed 's/^Output directory: //')
+    rm -f "$first_log"
+    [ -n "$run_dir" ] || { echo "STRICT-RUN: could not find the run directory in scb output; halting"; exit 4; }
+  else
+    "$here/scb" run --resume "$run_dir" --no-live-progress --stop-after-checkpoint "$n" 2>&1
+    status=$?
+  fi
+  [ "$status" -eq 0 ] || echo "STRICT-RUN: scb exited $status on checkpoint_$n"
+  ev="$run_dir/$problem/checkpoint_$n/evaluation.json"
+  [ -f "$ev" ] || { echo "STRICT-RUN: checkpoint_$n left no evaluation; halting (run_dir=$run_dir)"; exit 3; }
+  read -r passed total_tests infra < <(jq -r '[([.pass_counts[]]|add), ([.total_counts[]]|add), .infrastructure_failure] | @tsv' "$ev")
+  echo "STRICT-RUN: checkpoint_$n $passed/$total_tests infra_fail=$infra run_dir=$run_dir"
+  if [ "$infra" != "false" ] || [ "$passed" != "$total_tests" ]; then
+    jq -r '.tests | to_entries[] | .key as $g | (.value.failed // [])[] | "STRICT-RUN:   FAIL \($g): \(.)"' "$ev"
+    echo "STRICT-RUN: HALT after checkpoint_$n, not a strict solve"
+    exit 2
+  fi
+done
+echo "STRICT-RUN: DONE, all $total checkpoints strict (run_dir=$run_dir)"

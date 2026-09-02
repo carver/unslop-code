@@ -2,7 +2,7 @@
 
 Every run under `outputs/spectest/`, what changed, and how it ended. Scores are all hidden
 tests passed / total at each checkpoint (regressions included), from each checkpoint's
-`evaluation.json`. Per-checkpoint tables: `bin/summarize <run_dir>` after `bin/scbcheck`.
+`evaluation.json`. Per-checkpoint tables: `bin/summarize <run_dir>`.
 
 | version | run dir (under outputs/spectest/) | what changed | ckpt scores | ended |
 |---|---|---|---|---|

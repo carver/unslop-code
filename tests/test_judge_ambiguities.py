@@ -84,16 +84,44 @@ def test_normalize_choice_handles_other_and_both():
     assert judge.normalize_choice(True, order) == "other"
 
 
-def test_parse_result_extracts_json_from_prose():
-    assert judge.parse_result('Sure.\n{"choice": 2, "rule": "x"}\n') == {"choice": 2, "rule": "x"}
+def test_parse_result_extracts_the_array_keyed_by_label():
+    parsed = judge.parse_result('Sure.\n[{"id": "A1", "choice": 2, "rule": "x"}, {"id": "A2", "choice": "other"}]\n')
+    assert parsed["A1"] == {"id": "A1", "choice": 2, "rule": "x"}
+    assert parsed["A2"]["choice"] == "other"
     assert judge.parse_result("no json here") is None
+    assert judge.parse_result('{"id": "A1"}') is None
 
 
-def test_user_prompt_numbers_alternatives_in_shuffled_order():
-    e = judge.parse_registry(SAMPLE)[0]
-    text = judge.user_prompt(e, [2, 0, 1])
+def test_user_prompt_labels_entries_and_numbers_alternatives_in_shuffled_order():
+    e1, e2 = judge.parse_registry(SAMPLE)
+    text = judge.user_prompt([("A1", e1, [2, 0, 1]), ("A2", e2, [1, 0])])
+    assert "### A1: Does `x` count the header?" in text
     assert "1. Something else." in text
     assert "3. `rowid` numbers the data rows." in text
+    assert "### A2: Free-form choice" in text and "1. two\n2. one" in text
+
+
+def test_partition_is_random_per_sample_and_covers_every_entry():
+    entries = [judge.Entry(id=f"T{i}", title="", spec_text="", alternatives=["a", "b"], choice=1, checkpoint=3)
+               for i in range(25)]
+    batches = judge.partition(entries, "choose", 0, 10)
+    assert sorted(len(b) for b in batches) == [8, 8, 9]
+    assert sorted(e.id for b in batches for e in b) == sorted(e.id for e in entries)
+    assert batches == judge.partition(entries, "choose", 0, 10)
+    assert batches != judge.partition(entries, "choose", 1, 10)
+    assert judge.partition([], "choose", 0, 10) == []
+
+
+def test_plan_skips_judged_entries_and_groups_by_checkpoint():
+    entries = [judge.Entry(id=f"T{i}", title="", spec_text="", alternatives=["a", "b"], choice=1, checkpoint=1 + i % 2)
+               for i in range(6)]
+    done = {("T0", "choose", 0), ("T2", "choose", 0), ("T4", "choose", 0)}  # all of checkpoint 1, sample 0
+    plan = judge.build_plan(entries, ["choose"], 2, 15, done)
+    assert [(sorted(e.id for e in b), v, s) for b, v, s in plan] == [
+        (["T0", "T2", "T4"], "choose", 1),
+        (["T1", "T3", "T5"], "choose", 0),
+        (["T1", "T3", "T5"], "choose", 1),
+    ]
 
 
 def test_variants_are_the_eight_combinations():

@@ -2,6 +2,7 @@
 """Extend a run that stopped early: resume it one checkpoint at a time, between 5-hour windows.
 
 Usage: bin/scb-extend <run_dir> <problem> <n_checkpoints>
+       bin/scb-extend --new <run-config.yaml> <problem> <n_checkpoints>   (start a fresh run)
 
 Each checkpoint is its own `scb run --resume --stop-after-checkpoint N`, so a halt lands
 between checkpoints and never inside one. Before each checkpoint the 5-hour window is read
@@ -20,12 +21,13 @@ marked "skipped", and the next resume trusts that file and deletes those directo
 (this destroyed v4's checkpoints 1 and 2 on 2026-09-02). A finished checkpoint whose
 state is not "ran" is set back to "ran", with the old file kept as run_info.yaml.bak-<ts>.
 Then `scb run --resume --dry-run` previews the resume, and the driver halts (exit 5) if the
-preview would delete a finished checkpoint, whatever the reason.
+preview would delete a finished checkpoint, whatever the reason. Every finished checkpoint
+is also tarred once into outputs/backups/ before the next resume touches the run.
 Progress lines start with EXTEND: so a log watcher can filter on them.
 Exit codes: 0 all checkpoints ran   3 checkpoint left no usable evaluation   4 scb failed
              5 the resume preview would delete a finished checkpoint
 """
-import datetime, json, pathlib, shutil, subprocess, sys, time
+import datetime, json, pathlib, re, shutil, subprocess, sys, time
 
 import yaml
 
@@ -81,6 +83,42 @@ def finished_dir(path):
     return all((path / f).exists() for f in ("evaluation.json", "inference_result.json", "snapshot"))
 
 
+def backup_dir():
+    return HERE.parent / "outputs" / "backups"
+
+
+def backup_finished(run_dir, problem, total):
+    """Tar each finished checkpoint into outputs/backups once; return the names tarred now."""
+    problem_dir = run_dir / problem
+    done = []
+    for n in range(1, total + 1):
+        if not finished(problem_dir, n):
+            continue
+        tgz = backup_dir() / f"{run_dir.parent.name}-{run_dir.name}-checkpoint_{n}.tgz"
+        if tgz.exists():
+            continue
+        tgz.parent.mkdir(parents=True, exist_ok=True)
+        subprocess.run(["tar", "czf", str(tgz), "-C", str(problem_dir), f"checkpoint_{n}", "run_info.yaml"], check=True)
+        done.append(f"checkpoint_{n}")
+    return done
+
+
+def output_dir_from(text):
+    m = re.search(r"Output directory: (\S+)", re.sub(r"\x1b\[[0-9;]*m", "", text))
+    return pathlib.Path(m.group(1)) if m else None
+
+
+def start_run(config):
+    """Run checkpoint 1 of a fresh run from a config; stream scb's output and return (run_dir, returncode)."""
+    proc = subprocess.Popen([HERE / "scb", "run", "--config", str(config), "--no-live-progress", "--stop-after-checkpoint", "1"],
+                            stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+    run_dir = None
+    for line in proc.stdout:
+        print(line, end="", flush=True)
+        run_dir = run_dir or output_dir_from(line)
+    return run_dir, proc.wait()
+
+
 def outcome(problem_dir, n):
     ev = problem_dir / f"checkpoint_{n}" / "evaluation.json"
     if not ev.exists():
@@ -124,27 +162,62 @@ def say(msg):
 
 
 def main():
-    run_dir = pathlib.Path(sys.argv[1]).resolve(); problem = sys.argv[2]; total = int(sys.argv[3])
-    problem_dir = run_dir / problem
-    log = problem_dir / "window_usage.jsonl"
-    records = [json.loads(l) for l in log.read_text().splitlines() if l.strip()] if log.exists() else []
+    args = sys.argv[1:]
+    fresh = args[0] == "--new"
+    if fresh:
+        args = args[1:]
+    target = pathlib.Path(args[0]).resolve(); problem = args[1]; total = int(args[2])
+    records = []
+    log = None
 
     def record(n, phase):
         r = {"checkpoint": n, "phase": phase, **usage()}
         records.append(r)
-        with log.open("a") as f:
-            f.write(json.dumps(r) + "\n")
+        if log is not None:
+            with log.open("a") as f:
+                f.write(json.dumps(r) + "\n")
         return r
 
-    while (n := next_checkpoint(problem_dir, total)) is not None:
-        for name in repair_run_info(problem_dir, total):
-            say(f"run_info.yaml had finished {name} marked not-ran; set to ran so resume keeps it")
+    def wait_for_room(n):
         reading = record(n, "before")
         wait = seconds_until_room(reading, reserve(records), datetime.datetime.now(datetime.timezone.utc))
         if wait:
             say(f"window at {reading['five_hour']['pct']}% with {reserve(records):.0f} needed; sleeping {wait/60:.0f} min until reset")
             time.sleep(wait)
             reading = record(n, "before")
+        return reading
+
+    if fresh:
+        reading = wait_for_room(1)
+        say(f"starting a fresh run from {target.name}, checkpoint_1 (window {reading['five_hour']['pct']}%)")
+        run_dir, code = start_run(target)
+        if run_dir is None:
+            say(f"scb printed no output directory (exit {code}); halting"); sys.exit(4)
+        say(f"run_dir={run_dir}")
+    else:
+        run_dir = target
+    problem_dir = run_dir / problem
+    log = problem_dir / "window_usage.jsonl"
+    if log.exists():
+        records = [json.loads(l) for l in log.read_text().splitlines() if l.strip()] + records
+    if fresh:
+        with log.open("a") as f:
+            for r in records:
+                f.write(json.dumps(r) + "\n")
+        after = record(1, "after")
+        res = outcome(problem_dir, 1)
+        if res is None:
+            say(f"checkpoint_1 left no evaluation; halting (run_dir={run_dir})"); sys.exit(3)
+        say(f"checkpoint_1 {res[0]}/{res[1]} infra_fail={res[2]} window {reading['five_hour']['pct']}% -> {after['five_hour']['pct']}%")
+        if res[2] or code != 0:
+            sys.exit(3 if res[2] else 4)
+
+    while (n := next_checkpoint(problem_dir, total)) is not None:
+        for name in repair_run_info(problem_dir, total):
+            say(f"run_info.yaml had finished {name} marked not-ran; set to ran so resume keeps it")
+        for name in backup_finished(run_dir, problem, total):
+            say(f"backed up {name} to {backup_dir()}")
+        reading = wait_for_room(n)
         resume = [HERE / "scb", "run", "--resume", str(run_dir), "--no-live-progress", "--stop-after-checkpoint", str(n)]
         preview = subprocess.run(resume + ["--dry-run"], capture_output=True, text=True)
         doomed = [d for d in deletions(preview.stdout) if finished_dir(d)]

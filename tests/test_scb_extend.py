@@ -137,3 +137,21 @@ def test_finished_dir_needs_evaluation_result_and_snapshot(tmp_path):
     finished_checkpoint(tmp_path, 1); (tmp_path / "checkpoint_2").mkdir(); (tmp_path / "checkpoint_2" / "prompt.txt").write_text("x")
     assert ext.finished_dir(tmp_path / "checkpoint_1")
     assert not ext.finished_dir(tmp_path / "checkpoint_2")
+
+
+def test_output_dir_parsed_through_ansi_colour():
+    assert ext.output_dir_from("\x1b[32m\x1b[1mOutput directory: /runs/x/20260902T2100\x1b[0m\n") == Path("/runs/x/20260902T2100")
+    assert ext.output_dir_from("Starting run...\n") is None
+
+
+def test_backup_tars_each_finished_checkpoint_once(tmp_path, monkeypatch):
+    run_dir = tmp_path / "spectest-v4" / "20260902T2100"; problem_dir = run_dir / "datagate"
+    finished_checkpoint(problem_dir, 1); (problem_dir / "checkpoint_2").mkdir()
+    write_run_info(problem_dir, {"checkpoint_1": "ran"})
+    monkeypatch.setattr(ext, "backup_dir", lambda: tmp_path / "backups")
+    assert ext.backup_finished(run_dir, "datagate", 7) == ["checkpoint_1"]
+    tgz = tmp_path / "backups" / "spectest-v4-20260902T2100-checkpoint_1.tgz"
+    assert tgz.exists()
+    assert ext.backup_finished(run_dir, "datagate", 7) == []
+    import tarfile
+    assert sorted(tarfile.open(tgz).getnames())[:2] == ["checkpoint_1", "checkpoint_1/evaluation.json"]

@@ -16,7 +16,7 @@ The v7 run of the spectest prompt on datagate (Opus 5, Claude Code 2.1.251, 7 ch
 | T56 | `/upload` lists no parameters (4) | 2 | "and `charset` query parameter" |
 | T74 | "Any additional `force` value is HTTP 400" (5) | 5 | delete "additional" |
 
-Three pieces of evidence sit behind each section. The tester's registry entry, verbatim, shows the reading was a considered choice, not an oversight. A blind judge, 5360 fresh judgments across eight prompt variants, shows the same model makes the same choice every time from the spec alone: 195 of 200 on these five entries. And the patched run shows the reworded sentences flip the outcome: checkpoints 1 through 6 strict so far, where v7 had none.
+Three pieces of evidence sit behind each section. The tester's registry entry, verbatim, shows the reading was a considered choice, not an oversight. A blind judge, 5360 fresh judgments across eight prompt variants, shows the same model makes the same choice every time from the spec alone: 195 of 200 on these five entries. And the patched run shows the reworded sentences flip the outcome: all seven checkpoints strict, 405 of 405 at the end, where v7 had no strict checkpoint at all.
 
 Sources: `outputs/spectest/opus-5_2.1.251_high_spectest-v7/20260901T0726` (the run and its registry), `notes/ambiguity-judge.md` (the judge), `problems/datagate-clarified.patch` (the fix), `outputs/spectest/opus-5_2.1.251_high_spectest-v8-disambiguated/20260902T0555` (the patched run).
 

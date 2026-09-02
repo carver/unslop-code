@@ -10,6 +10,9 @@ computed from the checkpoint snapshot on first use and cached next to it, since
 import json, os, sys, pathlib, collections, datetime, subprocess
 
 PRICE = {"input": 3.0, "output": 15.0, "cache_read": 0.30, "cache_write": 3.75}  # $/M, Sonnet 4.6 list
+# Leaderboard row for Sonnet 4.6 / Claude Code 2.1.44 / thinking high, means over all 196
+# holdout checkpoints (notes/leaderboard-reference.md). A per-problem run is not comparable.
+LEADERBOARD = {"erosion": 0.741, "verbosity": 0.316, "ast-grep": 0.298, "cloned": 0.093}
 
 def cost(r):
     return sum(PRICE[k] * (r.get(k) or 0) / 1e6 for k in PRICE)
@@ -80,7 +83,8 @@ def main():
     print(f"cost at Sonnet list price from token counts (list_$): ${tot['cost']:.2f} total, ${tot['cost']/n:.2f}/ckpt")
     print(f"wall time: {tot['elapsed']/60:.1f} min total, {tot['elapsed']/n/60:.1f} min/ckpt; steps/ckpt {tot['steps']/n:.1f}")
     mean = lambda xs: sum(xs) / len(xs) if xs else float("nan")
-    print(f"erosion mean {mean(er):.3f} (target 0.741)  verbosity mean {mean(vb):.3f} (target 0.316)  ast-grep mean {mean(ag):.3f} (target 0.298)  cloned mean {mean(cl):.3f} (target 0.093)")
+    print(f"{'quality means':<22}erosion {mean(er):.3f}  verbosity {mean(vb):.3f}  ast-grep {mean(ag):.3f}  cloned {mean(cl):.3f}")
+    print(f"{'sonnet 4.6 just-solve':<22}erosion {LEADERBOARD['erosion']:.3f}  verbosity {LEADERBOARD['verbosity']:.3f}  ast-grep {LEADERBOARD['ast-grep']:.3f}  cloned {LEADERBOARD['cloned']:.3f}")
 
 def fmt(v):
     return "-" if v is None else f"{v:.3f}"

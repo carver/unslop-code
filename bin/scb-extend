@@ -13,10 +13,18 @@ measured cost (default 30 points until one is measured).
 
 Unlike bin/scb-strict, a failing test does not halt; these runs are expected to miss.
 Only a missing evaluation, an infrastructure failure, or scb itself failing halts.
+
+Before each resume, run_info.yaml is checked against the checkpoint directories. A resume
+that ends in an error rewrites run_info.yaml with every checkpoint it did not itself run
+marked "skipped", and the next resume trusts that file and deletes those directories
+(this destroyed v4's checkpoints 1 and 2 on 2026-09-02). A finished checkpoint whose
+state is not "ran" is set back to "ran", with the old file kept as run_info.yaml.bak-<ts>.
 Progress lines start with EXTEND: so a log watcher can filter on them.
 Exit codes: 0 all checkpoints ran   3 checkpoint left no usable evaluation   4 scb failed
 """
-import datetime, json, pathlib, subprocess, sys, time
+import datetime, json, pathlib, shutil, subprocess, sys, time
+
+import yaml
 
 HERE = pathlib.Path(__file__).resolve().parent
 DEFAULT_RESERVE = 30.0
@@ -28,6 +36,29 @@ def next_checkpoint(problem_dir, total):
         if not (problem_dir / f"checkpoint_{n}" / "evaluation.json").exists():
             return n
     return None
+
+
+def finished(problem_dir, n):
+    d = problem_dir / f"checkpoint_{n}"
+    return all((d / f).exists() for f in ("evaluation.json", "inference_result.json", "snapshot"))
+
+
+def repair_run_info(problem_dir, total, now=None):
+    """Return the finished checkpoints whose run_info state was not 'ran', after fixing them."""
+    path = problem_dir / "run_info.yaml"
+    if not path.exists():
+        return []
+    info = yaml.safe_load(path.read_text()) or {}
+    states = info.setdefault("summary", {}).setdefault("checkpoints", {}) or {}
+    wrong = [f"checkpoint_{n}" for n in range(1, total + 1) if finished(problem_dir, n) and states.get(f"checkpoint_{n}") != "ran"]
+    if wrong:
+        now = now or datetime.datetime.now(datetime.timezone.utc)
+        shutil.copy2(path, path.with_name(f"run_info.yaml.bak-{now:%Y%m%dT%H%M%S}"))
+        for name in wrong:
+            states[name] = "ran"
+        info["summary"]["checkpoints"] = states
+        path.write_text(yaml.safe_dump(info, sort_keys=False))
+    return wrong
 
 
 def outcome(problem_dir, n):
@@ -86,6 +117,8 @@ def main():
         return r
 
     while (n := next_checkpoint(problem_dir, total)) is not None:
+        for name in repair_run_info(problem_dir, total):
+            say(f"run_info.yaml had finished {name} marked not-ran; set to ran so resume keeps it")
         reading = record(n, "before")
         wait = seconds_until_room(reading, reserve(records), datetime.datetime.now(datetime.timezone.utc))
         if wait:

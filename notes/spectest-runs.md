@@ -16,11 +16,15 @@ tests passed / total at each checkpoint (regressions included), from each checkp
 | v7 | `…spectest-v7/20260901T0726` | numbered entries, foreground-wait rule | 49/50, 118/122, 170/174, 224/233, 262/276, 339/353, 391/405 | complete; 14 misses, all five spec sentences |
 | v8 disambiguated | `…spectest-v8-disambiguated/20260902T0555` | v8 prompt (tester validates tests only) + `problems/datagate-clarified.patch` | 50/50, 122/122, 174/174, 233/233, 276/276, 353/353, 405/405 | complete; first strict solve |
 
-Only v7 and v8-disambiguated are complete. An uplift chart "by intervention" is honest at
-checkpoint 1 (every version has it) and at checkpoint 2 (v4 onward); beyond that only v5,
-v7 and v8-d exist. Continuing the halted v4/v6 runs would not produce comparable data:
-their prompts were superseded for known process bugs, and a resume today would run under
-the patched harness.
+Only v7 and v8-disambiguated are complete. On hidden tests, v4 through v7 are flat within
+the latin-1 noise (ckpt 1: 50, 49, 50, 49 of 50; ckpt 2: 119, cut, 119, 118 of 122), and
+every miss is the rowid trio or the latin-1 test. The prompt iterations bought process
+reliability and registry quality, not score; the ceiling was the spec. Continuing v4 or
+v6 would be comparable (the process bugs decide whether a checkpoint finishes, not what
+the agent decides, and a cut checkpoint is visible in the artifacts), but is expected to
+reproduce v7's 14 misses at ~$65. If the flat line must be drawn from data, continue v4
+only, after adding `CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS: "0"` to the run dir's saved
+config so the v5 zero-implementation failure cannot recur.
 
 ## Did the v8 testing hints help, or was it the zombie fix?
 

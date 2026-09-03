@@ -1,0 +1,14 @@
+Implement a program that 100% solves the specification.
+
+{% if not is_continuation -%}
+Use a virtual environment and ensure that a `requirements.txt` is present with any dependencies you need to solve the problem.
+{% else -%}
+Keep using the same virtual environment you started with, update `requirements.txt` with any new dependencies you need.
+{% endif -%}
+
+Before coding, write tests from the spec: split the spec into minimal logical phrases and give each phrase its own test section, with the phrase quoted in a comment.
+Then pass all tests.
+Do not change the spec, or the tests written from the spec.
+
+Your task is:
+{{ spec.strip() }}

@@ -16,7 +16,7 @@ tests passed / total at each checkpoint (regressions included), from each checkp
 | v7 | `…spectest-v7/20260901T0726` | numbered entries, foreground-wait rule | 49/50, 118/122, 170/174, 224/233, 262/276, 339/353, 391/405 | complete; 14 misses, all five spec sentences |
 | v8 disambiguated | `…spectest-v8-disambiguated/20260902T0555` | v8 prompt (tester validates tests only) + `problems/datagate-clarified.patch` | 50/50, 122/122, 174/174, 233/233, 276/276, 353/353, 405/405 | complete; first strict solve |
 
-Only v7 and v8-disambiguated are complete. On hidden tests, v4 through v7 are flat within
+On hidden tests, v4 through v7 are flat within
 the latin-1 noise (ckpt 1: 50, 49, 50, 49 of 50; ckpt 2: 119, cut, 119, 118 of 122), and
 every miss is the rowid trio or the latin-1 test. The prompt iterations bought process
 reliability and registry quality, not score; the ceiling was the spec. Continuing v4 or
@@ -25,6 +25,45 @@ the agent decides, and a cut checkpoint is visible in the artifacts), but is exp
 reproduce v7's 14 misses at ~$65. If the flat line must be drawn from data, continue v4
 only, after adding `CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS: "0"` to the run dir's saved
 config so the v5 zero-implementation failure cannot recur.
+
+## Test failure summaries
+
+### just-solve
+
+Test failures:
+
+  - Eight at checkpoint 1: v3's six plus two whitespace-preservation tests.
+  - The rowid trio at checkpoint 2.
+  - Three whitespace tests at checkpoint 3: exact value match, header no-trim, and numeric-looking cells in
+    string filters.
+  - The same eight charset tests at checkpoint 4 that v3 lost.
+  - The five force variants at checkpoint 5.
+  - Nothing at checkpoint 6, and the mixed-numeric column test at checkpoint 7.
+
+  Set against v3's 23, the spec-test prompt bought back only the five whitespace tests, two at checkpoint 1
+  and three at checkpoint 3. Everything else in the control's miss list is also in v3's. And the four things
+  v7 recovered beyond that, the extra checkpoint 1 tests and the checkpoint 4 charset block, came later in
+  the prompt series, which is what the fresh v4 run should now locate.
+
+### v3
+
+Two iso solves and four core solves, no strict solve.
+Cost as reported by Claude Code was $40.92 for the seven checkpoints, and the six added today took under three hours of wall time.
+
+Where the 23 misses come from:
+
+  - Six checkpoint 1 tests carried the whole way: the latin-1 pair, single-column CSV, URL-derived ids, and
+    negative values.
+  - The rowid trio at checkpoint 2.
+  - Eight charset tests at checkpoint 4 for upload, convert, spreadsheet, and export.
+  - The five force variants at checkpoint 5.
+  - One mixed-numeric column type test at checkpoint 7.
+
+Against v7's 14 misses, v3 loses nine more, and all nine are in the first four checkpoints: four extra at
+checkpoint 1 and the eight charset tests at checkpoint 4, minus overlaps with v7's own set. Checkpoints 3,
+5, 6, and 7 track v7 exactly on their own tests. So for the talk, v3 is not flat with v4 through v7. It
+sits below them, and the gap is concentrated in charset handling.
+
 
 ## Did the v8 testing hints help, or was it the zombie fix?
 

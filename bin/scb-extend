@@ -13,9 +13,11 @@ of a checkpoint is measured, and the reserve kept for the next one is 1.25x the 
 measured cost (default 30 points until one is measured).
 
 Unlike bin/scb-strict, a failing test does not halt; these runs are expected to miss.
-A checkpoint whose agent run errored (had_error in inference_result.json: an API outage,
-a harness crash) is not finished: it is re-run once, and halts if it errors again. Only
-that, a missing evaluation, an infrastructure failure, or scb itself failing halts.
+A checkpoint whose agent run errored (had_error in inference_result.json) is not finished.
+If the agent's transcript shows the API was overloaded, the driver sleeps OVERLOAD_WAIT_S
+and re-runs the checkpoint, up to OVERLOAD_TRIES times; any other agent error is re-run
+once and halts if it recurs. Only that, a missing evaluation, an infrastructure failure,
+or scb itself failing halts.
 
 Before each resume, run_info.yaml is checked against the checkpoint directories. A resume
 that ends in an error rewrites run_info.yaml with every checkpoint it did not itself run
@@ -36,6 +38,8 @@ import yaml
 HERE = pathlib.Path(__file__).resolve().parent
 DEFAULT_RESERVE = 30.0
 RESET_SLACK_S = 90
+OVERLOAD_WAIT_S = 15 * 60
+OVERLOAD_TRIES = 8
 
 
 def next_checkpoint(problem_dir, total):
@@ -43,6 +47,15 @@ def next_checkpoint(problem_dir, total):
         if not finished(problem_dir, n):
             return n
     return None
+
+
+def overloaded(ckpt_dir):
+    """The agent run died on API capacity: overloaded or server_error events in its transcript and no tool use."""
+    try:
+        text = (ckpt_dir / "agent" / "stdout.jsonl").read_text()
+    except OSError:
+        return False
+    return ('"error":"overloaded"' in text or '"error":"server_error"' in text) and '"tool_use"' not in text
 
 
 def agent_errored(ckpt_dir):
@@ -239,9 +252,9 @@ def main():
         if res[2] or (code != 0 and not errored):
             sys.exit(3 if res[2] else 4)
         if errored:
-            say("checkpoint_1 agent run errored; the resume loop re-runs it once")
+            say("checkpoint_1 agent run errored; the resume loop re-runs it")
 
-    retried = set()
+    retried = set(); overloads = 0
     while (n := next_checkpoint(problem_dir, total)) is not None:
         for name in repair_run_info(problem_dir, total):
             say(f"run_info.yaml had finished {name} marked not-ran; set to ran so resume keeps it")
@@ -269,6 +282,13 @@ def main():
         if infra:
             say(f"checkpoint_{n} infrastructure failure; halting (run_dir={run_dir})"); sys.exit(3)
         if errored:
+            if overloaded(problem_dir / f"checkpoint_{n}"):
+                overloads += 1
+                if overloads > OVERLOAD_TRIES:
+                    say(f"API overloaded {overloads} times; halting (run_dir={run_dir})"); sys.exit(3)
+                say(f"checkpoint_{n} died on API overload ({overloads}/{OVERLOAD_TRIES}); sleeping {OVERLOAD_WAIT_S // 60} min, then re-running it")
+                time.sleep(OVERLOAD_WAIT_S)
+                continue
             if n in retried:
                 say(f"checkpoint_{n} agent run errored twice; halting (run_dir={run_dir})"); sys.exit(3)
             retried.add(n)

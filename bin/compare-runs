@@ -1,0 +1,84 @@
+#!/usr/bin/env python3
+"""Put several runs of one problem side by side: scores, cost, quality, and which hidden tests each missed.
+
+Usage: bin/compare-runs <run_dir>... [--problem P] [--md]
+
+Table one has a row per run: per-checkpoint passed/total, strict checkpoints, Claude Code
+cost, and the quality means. Table two is the miss matrix: every hidden test any run
+missed, one row each, with a mark under each run that missed it (a test counts once
+however many checkpoints it failed at). This is the "what did each rung buy" view of a
+prompt ladder, and the input to the minimal-prompt report.
+"""
+import json, pathlib, sys, types
+
+HERE = pathlib.Path(__file__).resolve().parent
+summarize = types.ModuleType("summarize"); summarize.__file__ = str(HERE / "summarize")
+sys.modules["summarize"] = summarize
+exec(compile((HERE / "summarize").read_text(), str(HERE / "summarize"), "exec"), summarize.__dict__)
+
+COMMON_PREFIX = "opus-5_2.1.251_high_"
+
+
+def run_label(run_dir):
+    return run_dir.parent.name.removeprefix(COMMON_PREFIX) + "/" + run_dir.name
+
+
+def misses(problem_dir):
+    """(origin checkpoint, test) for every hidden test that failed at any checkpoint of the run."""
+    out = set()
+    for ev in sorted(problem_dir.glob("checkpoint_*/evaluation.json")):
+        tests = json.loads(ev.read_text()).get("tests", {})
+        for group, res in tests.items():
+            origin = int(group.split("-")[0].removeprefix("checkpoint_"))
+            for t in res.get("failed") or []:
+                out.add((origin, t))
+    return out
+
+
+def mean(xs):
+    xs = [x for x in xs if x is not None]
+    return sum(xs) / len(xs) if xs else None
+
+
+def fmt(v, d=3):
+    return "-" if v is None else f"{v:.{d}f}"
+
+
+def main():
+    args = [a for a in sys.argv[1:] if not a.startswith("--")]
+    md = "--md" in sys.argv
+    problem = sys.argv[sys.argv.index("--problem") + 1] if "--problem" in sys.argv else None
+    runs = [pathlib.Path(a).resolve() for a in args]
+    sep = " | " if md else "  "
+    rows_by_run = {}
+    for run in runs:
+        rows = [r for r in summarize.load_rows(run) if problem is None or r["problem"] == problem]
+        rows_by_run[run] = rows
+    problems = {r["problem"] for rows in rows_by_run.values() for r in rows}
+    if len(problems) != 1:
+        raise SystemExit(f"compare-runs: pass --problem; runs cover {sorted(problems)}")
+    problem = problems.pop()
+    hdr = ["run", "scores", "strict", "cc_$", "erosion", "verbosity", "ast%", "cloned%"]
+    print(sep.join(hdr))
+    if md: print("|".join(["---"] * len(hdr)))
+    for run, rows in rows_by_run.items():
+        scores = " ".join(f"{r.get('passed_tests')}/{r.get('total_tests')}" for r in rows)
+        strict = sum(r.get("strict_pass_rate", r.get("pass_rate")) == 1.0 for r in rows)
+        print(sep.join([run_label(run), scores, f"{strict}/{len(rows)}", f"{sum(r.get('cost') or 0 for r in rows):.2f}",
+                        fmt(mean(r.get("erosion") for r in rows)), fmt(mean(r.get("verbosity") for r in rows)),
+                        fmt(mean(r.get("ast_grep_pct") for r in rows)), fmt(mean(r.get("cloned_pct") for r in rows))]))
+    print()
+    per_run = {run: misses(run / problem) for run in runs}
+    every = sorted(set().union(*per_run.values()))
+    labels = [run_label(r) for r in runs]
+    print(sep.join(["ckpt", "test"] + [f"{i + 1}" for i in range(len(runs))]))
+    if md: print("|".join(["---"] * (len(runs) + 2)))
+    for origin, t in every:
+        print(sep.join([str(origin), t] + ["x" if (origin, t) in per_run[r] else "." for r in runs]))
+    print()
+    for i, l in enumerate(labels):
+        print(f"{i + 1}: {l}")
+
+
+if __name__ == "__main__":
+    main()

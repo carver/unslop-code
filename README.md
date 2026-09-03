@@ -32,6 +32,9 @@ and the sandbox-local venv):
     bin/spec-patch <problem>                 # patched problem copy under problems/, for
                                              # SCBENCH_PROBLEMS_PATH
     bin/scb-strict <config> <problem> <n>    # one checkpoint per invocation, halt on any miss
+    bin/run-config --prompt P --problem X    # write a run config for one prompt on one problem
+                                             # (--patched for the problems/ copy)
+    bin/compare-runs <run_dir>...            # runs side by side: scores, cost, quality, miss matrix
 
 The loop that ties those together is the project skill `/spec-ambiguity-review`.
 

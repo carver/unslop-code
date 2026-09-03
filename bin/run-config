@@ -1,0 +1,77 @@
+#!/usr/bin/env python3
+"""Write a run config for one prompt on one problem, so a new experiment is one command.
+
+Usage: bin/run-config --prompt <name|path> --problem <problem> [--patched] [--name <run-name>]
+
+--prompt   a template under configs/prompts/ (by basename, .jinja optional), a path to one,
+           or a benchmark prompt name like just-solve
+--patched  the run is meant for the patched spec copy under problems/ (bin/spec-patch); the
+           run name gets a -disambiguated suffix and the printed launch command selects it
+--name     run-directory name; default is the prompt's basename plus the suffix
+
+Writes configs/runs/<name>-<problem>-opus5.yaml (same agent, model and thinking as every
+spectest run) and prints the launch command with the problem's checkpoint count.
+"""
+import argparse, os, pathlib, sys
+
+ROOT = pathlib.Path(__file__).resolve().parent.parent
+CATALOG = pathlib.Path(os.environ.get("SCBENCH_PROBLEMS_PATH", os.path.expanduser("~/.cache/scbench/problems")))
+
+
+def resolve_prompt(prompt):
+    """The prompt line for the config: a path under configs/prompts, or a benchmark prompt name."""
+    p = pathlib.Path(prompt)
+    if p.suffix == ".jinja" and p.exists():
+        return str(p.resolve())
+    local = ROOT / "configs" / "prompts" / (prompt if prompt.endswith(".jinja") else prompt + ".jinja")
+    if local.exists():
+        return str(local)
+    if "/" in prompt or prompt.endswith(".jinja"):
+        raise SystemExit(f"run-config: no template at {prompt}")
+    return prompt
+
+
+def run_name(prompt, patched, name=None):
+    base = name or pathlib.Path(prompt).name.removesuffix(".jinja")
+    return base + ("-disambiguated" if patched and not base.endswith("-disambiguated") else "")
+
+
+def checkpoint_count(problem):
+    return len(list((CATALOG / problem).glob("checkpoint_*.md")))
+
+
+def config_text(prompt_line, problem, name, patched, launch):
+    where = "the patched spec copy under problems/ (bin/spec-patch)" if patched else "the cached spec"
+    return f"""# {name} on {problem}, against {where}. Written by bin/run-config.
+# Same agent, model and thinking as every spectest run.
+#
+#   {launch}
+agent: {ROOT}/configs/agents/claude_code-2.1.251.yaml
+environment: docker-python3.12-uv
+prompt: {prompt_line}
+model:
+  provider: claude_code_oauth
+  name: opus-5
+thinking: high
+problems:
+  - {problem}
+save_dir: {ROOT}/outputs
+save_template: spectest/${{model.name}}_${{agent.version}}_${{thinking}}_{name}/${{now:%Y%m%dT%H%M}}
+"""
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--prompt", required=True); ap.add_argument("--problem", required=True)
+    ap.add_argument("--patched", action="store_true"); ap.add_argument("--name")
+    a = ap.parse_args()
+    name = run_name(a.prompt, a.patched, a.name)
+    out = ROOT / "configs" / "runs" / f"{name}-{a.problem}-opus5.yaml"
+    env = f"SCBENCH_PROBLEMS_PATH=$PWD/problems " if a.patched else ""
+    launch = f"{env}bin/scb-extend --new {out.relative_to(ROOT)} {a.problem} {checkpoint_count(a.problem) or '<n>'}"
+    out.write_text(config_text(resolve_prompt(a.prompt), a.problem, name, a.patched, launch))
+    print(out.relative_to(ROOT)); print(launch)
+
+
+if __name__ == "__main__":
+    main()

@@ -192,3 +192,12 @@ def test_repair_never_marks_an_errored_checkpoint_ran(tmp_path):
 def test_unreadable_inference_result_counts_as_errored(tmp_path):
     d = tmp_path / "checkpoint_1"; d.mkdir(); (d / "evaluation.json").write_text("{}"); (d / "inference_result.json").write_text(""); (d / "snapshot").mkdir()
     assert ext.agent_errored(d) and not ext.finished_dir(d)
+
+
+def test_overloaded_means_capacity_errors_and_no_tool_use(tmp_path):
+    d = tmp_path / "checkpoint_1" / "agent"; d.mkdir(parents=True)
+    (d / "stdout.jsonl").write_text('{"type":"system","error":"overloaded"}\n{"type":"assistant","error":"server_error"}\n')
+    assert ext.overloaded(tmp_path / "checkpoint_1")
+    (d / "stdout.jsonl").write_text('{"type":"assistant","message":{"content":[{"type":"tool_use","name":"Bash"}]}}\n{"type":"assistant","error":"server_error"}\n')
+    assert not ext.overloaded(tmp_path / "checkpoint_1")
+    assert not ext.overloaded(tmp_path / "checkpoint_9")

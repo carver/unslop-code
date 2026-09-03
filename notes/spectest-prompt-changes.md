@@ -131,3 +131,35 @@ rowid, T56 upload charset, T63 spreadsheet charset, T74 force. v7 lost 14 tests 
 exactly those five sentences. This is a spec-clarification experiment, not a benchmark
 score.
 The T{N} entries are found in the AMBIGUITIES.md output of the v7 run.
+
+## v8B (`spectest-v8B-no-libs.jinja`), diffed against v8
+
+Library research removed, the tester sub-agent kept. Run only on the disambiguated spec.
+
+- Approach list: drops the "Research helpful libraries" step.
+- Testing: drops "use libraries or build any missing pieces" from the e2e line.
+- Research: the whole section is gone (quality libraries for sub-problems; a shim plus a
+  hypothesis comparison test against a library that solves a parallel problem).
+- Implement: "red/green testing as you add libraries or features" becomes "as you add
+  features".
+
+## v8A (`spectest-v8A-no-libs-no-subagent.jinja`), diffed against v8B
+
+The tester sub-agent removed as well, so one agent writes, validates, and implements.
+
+- Testing: the sub-agent paragraph ("launch a sub-agent for this section, judged on how
+  broadly it tests; pass it this section verbatim with the full spec; if it asks about an
+  ambiguity, point it back at the AMBIGUITIES.md procedure") is replaced by one line:
+  finish this step when the tests are written and you have validated them.
+- Testing: "do not consider implementation-time difficulty" survives from the sub-agent
+  paragraph, now addressed to the main agent.
+- Testing: the "if you are the tester" pair (your turn end is your final report; do not
+  end your turn until the tests are written and validated) is gone.
+- Unchanged, and now addressed to the main agent: the v8 tester-validation rules (run
+  tests only to validate the tests themselves; never run the full suite to green, that is
+  the implementer's job). With no sub-agent the "implementer" is the same agent, so the
+  rule reads as "validate first, then implement and go green".
+
+Both keep every other v8 line, including the turn-ending rule whose only job was the
+sub-agent, and the `IN_PROGRESS`/`COMPLETED` markers.
+

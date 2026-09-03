@@ -1,10 +1,10 @@
 ---
-name: research-loop
-description: One dev problem through the spec-vs-prompt loop, up to the manual review gate.
+name: solve-one-problem
+description: One dev problem through the spec-vs-prompt steps, up to the manual review gate.
 disable-model-invocation: true
 ---
 
-# Research loop
+# Solve one problem
 
 Input: a dev problem name (`split.json`). Output: the problem's ledger, `notes/<problem>-runs.md`,
 with a row per run and a report naming what the spec patch bought and what the smallest

@@ -13,7 +13,9 @@ of a checkpoint is measured, and the reserve kept for the next one is 1.25x the 
 measured cost (default 30 points until one is measured).
 
 Unlike bin/scb-strict, a failing test does not halt; these runs are expected to miss.
-Only a missing evaluation, an infrastructure failure, or scb itself failing halts.
+A checkpoint whose agent run errored (had_error in inference_result.json: an API outage,
+a harness crash) is not finished: it is re-run once, and halts if it errors again. Only
+that, a missing evaluation, an infrastructure failure, or scb itself failing halts.
 
 Before each resume, run_info.yaml is checked against the checkpoint directories. A resume
 that ends in an error rewrites run_info.yaml with every checkpoint it did not itself run
@@ -38,14 +40,16 @@ RESET_SLACK_S = 90
 
 def next_checkpoint(problem_dir, total):
     for n in range(1, total + 1):
-        if not (problem_dir / f"checkpoint_{n}" / "evaluation.json").exists():
+        if not finished(problem_dir, n):
             return n
     return None
 
 
-def finished(problem_dir, n):
-    d = problem_dir / f"checkpoint_{n}"
-    return all((d / f).exists() for f in ("evaluation.json", "inference_result.json", "snapshot"))
+def agent_errored(ckpt_dir):
+    try:
+        return bool(json.loads((ckpt_dir / "inference_result.json").read_text()).get("had_error"))
+    except (OSError, ValueError):
+        return True
 
 
 def repair_run_info(problem_dir, total, now=None):
@@ -80,7 +84,8 @@ def deletions(dry_run_output):
 
 
 def finished_dir(path):
-    return all((path / f).exists() for f in ("evaluation.json", "inference_result.json", "snapshot"))
+    """A checkpoint the agent completed: evaluated, snapshotted, and its agent run did not error."""
+    return all((path / f).exists() for f in ("evaluation.json", "inference_result.json", "snapshot")) and not agent_errored(path)
 
 
 def backup_dir():
@@ -117,6 +122,10 @@ def start_run(config):
         print(line, end="", flush=True)
         run_dir = run_dir or output_dir_from(line)
     return run_dir, proc.wait()
+
+
+def finished(problem_dir, n):
+    return finished_dir(problem_dir / f"checkpoint_{n}")
 
 
 def outcome(problem_dir, n):
@@ -225,10 +234,14 @@ def main():
         res = outcome(problem_dir, 1)
         if res is None:
             say(f"checkpoint_1 left no evaluation; halting (run_dir={run_dir})"); sys.exit(3)
-        say(f"checkpoint_1 {res[0]}/{res[1]} infra_fail={res[2]} window {pct(reading)} -> {pct(after)}")
-        if res[2] or code != 0:
+        errored = agent_errored(problem_dir / "checkpoint_1")
+        say(f"checkpoint_1 {res[0]}/{res[1]} infra_fail={res[2]} agent_error={errored} window {pct(reading)} -> {pct(after)}")
+        if res[2] or (code != 0 and not errored):
             sys.exit(3 if res[2] else 4)
+        if errored:
+            say("checkpoint_1 agent run errored; the resume loop re-runs it once")
 
+    retried = set()
     while (n := next_checkpoint(problem_dir, total)) is not None:
         for name in repair_run_info(problem_dir, total):
             say(f"run_info.yaml had finished {name} marked not-ran; set to ran so resume keeps it")
@@ -251,9 +264,16 @@ def main():
         if res is None:
             say(f"checkpoint_{n} left no evaluation; halting (run_dir={run_dir})"); sys.exit(3)
         passed, tests, infra = res
-        say(f"checkpoint_{n} {passed}/{tests} infra_fail={infra} window {pct(reading)} -> {pct(after)}")
+        errored = agent_errored(problem_dir / f"checkpoint_{n}")
+        say(f"checkpoint_{n} {passed}/{tests} infra_fail={infra} agent_error={errored} window {pct(reading)} -> {pct(after)}")
         if infra:
             say(f"checkpoint_{n} infrastructure failure; halting (run_dir={run_dir})"); sys.exit(3)
+        if errored:
+            if n in retried:
+                say(f"checkpoint_{n} agent run errored twice; halting (run_dir={run_dir})"); sys.exit(3)
+            retried.add(n)
+            say(f"checkpoint_{n} agent run errored; re-running it once")
+            continue
         if proc.returncode != 0:
             sys.exit(4)
     say(f"DONE, {total} checkpoints present (run_dir={run_dir})")

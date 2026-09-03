@@ -1,0 +1,29 @@
+# Tighter ambiguity wording for the spectest-v8 family, based on the v8B-disambiguated run.
+#
+# v8B (2026-09-03) missed test_duplicate_enrich_params_do_not_enable_metadata[yes-then-no].
+# Its registry entry T104 recorded the mixed repetition `enrich=yes&enrich=no` as "a state the
+# spec does not resolve", and its test for that entry asserted both branches (enriched or
+# not), which satisfied "at least one test asserts the chosen reading" while asserting no
+# behavior. The implementer, with no test pulling either way, took Werkzeug's
+# first-occurrence default. Blind judges (outputs/judge/v8B-four) read the sentence the
+# hidden test's way in 9 of 10 rule-first answers. Details: notes/v8B-disambiguated-misses.md.
+#
+# Two lines change: a Choice must name one behavior for every input the alternatives
+# disagree on, and the asserting test must cover each of those inputs. The hunk applies to
+# spectest-v8.jinja, spectest-v8A-no-libs-no-subagent.jinja and spectest-v8B-no-libs.jinja
+# (substitute the file name):
+#   patch -p1 --dry-run < configs/prompts/v8-choice-must-decide.patch
+--- a/configs/prompts/spectest-v8.jinja
++++ b/configs/prompts/spectest-v8.jinja
+@@ -63,9 +63,10 @@
+ Then, add a numbered entry to an AMBIGUITIES.md file, starting with T1.
+ The entry must have sections for Spec Text, Alternatives, and Choice.
+ The entry will quote the relevant spec source, explain the reasonable alternative interpretations, and your choice & why it seems to best fit the spec.
++The Choice names one behavior for every input on which the alternatives disagree; "the spec does not resolve this" is not a choice.
+ If a previous ambiguity is resolved by the current spec, annotate the entry instead of removing it.
+ 
+-After making a choice about an ambiguity, ensure that at least one test asserts the chosen reading.
++After making a choice about an ambiguity, ensure that at least one test asserts the chosen reading on each of those inputs.
+ 
+ You run tests only to validate the tests themselves: collection succeeds, helpers and generators work{% if is_continuation -%}, and each failure is because behavior is missing, not because the test is broken{% endif -%}. Quick, targeted runs.
+ 

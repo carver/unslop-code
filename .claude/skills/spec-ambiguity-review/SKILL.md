@@ -49,9 +49,7 @@ again into a fresh `--out`. Done when each sentence's rules describe the hidden 
 
 ## 4. Rerun strict
 
-Copy `configs/runs/spectest-v8-disambiguated-datagate-opus5.yaml`, change the problem and
-the save_template name, then
-
+    bin/run-config --prompt <best generalized prompt> --problem <problem> --patched
     SCBENCH_PROBLEMS_PATH=$PWD/problems bin/scb-strict configs/runs/<name>.yaml <problem> <n_checkpoints>
 
 One checkpoint per scb invocation; halts on the first checkpoint with any failing test.

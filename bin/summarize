@@ -45,8 +45,8 @@ def quality_report(ckpt):
     return json.loads(proc.stdout)
 
 
-def main():
-    run = pathlib.Path(sys.argv[1]); md = "--md" in sys.argv
+def load_rows(run):
+    """Checkpoint rows of a run, sorted, with the four quality scores from each checkpoint's scb-check report."""
     rows = [json.loads(l) for l in (run / "checkpoint_results.jsonl").read_text().splitlines() if l.strip()]
     for r in rows:
         d = quality_report(run / r["problem"] / r["checkpoint"])
@@ -56,6 +56,12 @@ def main():
             r["cloned_pct"] = (d.get("clone_loc") or 0) / t if t else None
             r["ast_grep_pct"] = (d.get("ast_grep_flagged_loc") or 0) / t if t else None
     rows.sort(key=lambda r: (r["problem"], r["idx"]))
+    return rows
+
+
+def main():
+    run = pathlib.Path(sys.argv[1]); md = "--md" in sys.argv
+    rows = load_rows(run)
     hdr = ["problem", "ckpt", "state", "strict", "iso", "core", "core_pr", "steps", "in", "out", "cache_r", "cache_w", "cc_$", "list_$", "elapsed_s", "erosion", "verbosity", "ast%", "cloned%"]
     out = []
     tot = collections.Counter(); n = 0; sol = collections.Counter(); er = []; vb = []; cl = []; ag = []

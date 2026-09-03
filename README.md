@@ -36,7 +36,14 @@ and the sandbox-local venv):
                                              # (--patched for the problems/ copy)
     bin/compare-runs <run_dir>...            # runs side by side: scores, cost, quality, miss matrix
 
-The loop that ties those together is the project skill `/spec-ambiguity-review`.
+Project skills (`.claude/skills/`, all user-invoked) tie those together:
+
+    /solve-one-problem       one dev problem, start to finish: baseline pair, spec patch,
+                             prompt ladder, report; stops before the next problem
+    /spec-ambiguity-review   a run's hidden-test misses -> a minimal spec patch, verified
+                             by blind judges, then a strict rerun
+    /prompt-ladder           smallest prompt that strict-solves a patched spec, and where
+                             code quality drops off
 
 The benchmark clone in `slop-code-bench/` carries five source patches; after
 any pull, re-apply them in this order:

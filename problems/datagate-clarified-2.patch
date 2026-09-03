@@ -1,0 +1,44 @@
+Spec clarifications for datagate, second batch: the two sentences behind the v8B-disambiguated
+run's misses (2 of 405, 2026-09-03; notes/v8B-disambiguated-misses.md, judge run
+outputs/judge/v8B-four). Both are worded to match the hidden tests and the reference
+solution (`_parse_bool` strips then rejects anything outside the eight tokens;
+`query.get("enrich", []) == ["yes"]` enriches only on a single occurrence).
+
+These are not the same kind of miss as the first five. On T72 the blind judges read the
+sentence the tests' way 20 of 20 and only the tester read it the other way; on T104 the
+tester declared the mixed repetition unresolved and asserted nothing, and the
+implementation fell through to a library default. The prompt-side fix for the second is
+configs/prompts/v8-choice-must-decide.patch. NOT APPLIED to any run as of 2026-09-03.
+
+  checkpoint_6  T72/T73  a boolean value empty after trimming is invalid
+  checkpoint_7  T104     a repeated `enrich` parameter keeps enrichment off
+
+Applies on top of datagate-clarified.patch:
+
+  bin/spec-patch datagate                                 # rebuilds problems/datagate with the first patch
+  patch -p1 -d problems < problems/datagate-clarified-2.patch
+
+--- a/datagate/checkpoint_6.md
++++ b/datagate/checkpoint_6.md
+@@ -22,7 +22,7 @@
+ | `STORAGE_DIR` | path | implementation-defined |
+ | `CACHE_ENABLED` | boolean | `true` |
+ 
+-Boolean values are strict: `1/true/yes/on` or `0/false/no/off` (case-insensitive, trimmed).
++Boolean values are strict: `1/true/yes/on` or `0/false/no/off` (case-insensitive, trimmed; a value that is empty after trimming is invalid).
+ 
+ ### Maximum Source Size
+ 
+--- a/datagate/checkpoint_7.md
++++ b/datagate/checkpoint_7.md
+@@ -7,8 +7,8 @@
+ 
+ ### Enrichment trigger
+ 
+-Only exact `enrich=yes` enables enrichment.
+-All other states keep enrichment off.
++Only a single exact `enrich=yes` enables enrichment.
++All other states, including a repeated `enrich` parameter, keep enrichment off.
+ Success response remains:
+ 
+ ```json

@@ -49,3 +49,32 @@ Six bytes: `name\ncafé\n` in latin-1, no charset given. A conforming server ret
 Tests say: 400, 2, 200, yes, `café`. Opus 5 read them the other way in 195 of 200 blind
 readings, and argued well for each. Five reworded sentences later it passes all 405
 tests. The spec, not the model, was the slop. Full writeup: [five sentences link]
+
+## Candidates from the v8B run (2026-09-03), a different kind of miss
+
+Two more sentences, from `problems/datagate-clarified-2.patch`. Not the same story as the
+five above: on the first, blind judges read it the tests' way 20 of 20 and only the tester
+disagreed; on the second, the tester declared the case unresolved and the implementation
+fell through to a library default. Poll-worthy on their own terms, since a human reader
+splits on both, but the reveal line would be "the tester lost its nerve", not "the spec
+was slop".
+
+**8 / blank CACHE_ENABLED**
+> `CACHE_ENABLED` accepts strict case-insensitive values: `1`, `true`, `yes`, `on` / `0`, `false`, `no`, `off`.
+> Invalid values fail startup.
+> (later) Boolean values are strict (case-insensitive, trimmed).
+
+`CACHE_ENABLED="   "`, three spaces. The service:
+- fails startup, it's an invalid value
+- starts with the default, trimming left no value
+
+**9 / enrich twice**
+> Only exact `enrich=yes` enables enrichment.
+> All other states keep enrichment off.
+
+`/convert?source=…&enrich=yes&enrich=no`. Enrichment is:
+- off, a repeated parameter is one of the "other states"
+- on, the first `enrich=yes` is exact
+
+Tests say: fails startup, off. Reference solution: strip then reject anything outside the
+eight tokens; enrich only when the parameter list is exactly `["yes"]`.

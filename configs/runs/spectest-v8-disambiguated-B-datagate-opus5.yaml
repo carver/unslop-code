@@ -1,0 +1,26 @@
+# Spectest v8 on the DISAMBIGUATED datagate spec, repeat B (run-to-run noise check of the first strict solve).
+# Same agent, model and thinking as v7. Two changes from spectest-v7-datagate-opus5.yaml:
+#   - prompt v8 (tester validates its tests instead of running the suite to green;
+#     implementer targets tests and runs the full suite once at the end)
+#   - the spec is ~/.cache/scbench/problems/datagate with problems/datagate-clarified.patch
+#     applied: five sentences reworded to the reading the hidden tests take (T22 encoding,
+#     T27 rowid, T56 upload charset, T63 spreadsheet charset, T74 force). v7 lost 14 tests
+#     to exactly those five; a blind judge (notes/ambiguity-judge.md) confirms the new
+#     wording flips four of them and describes the fifth correctly.
+# This is a spec-clarification experiment, not a benchmark score.
+#
+# The patched copy must exist and be selected via the catalog's override variable:
+#   cp -r ~/.cache/scbench/problems/datagate problems/datagate && patch -p1 -d problems < problems/datagate-clarified.patch
+#   SCBENCH_PROBLEMS_PATH=$PWD/problems bin/scb-strict configs/runs/spectest-v8-disambiguated-datagate-opus5.yaml datagate 7
+# bin/scb-strict runs one checkpoint per invocation and halts at the first non-strict checkpoint.
+agent: /home/carver/code/claudedev/unslop-code-bench/configs/agents/claude_code-2.1.251.yaml
+environment: docker-python3.12-uv
+prompt: /home/carver/code/claudedev/unslop-code-bench/configs/prompts/spectest-v8.jinja
+model:
+  provider: claude_code_oauth
+  name: opus-5
+thinking: high
+problems:
+  - datagate
+save_dir: /home/carver/code/claudedev/unslop-code-bench/outputs
+save_template: spectest/${model.name}_${agent.version}_${thinking}_spectest-v8-disambiguated-B/${now:%Y%m%dT%H%M}

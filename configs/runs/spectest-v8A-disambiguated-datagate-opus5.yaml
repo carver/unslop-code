@@ -12,7 +12,7 @@
 # The patched copy must exist and be selected via the catalog's override variable:
 #   cp -r ~/.cache/scbench/problems/datagate problems/datagate && patch -p1 -d problems < problems/datagate-clarified.patch
 #   SCBENCH_PROBLEMS_PATH=$PWD/problems bin/scb-extend --new configs/runs/spectest-v8A-disambiguated-datagate-opus5.yaml datagate 7
-# bin/scb-strict runs one checkpoint per invocation and halts at the first non-strict checkpoint.
+# bin/scb-extend runs one checkpoint per invocation, waits out the 5h window, and does not halt on a miss.
 agent: /home/carver/code/claudedev/unslop-code-bench/configs/agents/claude_code-2.1.251.yaml
 environment: docker-python3.12-uv
 prompt: /home/carver/code/claudedev/unslop-code-bench/configs/prompts/spectest-v8A-no-libs-no-subagent.jinja

@@ -39,6 +39,9 @@ In full:
   data unless the spec specifically calls for it".
 - Testing: drops "test multiple usages in sequence rather than always starting from
   empty".
+    Note: this caused *every* test to run against the same instance, not just some tests.
+    That also caused issues with a long-running process writing out to a giant buffer, crashing if I recall correctly.
+    I don't think it bought much, so dropped it.
 
 ## v3
 
@@ -106,6 +109,8 @@ print mode no longer kills background sub-agents 600 s after the parent ends its
 
 ## v8
 
+Note: These are all testing performance improvements
+
 - Testing: the tester's line changes from "written and run" to "written and validated".
 - Testing: the tester runs tests only to validate the tests themselves (collection
   succeeds, helpers and generators work; on continuation checkpoints, each failure is
@@ -125,3 +130,4 @@ Five sentences are reworded to the reading the hidden tests take: T22 encoding, 
 rowid, T56 upload charset, T63 spreadsheet charset, T74 force. v7 lost 14 tests to
 exactly those five sentences. This is a spec-clarification experiment, not a benchmark
 score.
+The T{N} entries are found in the AMBIGUITIES.md output of the v7 run.

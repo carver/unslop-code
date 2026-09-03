@@ -28,6 +28,7 @@ def make_problem(tmp_path, evaluated, partial=()):
     for n in evaluated:
         d = tmp_path / f"checkpoint_{n}"; d.mkdir()
         (d / "evaluation.json").write_text(json.dumps({"pass_counts": {"Core": 4, "Error": 1}, "total_counts": {"Core": 5, "Error": 1}, "infrastructure_failure": False}))
+        (d / "inference_result.json").write_text(json.dumps({"had_error": False})); (d / "snapshot").mkdir()
     for n in partial:
         (tmp_path / f"checkpoint_{n}").mkdir()
     return tmp_path
@@ -76,9 +77,9 @@ def test_wait_is_only_slack_when_reset_already_passed():
     assert ext.seconds_until_room(reading(75), 30, now) == ext.RESET_SLACK_S
 
 
-def finished_checkpoint(problem_dir, n):
+def finished_checkpoint(problem_dir, n, had_error=False):
     d = problem_dir / f"checkpoint_{n}"; d.mkdir(parents=True, exist_ok=True)
-    (d / "evaluation.json").write_text("{}"); (d / "inference_result.json").write_text("{}"); (d / "snapshot").mkdir()
+    (d / "evaluation.json").write_text("{}"); (d / "inference_result.json").write_text(json.dumps({"had_error": had_error})); (d / "snapshot").mkdir()
 
 
 def write_run_info(problem_dir, states):
@@ -173,3 +174,21 @@ def test_usage_retries_then_gives_up(monkeypatch):
     monkeypatch.setattr(subprocess, "run", run); monkeypatch.setattr(ext.time, "sleep", lambda s: None)
     assert ext.usage(attempts=3, pause=0) is None
     assert len(calls) == 3
+
+
+def test_an_errored_checkpoint_is_not_finished_and_is_next_to_run(tmp_path):
+    finished_checkpoint(tmp_path, 1); finished_checkpoint(tmp_path, 2, had_error=True); finished_checkpoint(tmp_path, 3)
+    assert not ext.finished(tmp_path, 2) and ext.finished(tmp_path, 1)
+    assert ext.next_checkpoint(tmp_path, 7) == 2
+
+
+def test_repair_never_marks_an_errored_checkpoint_ran(tmp_path):
+    finished_checkpoint(tmp_path, 1, had_error=True)
+    write_run_info(tmp_path, {"checkpoint_1": "error"})
+    assert ext.repair_run_info(tmp_path, 7) == []
+    assert yaml.safe_load((tmp_path / "run_info.yaml").read_text())["summary"]["checkpoints"] == {"checkpoint_1": "error"}
+
+
+def test_unreadable_inference_result_counts_as_errored(tmp_path):
+    d = tmp_path / "checkpoint_1"; d.mkdir(); (d / "evaluation.json").write_text("{}"); (d / "inference_result.json").write_text(""); (d / "snapshot").mkdir()
+    assert ext.agent_errored(d) and not ext.finished_dir(d)

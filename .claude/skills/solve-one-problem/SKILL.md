@@ -41,6 +41,8 @@ spec. Done when that run is strict, or its halt's misses have gone back through 
 `/prompt-ladder`, on the patched spec. Done when the ledger names the minimum prompt for a
 strict solve and the minimum for code quality.
 
+Add these results to a results file that compiles and summarizes statistics across problems. It should be easy to see how min2 improves the solve rate or min4 improves erosion, etc.
+
 ## Reference
 
 - Current best generalized prompt: `configs/prompts/spectest-v8A-no-libs-no-subagent.jinja`.

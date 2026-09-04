@@ -25,10 +25,10 @@ generalized prompt (see Reference) on the unpatched spec, then
 
 Classify every test in the miss matrix: a **reading** (the tester and the hidden test read
 one spec sentence differently), **process** (a crashed or cut checkpoint, a narrowed
-generator, a polling loop; visible in the run's artifacts), or **noise** (flips between
+generator, a polling loop; visible in the run's artifacts), **taste** (the spec authors assume certain readings of the spec that are consistent across problems), or **noise** (flips between
 runs). A process miss is a defect in the generalized prompt: fix it in a new
 `configs/prompts/spectest-v<N>.jinja`, record the change in
-`notes/spectest-prompt-changes.md`, and rerun. Done when every miss is a reading or noise.
+`notes/spectest-prompt-changes.md`, and rerun. A taste miss, if consistent across problems, can be resolved with a change to the a general prompt (like only erroring when the spec specifically calls for it). Propose prompt changes, and interactively come to a conclusion about what to change, with me. Done when every miss is a reading or noise.
 
 ## 2. Spec patch
 

@@ -121,3 +121,50 @@ reviewer reads 35 entries instead of 126. The named divergent reading is a draft
 sentence. For the next problem the loop becomes registry, defect judge over the top
 quarter, then patch the sentences whose named reading the tests confirm, instead of
 waiting for a run to fail on each.
+
+## Fourth pass: the agreed wording, the author's tested preference (2026-09-04 21:00Z)
+
+Same v7 entries, same unpatched spec, same blindness. The score is now `differs`: "the
+probability that the spec's author, who wrote the hidden tests against their own
+implementation, has a preference on this point that a hidden test checks and that
+differs from the choice recorded here", with the judge told to reason about the
+author's implementation and fixtures rather than the prose, and to name the differing
+preference. Table: `ambiguity-defect-judge-v7-author.tsv`.
+
+| differs | patched | other |
+|---|---|---|
+| 0-19 | 1 | 101 |
+| 20-39 | 3 | 18 |
+| 40-59 | 1 | 1 |
+
+| family | differs | rank of 125 | third pass |
+|---|---|---|---|
+| rowid counts the header (T27) | 40 | 2 | 25, rank 32 |
+| encoding detection depth (T22) | 30 | 7 | 35, rank 13 |
+| charset on uploads (T56) | 25 | 14 | 30, rank 23 |
+| any force value (T74) | 20 | 20 | 35, rank 15 |
+| bad charset with a spreadsheet (T63) | 10 | 59 | 28, rank 26 |
+
+Sharper at the top, one dropped. Four of the five are now in the top 20 of 125, and
+101 entries sit under 20, so the flagged set at a threshold of 20 is 23 entries, 18
+percent of the registry, against 35 at the third pass's threshold of 25. The spreadsheet
+charset family fell to 10: the judge named the patched preference exactly, "invalid
+charset is ignored when the source is a spreadsheet", and then judged that the author
+would not write a fixture for it. Capturing all five under this wording needs a
+threshold of 10, which flags 65. Rank correlation with the third pass is 0.78. One
+entry (T95) was skipped by its judge; it is not one of the five.
+
+The named preferences match the patch on all five again, and the top of the unpatched
+list is the same set as before: numeric grammar (T10, 45), distinct-count semantics,
+lexicographic sort, extension-based format detection, and the three sentences that
+later flipped on the patched spec, the single-column 400 (T15, 30), the cache flag's
+whitespace (T72, 30) and padded numeric cells (T11, 20).
+
+Reading. Conditioning on "a hidden test checks it" is the right definition and it buys
+a tighter list, but it makes the judge guess at fixture coverage, and that guess is the
+one thing it cannot know. The miss is exactly a coverage guess gone wrong. For triage
+the two passes are complementary: the third pass's ceiling of 25 caught everything at
+28 percent; this wording's ceiling of 20 catches four of five at 18 percent. The
+registry line should use this wording, since it is the one an agent can answer about
+its own choice, and the review threshold should be set knowing that a low number can
+mean "the author agrees" or "the author never tested it", and only the first is safe.

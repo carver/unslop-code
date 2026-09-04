@@ -4,7 +4,8 @@
     bin/results [--write]      markdown table; --write also saves it to notes/results.md
 
 One row per (problem, prompt, spec): final score, strict checkpoints, cost, and the four
-quality means, averaged over the complete runs of that cell with the run count. A run is
+quality means, averaged over the complete runs of that cell with the run count; score
+carries one decimal as a reminder that it is a mean, and range is min-max of the runs. A run is
 complete when it has every checkpoint the catalog lists for the problem; partial runs are
 listed separately with the checkpoint they reached. The prompt is the run directory's name
 after the model/agent/thinking prefix; "patched" means the run name ends in -disambiguated
@@ -74,12 +75,14 @@ def fmt(v, d=3):
 
 
 def table(cells):
-    out = ["| problem | prompt | spec | model | runs | score | strict | cc_$ | erosion | verbosity | ast% | cloned% |",
-           "|---|---|---|---|---|---|---|---|---|---|---|---|"]
+    out = ["| problem | prompt | spec | model | runs | score | range | strict | cc_$ | erosion | verbosity | ast% | cloned% |",
+           "|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
     for (problem, prompt, spec, model), runs in sorted(cells.items(), key=lambda kv: (kv[0][0], -mean(r["score"] for r in kv[1]), kv[0][1])):
-        score = f"{mean(r['passed'] for r in runs):.0f}/{runs[0]['total']}"
+        passed = [r["passed"] for r in runs]
+        score = f"{mean(passed):.1f}/{runs[0]['total']}"
+        rng = f"{min(passed)}-{max(passed)}" if len(runs) > 1 else "-"
         strict = f"{mean(r['strict'] for r in runs):.1f}/{runs[0]['ckpts']}"
-        out.append(f"| {problem} | {prompt} | {spec} | {model} | {len(runs)} | {score} | {strict} | {mean(r['cost'] for r in runs):.0f} | "
+        out.append(f"| {problem} | {prompt} | {spec} | {model} | {len(runs)} | {score} | {rng} | {strict} | {mean(r['cost'] for r in runs):.0f} | "
                    f"{fmt(mean(r['erosion'] for r in runs))} | {fmt(mean(r['verbosity'] for r in runs))} | {fmt(mean(r['ast'] for r in runs))} | {fmt(mean(r['cloned'] for r in runs))} |")
     return "\n".join(out)
 

@@ -36,6 +36,7 @@ and the sandbox-local venv):
                                              # (--patched for the problems/ copy)
     bin/compare-runs <run_dir>...            # runs side by side: scores, cost, quality, miss matrix
     bin/ledger-row <run_dir>                 # after every run: the ledger row and failure summary to fill in
+    bin/results [--write]                    # every complete run, one row per problem/prompt/spec -> notes/results.md
     bin/queue add configs/runs/<name>.yaml   # enqueue a run (one at a time); bin/queue = status
     bin/build-prompt BEG                     # configs/prompts/min4-BEG.jinja from the chunks in
                                              # configs/prompts/min4-chunks/ (--list for the index)

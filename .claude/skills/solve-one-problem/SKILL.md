@@ -11,10 +11,12 @@ with a row per run and a report naming what the spec patch bought and what the s
 strict-solving prompt is. datagate is the worked example: `notes/spectest-datagate-runs.md`.
 Stop after step 5; the user reviews before the next problem.
 
-Every run goes through `bin/run-config` for the config and `bin/scb-extend --new` for the
-launch, one run at a time, queued behind whatever is running (a `while kill -0 <pid>` waiter
-in a `setsid nohup` wrapper, and a monitor on its log). The driver waits out the 5-hour
-window on its own.
+Every run goes through `bin/run-config` for the config and `bin/queue add <config>` for the
+launch: one run at a time, behind whatever is queued, with a monitor on the queue. The
+driver underneath waits out the 5-hour window and API overloads on its own. After every
+run, before anything else, the ledger ritual in `/prompt-ladder` ("After every run"):
+`bin/ledger-row <run_dir>`, then the row, the failure-summary entry, and for ladder runs
+the ladder section.
 
 ## 1. Baseline pair
 
@@ -25,10 +27,15 @@ generalized prompt (see Reference) on the unpatched spec, then
 
 Classify every test in the miss matrix: a **reading** (the tester and the hidden test read
 one spec sentence differently), **process** (a crashed or cut checkpoint, a narrowed
-generator, a polling loop; visible in the run's artifacts), **taste** (the spec authors assume certain readings of the spec that are consistent across problems), or **noise** (flips between
-runs). A process miss is a defect in the generalized prompt: fix it in a new
+generator, a polling loop; visible in the run's artifacts), **taste** (a reading the spec
+authors assume without stating it, consistent across problems: errors only where the spec
+asks for one, whitespace preserved unless told to trim), or **noise** (flips between runs).
+A process miss is a defect in the generalized prompt: fix it in a new
 `configs/prompts/spectest-v<N>.jinja`, record the change in
-`notes/spectest-prompt-changes.md`, and rerun. A taste miss, if consistent across problems, can be resolved with a change to the a general prompt (like only erroring when the spec specifically calls for it). Propose prompt changes, and interactively come to a conclusion about what to change, with me. Done when every miss is a reading or noise.
+`notes/spectest-prompt-changes.md`, and rerun. A taste miss that recurs across problems is
+also a generalized-prompt change, but one to propose and settle with the user before it is
+written: it sets a reading for every problem after this one. Done when every remaining
+miss is a reading or noise.
 
 ## 2. Spec patch
 
@@ -41,7 +48,9 @@ spec. Done when that run is strict, or its halt's misses have gone back through 
 `/prompt-ladder`, on the patched spec. Done when the ledger names the minimum prompt for a
 strict solve and the minimum for code quality.
 
-Add these results to a results file that compiles and summarizes statistics across problems. It should be easy to see how min2 improves the solve rate or min4 improves erosion, etc.
+Then `bin/results --write` regenerates `notes/results.md`, one row per problem, prompt and
+spec across every complete run, so a rung's effect on score or erosion reads across
+problems at a glance. It is generated, never edited; the reading goes in the ledger.
 
 ## Reference
 

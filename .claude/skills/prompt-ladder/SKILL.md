@@ -32,6 +32,11 @@ the higher rungs are the quality curve. When a miss needs a rule no rung carries
 new rung above the one that failed instead of editing an existing rung, so earlier results
 stay comparable. Done when every rung has all checkpoints.
 
+Below the rung level, `configs/prompts/chunks/` holds min4 one rule per lettered file and
+`bin/build-prompt BEG` writes `min4-BEG.jinja` from any subset, so a single rule can be
+added or removed at a time (`bin/build-prompt --list` for the index; `chunks/README.md`
+for which chunks presuppose others).
+
 ## 3. Noise
 
 Repeat the lowest strict rung and the just-solve flip once each. A test that flips between

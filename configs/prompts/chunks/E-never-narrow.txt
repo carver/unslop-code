@@ -1,0 +1,2 @@
+When a generated input makes a spec test fail, treat it as evidence that the implementation is not satisfying the spec.
+Never narrow the generator or the test to avoid the input.

@@ -1,0 +1,49 @@
+#!/usr/bin/env python3
+"""Build a prompt from min4's chunks: bin/build-prompt BEG -> configs/prompts/min4-BEG.jinja
+
+Chunks live in configs/prompts/chunks/, one rule per file, named <letter>-<slug>.txt. The
+built prompt is HEAD.jinja, the chosen chunks in letter order separated by blank lines, and
+TAIL.jinja. Letters are sorted, so the same set always builds the same file.
+    bin/build-prompt --list      the chunk index
+"""
+import pathlib, sys
+
+CHUNKS = pathlib.Path(__file__).resolve().parent.parent / "configs" / "prompts" / "chunks"
+
+
+def index(chunks_dir=CHUNKS):
+    """{letter: path} for every <letter>-<slug>.txt chunk."""
+    out = {}
+    for p in sorted(chunks_dir.glob("?-*.txt")):
+        out[p.name[0]] = p
+    return out
+
+
+def build(letters, chunks_dir=CHUNKS):
+    """(name, text) for a chunk set; unknown or repeated letters are an error."""
+    idx = index(chunks_dir)
+    chosen = sorted(set(letters.upper()))
+    unknown = [l for l in chosen if l not in idx]
+    if unknown or len(chosen) != len(letters):
+        raise SystemExit(f"build-prompt: chunks are {''.join(idx)}; got {letters!r}")
+    parts = [(chunks_dir / "HEAD.jinja").read_text().rstrip("\n")]
+    parts += [idx[l].read_text().rstrip("\n") for l in chosen]
+    parts.append((chunks_dir / "TAIL.jinja").read_text().rstrip("\n"))
+    return "min4-" + "".join(chosen), "\n\n".join(parts) + "\n"
+
+
+def main():
+    if len(sys.argv) != 2:
+        raise SystemExit(__doc__)
+    if sys.argv[1] == "--list":
+        for l, p in index().items():
+            print(f"{l}  {p.stem[2:]:<22} {p.read_text().splitlines()[0][:90]}")
+        return
+    name, text = build(sys.argv[1])
+    out = CHUNKS.parent / f"{name}.jinja"
+    out.write_text(text)
+    print(out.relative_to(CHUNKS.parent.parent.parent), f"{len(text.split())} words")
+
+
+if __name__ == "__main__":
+    main()

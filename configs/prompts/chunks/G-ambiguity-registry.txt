@@ -1,0 +1,3 @@
+Then, add a numbered entry to an AMBIGUITIES.md file, starting with T1.
+The entry must have sections for Spec Text, Alternatives, and Choice.
+The entry will quote the relevant spec source, explain the reasonable alternative interpretations, and your choice & why it seems to best fit the spec.

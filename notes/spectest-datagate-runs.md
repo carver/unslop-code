@@ -251,9 +251,10 @@ Rungs are `configs/prompts/spectest-min*.jinja`, each adding one rule set to the
 (`spectest-min-ladder-changes.md`); every run is against `problems/datagate-clarified.patch`.
 Table and matrix from `bin/compare-runs`. Repeats and min2b are in the
 amendments below; as of 2026-09-04 13:00Z the queue holds reruns of every one-run 405
-(ABCHJK, min4, v8A, v8) plus v8B, then three single-chunk drops from ABCHJK: ABCHK (no J),
-ACHJK (no B), ABCHJ (no K, to price that rule). The three drops run only if the ABCHJK
-rerun is a strict 405 again; otherwise they come off the queue.
+(ABCHJK, min4, v8A, v8) plus v8B. Three single-chunk drops from ABCHJK (ABCHK, ACHJK,
+ABCHJ; prompts and configs are in `configs/`) were queued behind them and removed at 16:30Z
+once the ABCHJK rerun lost a test at checkpoint 1: the user wants drops taken only from a
+prompt that strict-solves twice.
 
 run | scores | strict | cc_$ | erosion | verbosity | ast% | cloned%
 ---|---|---|---|---|---|---|---

@@ -29,6 +29,7 @@ tests passed / total at each checkpoint (regressions included), from each checkp
 | min0 disambiguated, repeat | `…spectest-min0-disambiguated/20260903T2251` | same config as the first min0 run | 48/50, 120/122, 169/174, 215/233, 258/276, 335/353, 386/405 | complete 2026-09-04; 19 misses, 0/7 strict, $25, 93 min. The first run's five whitespace tests, identical. Plus 14 upload tests from one keep-alive bug: at ckpt 4 the agent wrote its own HTTP server and multipart parser (the first run used Flask) and cached the request body on the handler object, which the stdlib server reuses for every request on a connection, so each POST after the first read a stale body. 13 at ckpt 4 carried as regressions, one more at ckpt 7 |
 | min4-ABCHJK | `…min4-ABCHJK-disambiguated/20260904T0042` | min2b plus H alone, "annotate the entry instead of removing it" (`min4-ABCHJK.jinja`, 157 words) + spec patch | 50/50, 122/122, 174/174, 233/233, 276/276, 353/353, 405/405 | complete 2026-09-04; 0 misses, 7/7 strict, $30, 129 min. The one sentence made the agent keep a 74-entry AMBIGUITIES.md nobody asked for; its A69 took the no-trim reading of `CACHE_ENABLED` at ckpt 5 and was annotated RESOLVED at ckpt 6, whitespace now stripped. Quality: cloned 0.246 and verbosity 0.349 from `test_zz_stress_tmp.py`, a 1319-line copy of the filtering tests with max_examples 4000, left behind at ckpt 3 |
 | min4-ABCFGHJK | `…min4-ABCFGHJK-disambiguated/20260904T0311` | min2b plus F, G, H: choose an interpretation, record it in AMBIGUITIES.md, annotate when resolved (`min4-ABCFGHJK.jinja`, 245 words) + spec patch | 44/50, 116/122, 168/174, 224/233, 267/276, 344/353, 394/405 | complete 2026-09-04; 11 misses, 0/7 strict, $31, 128 min. All eleven from one ckpt-1 choice, registry entry T6: a file with no inferable delimiter is "non-tabular", a 400 the spec never asks for, and the entry says in so many words that a genuinely single-column CSV is rejected. min2's cascade test for test (six at ckpt 1, the three CSV charset tests at ckpt 4) plus two single-column tests at ckpt 7. The cache flag entry was annotated and trimmed at ckpt 6 as in min4 |
+| min4-ABCHJK, repeat | `…min4-ABCHJK-disambiguated/20260904T0608` | same config as the first ABCHJK run | 49/50, 121/122, 173/174, 232/233, 275/276, 352/353, 404/405 | complete 2026-09-04; 1 miss, 0/7 strict, $32, 191 min. A trailing blank line kept as a data row of empty strings, chosen at ckpt 1 (registry entry A11: "no source line silently lost") and never revisited; the first run dropped it "matching normal CSV trailing-newline behaviour". Cache flag annotated and trimmed at ckpt 6 as in every run with H. No stray stress file this time: erosion 0.076, verbosity 0.133, ast 0.044, cloned 0.075 |
 
 On hidden tests, v4 through v7 are flat within
 the latin-1 noise (ckpt 1: 50, 49, 50, 49 of 50; ckpt 2: 119, cut, 119, 118 of 122), and
@@ -169,6 +170,10 @@ matrix, and the reading. Failure sets in brief:
     checkpoint 7 (mixed numeric column type, duplicate enrich params), every one a 400 for
     "source is not tabular content". Registry entry T6 weighed three readings and chose
     the strictest knowing the cost. The cache flag fork closed at checkpoint 6 as in min4.
+  - min4-ABCHJK repeat (404): one miss, `test_trailing_empty_line_excluded`, planted at
+    checkpoint 1 and carried through all seven. Entry A11 read a blank line as a record to
+    keep; the first run read it as CSV convention to drop. The only earlier failure of that
+    test was v4 on the unpatched spec. The cache flag fork closed at checkpoint 6 again.
 
 ## Did the v8 testing hints help, or was it the zombie fix?
 
@@ -403,3 +408,14 @@ both had D absent (min2 has D; so D is not the fix either). A spec sentence woul
 it: `problems/datagate-clarified-2.patch` style, one line saying a single-column file is
 tabular. Prompt-side, nothing on the ladder names the case, and a rule that does would
 be datagate-specific.
+
+Amendment 2026-09-04 16:45Z, after the ABCHJK repeat: 404/405, 0/7 strict, $32, 191 min
+(first run 405, $30, 129 min). One miss from one checkpoint 1 choice, a trailing blank
+line kept as a row of empty strings; every other checkpoint matched the first run test
+for test, and the annotate sentence closed the cache flag fork for the fourth run out of
+four that carried it. So ABCHJK is not a stable strict solve: the blank-line question is
+a third coin flip on the ladder, after the single-column reading and the cache flag, and
+it flipped once in fourteen patched runs. Quality without the stray stress copy is the
+best on the ladder: erosion 0.076, cloned 0.075. Per the user's rule the three
+single-chunk drops came off the queue; shrinking starts from a prompt that strict-solves
+twice, and none has yet.

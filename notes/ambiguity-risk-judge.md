@@ -46,3 +46,28 @@ as a judge that saw seven runs' readings side by side, and whether asking for th
 number changes the choices (it may make the agent hedge toward permissive readings).
 The cheap next step is to ask the judge again with one run's choice only, no
 alternatives from other runs, and see if the ranking holds.
+
+## Second pass: one run's entry at a time (2026-09-04 17:00Z)
+
+Same 126 questions, same rules, but each judge saw a single run's entry, picked at
+random: its spec quote, its own alternatives, its one choice. This is the view an
+implementing agent has when rating its own entry. Table: `ambiguity-risk-judge-solo.tsv`.
+
+| risk | flip | ok | untested |
+|---|---|---|---|
+| 0-19 | 2 | 83 | 20 |
+| 20-39 | 4 | 12 | 3 |
+| 40-59 | 0 | 1 | 1 |
+
+The big coin flips still rank at the top: single-column 35, non-tabular 30, cache flag
+28, delimiter inference 20. The two rare ones sink: blank lines to 15, repeated enrich
+to 10. Capturing all six now needs risk 10 or above, which flags 78 of 126; the first
+pass captured all six at 27. Rank correlation between the two passes is 0.67, and 17 of
+the top 27 overlap. On repeated enrich the judge saw v8B's wrong choice and gave it 90.
+
+Reading: seeing several runs' readings side by side is worth a lot even when the judge
+is told to ignore how many chose each; the spread of readings is itself the signal. A
+self-rated risk line will catch the questions a prompt rule could also catch (the ones
+where the spec's wording clearly leaves two readings) and will miss the one-in-fourteen
+slips, where the agent is confident and wrong. It is a triage aid for a reviewer, not
+a fix for reliability.

@@ -25,6 +25,7 @@ tests passed / total at each checkpoint (regressions included), from each checkp
 | min4 disambiguated | `…spectest-min4-disambiguated/20260903T1328` | min3 plus the AMBIGUITIES.md procedure (`spectest-min4-ambiguities.jinja`, 312 words) + spec patch | 50/50, 122/122, 174/174, 233/233, 276/276, 353/353, 405/405 | complete 2026-09-04; third strict solve, at $43 and 3.5 h. Its registry entry T48 took min3's no-trim reading at ckpt 5, then the annotate-when-resolved step reopened it at ckpt 6 and applied "trimmed" to `CACHE_ENABLED`, the reading min3 never revisited |
 | min2b disambiguated | `…spectest-min2b-disambiguated/20260903T1704` | min3 minus the two "critically" rules: tests-first, hypothesis, generator floor, keep spec tests (`spectest-min2b-generator-floor.jinja`, chunks ABCJK) + spec patch | 50/50, 122/122, 174/174, 233/233, 276/276, 347/353, 399/405 | complete 2026-09-04; identical to min3 at every checkpoint, same six trimmed `CACHE_ENABLED` misses. The flipped cell of the 2x2: the generator floor is the correctness rung, the two rules add nothing to the score |
 | just-solve-disambiguated, repeat | `…just-solve-disambiguated/20260903T1857` | same config as the first run | 48/50, 120/122, 169/174, 228/233, 271/276, 348/353, 400/405 | complete 2026-09-04; 5 misses, all whitespace (the ckpt-1 pair and the ckpt-3 trio), identical to min0's first run. Against the first just-solve run (397): +3 more whitespace misses, the six `cache_enabled` parsing tests recovered. Noise band on the plain prompt: a handful of whitespace tests, plus one six-test cluster that flips |
+| min3 disambiguated, repeat | `…spectest-min3-disambiguated/20260903T2011` | same config as the first min3 run | 50/50, 122/122, 174/174, 233/233, 276/276, 353/353, 405/405 | complete 2026-09-04; 0 misses, 7/7 strict, $29, 139 min. Same no-trim reading of `CACHE_ENABLED` at ckpt 5 as the first run (its docstring says "no surrounding whitespace"), but at ckpt 6 it deleted the custom parser and routed the flag through the shared trimming `parse_bool`, where the first run kept a `trim=False` exception. The six-test cluster flips between runs on the same prompt |
 
 On hidden tests, v4 through v7 are flat within
 the latin-1 noise (ckpt 1: 50, 49, 50, 49 of 50; ckpt 2: 119, cut, 119, 118 of 122), and
@@ -146,6 +147,9 @@ matrix, and the reading. Failure sets in brief:
   - min2b (399): identical to min3 at every checkpoint, same six.
   - min4 (405): strict. Same no-trim reading as min3 at checkpoint 5 (registry entry T48),
     reopened by the annotate-when-resolved step at checkpoint 6.
+  - min3 repeat (405): strict. Same no-trim reading at checkpoint 5; at checkpoint 6 the
+    agent folded `CACHE_ENABLED` into the shared trimming parser instead of keeping an
+    exception for it. On this prompt the cluster is a coin flip.
 
 ## Did the v8 testing hints help, or was it the zombie fix?
 
@@ -214,8 +218,9 @@ checkpoint 1 was tarred to `outputs/backups/` before its extension started.
 
 Rungs are `configs/prompts/spectest-min*.jinja`, each adding one rule set to the one below
 (`spectest-min-ladder-changes.md`); every run is against `problems/datagate-clarified.patch`.
-Table and matrix from `bin/compare-runs`. Pending as of 2026-09-04 00:30Z: min2b (the
-generator floor without min2's two rules), a just-solve repeat, a min3 repeat, a min0 repeat.
+Table and matrix from `bin/compare-runs`. Repeats and min2b are in the
+amendments below; as of 2026-09-04 06:00Z the min0 repeat is running and two min4 chunk
+subsets (ABCHJK, ABCFGHJK) are queued.
 
 run | scores | strict | cc_$ | erosion | verbosity | ast% | cloned%
 ---|---|---|---|---|---|---|---
@@ -296,3 +301,14 @@ rule sets above min0. Treat erosion differences among the rungs as run-to-run no
 the repeats say otherwise; the one solid quality claim is the gap between just-solve
 (0.535) and every tests-first rung (0.03 to 0.24).
 
+Amendment 2026-09-04 06:00Z, after the min3 repeat: 405/405, 7/7 strict, $29, 139 min
+(the first run: 399, 5/7, $34). Both runs read "strict case-insensitive" as no-whitespace
+at checkpoint 5, with a lowercase-and-compare parser that never strips. Both then met
+"trimmed" at checkpoint 6 with that parser to reconcile. The first kept the old reading for
+`CACHE_ENABLED` alone through a `trim=False` argument; the repeat deleted the custom parser
+and reused the shared one that trims. Nothing in the prompt decides between those, so the
+six-test cluster is a coin flip on min3, and one run each no longer separates min4 from
+min3 on the score axis. Strict minimum is now "min3 or min4"; a min4 repeat or the chunk
+subsets in the queue have to settle it. Quality on the repeat: erosion 0.162 against
+0.151, verbosity 0.164 against 0.160, ast-grep 0.090 against 0.062, cloned 0.067 against
+0.065. Same-prompt erosion noise is about 0.01 here, against 0.23 on just-solve.

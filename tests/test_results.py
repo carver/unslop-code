@@ -31,3 +31,9 @@ def test_collect_separates_partial_runs(tmp_path, monkeypatch):
     assert cells == {} and partial[0][:3] == ("datagate", "spectest-min3", "patched") and partial[0][4:6] == (2, 7)
     cells, partial = rs.collect([run], count=lambda problem: 2)
     assert list(cells) == [("datagate", "spectest-min3", "patched", "opus-5")] and partial == []
+
+
+def test_single_run_score_has_no_decimal():
+    cells = {("datagate", "spectest-min4", "patched", "opus-5"): [
+        {"score": 1.0, "passed": 405, "total": 405, "strict": 7, "ckpts": 7, "cost": 43.0, "erosion": 0.17, "verbosity": 0.16, "ast": 0.08, "cloned": 0.07}]}
+    assert "| 1 | 405/405 | - | 7.0/7 |" in rs.table(cells).splitlines()[-1]

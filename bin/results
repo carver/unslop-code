@@ -4,8 +4,8 @@
     bin/results [--write]      markdown table; --write also saves it to notes/results.md
 
 One row per (problem, prompt, spec): final score, strict checkpoints, cost, and the four
-quality means, averaged over the complete runs of that cell with the run count; score
-carries one decimal as a reminder that it is a mean, and range is min-max of the runs. A run is
+quality means, averaged over the complete runs of that cell with the run count; a cell with
+more than one run shows score with a decimal, as a reminder that it is a mean, and its min-max range. A run is
 complete when it has every checkpoint the catalog lists for the problem; partial runs are
 listed separately with the checkpoint they reached. The prompt is the run directory's name
 after the model/agent/thinking prefix; "patched" means the run name ends in -disambiguated
@@ -79,7 +79,7 @@ def table(cells):
            "|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
     for (problem, prompt, spec, model), runs in sorted(cells.items(), key=lambda kv: (kv[0][0], -mean(r["score"] for r in kv[1]), kv[0][1])):
         passed = [r["passed"] for r in runs]
-        score = f"{mean(passed):.1f}/{runs[0]['total']}"
+        score = (f"{mean(passed):.1f}" if len(runs) > 1 else f"{passed[0]}") + f"/{runs[0]['total']}"
         rng = f"{min(passed)}-{max(passed)}" if len(runs) > 1 else "-"
         strict = f"{mean(r['strict'] for r in runs):.1f}/{runs[0]['ckpts']}"
         out.append(f"| {problem} | {prompt} | {spec} | {model} | {len(runs)} | {score} | {rng} | {strict} | {mean(r['cost'] for r in runs):.0f} | "

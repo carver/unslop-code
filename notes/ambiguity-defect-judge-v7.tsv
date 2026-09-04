@@ -1,0 +1,127 @@
+tid	defect	outcome	hidden	why
+T110	45	-	distinct_count counts empty cells as one more distinct value	The field is never defined, and a reference doing len(set(column)) over every cell would count the empty string, so a fixture with missing values asserts a number the text does not fix.
+T23	45	-	"Cells compared as source text, so ""10"" sorts before ""9""; or mixed columns sorted as strings."	The spec says only sorts ascending by column and never fixes number-versus-string ordering, so a reference storing cells as TEXT would sort lexicographically and the tests would follow it.
+T60	45	-	Format is chosen by file-name/URL extension and unknown extensions are HTTP 400	"The spec writes `.xls` and `.xlsx` as extensions and promises 400 for ""unrecognized format"", which an extension-keyed reference satisfies with a `.txt` fixture that content sniffing happily parses as a one-column CSV."
+T112	45	-	A column mixing integers and decimals is `float`; integer columns with missing cells are `float` or `number`	The spec lists four labels with no assignment rule, so a pandas-dtype reference would never emit `number` the way the tester does and could label missing-bearing integer columns differently.
+T10	40	-	Python int()/float() acceptance decides numeric-ness, so 007 becomes 7 and 1e3 becomes 1000	Integers/decimals is never pinned to a lexical form, and a reference built on try-parse would make leading zeros, signs and exponents numbers where the canonical-form reading keeps them text.
+T122	40	-	A forced or cache-disabled plain re-ingestion of an enriched dataset stays enriched with recomputed metadata	Re-ingestion recomputes metadata from current source bytes can be read as enrichment persisting through re-ingestion, so a test asserting stickiness after force is as supportable as the tester's downgrade reading.
+T11	40	later flip: cell whitespace trimmed (just-solve, min0)	"Cells are trimmed before type inference; "" 42"" is the number 42."	Python int()/float() accept padded text and hand-written fixtures often put a space after the comma, so a reference would number-ify padded cells without anyone deciding to.
+T15	40	later flip: single-column 400 (min2, ABCFGHJK)	A file with no recognised delimiter is Non-tabular content, HTTP 400.	The spec makes delimiter inference mandatory and lists Non-tabular content as an error, so a sniffer-based reference would reject one-column text and any plain-text page.
+T72	40	later flip: cache flag not trimmed (min3, min2b)	Boolean values are trimmed before matching, so padded spellings are accepted	"Checkpoint 6 later says ""(case-insensitive, trimmed)"", which suggests the reference trims already and a test could pass a padded value the strict reading refuses."
+T29	38	-	Unknown _-prefixed parameter is an invalid control parameter and returns 400	Control params (names beginning with _) defines the class by prefix, so a test author can call _foo an invalid control parameter even though no error row lists it.
+T111	38	-	NA-like tokens (NA, N/A, null, nan) and whitespace-only cells count as missing.	Missing is never defined, and a pandas-backed reference counts its default NA tokens as missing so tests built on it would too.
+T9	35	-	Short rows padded with empty cells (or ragged file rejected as non-tabular 400)	"The spec is silent on field-count mismatch, so any assertion beyond ""no 5xx"" comes from the reference implementation, not the text."
+T22	35	patched	Latin-1 or cp1252 fixtures round-trip exactly with no charset given	Detect encoding from content reads as unconditional, and a test author who happened to pick a byte sequence chardet guesses right would assert a round-trip the spec never promised to be achievable.
+T50	35	-	Invalid _shape/_rowid/_total values on /export are still 400	Do not affect CSV output was likely written about valid values, and a reference that validates all controls before branching would return 400 where the literal reading says ignore.
+T74	35	patched	force with any value, e.g. force=1, is 400 because a presence flag takes no value	"Any additional force value reads at least as naturally as ""a value beyond presence"" as it does ""a second occurrence"", so a test sending force=true and expecting 400 is plausible."
+T25	33	-	_sort_desc present means _sort is ignored unvalidated, so an unknown _sort column still yields 200	_sort_desc wins reads naturally as pick-one-and-ignore-the-other in a reference implementation, while the unqualified error row supports validating both; the text supports either.
+T6	30	-	Plain multi-line text with no delimiter is non-tabular even though it has two rows	Non-tabular is never defined and the header-plus-data-row rule admits a one-column prose file, so a test built on an HTML or prose fixture asserts a heuristic the text never states.
+T34	30	-	Unknown control names such as _foo, or non-filter names with a single underscore, are 400	Without _ and without __ are ignored literally leaves my_col and _foo unclassified, so a strict reference could reject them where the tester ignores them.
+T99	30	-	An empty environment value is treated as unset and selects the default.	Unset is the default for two settings and harnesses commonly export empty strings for absent values, so a test may set MAX_SOURCE_SIZE= expecting no limit.
+T107	30	later flip: repeated enrich (v8B)	enrich=yes&enrich=yes is HTTP 400, or the first value wins and enriches.	Only exact enrich=yes is a value rule not a count rule, and a reference using args.get would enrich on the first value while one copying force would 400.
+T4	30	-	Empty charset counts as omitted: detect encoding and answer 200	"A reference that does `if charset:` treats empty as absent, and ""if omitted"" reads naturally as ""if no usable value was given"", so an edge-case test could go either way."
+T24	30	-	Leading plus or zeros are rejected: only canonical digits are a positive integer	A regex-based reference rejects `+5` and `05` while an int()-based one accepts them; the spec names the value not the spelling so either is defensible.
+T56	30	patched	`/upload` honours a `charset` query parameter (or field) exactly as `/convert` does, including 400 for a bad one	charset applies only to text CSV sources sits in a section that covers both endpoints, so a test could upload a latin-1 file with `charset=latin-1` and expect an exact round-trip that detection alone may not deliver.
+T88	30	-	An unknown key is invalid config and fails startup	Invalid config has no definition, so a test author with a strict parser could reasonably write `UNKNOWN=1` expecting exit; the spec text does not settle it.
+T121	28	-	Second enrich=yes on an enriched dataset must not contact the origin (cache hit count asserted)	may use cache grants permission, but a test author whose reference caches will often assert the origin is hit once, turning may into must.
+T63	28	patched	A malformed charset is ignored for a spreadsheet source and the request succeeds.	Charset applies only to text CSV sources invites a reference that validates charset lazily on the CSV path, and a test proving the charset is ignored might use a bogus value.
+T75	28	-	With caching disabled a repeated force is ignored, HTTP 200.	Force has no additional effect when caching is disabled can be read as skipping the parameter entirely, including its validation, though a test for this corner is unlikely.
+T83	28	-	Settings read from DATAGATE_-prefixed environment variables.	Direct environment variables never spells the names, and DATAGATE_CONFIG shows a prefix, though CACHE_ENABLED already passed unprefixed in the previous checkpoint.
+T13	25	-	Empty or NULL-like cells become JSON null (pandas-style coercion)	Strings remain text is the natural catch-all, but a reference built on a dataframe library would coerce NULL/None/true and a test author may not notice the spec never says so.
+T18	25	-	Access-Control-Allow-Origin must be literally * and OPTIONS must answer 2xx with Allow-Methods/Allow-Headers	Include CORS headers names no header or value, so a test asserting an exact wildcard or specific preflight headers reads more than the sentence says.
+T38	25	-	Empty filter values are 400 like empty _sort values	The empty-value rule sits next door under sorting, and a reference sharing one validator across sort and filter would reject k__exact= without any filtering-section sentence saying so.
+T27	25	patched	The first data row has rowid 2 because the header is line 1 of the source file.	Source-file row number literally names the file line, but the datasette model this API copies numbers data rows from 1, and that is what most authors would build.
+T8	25	-	Duplicate labels are suffixed (a, a.1) the way pandas renames them	"The spec never mentions duplicates; only a pandas-backed reference would rename, and the later ""keyed by column name"" sections hint the author assumed distinct names."
+T96	25	-	Preflight OPTIONS requests are checked too and fail 403 without a Referer	Check every request before routing literally includes OPTIONS, and a middleware-first reference would 403 a preflight, though a test combining CORS and allowlist is niche.
+T116	25	-	"The spreadsheet summary is exactly `{""filetype"": ""excel""}` or must include the two counts"	add only `dataset_summary` can be read as constraining the keys rather than the fields, and a test could compare the whole object literally.
+T5	22	-	file:// treated as unreachable source and answered 404 rather than 400	URL of the remote CSV file plus two error rows (Invalid URL 400, unreachable 404) lets a test pin either status for a non-HTTP scheme without the text choosing.
+T61	22	-	"Spreadsheet cells keep native cell types (text cell ""12"" stays text; date cells rendered some fixed way)"	The type rules are written for CSV text and the spreadsheet section adds none, so anything about native cell types or dates in a test is invented beyond the text.
+T36	22	-	`exact` compares the filter string against the stored JSON value rendered back to text	"A reference that stores typed values and compares `str(value)` diverges on cells like `1.500` or `007`, but such fixtures are uncommon and ""float parse on stored values"" implies text."
+T37	20	-	inf/nan (or exponent forms) rejected as non-numeric filter values with 400	"float parse names Python semantics, but a test author who thinks of nan or 1e3 as non-numeric could assert 400 under ""non-numeric filter values""."
+T54	20	-	A part named file without a filename is a missing file field, 400	"Frameworks file such parts under form fields not files, so a reference using request.files would 400 even though the spec says ""field""."
+T7	20	-	Empty header cells renamed (Unnamed: n / column_n) or the file rejected as non-tabular.	The spec gives no naming rule at all, so a pandas-backed reference would silently emit its own labels and the test would inherit them.
+T19	20	-	"A quoted ""1"" stays a string; a repeat convert with cache on never re-fetches."	The tester committed to nothing here, so only a test on quoted numerics could bite, and the type rules never mention quoting.
+T35	20	-	Split at the first __, so a__b__exact is an invalid comparator, HTTP 400.	"A column label containing __ is an unlikely fixture, and a reference using split(""__"", 1) instead of rsplit would only matter if such a fixture exists."
+T12	20	-	Cells reading nan/inf parse as floats and are emitted as NaN/Infinity	"A float()-based inference in the reference would swallow `nan`, but ""all errors are JSON"" plus ""decimals are JSON numbers"" make text the reading most authors would also take."
+T64	20	-	Interior blank rows are data rows of empty cells	A sheet reader hands back empty rows unless filtered, and nothing in the spec says spreadsheet blanks are skipped, so a fixture with a gap could count it.
+T84	20	-	A missing config file is treated as no config and the service starts on defaults	"A reference guarded by `if os.path.exists(path)` would start normally, though ""read failure ... exits"" reads naturally as covering a missing file."
+T59	18	-	GET /upload is specifically 405 (or specifically 404).	The spec fixes only POST, the tester accepts either code, so a contradiction needs a test that pins the one the implementation did not choose.
+T100	18	-	Request host is the Host header with any port stripped or the bound address	Request host most naturally means the Host header verbatim, which is what a test comparing against its own base URL would compute.
+T53	15	-	attachment takes precedence, or both present is 400	"The spec says ""file or attachment"" and never orders them; a reference could pick either part or reject the pair, and the text does not decide."
+T65	15	-	Content-Type must equal text/csv exactly with no parameters	The header is written bare in the spec, so an equality assertion is defensible, though most authors accommodate a charset parameter.
+T42	15	-	A named timeout setting or fixed budget that a slow query must trip	No duration, knob, or triggering input is stated, so a timing test would have to invent one; more likely the row is simply untested.
+T58	15	-	Any Content-Type other than multipart/form-data is non-multipart, 415	The tester's own test already accepts both statuses, so only an exact-status assertion on this exotic input could bite.
+T86	15	-	0 or values with whitespace or leading zeros are invalid config	Integer bytes is underspecified only at the margins, and a test would most likely use a plain positive number or an obvious non-integer.
+T31	15	-	Descending order is the exact reverse of ascending, ties in reverse source order.	Sorting is stable is stated for both directions and sorted(reverse=True) plus SQLite both keep ties in source order, so the tests almost surely agree.
+T39	15	-	Duplicate labels are rejected or renamed at ingestion, so the filter never sees two.	SQLite refuses duplicate column names so a reference might dedupe headers, but a test on filtering a duplicated label is improbable.
+T51	15	-	Export applies no default row limit; all rows unless _size is given.	Applies the same pagination reads as including the default 100 cap, but an author may see export as a full dump and not cap it.
+T87	15	-	Keys are matched byte-exact; whitespace around = makes the line invalid.	KEY=VALUE describes a shape and booleans are already trimmed, so a test fixture with padding would most likely be accepted by both sides.
+T20	15	-	A blank line is a data row of one empty cell	"Only a csv.reader-based reference that never filters empties would count blank lines, and the ""at least one data row"" rule reads naturally as excluding them."
+T28	15	-	-	Degenerate headers with `_shape=objects` are rarely fixtured and the spec lists no error, so tests probably do not pin this.
+T40	15	-	-	Duplicate filter keys with the key being the whole parameter name is the reading a reference would implement by default via multi-dict inspection.
+T52	15	-	Upload id also depends on the uploaded file name	"A reference that hashes bytes only is the overwhelming default, and ""same file bytes"" names the sole input; only a name-keyed store would diverge."
+T76	15	-	-	Deleting a dataset on a failed non-forced refetch is an odd thing to implement, so tests most likely assert survival or do not probe it.
+T104	15	-	A fresh directory must not see previously persisted datasets	A negative persistence test is plausible but a fresh directory forgets data naturally in any file-backed store, so a divergence is unlikely to be observable.
+T124	15	-	-	"Standard JSON errors plus ""keep existing error codes"" leave no room for a new status, and the survival requirement matches the cache section."
+T113	14	-	Entry describes the rightmost duplicate column (dict comprehension overwrite)	keyed by column name forces one entry but a reference dict built in column order silently keeps the last, contradicting the leftmost rule the suite uses elsewhere.
+T21	12	-	CR-only files parse into rows like Python csv does	Spec names no terminator; a test author using csv.reader gets rows from CR-only input for free and may assert them.
+T73	12	-	Process must exit within a short timeout with a specific message on stderr	fail startup fixes no timing or wording, so a test that waits a fixed interval or greps a message asserts more than the text.
+T109	12	-	row_count equals the filtered or paginated row count of the current response	"ingestion enrichment and ""recomputes metadata from current source bytes"" tie the counts to the dataset, but a test written on a small unfiltered table cannot tell and a filtered one might."
+T26	12	-	-	The spec never mentions duplicate labels in sorting, and leftmost is what any lookup by first match yields, so a test would most likely land on the same answer.
+T66	12	-	Export reuses the delimiter inferred from the source	Nothing in the export section mentions the delimiter, and csv.writer's default comma is what a reference would emit.
+T70	12	-	A restarted instance answers without re-downloading	Can return the cached id is permissive, so a test cannot demand a hit, and a persisted-cache test would be phrased under STORAGE_DIR instead.
+T90	12	-	Only the effective value is parsed, so a garbage file entry masked by an env var starts fine	Most implementations merge raw strings before parsing, but a test pairing a bad file value with an env override is an unlikely fixture.
+T43	12	-	Filter validation runs first, so an unknown id with a bad filter is 400.	If id unknown return 404 is unconditional and every framework resolves the dataset before reading its columns.
+T47	12	-	Floats exported with a trailing .0 or strings JSON-quoted.	Semantically-correct CSV plus a required round trip pins values not bytes, so a divergent test would have to parse and still disagree.
+T55	12	-	Upload of bytes B and convert of a URL serving B share one id.	The two id rules key on different inputs and the tester asserts neither equality nor inequality, so only an equality test could bite.
+T91	12	-	An empty ORIGIN_ALLOWLIST value is an active allowlist that matches nothing.	No allowlist means all requests pass covers the empty case, and a test setting the variable to nothing is unlikely.
+T32	12	-	-	`hide` is the only valid value and no shape-dependent error is listed, so a 400 here would need an invented rule.
+T68	12	-	-	Tests that count origin hits under caching agree with the mandatory reading; the permissive reading would leave nothing to test.
+T92	12	-	-	Domain-boundary points squarely at label matching, and allowing the bare suffix is what any allowlist author would expect.
+T108	12	-	-	"The one label the spec fixes is the lower-case family name, and ""csv"" is the only spelling that mirrors it."
+T89	10	-	Duplicate key is an invalid config file and the process exits	Last-wins is the convention and the likely dict-based reference behaviour; a strict reference is possible but less common.
+T93	10	-	-	file size and MAX_SOURCE_SIZE both name the document bytes; counting multipart framing would make the limit filename-dependent.
+T30	10	-	-	The unknown-id sentence is unconditional and lookup-before-validate is the default control flow, so a divergent 400 would need an unusual reference.
+T98	10	-	Unknown routes still 404 without a Referer	Before routing is explicit, so a per-route-decorator reference would contradict the text but few tests would probe the unknown-route case without a Referer.
+T102	10	-	-	Datasets must survive is the natural strong reading and the tester takes it, leaving little for a test to contradict.
+T126	10	-	-	The enrichment section explicitly leaves rows and total unchanged, and a blank-row spreadsheet fixture is an unlikely test choice.
+T3	10	-	Id derived from the full query string including charset.	Both the convert section and Determinism name only the source URL, so a test author hashing more than that would be ignoring two sentences.
+T48	10	-	-	`<dataset-id>` has one definition, the path segment, and a test would derive the filename from the endpoint it got back.
+T80	10	-	-	`force` is defined under the ingestion bypass and the query endpoint's control list is exhaustive, so a 400 test here is improbable.
+T1	8	-	-	Spec never constrains the id and a test that parsed its shape would have no sentence to point at, so tests almost surely only fetch the endpoint.
+T49	8	-	-	"Writing the header for an empty result is what csv.writer does and what ""export columns follow source column order"" implies."
+T69	8	-	-	"SCREAMING_SNAKE_CASE, the settings table default true, and ""fail startup"" all point at an environment variable with a true default."
+T97	8	-	-	"Steps 1-4 end in ""Otherwise 403"" and both allowlist error rows are 403, leaving nothing else for an unparseable Referer."
+T105	8	-	Empty DATAGATE_CONFIG is a read failure and the process exits	read failure at startup ... exits could cover an empty path, but a reference checking truthiness of the variable behaves as the tester chose.
+T125	8	-	-	"upgrades stored state and ""persisted datasets must survive restart"" make persistence the only coherent reading."
+T2	8	-	-	Reading (2) is strictly stronger than (1), so no test of id stability can contradict it; only a fixed id format could, and nothing in the text hints at one.
+T14	8	-	-	Every listed reading leaves the same values as text, and no numeric-looking temporal form exists for a test to split them on.
+T62	8	-	-	First worksheet plus the must-be-tabular rule points at index 0, and a test would need to deliberately craft active or hidden sheets to disagree.
+T106	8	-	-	All other states keep enrichment off settles both the error question and case sensitivity.
+T118	8	-	-	Applies only on /convert plus the ignore rule for plain params leaves inertness as the only reading without an invented error.
+T67	8	-	Duplicate file parts are rejected as malformed multipart.	Two parts with the same name is an exotic fixture and every multipart parser hands back the first one.
+T71	8	-	Cache and fresh responses must share headers too.	The spec's contract is the JSON envelope and status everywhere else, and byte-identical headers are unsatisfiable, so tests compare bodies.
+T79	8	-	CACHE_ENABLED=false makes every upload replace stored data.	Every sentence of the cache section names /convert, and either reading yields the same upload id anyway.
+T103	8	-	An unusable STORAGE_DIR falls back to the default directory.	Create STORAGE_DIR if missing plus invalid config exits leaves little room for silently serving from another directory.
+T119	8	-	Enriched and plain ingestions of one source get different ids.	Upgrades stored state and the Determinism rule both require the same id, so a separate id would contradict two sentences.
+T16	8	-	-	Checkpoint 1 lists no parameter and later checkpoints add `_size`, so a test demanding an override at this stage is unlikely.
+T44	8	-	-	Every alternative yields the same status and envelope, so tests cannot distinguish them.
+T120	8	-	-	`enrich=yes` is introduced as an unconditional /convert option, and any first-time enrichment test would confirm the tester's reading.
+T41	6	-	-	Comparators are spelled lower-case, other name matching is stated case-sensitive, and an uppercase comparator is unlikely to be exercised at all.
+T57	6	-	-	Names are quoted in code style and multipart field names are conventionally exact; a mixed-case test is unlikely.
+T101	6	-	-	Tests must reach the server over plain HTTP to observe the absolute https endpoint, so refusing plaintext would defeat the tests themselves.
+T82	6	-	-	Replaces has no merge reading a test author would adopt.
+T114	6	-	-	Keyed by column name reads as a full mapping and a partial one has no textual support.
+T95	6	-	Query or export responses larger than the limit are refused.	Enforced for /convert and /upload names the routes explicitly and the accepted-at-limit rule would be pointless otherwise.
+T115	6	-	/convert with enrich=yes also returns the metadata.	Success response remains is restated verbatim right after the feature, which only makes sense if the convert reply does not grow.
+T123	6	-	force with enrich=yes is rejected or enrich is dropped.	Force forces re-ingestion and re-ingestion recomputes metadata compose without exception, and nothing rejects parameter combinations on /convert.
+T17	5	-	-	If /convert receives charset, use it is unconditional; no reading lets the origin header win.
+T45	5	-	-	The route is the dataset route plus a suffix and the unknown-id 404 rule is the only rule on offer.
+T77	5	-	-	replaces the cached dataset presupposes the same id and the determinism section says id is a function of source alone.
+T117	5	-	-	"spreadsheet datasets is the class name and ""excel"" is what both containers share."
+T46	5	-	-	"Headerless ""CSV"" is not a reading anyone writing an export test would take."
+T78	5	-	-	No error condition exists in any table for this case and the download happens either way.
+T94	5	-	-	The type column says bytes and no test author would count characters against it.
+T33	4	-	-	"The error envelope is given verbatim as two keys, and ""Responses include total"" sits in the success description."
+T81	4	-	-	No parameter anywhere is case-insensitive and a test spelling FORCE is improbable.
+T85	4	-	-	No test is likely to place exotic whitespace around a boolean value; ASCII trim satisfies any plausible assertion.

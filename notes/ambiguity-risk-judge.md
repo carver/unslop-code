@@ -71,3 +71,53 @@ self-rated risk line will catch the questions a prompt rule could also catch (th
 where the spec's wording clearly leaves two readings) and will miss the one-in-fourteen
 slips, where the agent is confident and wrong. It is a triage aid for a reviewer, not
 a fix for reliability.
+
+## Third pass: the question that matters, spec defects (2026-09-04 18:00Z)
+
+The first two passes scored implementer risk: will a careful reader pick a reading the
+tests reject. That mixes two things. The one worth a confidence line is narrower: did
+the test author assert a reading the spec text does not support, so that the spec
+needs a sentence. The five patched sentences are that class, and `ambiguity-judge.md`
+showed a "which reading wins" judge cannot find them (40 of 40 blind judgments agreed
+with the tester on four of the five). This pass asks a different question of the
+wording itself.
+
+Data: v7's registry, 126 entries recorded against the unpatched spec, the run whose
+misses produced the patch. Four judges, each with the unpatched spec (reversed from
+`problems/datagate-clarified.patch` into scratch) and a batch of entries with the
+quoted sentence, the tester's alternatives and its choice. Barred from the patched
+spec, the tests, outputs and notes. Score: "probability the hidden tests assert a
+reading a careful reader would not predict from this text", plus the most likely such
+reading. Table: `ambiguity-defect-judge-v7.tsv`.
+
+| defect | patched | other |
+|---|---|---|
+| 0-19 | 0 | 80 |
+| 20-39 | 5 | 32 |
+| 40-59 | 0 | 9 |
+
+| family | score | rank of 126 | judge's "hidden reading" |
+|---|---|---|---|
+| encoding detection depth (T22) | 35 | 13 | latin-1 fixtures round-trip with no charset given |
+| any force value (T74) | 35 | 15 | force with any value is 400, a presence flag takes none |
+| charset on uploads (T56) | 30 | 23 | /upload honours charset like /convert |
+| bad charset with a spreadsheet (T63) | 28 | 26 | a malformed charset is ignored for a spreadsheet source |
+| rowid counts the header (T27) | 25 | 32 | first data row is rowid 2, the header is line 1 |
+
+Every one of the five is in the top quarter, and the hidden-reading column is the
+patch: all five match what `datagate-clarified.patch` later added, written by a judge
+that saw neither the tests nor the patch. The threshold that captures all five is
+defect 25, which flags 35 of 126, thirty of them not patched. Four of those thirty are
+sentences that later flipped on the patched spec for implementer-side reasons: the
+single-column 400 (T15, scored 40), cell whitespace trimming (T11, 40), the cache flag's
+whitespace (T72, 40) and repeated enrich (T107, 30). So the score ranks "sentences that
+will cause trouble", tester-side or implementer-side, and the top quarter of a registry
+is where both kinds live.
+
+What this supports, concretely. A `Defect: NN%` line per entry, defined as the chance
+the hidden tests assert a reading the text does not support, with the divergent reading
+named beside it. Calibration on datagate: everything patched sits at 25 or above, and a
+reviewer reads 35 entries instead of 126. The named divergent reading is a draft patch
+sentence. For the next problem the loop becomes registry, defect judge over the top
+quarter, then patch the sentences whose named reading the tests confirm, instead of
+waiting for a run to fail on each.

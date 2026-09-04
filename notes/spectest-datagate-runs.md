@@ -383,7 +383,8 @@ control for whether asking for the registry buys anything the implied one does n
 Amendment 2026-09-04 12:45Z, after min4-ABCFGHJK (min2b plus choose, registry and
 annotate; 245 words): 394/405, 0/7 strict, $31, 128 min. Every miss is min2's
 single-column cascade: six at checkpoint 1, the three CSV charset tests at checkpoint 4,
-and two more single-column fixtures at checkpoint 7. Registry entry T6 lists three
+and two more at checkpoint 7 with the same 400, one a single-column fixture (mixed numeric column) and one
+the duplicate-enrich test, whose fixture has two columns. Registry entry T6 lists three
 readings of "non-tabular content", picks "require evidence of a delimited table", and
 states the cost: a genuinely single-column CSV is rejected. Three registry runs
 deliberated that same question. min4 listed "require at least two columns" and rejected

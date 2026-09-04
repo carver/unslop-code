@@ -64,7 +64,8 @@ def collect(dirs, count=checkpoint_count):
             cells[(problem, prompt, spec, model)].append({
                 "score": last["passed_tests"] / last["total_tests"], "passed": last["passed_tests"], "total": last["total_tests"],
                 "strict": sum(r.get("strict_pass_rate", r.get("pass_rate")) == 1.0 for r in rows), "ckpts": len(rows),
-                "cost": sum(r.get("cost") or 0 for r in rows), "erosion": mean(r.get("erosion") for r in rows),
+                "cost": sum(r.get("cost") or 0 for r in rows), "minutes": sum(summarize.elapsed(r) for r in rows) / 60,
+                "erosion": mean(r.get("erosion") for r in rows),
                 "verbosity": mean(r.get("verbosity") for r in rows), "ast": mean(r.get("ast_grep_pct") for r in rows),
                 "cloned": mean(r.get("cloned_pct") for r in rows)})
     return cells, partial
@@ -82,12 +83,12 @@ def counted(values, total):
 
 
 def table(cells):
-    out = ["| problem | prompt | spec | model | runs | score | range | strict | range | cc_$ | erosion | verbosity | ast% | cloned% |",
-           "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
+    out = ["| problem | prompt | spec | model | runs | score | range | strict | range | cc_$ | min | erosion | verbosity | ast% | cloned% |",
+           "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
     for (problem, prompt, spec, model), runs in sorted(cells.items(), key=lambda kv: (kv[0][0], -mean(r["score"] for r in kv[1]), kv[0][1].removeprefix("spectest-"))):
         score, rng = counted([r["passed"] for r in runs], runs[0]["total"])
         strict, srng = counted([r["strict"] for r in runs], runs[0]["ckpts"])
-        out.append(f"| {problem} | {prompt} | {spec} | {model} | {len(runs)} | {score} | {rng} | {strict} | {srng} | {mean(r['cost'] for r in runs):.0f} | "
+        out.append(f"| {problem} | {prompt} | {spec} | {model} | {len(runs)} | {score} | {rng} | {strict} | {srng} | {mean(r['cost'] for r in runs):.0f} | {mean(r['minutes'] for r in runs):.0f} | "
                    f"{fmt(mean(r['erosion'] for r in runs))} | {fmt(mean(r['verbosity'] for r in runs))} | {fmt(mean(r['ast'] for r in runs))} | {fmt(mean(r['cloned'] for r in runs))} |")
     return "\n".join(out)
 

@@ -1,0 +1,126 @@
+tid	differs	outcome	preference	why
+T10	45	-	Plain int()/float() parse: 007 becomes 7, padded or signed cells become numbers	The author's implementation is most likely try-int-then-float, and a zero-padded code or a mixed column in a fixture would expose the agent's canonical-form regex.
+T27	40	patched	First data row has rowid 2 because the header is source-file row 1	"A rowid test almost certainly exists and ""source-file row number"" reads like a line number that counts the header."
+T110	35	-	distinct_count counts the missing cell as a value, or counts typed values	A hand-rolled len(set(column)) over all cells includes the empty cell, and the enrichment fixture almost surely has a missing value in a column whose distinct_count is asserted.
+T23	35	-	Sort compares stored cell text lexicographically, so 10 sorts before 9	The float-parse wording for comparators hints values are stored as text, and a sort test on a multi-digit numeric column would expose lexicographic ordering.
+T60	35	-	Format is recognised from the filename or URL extension, so a .txt/.json/.pdf source is 400	The spec spells .xls/.xlsx with dots and names an unrecognised-format error whose natural fixture is a text-ish file the sniffer would happily parse as CSV.
+T18	30	-	Specific header set: `*` origin without an Origin request header, plus preflight Allow-Methods/Headers	A flask-cors style implementation always sends `*` and answers OPTIONS with method and header lists; a test asserting those without sending Origin would fail an echo-Origin or bare implementation.
+T22	30	patched	Detected 8-bit codepage must round-trip exactly (latin-1 fixture decodes to the right accents)	The author likely has a small latin-1 fixture without charset that chardet gets right, and asserts the decoded text, which a different detector or a structural-only reading can miss.
+T15	30	later flip: single-column 400 (min2, ABCFGHJK)	A file with no delimiter is non-tabular and gets 400	csv.Sniffer raises on single-column input, and the author's non-tabular fixture may well be a multi-line text file the agent would accept as one column.
+T8	30	-	Duplicate headers are suffixed (a, a_2) or rejected with 400 at ingestion	A SQLite- or pandas-backed store cannot hold two columns named a verbatim, so if the author fixtures duplicate headers their result is mangled or an error.
+T72	30	later flip: cache flag not trimmed (min3, min2b)	Values are trimmed before matching, so ' true ' starts fine	Checkpoint 6 states booleans are trimmed, which reflects a strip().lower() in the implementation that a padded-value fixture would exercise.
+T9	25	-	Short rows padded (or file rejected) with a definite fixture expectation	A csv.reader or DictReader based impl does something specific with ragged rows and the author may have written a fixture for it; the agent pinned nothing.
+T6	25	-	Non-tabular judged loosely; a delimiter-less or single-column body may still ingest	The author's fixture is probably one HTML or plain-text body both readings reject, but an author using csv.Sniffer or a Content-Type check may accept inputs the agent's stricter structural rule refuses.
+T111	25	-	NA-like tokens (NA, N/A, null) count as missing, pandas-style	If enrichment uses pandas, default na_values would count such tokens, and a missing-count fixture might include them.
+T56	25	patched	Upload accepts charset and a latin-1 upload decodes to exact text (café)	The multi-format section implies charset reaches uploads too, and detection-only ingestion may mangle an 8-bit fixture the author decodes exactly.
+T88	25	-	Unknown setting keys are invalid config and fail startup	Config parsers often validate keys against the settings table, and an unknown-key fixture is an easy invalid-config test to write.
+T112	25	-	A numeric column with missing cells is float, or number is used for all numeric columns	Four labels invite the chosen partition, but a pandas dtype path would label an int column with blanks as float and may never emit number.
+T116	25	-	Spreadsheet summary is exactly {filetype: excel}	The add-only wording reads like a literal one-key dict the author may assert by equality.
+T25	22	-	`_sort=bad&_sort_desc=good` is 200 sorted by `_sort_desc`, `_sort` never validated	The obvious elif implementation of 'desc wins' reads only one parameter, so an author test with an invalid ignored `_sort` would expect 200.
+T121	22	-	Second `enrich=yes` on an enriched dataset must not re-fetch the origin (hit count stays 1)	Authors testing their own cache typically count origin hits, and 'may' describes their impl serving from cache; the agent asserts nothing either way.
+T74	20	patched	force must carry no value; ?force=1 is 400	'If present once' points to counting occurrences, but 'additional value' leaves room for a value-rejecting implementation the author might test with force=1.
+T11	20	later flip: cell whitespace trimmed (just-solve, min0)	"Padded numeric cells such as "" 42 "" become numbers"	Both Python int() and pandas accept surrounding whitespace, so a padded numeric would be typed as a number by most author implementations.
+T4	20	-	Empty charset is falsy and falls through to detection (200)	A typical `if charset:` guard treats charset= as omitted, but a hidden fixture with an empty charset is itself unlikely.
+T84	20	-	A missing config file is ignored and the service starts on defaults	An os.path.exists guard before reading is a common pattern, though the read-failure sentence suggests the author exits.
+T107	18	later flip: repeated enrich (v8B)	Repeated enrich=yes still enables enrichment via args.get	A framework get() returns one value so both copies read as yes, but a repeated-enrich test is not a natural fixture.
+T61	15	-	Native spreadsheet cell types decide the JSON type (text cell '12' stays text, bool cell becomes true)	An openpyxl/xlrd impl keeps native cell values rather than re-inferring from text, but the fixtures the author writes (numeric cells) agree under both readings.
+T65	15	-	Header compared exactly to `text/csv`	If the author's framework emits bare `text/csv` the hidden test may assert equality, failing an impl that appends charset.
+T50	15	-	Export shares the control parser, so _shape=banana is 400 on export too	The author probably validates controls in one shared function before ignoring shape, but a hidden test of an invalid value on export is uncommon.
+T70	15	-	Cache persists in STORAGE_DIR, so a restarted instance serves without re-download	A persisted-dataset implementation treats the stored file as the cache, but the restart tests more likely check /datasets than download counts.
+T122	15	-	Enriched state survives a plain forced re-ingestion	The 'upgrade' and 'downgrade' wording hints at a stateful flag the author may carry forward, but a hidden test forcing without enrich after enriching is uncommon.
+T51	15	-	Export ignores invalid query controls and returns rows anyway	A shared query pipeline makes export raise the same 400s, but an export that pre-selects rows separately could skip validation.
+T83	15	-	Settings read as DATAGATE_-prefixed environment variables	CACHE_ENABLED was already given as a bare name the tests must set, so unprefixed names are the likelier convention.
+T87	15	-	Lines without an equals sign are skipped rather than rejected	Split-on-first-equals with stripping is the natural parser, but a garbage line may be silently ignored rather than failing startup.
+T91	15	-	Empty list entries are kept, so a stray comma or empty value matches everything	A split without filtering empties is plausible, though the author's no-allowlist fixture is most likely to leave the setting unset.
+T20	15	-	A blank line inside the data becomes a row of empty cells	Most readers (pandas, or a csv loop with an if-not-row guard) skip blank lines, and the author's non-tabular fixture is almost surely a header-only file.
+T92	15	-	A suffix configured with a leading dot only matches subdomains	The natural host == suffix or endswith('.'+suffix) check agrees, but a leading-dot allowlist entry would behave differently.
+T96	15	-	OPTIONS preflight without Referer is 403 like every other request	A before-request hook that literally checks every request rejects preflights, though a hidden preflight-under-allowlist test is uncommon.
+T29	12	-	Unknown `_`-prefixed parameter is 400	An impl that classifies every `_` key as a control may reject unknown ones, though the author lists no such error and probably tests none.
+T93	12	-	Size checked against Content-Length or whole upload body	A /convert impl may test the origin's Content-Length or a /upload impl the request body, but a boundary fixture written against that impl would still agree on ordinary files.
+T113	12	-	Rightmost duplicate column describes the entry	A dict built by iterating columns lets the later column overwrite the earlier, but a duplicate-label enrichment fixture is unlikely.
+T38	12	-	Empty filter value rejected with 400 like empty _sort	Most implementations do no special-casing so the empty string simply compares, and a hidden test on empty filter values is unlikely.
+T54	12	-	Only a part carrying a filename counts; a plain field named file is 400	Flask's request.files drops filename-less parts, but a hidden test constructing such a part is unlikely.
+T86	12	-	Zero or a leading-plus value rejected or accepted differently than the strict digit-string rule	The author's invalid-config fixture is probably a non-numeric or negative string, on which both readings agree.
+T90	12	-	Only the effective merged config is validated; an overridden garbage file value starts fine	Parsing after merging is the common structure, but a hidden test with a garbage file value plus an env override is an unlikely fixture.
+T31	12	-	Descending ties come back in reverse source order	Python sorted and SQLite both keep source order for ties in either direction, so the author's implementation most likely agrees.
+T39	12	-	Duplicate labels are an error or resolve unpredictably	Duplicate headers break pandas and SQLite alike, so the author would avoid them in fixtures rather than pin a leftmost rule.
+T99	12	-	An empty setting value is treated as unset and selects the default	"A guard like ""if value"" would fold empty into unset, but hidden tests rarely set empty values."
+T36	12	-	exact compares against the typed value, so price__exact=10 matches a 10.00 cell	The spec's float-parse-on-stored wording implies text storage, and typical fixtures use text or integer columns where both readings agree.
+T64	12	-	Blank rows inside a sheet are data rows of empty cells	openpyxl yields None rows without skipping, but author fixtures rarely contain blank sheet rows.
+T124	12	-	-	Standard errors with the prior dataset intact is what a shared ingestion path yields.
+T13	10	-	-	The spec's type vocabulary (text/number/integer/float) has no boolean or null, so the author's inference leaves true/NULL as text.
+T125	10	-	-	'Upgrades stored state' means the metadata sits next to the persisted dataset and comes back after a restart, as the choice asserts.
+T30	10	-	Controls validated before the id lookup, giving 400	A test combining an unknown id with a bad control is unlikely, and lookup-first is also the natural order.
+T34	10	-	-	The startswith-underscore, then contains-double-underscore, else ignore structure is what the author's code almost certainly does.
+T66	10	-	Export echoes the inferred source delimiter	The author most likely writes with the default comma; echoing the delimiter would require storing it and is rarely done.
+T98	10	-	-	before_request hooks and middleware run ahead of routing in Flask and FastAPI, so 403 precedes 404 and 400 in the author's code too.
+T7	10	-	Empty header cells renamed (pandas-style Unnamed: n) rather than kept as empty string	Only a pandas-based parser would rename, and an empty-header fixture is an unusual thing for the author to write.
+T47	10	-	-	csv.writer over typed values with UTF-8 is what any implementation produces, and the agent compares parsed values rather than bytes.
+T59	10	-	Non-POST on /upload returns the framework's HTML 405 page	A GET /upload test is unlikely, and if present it would mirror whatever the author's framework does, which may not be a JSON envelope.
+T63	10	patched	Invalid charset is ignored when the source is a spreadsheet	Charset validation probably happens before the fetch, and combining a bad charset with an xlsx is an unlikely fixture.
+T75	10	-	Repeated force is accepted when caching is disabled	Parameter validation likely runs before the cache branch, and the repeated-force test is probably run with the default config.
+T12	10	-	nan/inf cells parse as floats and are emitted as NaN/Infinity	A try-float inference would swallow nan/inf, but an author fixture containing such cells is improbable.
+T28	10	-	Dataset with duplicate or empty headers is rejected at ingestion	Only reachable through a duplicate-header fixture, which if it exists is already covered by T8.
+T76	10	-	-	A failed download returns its error before anything is replaced, so the prior dataset survives in the natural implementation.
+T100	10	-	-	Flask's request.host includes the port and matches the choice.
+T108	10	-	-	csv is the only label consistent with excel.
+T5	8	-	-	An author's impl almost certainly checks scheme in (http, https) or fails the fetch; either way the agent's not-200-with-envelope assertion holds.
+T2	8	-	-	Author almost surely hashes the URL string, so ids agree across restarts; tests would not check the id format.
+T42	8	-	-	No client can trigger the timeout, so the author's tests almost certainly do not reach it.
+T58	8	-	-	A multipart/mixed fixture is exotic and the agent's own test accepts either status.
+T126	8	-	-	row_count equals the stored row count in any straightforward implementation, and blank spreadsheet rows are a rare fixture.
+T3	8	-	-	The natural implementation hashes the source string alone, and a hidden test is unlikely to probe charset's effect on the id.
+T35	8	-	-	Both splits give 400 unless a column literally contains a double underscore, which no plausible fixture does.
+T43	8	-	-	Looking up the dataset before parsing filters is the natural order and the combination is rarely tested.
+T103	8	-	-	makedirs on a file path raises and the process dies either way, which reads as startup failure.
+T123	8	-	-	Force and enrich answer different questions and composing them is the obvious implementation.
+T24	8	-	Whatever int() accepts, including padded whitespace	The author almost certainly wraps int() in try/except, but fixtures with padded or underscored sizes are very unlikely.
+T32	8	-	-	Validating _rowid against the single value hide regardless of shape is the obvious implementation.
+T40	8	-	-	Counting repeats of the parameter name via getlist is the natural implementation and matches the choice.
+T52	8	-	-	A content hash of the bytes is the natural id, and a hidden test asserting different ids for different filenames is unlikely.
+T68	8	-	-	The author's implementation caches by default, so a repeat convert not hitting the origin is what any hidden test checks.
+T37	7	-	-	The author names float() as the parse, so `1e3`/`inf`/`nan` behave the same in both impls and a nan fixture is unlikely.
+T49	7	-	-	csv.writer emits the header before any rows, so a filter matching nothing yields a header-only body.
+T48	7	-	-	filename=<id>.csv straight from the path segment is the only id the implementation has.
+T21	6	-	-	CR-only files are an unlikely fixture, and Python's csv module handles CR anyway.
+T41	6	-	-	A dict lookup on the comparator string is case-sensitive; `__EXACT` is an unlikely fixture and would be 400 anyway.
+T45	6	-	-	Export shares the dataset lookup, so an unknown id falls through to the same 404 the author already tests.
+T73	6	-	-	The author's test will spawn the process and see it exit non-zero or fail to bind; the choice asserts exactly that.
+T109	6	-	-	Metadata is computed at ingestion and stored, so it cannot vary with query parameters.
+T117	6	-	-	The spec fixes the literal `excel` for the spreadsheet class; only a per-extension label would differ and the author would have named it.
+T119	6	-	-	Upgrading stored state only makes sense if the enriched request lands on the same id.
+T17	5	-	-	A natural impl decodes with the explicit charset when given and ignores the origin header; a test needing a charset-bearing origin header is unlikely.
+T53	5	-	-	`files.get('file') or files.get('attachment')` makes `file` win, and a both-present fixture is unlikely.
+T57	5	-	-	Multipart field lookup is a case-sensitive dict lookup; `File` is an unlikely fixture.
+T69	5	-	-	SCREAMING_SNAKE_CASE with a settings table default of true is an env var with unset meaning true, matching the choice.
+T89	5	-	-	Parsing lines into a dict makes the last occurrence win; duplicate keys are an unlikely fixture.
+T97	5	-	-	urlparse().hostname is None for garbage, matches no suffix, and lands on 403.
+T105	5	-	-	`if os.environ.get('DATAGATE_CONFIG'):` treats empty as absent; an empty-value fixture is unlikely anyway.
+T14	5	-	-	Both readings give text for every other temporal form under any int/float-based parser.
+T26	5	-	-	A hidden test sorting by a duplicated header label is very unlikely.
+T62	5	-	-	Fixtures built with openpyxl have index 0 as the active sheet, so wb.active and worksheets[0] agree.
+T78	5	-	-	Force merely bypasses the cache lookup; a first ingestion proceeds normally in any implementation.
+T82	5	-	-	Overwrite is the only natural implementation and a test with changed content would pass.
+T102	5	-	-	Persisting parsed datasets to STORAGE_DIR and reloading is exactly what this sentence describes.
+T106	5	-	-	A plain equality check against the decoded value 'yes' is what the author wrote.
+T118	5	-	-	The upload handler never reads enrich and the filter parser ignores a bare name, so other routes are inert in the author's code too.
+T19	5	-	-	The agent asserts only id stability and accepts either typing for quoted numerics, leaving little for a hidden test to contradict.
+T71	5	-	-	Comparing status and JSON body is the only checkable meaning and matches any cache implementation.
+T115	5	-	-	The section title and the restated convert reply make the query response the only carrier.
+T44	5	-	-	Every ordering yields 400 with the envelope; hidden tests do not pin messages.
+T80	5	-	-	No hidden test is likely to send force to the dataset endpoint.
+T104	5	-	-	No hidden test is likely to assert the negative case, and a fresh directory forgetting datasets holds anyway.
+T120	5	-	-	First-time enrich=yes producing enriched output is the basic hidden test and matches the choice.
+T1	4	-	-	Hidden tests will use the returned endpoint as-is; an opaque token is what a hash-of-source id already is.
+T77	4	-	-	The id is a hash of the source string and force replaces in place, as the spec says.
+T81	4	-	-	`FORCE` is an unlikely fixture; parameter names are matched exactly in any natural impl.
+T101	4	-	-	The author's own tests run REQUIRE_TLS=true over plain HTTP to read the https endpoint, so plain requests must be served.
+T67	4	-	-	Duplicate multipart part names are not something the author would test.
+T33	3	-	-	Nobody asserts `total` on a 400; the error envelope is fixed as ok/error.
+T85	3	-	-	`.strip().lower()` is the implementation, and the agent's asserted floor is a subset of it.
+T46	3	-	-	Every csv.writer-based export writes the header first.
+T94	3	-	-	len(bytes) before decoding is universal.
+T114	3	-	-	A dict comprehension over columns gives every column an entry.
+T55	3	-	-	The agent asserts nothing about whether upload and convert share ids.
+T79	3	-	-	The agent only checks that uploads keep working with caching off.
+T16	3	-	-	Checkpoint 1 tests can only check the 100 cap, which the choice honours; _size arrives later.

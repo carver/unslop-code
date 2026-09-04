@@ -26,6 +26,7 @@ tests passed / total at each checkpoint (regressions included), from each checkp
 | min2b disambiguated | `…spectest-min2b-disambiguated/20260903T1704` | min3 minus the two "critically" rules: tests-first, hypothesis, generator floor, keep spec tests (`spectest-min2b-generator-floor.jinja`, chunks ABCJK) + spec patch | 50/50, 122/122, 174/174, 233/233, 276/276, 347/353, 399/405 | complete 2026-09-04; identical to min3 at every checkpoint, same six trimmed `CACHE_ENABLED` misses. The flipped cell of the 2x2: the generator floor is the correctness rung, the two rules add nothing to the score |
 | just-solve-disambiguated, repeat | `…just-solve-disambiguated/20260903T1857` | same config as the first run | 48/50, 120/122, 169/174, 228/233, 271/276, 348/353, 400/405 | complete 2026-09-04; 5 misses, all whitespace (the ckpt-1 pair and the ckpt-3 trio), identical to min0's first run. Against the first just-solve run (397): +3 more whitespace misses, the six `cache_enabled` parsing tests recovered. Noise band on the plain prompt: a handful of whitespace tests, plus one six-test cluster that flips |
 | min3 disambiguated, repeat | `…spectest-min3-disambiguated/20260903T2011` | same config as the first min3 run | 50/50, 122/122, 174/174, 233/233, 276/276, 353/353, 405/405 | complete 2026-09-04; 0 misses, 7/7 strict, $29, 139 min. Same no-trim reading of `CACHE_ENABLED` at ckpt 5 as the first run (its docstring says "no surrounding whitespace"), but at ckpt 6 it deleted the custom parser and routed the flag through the shared trimming `parse_bool`, where the first run kept a `trim=False` exception. The six-test cluster flips between runs on the same prompt |
+| min0 disambiguated, repeat | `…spectest-min0-disambiguated/20260903T2251` | same config as the first min0 run | 48/50, 120/122, 169/174, 215/233, 258/276, 335/353, 386/405 | complete 2026-09-04; 19 misses, 0/7 strict, $25, 93 min. The first run's five whitespace tests, identical. Plus 14 upload tests from one keep-alive bug: at ckpt 4 the agent wrote its own HTTP server and multipart parser (the first run used Flask) and cached the request body on the handler object, which the stdlib server reuses for every request on a connection, so each POST after the first read a stale body. 13 at ckpt 4 carried as regressions, one more at ckpt 7 |
 
 On hidden tests, v4 through v7 are flat within
 the latin-1 noise (ckpt 1: 50, 49, 50, 49 of 50; ckpt 2: 119, cut, 119, 118 of 122), and
@@ -150,6 +151,13 @@ matrix, and the reading. Failure sets in brief:
   - min3 repeat (405): strict. Same no-trim reading at checkpoint 5; at checkpoint 6 the
     agent folded `CACHE_ENABLED` into the shared trimming parser instead of keeping an
     exception for it. On this prompt the cluster is a coin flip.
+  - min0 repeat (386): the same five whitespace tests as the first run, plus fourteen
+    upload tests from one bug. At checkpoint 4 the agent replaced Flask with its own
+    `http.server` handler and multipart parser, and cached the request body on the handler
+    object. The stdlib server keeps one handler per keep-alive connection, so every POST
+    after the first on a connection parsed the previous body against its own boundary
+    ("no boundary delimiter found"), and the unread body leaked into the next request line
+    (a 501 for method `garbagePOST`). Never noticed; its own tests open a fresh connection.
 
 ## Did the v8 testing hints help, or was it the zombie fix?
 
@@ -219,8 +227,8 @@ checkpoint 1 was tarred to `outputs/backups/` before its extension started.
 Rungs are `configs/prompts/spectest-min*.jinja`, each adding one rule set to the one below
 (`spectest-min-ladder-changes.md`); every run is against `problems/datagate-clarified.patch`.
 Table and matrix from `bin/compare-runs`. Repeats and min2b are in the
-amendments below; as of 2026-09-04 06:00Z the min0 repeat is running and two min4 chunk
-subsets (ABCHJK, ABCFGHJK) are queued.
+amendments below; as of 2026-09-04 07:50Z min4-ABCHJK is running and min4-ABCFGHJK is
+queued.
 
 run | scores | strict | cc_$ | erosion | verbosity | ast% | cloned%
 ---|---|---|---|---|---|---|---
@@ -312,3 +320,20 @@ min3 on the score axis. Strict minimum is now "min3 or min4"; a min4 repeat or t
 subsets in the queue have to settle it. Quality on the repeat: erosion 0.162 against
 0.151, verbosity 0.164 against 0.160, ast-grep 0.090 against 0.062, cloned 0.067 against
 0.065. Same-prompt erosion noise is about 0.01 here, against 0.23 on just-solve.
+
+Amendment 2026-09-04 07:50Z, after the min0 repeat: 386/405, 0/7 strict, $25, 93 min
+(the first run: 400, $18). The five whitespace misses are the same tests at the same
+checkpoints, the third run in a row with exactly that set (both min0 runs and the
+just-solve repeat), so trim-everything is the settled reading on the short prompts, not
+noise. The other fourteen are a fourth miss class: the agent building infrastructure
+itself and getting it wrong. At checkpoint 4 it dropped Flask for a hand-written
+`http.server` handler and multipart parser, and cached the request body on the handler,
+which the stdlib server reuses across a keep-alive connection. Thirteen upload tests
+failed there and one more at checkpoint 7, all with the same stale-body message. The
+first run used werkzeug's form parser and never had the problem. Two things follow. The
+"every miss is one of three things" reading above is retired; a prompt with no rule
+about libraries leaves the library choice to chance, and here that choice cost fourteen
+tests, more than every whitespace rule on the ladder put together. And the
+min0 rung now reads 386 or 400 on one run each, which is a wider band than any two runs
+of a tests-first prompt. Quality on the repeat: erosion 0.172 against 0.236, verbosity
+0.212 against 0.200, ast-grep 0.120 against 0.102, cloned 0.092 against 0.080.

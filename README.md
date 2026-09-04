@@ -1,7 +1,9 @@
 # unslop-code-bench
 
-Testing whether skills injected into a Claude Code agent's workspace improve
-SlopCodeBench results. Phase 0 (baselines) is done; no skills exist yet.
+Working towards solving the excellent SlopCodeBench.
+
+Making a lot of progress (in Opus 5) with general prompt improvements.
+Also finding some specs in the benchmark that are legitimately ambiguous.
 
 Start here:
 
@@ -10,7 +12,7 @@ Start here:
   (regenerate with `python3 report/build.py`, then republish).
 - `notes/` — credential plumbing and incident log (`credential-setup.md`), control
   isolation audit, spec-delivery mechanism, per-run comparisons
-  (`dev6-opus5.md`, `dev6-fable5.md`), leaderboard/paper reference.
+  (`dev6-opus5.md`, `dev6-fable5.md`), leaderboard/paper reference, compiled results.
 - `split.json` / `problems.csv` — dev/holdout split (seed 20260829). Never read holdout
   specs or re-run file_backup outside the holdout eval.
 

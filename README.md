@@ -36,7 +36,7 @@ and the sandbox-local venv):
                                              # (--patched for the problems/ copy)
     bin/compare-runs <run_dir>...            # runs side by side: scores, cost, quality, miss matrix
     bin/build-prompt BEG                     # configs/prompts/min4-BEG.jinja from the chunks in
-                                             # configs/prompts/chunks/ (--list for the index)
+                                             # configs/prompts/min4-chunks/ (--list for the index)
 
 Project skills (`.claude/skills/`, all user-invoked) tie those together:
 

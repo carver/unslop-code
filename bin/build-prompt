@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """Build a prompt from min4's chunks: bin/build-prompt BEG -> configs/prompts/min4-BEG.jinja
 
-Chunks live in configs/prompts/chunks/, one rule per file, named <letter>-<slug>.txt. The
+Chunks live in configs/prompts/min4-chunks/, one rule per file, named <letter>-<slug>.txt. The
 built prompt is HEAD.jinja, the chosen chunks in letter order separated by blank lines, and
 TAIL.jinja. Letters are sorted, so the same set always builds the same file.
     bin/build-prompt --list      the chunk index
 """
 import pathlib, sys
 
-CHUNKS = pathlib.Path(__file__).resolve().parent.parent / "configs" / "prompts" / "chunks"
+CHUNKS = pathlib.Path(__file__).resolve().parent.parent / "configs" / "prompts" / "min4-chunks"
 
 
 def index(chunks_dir=CHUNKS):

@@ -35,6 +35,8 @@ and the sandbox-local venv):
     bin/run-config --prompt P --problem X    # write a run config for one prompt on one problem
                                              # (--patched for the problems/ copy)
     bin/compare-runs <run_dir>...            # runs side by side: scores, cost, quality, miss matrix
+    bin/build-prompt BEG                     # configs/prompts/min4-BEG.jinja from the chunks in
+                                             # configs/prompts/chunks/ (--list for the index)
 
 Project skills (`.claude/skills/`, all user-invoked) tie those together:
 

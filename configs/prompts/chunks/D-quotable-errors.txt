@@ -1,0 +1,1 @@
+The only time a test should expect an error result is if the spec quotably requires an error.

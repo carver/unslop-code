@@ -1,0 +1,1 @@
+Before implementing anything, write tests from the spec: split the spec into minimal logical phrases and give each phrase its own test section, with the phrase quoted in a comment.

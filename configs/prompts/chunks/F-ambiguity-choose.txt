@@ -1,0 +1,2 @@
+If the spec is non-trivially under-specified, such that alternative interpretations would change the behavior of a conforming implementation on some input, then never ask for clarification.
+Instead, make your best choice at how to interpret the intention of the spec.

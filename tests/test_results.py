@@ -16,10 +16,10 @@ def test_cell_key_strips_prefix_and_reads_the_spec_from_the_suffix():
 
 def test_table_averages_a_cell_over_its_runs():
     cells = {("datagate", "spectest-min3", "patched", "opus-5"): [
-        {"score": 399/405, "passed": 399, "total": 405, "strict": 5, "ckpts": 7, "cost": 34.0, "erosion": 0.15, "verbosity": 0.16, "ast": 0.06, "cloned": 0.07},
-        {"score": 405/405, "passed": 405, "total": 405, "strict": 7, "ckpts": 7, "cost": 30.0, "erosion": 0.11, "verbosity": 0.14, "ast": 0.04, "cloned": 0.05}]}
+        {"score": 399/405, "passed": 399, "total": 405, "strict": 5, "ckpts": 7, "cost": 34.0, "minutes": 120.0, "erosion": 0.15, "verbosity": 0.16, "ast": 0.06, "cloned": 0.07},
+        {"score": 405/405, "passed": 405, "total": 405, "strict": 7, "ckpts": 7, "cost": 30.0, "minutes": 140.0, "erosion": 0.11, "verbosity": 0.14, "ast": 0.04, "cloned": 0.05}]}
     row = rs.table(cells).splitlines()[-1]
-    assert row.startswith("| datagate | spectest-min3 | patched | opus-5 | 2 | 402.0/405 | 399-405 | 6.0/7 | 5-7 | 32 | 0.130 |")
+    assert row.startswith("| datagate | spectest-min3 | patched | opus-5 | 2 | 402.0/405 | 399-405 | 6.0/7 | 5-7 | 32 | 130 | 0.130 |")
 
 
 def test_collect_separates_partial_runs(tmp_path, monkeypatch):
@@ -35,7 +35,7 @@ def test_collect_separates_partial_runs(tmp_path, monkeypatch):
 
 def test_single_run_score_has_no_decimal():
     cells = {("datagate", "spectest-min4", "patched", "opus-5"): [
-        {"score": 1.0, "passed": 405, "total": 405, "strict": 7, "ckpts": 7, "cost": 43.0, "erosion": 0.17, "verbosity": 0.16, "ast": 0.08, "cloned": 0.07}]}
+        {"score": 1.0, "passed": 405, "total": 405, "strict": 7, "ckpts": 7, "cost": 43.0, "minutes": 210.0, "erosion": 0.17, "verbosity": 0.16, "ast": 0.08, "cloned": 0.07}]}
     assert "| 1 | 405/405 | - | 7/7 | - |" in rs.table(cells).splitlines()[-1]
 
 
@@ -46,7 +46,7 @@ def test_agreeing_runs_show_no_decimal_and_no_range():
 
 
 def test_tied_cells_sort_by_prompt_name_without_the_spectest_prefix():
-    run = {"score": 1.0, "passed": 405, "total": 405, "strict": 7, "ckpts": 7, "cost": 30.0, "erosion": 0.1, "verbosity": 0.1, "ast": 0.1, "cloned": 0.1}
+    run = {"score": 1.0, "passed": 405, "total": 405, "strict": 7, "ckpts": 7, "cost": 30.0, "minutes": 140.0, "erosion": 0.1, "verbosity": 0.1, "ast": 0.1, "cloned": 0.1}
     cells = {("datagate", "min4-ABCHJK", "patched", "opus-5"): [run], ("datagate", "spectest-min4", "patched", "opus-5"): [run]}
     prompts = [line.split(" | ")[1] for line in rs.table(cells).splitlines()[2:]]
     assert prompts == ["spectest-min4", "min4-ABCHJK"]

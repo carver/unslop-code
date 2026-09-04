@@ -35,16 +35,17 @@ and the sandbox-local venv):
     bin/run-config --prompt P --problem X    # write a run config for one prompt on one problem
                                              # (--patched for the problems/ copy)
     bin/compare-runs <run_dir>...            # runs side by side: scores, cost, quality, miss matrix
+    bin/queue add configs/runs/<name>.yaml   # enqueue a run (one at a time); bin/queue = status
     bin/build-prompt BEG                     # configs/prompts/min4-BEG.jinja from the chunks in
                                              # configs/prompts/min4-chunks/ (--list for the index)
 
 Queueing runs: one at a time, never in parallel (the 5h window and per-checkpoint window
-accounting both break). Each stage is a `setsid nohup bash -c` wrapper that writes `$$` to a
-pidfile, waits `while kill -0 <previous pid>`, then runs `bin/scb-extend --new <config>`;
-a monitor on its log filters `EXTEND:` lines. Kill a stage by pids from pidfiles, in a
-command that contains no launch text (a pgrep pattern matches the launch text in your own
-argv). The driver itself waits out the 5h window and API overloads, dry-runs every resume,
-and tars finished checkpoints to `outputs/backups/`.
+accounting both break). `bin/queue add configs/runs/<name>.yaml` enqueues a run behind
+whatever is queued; `bin/queue` shows status, `bin/queue log <id>` a job's output,
+`bin/queue kill <id>` stops one (then check `docker ps` for the agent container). The
+queue is pueue, installed by `install.py`, one task at a time, persistent across shells and
+sessions. The driver underneath (`bin/scb-extend`) waits out the 5h window and API
+overloads, dry-runs every resume, and tars finished checkpoints to `outputs/backups/`.
 
 Project skills (`.claude/skills/`, all user-invoked) tie those together:
 

@@ -4,8 +4,8 @@
     bin/results [--write]      markdown table; --write also saves it to notes/results.md
 
 One row per (problem, prompt, spec): final score, strict checkpoints, cost, and the four
-quality means, averaged over the complete runs of that cell with the run count; a cell with
-more than one run shows score with a decimal, as a reminder that it is a mean, and its min-max range. A run is
+quality means, averaged over the complete runs of that cell with the run count; score and strict
+show a decimal mean and a min-max range only when the runs in the cell disagree. A run is
 complete when it has every checkpoint the catalog lists for the problem; partial runs are
 listed separately with the checkpoint they reached. The prompt is the run directory's name
 after the model/agent/thinking prefix; "patched" means the run name ends in -disambiguated
@@ -74,15 +74,20 @@ def fmt(v, d=3):
     return "-" if v is None else f"{v:.{d}f}"
 
 
+def counted(values, total):
+    """'399/405' when every run agrees, '398.5/405' and '397-400' when they differ."""
+    if len(set(values)) == 1:
+        return f"{values[0]}/{total}", "-"
+    return f"{mean(values):.1f}/{total}", f"{min(values)}-{max(values)}"
+
+
 def table(cells):
-    out = ["| problem | prompt | spec | model | runs | score | range | strict | cc_$ | erosion | verbosity | ast% | cloned% |",
-           "|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
+    out = ["| problem | prompt | spec | model | runs | score | range | strict | range | cc_$ | erosion | verbosity | ast% | cloned% |",
+           "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
     for (problem, prompt, spec, model), runs in sorted(cells.items(), key=lambda kv: (kv[0][0], -mean(r["score"] for r in kv[1]), kv[0][1])):
-        passed = [r["passed"] for r in runs]
-        score = (f"{mean(passed):.1f}" if len(runs) > 1 else f"{passed[0]}") + f"/{runs[0]['total']}"
-        rng = f"{min(passed)}-{max(passed)}" if len(runs) > 1 else "-"
-        strict = f"{mean(r['strict'] for r in runs):.1f}/{runs[0]['ckpts']}"
-        out.append(f"| {problem} | {prompt} | {spec} | {model} | {len(runs)} | {score} | {rng} | {strict} | {mean(r['cost'] for r in runs):.0f} | "
+        score, rng = counted([r["passed"] for r in runs], runs[0]["total"])
+        strict, srng = counted([r["strict"] for r in runs], runs[0]["ckpts"])
+        out.append(f"| {problem} | {prompt} | {spec} | {model} | {len(runs)} | {score} | {rng} | {strict} | {srng} | {mean(r['cost'] for r in runs):.0f} | "
                    f"{fmt(mean(r['erosion'] for r in runs))} | {fmt(mean(r['verbosity'] for r in runs))} | {fmt(mean(r['ast'] for r in runs))} | {fmt(mean(r['cloned'] for r in runs))} |")
     return "\n".join(out)
 

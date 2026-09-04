@@ -19,7 +19,7 @@ def test_table_averages_a_cell_over_its_runs():
         {"score": 399/405, "passed": 399, "total": 405, "strict": 5, "ckpts": 7, "cost": 34.0, "erosion": 0.15, "verbosity": 0.16, "ast": 0.06, "cloned": 0.07},
         {"score": 405/405, "passed": 405, "total": 405, "strict": 7, "ckpts": 7, "cost": 30.0, "erosion": 0.11, "verbosity": 0.14, "ast": 0.04, "cloned": 0.05}]}
     row = rs.table(cells).splitlines()[-1]
-    assert row.startswith("| datagate | spectest-min3 | patched | opus-5 | 2 | 402.0/405 | 399-405 | 6.0/7 | 32 | 0.130 |")
+    assert row.startswith("| datagate | spectest-min3 | patched | opus-5 | 2 | 402.0/405 | 399-405 | 6.0/7 | 5-7 | 32 | 0.130 |")
 
 
 def test_collect_separates_partial_runs(tmp_path, monkeypatch):
@@ -36,4 +36,10 @@ def test_collect_separates_partial_runs(tmp_path, monkeypatch):
 def test_single_run_score_has_no_decimal():
     cells = {("datagate", "spectest-min4", "patched", "opus-5"): [
         {"score": 1.0, "passed": 405, "total": 405, "strict": 7, "ckpts": 7, "cost": 43.0, "erosion": 0.17, "verbosity": 0.16, "ast": 0.08, "cloned": 0.07}]}
-    assert "| 1 | 405/405 | - | 7.0/7 |" in rs.table(cells).splitlines()[-1]
+    assert "| 1 | 405/405 | - | 7/7 | - |" in rs.table(cells).splitlines()[-1]
+
+
+def test_agreeing_runs_show_no_decimal_and_no_range():
+    assert rs.counted([399, 399], 405) == ("399/405", "-")
+    assert rs.counted([5, 5, 5], 7) == ("5/7", "-")
+    assert rs.counted([397, 400], 405) == ("398.5/405", "397-400")

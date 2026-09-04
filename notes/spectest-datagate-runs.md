@@ -27,6 +27,7 @@ tests passed / total at each checkpoint (regressions included), from each checkp
 | just-solve-disambiguated, repeat | `…just-solve-disambiguated/20260903T1857` | same config as the first run | 48/50, 120/122, 169/174, 228/233, 271/276, 348/353, 400/405 | complete 2026-09-04; 5 misses, all whitespace (the ckpt-1 pair and the ckpt-3 trio), identical to min0's first run. Against the first just-solve run (397): +3 more whitespace misses, the six `cache_enabled` parsing tests recovered. Noise band on the plain prompt: a handful of whitespace tests, plus one six-test cluster that flips |
 | min3 disambiguated, repeat | `…spectest-min3-disambiguated/20260903T2011` | same config as the first min3 run | 50/50, 122/122, 174/174, 233/233, 276/276, 353/353, 405/405 | complete 2026-09-04; 0 misses, 7/7 strict, $29, 139 min. Same no-trim reading of `CACHE_ENABLED` at ckpt 5 as the first run (its docstring says "no surrounding whitespace"), but at ckpt 6 it deleted the custom parser and routed the flag through the shared trimming `parse_bool`, where the first run kept a `trim=False` exception. The six-test cluster flips between runs on the same prompt |
 | min0 disambiguated, repeat | `…spectest-min0-disambiguated/20260903T2251` | same config as the first min0 run | 48/50, 120/122, 169/174, 215/233, 258/276, 335/353, 386/405 | complete 2026-09-04; 19 misses, 0/7 strict, $25, 93 min. The first run's five whitespace tests, identical. Plus 14 upload tests from one keep-alive bug: at ckpt 4 the agent wrote its own HTTP server and multipart parser (the first run used Flask) and cached the request body on the handler object, which the stdlib server reuses for every request on a connection, so each POST after the first read a stale body. 13 at ckpt 4 carried as regressions, one more at ckpt 7 |
+| min4-ABCHJK | `…min4-ABCHJK-disambiguated/20260904T0042` | min2b plus H alone, "annotate the entry instead of removing it" (`min4-ABCHJK.jinja`, 157 words) + spec patch | 50/50, 122/122, 174/174, 233/233, 276/276, 353/353, 405/405 | complete 2026-09-04; 0 misses, 7/7 strict, $30, 129 min. The one sentence made the agent keep a 74-entry AMBIGUITIES.md nobody asked for; its A69 took the no-trim reading of `CACHE_ENABLED` at ckpt 5 and was annotated RESOLVED at ckpt 6, whitespace now stripped. Quality: cloned 0.246 and verbosity 0.349 from `test_zz_stress_tmp.py`, a 1319-line copy of the filtering tests with max_examples 4000, left behind at ckpt 3 |
 
 On hidden tests, v4 through v7 are flat within
 the latin-1 noise (ckpt 1: 50, 49, 50, 49 of 50; ckpt 2: 119, cut, 119, 118 of 122), and
@@ -158,6 +159,11 @@ matrix, and the reading. Failure sets in brief:
     after the first on a connection parsed the previous body against its own boundary
     ("no boundary delimiter found"), and the unread body leaked into the next request line
     (a 501 for method `garbagePOST`). Never noticed; its own tests open a fresh connection.
+  - min4-ABCHJK (405): strict. Same no-trim reading at checkpoint 5, recorded as registry
+    entry A69 in an AMBIGUITIES.md the prompt never asks for; the "annotate the entry"
+    sentence implied one. At checkpoint 6 A69 was annotated RESOLVED and the parser strips.
+    No test misses; the quality miss is a stray 1319-line stress copy of the filtering
+    tests (`test_zz_stress_tmp.py`, max_examples 4000) that survives from checkpoint 3.
 
 ## Did the v8 testing hints help, or was it the zombie fix?
 
@@ -227,8 +233,8 @@ checkpoint 1 was tarred to `outputs/backups/` before its extension started.
 Rungs are `configs/prompts/spectest-min*.jinja`, each adding one rule set to the one below
 (`spectest-min-ladder-changes.md`); every run is against `problems/datagate-clarified.patch`.
 Table and matrix from `bin/compare-runs`. Repeats and min2b are in the
-amendments below; as of 2026-09-04 07:50Z min4-ABCHJK is running and min4-ABCFGHJK is
-queued.
+amendments below; as of 2026-09-04 10:20Z min4-ABCFGHJK is running, the last job in the
+queue.
 
 run | scores | strict | cc_$ | erosion | verbosity | ast% | cloned%
 ---|---|---|---|---|---|---|---
@@ -337,3 +343,20 @@ tests, more than every whitespace rule on the ladder put together. And the
 min0 rung now reads 386 or 400 on one run each, which is a wider band than any two runs
 of a tests-first prompt. Quality on the repeat: erosion 0.172 against 0.236, verbosity
 0.212 against 0.200, ast-grep 0.120 against 0.102, cloned 0.092 against 0.080.
+
+Amendment 2026-09-04 10:20Z, after min4-ABCHJK (min2b plus the one "annotate the entry
+instead of removing it" sentence, 157 words): 405/405, 7/7 strict, $30, 129 min. min4 was
+$43 and three and a half hours for the same score. The sentence did the work on its own.
+With no registry rule in the prompt, the agent still kept a 74-entry AMBIGUITIES.md,
+because "the entry" has to refer to something. Entry A69 took the usual no-trim reading of
+"strict" at checkpoint 5, and at checkpoint 6 the agent annotated it RESOLVED against the
+new "(case-insensitive, trimmed)" sentence and made the parser strip. That is the same
+reopening min4's full procedure produced, from one rule instead of four. So the strict
+minimum on the ladder is now this rung, one run each: the generator floor closes the
+whitespace classes and the annotate sentence closes the cache flag fork that min3 flips
+on. The rung has a quality problem of its own kind. Cloned 0.246 and verbosity 0.349
+against 0.05 to 0.09 and 0.12 to 0.17 everywhere else, all from `test_zz_stress_tmp.py`,
+a copy of the 1319-line filtering test file with `max_examples` raised from 25 to 4000,
+made at checkpoint 3 for a stress pass and never deleted. Erosion 0.131 and ast-grep 0.105
+are in the usual band. Job 4 (ABCFGHJK, the choose and registry rules added back) is the
+control for whether asking for the registry buys anything the implied one does not.

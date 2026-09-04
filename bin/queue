@@ -1,0 +1,57 @@
+#!/usr/bin/env python3
+"""The run queue: one benchmark run at a time, in order, surviving this shell and session.
+
+    bin/queue add <run-config.yaml> [n_checkpoints]   enqueue `scb-extend --new` for the config
+    bin/queue                                          status (pueue status)
+    bin/queue log [id]                                 a job's output (pueue log)
+    bin/queue kill <id>                                stop a job; then check `docker ps`
+    bin/queue <anything else>                          passed to pueue as-is
+
+A config written by bin/run-config for the patched spec carries SCBENCH_PROBLEMS_PATH in
+its launch comment; `add` reads that, the problem from the config, and the checkpoint
+count from the catalog. Jobs run through pueue (install.py installs it), whose default
+group runs one task at a time, so the 5-hour window is drawn on by one run only.
+"""
+import os, pathlib, re, subprocess, sys
+
+import yaml
+
+ROOT = pathlib.Path(__file__).resolve().parent.parent
+PUEUE = pathlib.Path.home() / ".local" / "bin" / "pueue"
+
+
+def catalog(patched):
+    return ROOT / "problems" if patched else pathlib.Path(os.environ.get("SCBENCH_PROBLEMS_PATH", os.path.expanduser("~/.cache/scbench/problems")))
+
+
+def job_for(config_path, n=None):
+    """(label, argv, env) to run one config through bin/scb-extend."""
+    config_path = pathlib.Path(config_path).resolve()
+    text = config_path.read_text()
+    patched = bool(re.search(r"^#.*SCBENCH_PROBLEMS_PATH=", text, re.M))
+    problems = yaml.safe_load(text)["problems"]
+    if len(problems) != 1:
+        raise SystemExit(f"queue: {config_path.name} lists {len(problems)} problems; one per run")
+    problem = problems[0]
+    n = n or len(list((catalog(patched) / problem).glob("checkpoint_*.md")))
+    if not n:
+        raise SystemExit(f"queue: no checkpoints found for {problem}; pass n_checkpoints")
+    label = config_path.name.removesuffix(".yaml").removesuffix("-opus5")
+    env = {"SCBENCH_PROBLEMS_PATH": str(ROOT / "problems")} if patched else {}
+    return label, [str(ROOT / "bin" / "scb-extend"), "--new", str(config_path), problem, str(n)], env
+
+
+def main():
+    args = sys.argv[1:]
+    if args and args[0] == "add":
+        label, argv, env = job_for(args[1], int(args[2]) if len(args) > 2 else None)
+        cmd = " ".join(f"{k}={v}" for k, v in env.items()) + (" " if env else "") + " ".join(argv)
+        subprocess.run([PUEUE, "add", "--label", label, "--working-directory", str(ROOT), "--", cmd], check=True)
+    elif not args:
+        subprocess.run([PUEUE, "status"], check=True)
+    else:
+        subprocess.run([PUEUE, *args], check=True)
+
+
+if __name__ == "__main__":
+    main()

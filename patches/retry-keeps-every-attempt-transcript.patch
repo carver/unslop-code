@@ -1,0 +1,135 @@
+--- a/src/slop_code/agent_runner/agents/claude_code/agent.py
++++ b/src/slop_code/agent_runner/agents/claude_code/agent.py
+@@ -50,6 +50,11 @@
+ _CLAUDE_WORKSPACE_PROJECT = Path("projects") / "-workspace"
+ 
+ 
++def _with_newline(text: str) -> str:
++    """`text` ending in a newline, so concatenated stream-json stays one record per line."""
++    return text if not text or text.endswith("\n") else text + "\n"
++
++
+ def _format_command_for_logging(
+     command: collections.abc.Sequence[str] | str,
+ ) -> str:
+@@ -221,6 +226,7 @@
+         self._image = image
+         self.steps: list[dict[str, tp.Any]] = []
+         self.final_result: RuntimeResult | None = None
++        self._attempts: list[RuntimeResult] = []
+         self._had_error: bool = False
+         self._got_successful_result: bool = False
+ 
+@@ -729,6 +735,7 @@
+         self._last_command = None
+         self._had_error = False
+         self._got_successful_result = False
++        self._attempts = []
+ 
+         log_kwargs: dict[str, tp.Any] = {
+             "workspace": str(self.workspace),
+@@ -761,7 +768,7 @@
+             )
+             raise AgentError(message)
+ 
+-        self.final_result = result
++        self._record_attempt(result)
+ 
+         self.log.debug(
+             "agent.claude_code.command.completed",
+@@ -834,7 +841,7 @@
+             )
+             raise AgentError(message)
+ 
+-        self.final_result = result
++        self._record_attempt(result)
+         if result.timed_out:
+             message = (
+                 f"Claude Code retry process timed out after {self.timeout}s."
+@@ -944,16 +951,22 @@
+         args.append("--")
+         return args
+ 
++    def _record_attempt(self, result: RuntimeResult) -> None:
++        """Keep every process run of this checkpoint, so a retry adds to the
++        artifacts instead of replacing the crashed attempt's transcript."""
++        self.final_result = result
++        self._attempts.append(result)
++
+     def _write_artifacts(
+         self,
+         output_dir: Path,
+     ) -> None:
+-        if self.final_result is not None:
++        if self._attempts:
+             (output_dir / self.STDOUT_FILENAME).write_text(
+-                self.final_result.stdout or ""
++                "".join(_with_newline(r.stdout or "") for r in self._attempts)
+             )
+             (output_dir / self.STDERR_FILENAME).write_text(
+-                self.final_result.stderr
++                "".join(_with_newline(r.stderr) for r in self._attempts)
+             )
+ 
+     def reset(self) -> None:
+--- a/tests/agent_runner/agents/claude_code_agent_test.py
++++ b/tests/agent_runner/agents/claude_code_agent_test.py
+@@ -271,6 +271,58 @@
+             for value in session.last_spawn_mounts.values()
+         )
+ 
++    def test_save_artifacts_keeps_the_transcript_of_every_attempt(
++        self,
++        tmp_path,
++        mock_cost_limits,
++        mock_pricing,
++        mock_credential,
++    ):
++        """A retry after a crash appends its transcript; the first attempt's is not lost."""
++        agent = ClaudeCodeAgent(
++            problem_name="test-problem",
++            image="test-image",
++            verbose=False,
++            cost_limits=mock_cost_limits,
++            pricing=mock_pricing,
++            credential=mock_credential,
++            binary="claude",
++            model="claude-test",
++            timeout=None,
++            settings={},
++            env={},
++            extra_args=[],
++            append_system_prompt=None,
++            allowed_tools=[],
++            disallowed_tools=[],
++            permission_mode=None,
++            base_url=None,
++            thinking=None,
++            max_thinking_tokens=None,
++            max_output_tokens=None,
++        )
++
++        def attempt(stdout: str, stderr: str, exit_code: int) -> RuntimeResult:
++            return RuntimeResult(
++                exit_code=exit_code,
++                stdout=stdout,
++                stderr=stderr,
++                setup_stdout="",
++                setup_stderr="",
++                elapsed=1.0,
++                timed_out=False,
++            )
++
++        agent._record_attempt(attempt('{"n": 1}', "killed\n", 144))
++        agent._record_attempt(attempt('{"n": 2}\n', "", 0))
++        agent.save_artifacts(tmp_path / "out")
++
++        stdout = (tmp_path / "out" / "stdout.jsonl").read_text()
++        assert stdout.splitlines() == ['{"n": 1}', '{"n": 2}']
++        assert (tmp_path / "out" / "stderr.log").read_text() == "killed\n"
++        assert agent.final_result is not None
++        assert agent.final_result.exit_code == 0
++
+     def test_save_artifacts_logs_trace_counts(
+         self,
+         tmp_path,

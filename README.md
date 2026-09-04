@@ -58,7 +58,7 @@ Project skills (`.claude/skills/`, all user-invoked) tie those together:
     /prompt-ladder           smallest prompt that strict-solves a patched spec, and where
                              code quality drops off
 
-The benchmark clone in `slop-code-bench/` carries five source patches; after
+The benchmark clone in `slop-code-bench/` carries six source patches; after
 any pull, re-apply them in this order:
 
 - `patches/claude-code-stream-parser-string-message.patch`
@@ -83,6 +83,13 @@ any pull, re-apply them in this order:
   command to end on its own: a silent command was never stopped, and a
   claude process outlived its timeout and raced its own `--continue` retry
   for the workspace (v7 datagate ckpt6, 2026-09-02).
+- `patches/retry-keeps-every-attempt-transcript.patch` — when a claude process
+  dies mid-checkpoint and the harness retries it with `--continue`, the
+  checkpoint's `stdout.jsonl` and `stderr.log` now hold every attempt in order.
+  Before, the retry's output replaced the first attempt's, so the transcript
+  of the work before the crash survived only in the copied Claude session
+  file under `agent/workspace/projects/` (min4-ABCHJK datagate ckpt1,
+  2026-09-04).
 
 `outputs/` holds the three dev6 baseline runs. The setup-token lives at
 `~/.config/scbench/claude-oauth-token` (mint a new one with `bin/setup-token-wizard`).

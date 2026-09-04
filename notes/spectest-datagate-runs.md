@@ -210,3 +210,16 @@ What one run of each says, to be checked against the repeats:
   checkpoints 1 and 3), the single-column rejection cascade (min2 only), or the
   `CACHE_ENABLED` trimming boundary between checkpoints 5 and 6. None is on a patched
   sentence.
+
+Amendment 2026-09-04 02:00Z, after min2b (ABCJK, the floor without the two rules):
+399/405 with the same six misses as min3, checkpoint for checkpoint, at $24 and 93 min.
+So the 2x2 is settled on the score axis: the generator floor is the correctness rung and
+the two "critically" rules add nothing to the score. The quality axis is not what the
+first reading said: min2b's erosion is 0.034, below min2's 0.048 and far below min3's
+0.151, with no error-strictness or never-narrow rule in the prompt. Erosion on the ladder
+is min0 0.236, min2 0.048, min2b 0.034, min3 0.151, min4 0.167, v8A 0.121; it does not
+move monotonically with any rule, and the two lowest values come from the two shortest
+rule sets above min0. Treat erosion differences among the rungs as run-to-run noise until
+the repeats say otherwise; the one solid quality claim is the gap between just-solve
+(0.535) and every tests-first rung (0.03 to 0.24).
+

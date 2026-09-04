@@ -75,6 +75,78 @@ checkpoint 1 and the eight charset tests at checkpoint 4, minus overlaps with v7
 sits below them, and the gap is concentrated in charset handling.
 
 
+### v4 rerun (unpatched spec)
+
+392/405, three iso solves, all seven core solves. $170 as reported by Claude Code, half of
+it in checkpoint 7 (1042 steps: the agent polled a foreground test run with 720 `echo ok`
+calls, the v7 turn-ending rule biting).
+
+  - Two at checkpoint 1, carried throughout: latin-1 autodetect and the trailing empty line.
+  - Nothing at checkpoints 2 and 3. The rowid trio passed, the only unpatched run to do so.
+  - Four at checkpoint 4: invalid `charset` on a spreadsheet upload or convert must be ignored,
+    for `.xls` and `.xlsx`. The CSV half of the charset block passed.
+  - The five `force` variants at checkpoint 5.
+  - Nothing at checkpoint 6. Two at checkpoint 7: enrich with cache disabled, and force
+    removing metadata.
+
+One better than v7's 391. The v4 prompt sits on the same plateau as v7; the v5 to v7
+machinery did not move the score.
+
+### just-solve-disambiguated (patched spec), two runs
+
+First run 397/405, repeat 400/405. $15 and $18, under an hour each. All five patched
+sentences held in both runs: latin-1, rowid, both charset blocks, `force`.
+
+  - First run: header/time whitespace at checkpoint 1; header no-trim at checkpoint 3; six
+    trimmed and re-cased `cache_enabled` values at checkpoint 6.
+  - Repeat: the whitespace pair at checkpoint 1; the whitespace trio at checkpoint 3;
+    nothing else. The `cache_enabled` cluster held.
+
+The patch alone recovers 20 of the control's 28 misses. What is left is whitespace
+handling and one lenient-parsing cluster that flips between runs. Erosion 0.535 then
+0.306 with the same prompt, which is the noise scale for quality comparisons.
+
+### v8A (no libraries, no tester sub-agent; patched spec)
+
+405/405, every checkpoint strict. $30 and 118 minutes against v8's $69 and 295. Erosion
+0.121 against v8's 0.120. Dropping library research and the sub-agent lost nothing on
+score or quality and cut cost and time by more than half.
+
+### v8B (no libraries, sub-agent kept; patched spec)
+
+403/405, strict through checkpoint 5. $66 and 270 minutes: the sub-agent is the expensive
+half of v8.
+
+  - A checkpoint 5 test regressed at checkpoint 6: whitespace-only `CACHE_ENABLED` must fail
+    startup. The agent trimmed, got an empty token, and folded it into its T72 choice that
+    an empty value means unset.
+  - One at checkpoint 7: duplicate `enrich` given as yes then no must keep enrichment off.
+    Registry entry T104 declared the mixed case unresolved and asserted both branches; the
+    implementation fell through to Werkzeug's first-occurrence lookup.
+
+Both on unpatched sentences. Full compilation with registry entries and a judge pass in
+`v8B-disambiguated-misses.md`; patch candidates in `problems/datagate-clarified-2.patch`
+and `configs/prompts/v8-choice-must-decide.patch`, both unapplied.
+
+### The min ladder (patched spec)
+
+Per-run rows are in the table; the section at the end has the comparison table, the miss
+matrix, and the reading. Failure sets in brief:
+
+  - min0 (400): the whitespace pair at checkpoint 1 and the trio at checkpoint 3. Identical
+    to the just-solve repeat.
+  - min2 (390): fifteen. Nine from one checkpoint 1 decision, "no delimiter means
+    non-tabular", a 400 the spec never asks for, which rejects every single-column fixture:
+    the latin-1 pair, url ids, negative values, the single-column core test, and the three
+    CSV charset tests at checkpoint 4. Plus min0's five whitespace tests and the
+    mixed-numeric test at checkpoint 7.
+  - min3 (399): strict through checkpoint 5. Six at checkpoint 6, the trimmed `CACHE_ENABLED`
+    values: one parser that trims, called with `trim=False` for `CACHE_ENABLED` alone,
+    keeping checkpoint 5's "strict" over checkpoint 6's "trimmed".
+  - min2b (399): identical to min3 at every checkpoint, same six.
+  - min4 (405): strict. Same no-trim reading as min3 at checkpoint 5 (registry entry T48),
+    reopened by the annotate-when-resolved step at checkpoint 6.
+
 ## Did the v8 testing hints help, or was it the zombie fix?
 
 Both, and they are separable in the transcripts. Minutes the tester sub-agent spent

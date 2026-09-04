@@ -38,6 +38,14 @@ and the sandbox-local venv):
     bin/build-prompt BEG                     # configs/prompts/min4-BEG.jinja from the chunks in
                                              # configs/prompts/min4-chunks/ (--list for the index)
 
+Queueing runs: one at a time, never in parallel (the 5h window and per-checkpoint window
+accounting both break). Each stage is a `setsid nohup bash -c` wrapper that writes `$$` to a
+pidfile, waits `while kill -0 <previous pid>`, then runs `bin/scb-extend --new <config>`;
+a monitor on its log filters `EXTEND:` lines. Kill a stage by pids from pidfiles, in a
+command that contains no launch text (a pgrep pattern matches the launch text in your own
+argv). The driver itself waits out the 5h window and API overloads, dry-runs every resume,
+and tars finished checkpoints to `outputs/backups/`.
+
 Project skills (`.claude/skills/`, all user-invoked) tie those together:
 
     /solve-one-problem       one dev problem, start to finish: baseline pair, spec patch,

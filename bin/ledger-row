@@ -1,0 +1,63 @@
+#!/usr/bin/env python3
+"""The after-run ritual, mechanical part: a ledger row and a failure summary for one run.
+
+    bin/ledger-row <run_dir>
+
+Prints the table row for notes/<problem>-runs.md (scores per checkpoint, miss count, cost)
+and the failure-summary entry: each missed hidden test under the checkpoint it belongs to,
+with the checkpoints it failed at. The cause of each miss is the reader's to add; the
+evaluation output (`<ckpt>/evaluation/stdout.txt`), `bin/miss-report`, and `bin/askrun`
+are where to look. After a ladder run, also extend the ladder section with
+`bin/compare-runs <runs...> --md`.
+"""
+import collections, json, pathlib, sys, types
+
+HERE = pathlib.Path(__file__).resolve().parent
+summarize = types.ModuleType("summarize"); summarize.__file__ = str(HERE / "summarize")
+sys.modules["summarize"] = summarize
+exec(compile((HERE / "summarize").read_text(), str(HERE / "summarize"), "exec"), summarize.__dict__)
+
+
+def failures(problem_dir):
+    """{(origin checkpoint, test): [run checkpoints it failed at]}"""
+    out = collections.defaultdict(list)
+    for ev in sorted(problem_dir.glob("checkpoint_*/evaluation.json"), key=lambda p: int(p.parent.name.split("_")[1])):
+        at = int(ev.parent.name.split("_")[1])
+        for group, res in json.loads(ev.read_text()).get("tests", {}).items():
+            origin = int(group.split("-")[0].removeprefix("checkpoint_"))
+            for t in res.get("failed") or []:
+                out[(origin, t)].append(at)
+    return out
+
+
+def main():
+    run = pathlib.Path(sys.argv[1]).resolve()
+    rows = summarize.load_rows(run)
+    problem = rows[0]["problem"]
+    scores = ", ".join(f"{r['passed_tests']}/{r['total_tests']}" for r in rows)
+    strict = sum(r.get("strict_pass_rate", r.get("pass_rate")) == 1.0 for r in rows)
+    cost = sum(r.get("cost") or 0 for r in rows)
+    minutes = sum(summarize.elapsed(r) for r in rows) / 60
+    fails = failures(run / problem)
+    name = run.parent.name.removeprefix("opus-5_2.1.251_high_")
+    print(f"| {name} | `…{name}/{run.name}` | WHAT CHANGED | {scores} | complete {rows[-1].get('ended', '')[:10]}; "
+          f"{len(fails)} misses (CAUSES); {strict}/{len(rows)} strict, ${cost:.0f}, {minutes:.0f} min |")
+    print()
+    print(f"### {name}")
+    print()
+    print(f"{rows[-1]['passed_tests']}/{rows[-1]['total_tests']}, {strict}/{len(rows)} checkpoints strict, ${cost:.0f}, {minutes:.0f} min.")
+    print()
+    by_origin = collections.defaultdict(list)
+    for (origin, t), at in sorted(fails.items()):
+        by_origin[origin].append((t, at))
+    for origin in sorted(by_origin):
+        print(f"  - Checkpoint {origin}:")
+        for t, at in by_origin[origin]:
+            where = "" if at == list(range(origin, rows[-1]['idx'] + 1)) else f" (failed at {', '.join(map(str, at))})"
+            print(f"      {t}{where}")
+    if not fails:
+        print("  - No misses.")
+
+
+if __name__ == "__main__":
+    main()

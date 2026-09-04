@@ -210,10 +210,22 @@ In a later phase:
 
 stream-parser string message; stop-after-checkpoint; agent death detection + prompt
 context variables; resume invalidates infra-failed checkpoints; container init + timeout
-kills inside the container. One known bug not yet patched: `retry()` resets the usage
-tracker, so a checkpoint that timed out and continued under-reports its cost (v7 ckpt 6
-recorded $3 of roughly $15). Candidates for upstream PRs, along with documenting
-`SCBENCH_PROBLEMS_PATH` for running against a modified problem copy.
+kills inside the container; retry keeps every attempt's transcript (added 2026-09-04:
+the min4-ABCHJK ckpt-1 agent pkill-self-matched, the `--continue` retry's stdout replaced
+the first attempt's, and only the copied Claude session file under
+`agent/workspace/projects/` still had the whole conversation). One known bug not yet
+patched: `retry()` resets the usage tracker, so a checkpoint that timed out and continued
+under-reports its cost (v7 ckpt 6 recorded $3 of roughly $15). Candidates for upstream
+PRs, along with documenting `SCBENCH_PROBLEMS_PATH` for running against a modified
+problem copy.
+
+Quality scoring, checked 2026-09-04: `scb-check` 0.1.3 runs on the whole snapshot,
+tests included (datagate: one source module, conftest, and eight test files). Its
+`exclude` list comes from a `scb-check.toml` or `pyproject.toml` found by walking up
+from the harness's working directory, not the snapshot's, so nothing the agent writes
+into the workspace changes what gets scored, and neither would a prompt rule about
+ruff's exclude. Skipping tests would take a config at this repo's root and would apply
+to every run scored here, control included.
 
 ## v4 lost its checkpoints 1 and 2 (2026-09-02 20:56Z)
 

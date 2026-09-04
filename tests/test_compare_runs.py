@@ -19,3 +19,13 @@ def test_misses_dedupe_a_test_across_the_checkpoints_it_fails_at(tmp_path):
 
 def test_run_label_drops_the_shared_model_prefix():
     assert cr.run_label(Path("/o/spectest/opus-5_2.1.251_high_spectest-v8A-disambiguated/20260902T2341")) == "spectest-v8A-disambiguated/20260902T2341"
+
+
+def test_parse_args_keeps_the_problem_value_out_of_the_run_list():
+    runs, problem, md = cr.parse_args(["--problem", "datagate", "outputs/a", "--md", "outputs/b"])
+    assert [r.name for r in runs] == ["a", "b"]
+    assert (problem, md) == ("datagate", True)
+
+
+def test_parse_args_defaults():
+    assert cr.parse_args(["outputs/a"])[1:] == (None, False)

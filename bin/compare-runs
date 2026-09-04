@@ -44,11 +44,24 @@ def fmt(v, d=3):
     return "-" if v is None else f"{v:.{d}f}"
 
 
+def parse_args(argv):
+    """(run paths, problem or None, md) from the command line; --problem takes a value."""
+    runs, problem, md = [], None, False
+    it = iter(argv)
+    for a in it:
+        if a == "--problem":
+            problem = next(it)
+        elif a == "--md":
+            md = True
+        elif a.startswith("--"):
+            raise SystemExit(f"compare-runs: unknown option {a}")
+        else:
+            runs.append(pathlib.Path(a).resolve())
+    return runs, problem, md
+
+
 def main():
-    args = [a for a in sys.argv[1:] if not a.startswith("--")]
-    md = "--md" in sys.argv
-    problem = sys.argv[sys.argv.index("--problem") + 1] if "--problem" in sys.argv else None
-    runs = [pathlib.Path(a).resolve() for a in args]
+    runs, problem, md = parse_args(sys.argv[1:])
     sep = " | " if md else "  "
     rows_by_run = {}
     for run in runs:

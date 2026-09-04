@@ -135,3 +135,77 @@ checkpoint 3 work) in `outputs/aborted/spectest-v4-20260831T2022-checkpoint_3`. 
 transcripts, snapshots, per-test evaluations and diffs for checkpoints 1-2 are gone from
 the mount. `bin/scb-extend` now repairs `run_info.yaml` before every resume, and v3's
 checkpoint 1 was tarred to `outputs/backups/` before its extension started.
+
+## Minimal-prompt ladder on the patched spec (2026-09-03, first runs)
+
+Rungs are `configs/prompts/spectest-min*.jinja`, each adding one rule set to the one below
+(`spectest-min-ladder-changes.md`); every run is against `problems/datagate-clarified.patch`.
+Table and matrix from `bin/compare-runs`. Pending as of 2026-09-04 00:30Z: min2b (the
+generator floor without min2's two rules), a just-solve repeat, a min3 repeat, a min0 repeat.
+
+run | scores | strict | cc_$ | erosion | verbosity | ast% | cloned%
+---|---|---|---|---|---|---|---
+just-solve | 49/50 121/122 172/174 231/233 274/276 345/353 397/405 | 0/7 | 15.33 | 0.535 | 0.244 | 0.176 | 0.067
+min0 | 48/50 120/122 169/174 228/233 271/276 348/353 400/405 | 0/7 | 18.02 | 0.236 | 0.200 | 0.102 | 0.080
+min2 | 42/50 114/122 163/174 219/233 262/276 339/353 390/405 | 0/7 | 22.19 | 0.048 | 0.174 | 0.068 | 0.098
+min3 | 50/50 122/122 174/174 233/233 276/276 347/353 399/405 | 5/7 | 33.98 | 0.151 | 0.160 | 0.062 | 0.065
+min4 | 50/50 122/122 174/174 233/233 276/276 353/353 405/405 | 7/7 | 43.46 | 0.167 | 0.157 | 0.080 | 0.068
+v8A | 50/50 122/122 174/174 233/233 276/276 353/353 405/405 | 7/7 | 29.52 | 0.121 | 0.157 | 0.043 | 0.073
+
+ckpt | test | 1 | 2 | 3 | 4 | 5 | 6
+---|---|---|---|---|---|---|---
+1 | TestCore::test_autodetect_latin1 | . | . | x | . | . | .
+1 | TestCore::test_charset_latin1 | . | . | x | . | . | .
+1 | TestCore::test_single_column_csv | . | . | x | . | . | .
+1 | TestFunctionality::test_different_urls_different_ids | . | . | x | . | . | .
+1 | TestFunctionality::test_id_from_url_not_charset | . | . | x | . | . | .
+1 | TestFunctionality::test_negative_values_as_numbers | . | . | x | . | . | .
+1 | TestFunctionality::test_preserves_header_and_time_whitespace | x | x | x | . | . | .
+1 | TestFunctionality::test_preserves_whitespace | . | x | x | . | . | .
+3 | TestFunctionality::test_exact_whitespace_value_match | . | x | x | . | . | .
+3 | TestFunctionality::test_header_no_trim | x | x | x | . | . | .
+3 | TestFunctionality::test_numeric_like_cells_preserve_whitespace_for_string_filters | . | x | x | . | . | .
+4 | TestCore::test_convert_csv_charset_honored | . | . | x | . | . | .
+4 | TestCore::test_upload_csv_charset_honored | . | . | x | . | . | .
+4 | TestFunctionality::test_export_charset_upload | . | . | x | . | . | .
+6 | TestFunctionality::test_trimmed_cache_enabled_false_values[ FALSE ] | x | . | . | x | . | .
+6 | TestFunctionality::test_trimmed_cache_enabled_false_values[ No ] | x | . | . | x | . | .
+6 | TestFunctionality::test_trimmed_cache_enabled_false_values[ OfF ] | x | . | . | x | . | .
+6 | TestFunctionality::test_trimmed_cache_enabled_true_values[ On ] | x | . | . | x | . | .
+6 | TestFunctionality::test_trimmed_cache_enabled_true_values[ TRUE ] | x | . | . | x | . | .
+6 | TestFunctionality::test_trimmed_cache_enabled_true_values[ YeS ] | x | . | . | x | . | .
+7 | TestFunctionality::test_mixed_numeric_column_type | . | . | x | . | . | .
+
+1: just-solve
+2: min0
+3: min2
+4: min3
+5: min4
+6: v8A
+
+Words per prompt: just-solve 60, min0 71, min2 160, min3 190, min4 312, v8A 690.
+
+What one run of each says, to be checked against the repeats:
+
+- **Strict minimum: min4.** The AMBIGUITIES.md procedure is the first rung with all seven
+  checkpoints strict. min3, one rule set below it, lost only the six trimmed
+  `CACHE_ENABLED` values at checkpoint 6. Both took the same no-trim reading of "strict"
+  at checkpoint 5; min4's registry entry T48 was reopened by the annotate-when-resolved
+  step at checkpoint 6 and applied "trimmed" to `CACHE_ENABLED`, while min3's reading
+  lived only as a `trim=False` argument that nothing asked it to revisit.
+- **Quality minimum: min2.** Erosion 0.048 is the lowest of any datagate run, and every
+  rung from min2 up is far below just-solve's 0.535. Code quality arrived two rungs before
+  correctness did; the two "critically" rules moved it more than anything above them.
+- **The generator floor is the correctness rung.** min3 is the first rung with no
+  whitespace or single-column misses, the two classes every lower rung lost.
+- **min2 is a warning about rules without reach.** Its nine-test cluster came from one
+  checkpoint 1 decision, "no delimiter means non-tabular", a 400 the spec never asks for.
+  The error-strictness and never-narrow rules bind tests, and no test reached a
+  single-column file, so the implementation invented the error unhindered.
+- **min4 is not v8A.** Same score, but $43 against $30, three and a half hours against
+  two, and worse erosion and ast-grep. The 380 words v8A carries beyond min4 buy
+  efficiency and code shape, not tests.
+- **Every miss on the ladder is one of three things:** whitespace preservation (rows for
+  checkpoints 1 and 3), the single-column rejection cascade (min2 only), or the
+  `CACHE_ENABLED` trimming boundary between checkpoints 5 and 6. None is on a patched
+  sentence.

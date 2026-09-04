@@ -84,7 +84,7 @@ def counted(values, total):
 def table(cells):
     out = ["| problem | prompt | spec | model | runs | score | range | strict | range | cc_$ | erosion | verbosity | ast% | cloned% |",
            "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
-    for (problem, prompt, spec, model), runs in sorted(cells.items(), key=lambda kv: (kv[0][0], -mean(r["score"] for r in kv[1]), kv[0][1])):
+    for (problem, prompt, spec, model), runs in sorted(cells.items(), key=lambda kv: (kv[0][0], -mean(r["score"] for r in kv[1]), kv[0][1].removeprefix("spectest-"))):
         score, rng = counted([r["passed"] for r in runs], runs[0]["total"])
         strict, srng = counted([r["strict"] for r in runs], runs[0]["ckpts"])
         out.append(f"| {problem} | {prompt} | {spec} | {model} | {len(runs)} | {score} | {rng} | {strict} | {srng} | {mean(r['cost'] for r in runs):.0f} | "

@@ -43,3 +43,10 @@ def test_agreeing_runs_show_no_decimal_and_no_range():
     assert rs.counted([399, 399], 405) == ("399/405", "-")
     assert rs.counted([5, 5, 5], 7) == ("5/7", "-")
     assert rs.counted([397, 400], 405) == ("398.5/405", "397-400")
+
+
+def test_tied_cells_sort_by_prompt_name_without_the_spectest_prefix():
+    run = {"score": 1.0, "passed": 405, "total": 405, "strict": 7, "ckpts": 7, "cost": 30.0, "erosion": 0.1, "verbosity": 0.1, "ast": 0.1, "cloned": 0.1}
+    cells = {("datagate", "min4-ABCHJK", "patched", "opus-5"): [run], ("datagate", "spectest-min4", "patched", "opus-5"): [run]}
+    prompts = [line.split(" | ")[1] for line in rs.table(cells).splitlines()[2:]]
+    assert prompts == ["spectest-min4", "min4-ABCHJK"]

@@ -297,6 +297,7 @@ def main():
         if proc.returncode != 0:
             sys.exit(4)
     say(f"DONE, {total} checkpoints present (run_dir={run_dir})")
+    say(f"next: bin/ledger-row {run_dir} -> notes/{problem}-runs.md (table row + failure summary); bin/compare-runs for the ladder section")
 
 
 if __name__ == "__main__":

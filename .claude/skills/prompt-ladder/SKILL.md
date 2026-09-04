@@ -51,6 +51,17 @@ quality minimum (lowest rung with erosion and ast-grep within noise of the full 
 Where they differ, say which matrix rows the rungs between them flip. Done when the
 ledger has the table, the matrix, and both minima named.
 
+## After every run, before anything else
+
+    bin/ledger-row <run_dir>
+
+gives the table row and the failure-summary entry for `notes/<problem>-runs.md`. Fill in
+what changed and the cause of each miss (the checkpoint's `evaluation/stdout.txt`,
+`bin/miss-report`, `bin/askrun`), put the row in the run table and the entry under "Test
+failure summaries", and for a ladder run refresh the ladder section with
+`bin/compare-runs <runs...> --md`. Commit. Done when all three are in the ledger; a run
+whose ledger entry is missing is a run that did not happen for the next session.
+
 ## Reference
 
 - datagate: just-solve on the patched spec missed 8 of 405, all whitespace preservation

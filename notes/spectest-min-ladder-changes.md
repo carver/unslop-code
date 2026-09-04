@@ -82,3 +82,23 @@ Everything else in v8A is either structure or harness housekeeping:
   disposable and are the ones to change if they disagree with the spec; the I1 procedure
   for implementation-time ambiguities.
 - Declare complete: touch `COMPLETED`, remove `IN_PROGRESS`.
+
+## Chunk probes, with what each tests
+
+Built with `bin/build-prompt` from `configs/prompts/min4-chunks/`. Both start from min2b's
+set (ABCJK, the generator floor without the two "critically" rules), because min2b matched
+min3 checkpoint for checkpoint: D and E add nothing to the score once C is there.
+
+- **min4-ABCHJK, the annotate step alone.** min4 cleared the six trimmed `CACHE_ENABLED`
+  tests min3 lost, and its registry showed how: entry T48 took min3's no-trim reading at
+  checkpoint 5, and the annotate-when-resolved clause (H) reopened it at checkpoint 6. This
+  asks whether H alone does that. H refers to "the entry" and there is no registry without
+  F and G, so it tests the instruction to revisit earlier readings without the bookkeeping.
+- **min4-ABCFGHJK, the registry without the assert line.** The full ambiguity procedure
+  minus I ("at least one test asserts the chosen reading"). I was never implicated in
+  min3's miss; its only relevance was v8B's T104, and there only in the tightened form in
+  `configs/prompts/v8-choice-must-decide.patch`. If this strict-solves, I is dead weight on
+  datagate.
+
+Next probes if both fall short: ABCFGJK (registry, no annotate, no assert) to isolate H
+inside the procedure, and ABCFGHIJK, which is min4 minus D and E.

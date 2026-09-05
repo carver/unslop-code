@@ -36,6 +36,7 @@ tests passed / total at each checkpoint (regressions included), from each checkp
 | v8 disambiguated, repeat (killed) | `…spectest-v8-disambiguated/20260904T2327` | same config as the first v8 run | (none) | stopped 2026-09-05 07:00Z at the user's request during checkpoint 1, with `bin/queue kill`; no checkpoint completed |
 | v9 disambiguated | `…spectest-v9-disambiguated/20260904T2335` | v8A plus a Differs score in every registry entry (`spectest-v9.jinja`, 735 words) + spec patch | 50/50, 122/122, 174/174, 233/233, 276/276, 353/353, 405/405 | complete 2026-09-05; 0 misses, 7/7 strict, $32, 111 min. 96 registry entries, every one scored; Differs spread 0 to 45 with 29 at 25 or above, the single-column question at 45 (chose accept, named the 400 as the author's likely reading) and the cache flag at 30 with the author's `.strip().lower()` written out one checkpoint before the spec said "trimmed". Quality: erosion 0.119, verbosity 0.172, ast 0.079, cloned 0.088 |
 | v9 disambiguated, repeat | `…spectest-v9-disambiguated/20260905T0804` | same config as the first v9 run | 50/50, 122/122, 174/174, 233/233, 276/276, 353/353, 404/405 | complete 2026-09-05; 1 miss, 6/7 strict, $32, 102 min. `test_duplicate_enrich_params_do_not_enable_metadata[yes-then-no]`, the v8B miss: first value wins, so `enrich=yes&enrich=no` enables enrichment. Registry entry T94 chose that reading, scored it Differs 20 and named the exact failing case as the residual risk ("a getlist-based author would keep enrichment off"). 110 entries all scored, 0 to 45; 20 is the median, 64 entries at or above it. Quality: erosion 0.103, verbosity 0.142, ast 0.072, cloned 0.062 |
+| v9 disambiguated, Fable 5.1 | `…fable-5-1_2.1.251_high_spectest-v9-disambiguated/20260905T1055` | v9 prompt on spec v1 with model fable-5-1 and the Fable agent config | 44/50, 116/122, 168/174, 224/233, 267/276, 344/353, 394/405 | complete 2026-09-05; 11 misses, 0/7 strict, $13, 139 min. The single-column cascade, test for test the same eleven as ABCFGHJK: entry T5 chose the 400 on the Sniffer argument and scored it Differs 30, naming the accepted single-column file as the risk. Cache flag closed at ckpt 6. 67 registry entries all scored, 0 to 50. Quality: erosion 0.158, verbosity 0.188, ast 0.070, cloned 0.104 |
 
 On hidden tests, v4 through v7 are flat within
 the latin-1 noise (ckpt 1: 50, 49, 50, 49 of 50; ckpt 2: 119, cut, 119, 118 of 122), and
@@ -190,6 +191,9 @@ matrix, and the reading. Failure sets in brief:
   - v9 repeat (404): one miss at checkpoint 7, repeated enrich params. Entry T94 took
     first-value-wins, scored it 20, and wrote the losing case out in its Differs line. The
     cache flag and both parsing coin flips went the tests' way again.
+  - v9 on Fable 5.1 (394): the single-column cascade, identical to ABCFGHJK's eleven. Entry T5
+    took the 400 with the Sniffer argument and a Differs of 30 naming the losing case. Nothing
+    else missed; the cache flag closed at checkpoint 6.
 
 ## Did the v8 testing hints help, or was it the zombie fix?
 
@@ -517,3 +521,12 @@ sank while the wording-level coin flips stayed on top. The named reading is the 
 half; the number ranks the wording's ambiguity more than the author's idiosyncrasy. Under
 the twice-strict rule the queued min9 subsets have no eligible parent yet; the user chose
 to keep them queued, last.
+
+Amendment 2026-09-05 20:45Z, after v9 on Fable 5.1 (spec v1): 394/405, 0/7 strict, $13,
+139 min. Fable took the single-column 400 at checkpoint 1 with the same Sniffer argument as
+min2 and ABCFGHJK, lost the same eleven tests, and nothing else. So the reading is a model-
+independent coin flip on the v1 sentence, now 3 of 12 registry runs, and the Differs line
+flagged it at 30 with the losing case named, as it did on the Opus run that took it. Cost
+$13 against Opus's $32 on the same prompt. This is the last run on v1; problems/ is now a
+symlink to specs/v1/problems, and the queue continues on v2, whose delimiter sentence is
+aimed at exactly this reading.

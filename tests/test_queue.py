@@ -73,3 +73,16 @@ def test_resume_job_continues_from_the_next_checkpoint(tmp_path, monkeypatch):
     assert label == "fable-5-1_2.1.251_high_just-solve-sith-resume-from-3"
     assert argv[1:] == [str(run), "sith", "6"]
     assert env == {}
+
+
+def test_next_priority_is_one_above_the_highest_queued():
+    tasks = {"1": {"status": {"Running": {}}, "priority": 9}, "2": {"status": "Queued", "priority": 0}, "3": {"status": "Queued", "priority": 2}}
+    assert q.next_priority(tasks) == 3
+    assert q.next_priority({"1": {"status": "Done"}}) == 1
+
+
+def test_swap_plan_walks_the_job_to_just_before_the_target():
+    assert q.swap_plan([25, 26, 27, 28], 28, 26) == [(28, 27), (27, 26)]
+    assert q.swap_plan([25, 26, 27, 28], 25, 28) == [(25, 26), (26, 27)]
+    assert q.swap_plan([25, 26, 27, 28], 26, 27) == []
+    assert q.swap_plan([25, 26, 27, 28], 27, 27) == []

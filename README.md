@@ -48,7 +48,10 @@ accounting both break). `bin/queue add configs/runs/<name>.yaml` enqueues a run 
 whatever is queued; `bin/queue` shows status, `bin/queue log <id>` a job's output,
 `bin/queue kill <id>` stops one and cleans up after it: a queued job is removed; a running
 one is killed along with the slop-code worker that outlives it and the agent container it
-leaves behind, with the queue paused meanwhile and resumed after. The
+leaves behind, with the queue paused meanwhile and resumed after. `bin/queue add --next <config>`
+puts a job ahead of everything queued, `bin/queue move <id> before <id>` reorders queued jobs (pueue
+renumbers the two it swaps, so read the printed order rather than remembering ids), and
+`bin/queue resume <run_dir>` continues a run stopped between checkpoints. The
 queue is pueue, installed by `install.py`, one task at a time, persistent across shells and
 sessions. The driver underneath (`bin/scb-extend`) waits out the 5h window and API
 overloads, dry-runs every resume, and tars finished checkpoints to `outputs/backups/`.

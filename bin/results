@@ -35,7 +35,7 @@ def run_dirs(outputs=ROOT / "outputs"):
 
 def cell_key(run_dir):
     name = run_dir.parent.name
-    for prefix in (PREFIX, "sonnet-4.6_2.1.44_high_", "fable-5_2.1.251_high_"):
+    for prefix in (PREFIX, "sonnet-4.6_2.1.44_high_", "fable-5_2.1.251_high_", "fable-5-1_2.1.251_high_"):
         name = name.removeprefix(prefix)
     patched = name.endswith("-disambiguated")
     return name.removesuffix("-disambiguated"), "patched" if patched else "cached", run_dir.parent.name.split("_")[0]

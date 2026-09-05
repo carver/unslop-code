@@ -270,6 +270,10 @@ once the ABCHJK rerun lost a test at checkpoint 1: the user wants drops taken on
 prompt that strict-solves twice.
 Added 2026-09-05 06:30Z behind the v8 rerun: two runs of v9 (v8A plus the Differs score in
 every registry entry, `spectest-v9.jinja`; chunks in `min9-chunks/`).
+The v8B and v8 reruns were stopped by request. Queued 2026-09-05 07:10Z behind the v9 pair,
+optimistically: two nested min9 subsets, ABDEFHJKMNOPR (min4's rules in v9 form plus the
+environment and tester-speed rules and the Differs procedure, 558 words) and
+ABCDEFGHIJKMNOPQR (plus the test-writing extras, 690 words); v9 is the latter plus L and S.
 
 run | scores | strict | cc_$ | erosion | verbosity | ast% | cloned%
 ---|---|---|---|---|---|---|---

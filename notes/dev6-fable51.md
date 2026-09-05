@@ -14,7 +14,7 @@ and Fable 5 columns are copied here for comparison.
 | xjq | Easy | 1/1/4 of 5, 6.13 | 1/2/5 of 5, 7.43 | 1/2/5 of 5, 1.49 | 12 |
 | file_merger | Medium | 1/2/2 of 4, 25.82 | 1/2/2 of 4, 21.44 | 0/1/2 of 4, 3.28 | 34 |
 | mvvault | Medium | 1/2/6 of 6, 11.82 | 0/1/4 of 6, 17.61 | 0/2/5 of 6, 5.57 | 54 |
-| rejector | Hard | 0/1/2 of 5, 35.55 | 1/1/1 of 5, 32.23 | | |
+| rejector | Hard | 0/1/2 of 5, 35.55 | 1/1/1 of 5, 32.23 | 1/1/2 of 5, 8.48 | 87 |
 | sith | Hard | 1/1/3 of 6, 51.77 | 1/1/3 of 6, 80.97 | | |
 
 ## Notes per problem
@@ -37,3 +37,10 @@ and Fable 5 columns are copied here for comparison.
   5's 41/42: both miss POST create, 5.1 also fails two atomic-migration error cases. No
   strict checkpoint for either; isolated 2 and core 5 of 6 against 1 and 4. Cost $5.57
   against $17.61. Erosion 0.222 against 0.739, the largest quality gap of the three so far.
+- rejector: strict at checkpoint 1 like Fable 5, then one test behind it at every later
+  checkpoint, 46/50, 62/67, 73/79 against 47, 64, 74. The extra misses are in-context
+  learning (round-robin example strategy, an invalid ICL file that must fail before any API
+  call) and the agentic max-iterations limit; Fable 5's own extra miss was the judge-pass
+  case. Core 2 of 5 against 1. Cost $8.48 against $32.23, 87 minutes of agent time. The one
+  problem so far where quality is worse: erosion 0.639 against 0.576, verbosity 0.410
+  against 0.278.

@@ -34,6 +34,7 @@ tests passed / total at each checkpoint (regressions included), from each checkp
 | v8A disambiguated, repeat | `…spectest-v8A-disambiguated/20260904T1814` | same config as the first v8A run | 50/50, 122/122, 174/174, 233/233, 276/276, 353/353, 405/405 | complete 2026-09-05; 0 misses, 7/7 strict, $37, 136 min. Second twice-strict prompt after min4, at 690 words. Cache flag fork closed at ckpt 6. Quality: erosion 0.088 against 0.121, verbosity 0.129 against 0.157 |
 | v8B disambiguated, repeat (killed) | `…spectest-v8B-disambiguated/20260904T2053` | same config as the first v8B run | 50/50, 122/122, 174/174, 233/233, 276/276 | stopped 2026-09-05 06:30Z at the user's request during checkpoint 6, strict through 5 as the first run was; left partial, not a completed run |
 | v8 disambiguated, repeat (killed) | `…spectest-v8-disambiguated/20260904T2327` | same config as the first v8 run | (none) | stopped 2026-09-05 07:00Z at the user's request during checkpoint 1, with `bin/queue kill`; no checkpoint completed |
+| v9 disambiguated | `…spectest-v9-disambiguated/20260904T2335` | v8A plus a Differs score in every registry entry (`spectest-v9.jinja`, 735 words) + spec patch | 50/50, 122/122, 174/174, 233/233, 276/276, 353/353, 405/405 | complete 2026-09-05; 0 misses, 7/7 strict, $32, 111 min. 96 registry entries, every one scored; Differs spread 0 to 45 with 29 at 25 or above, the single-column question at 45 (chose accept, named the 400 as the author's likely reading) and the cache flag at 30 with the author's `.strip().lower()` written out one checkpoint before the spec said "trimmed". Quality: erosion 0.119, verbosity 0.172, ast 0.079, cloned 0.088 |
 
 On hidden tests, v4 through v7 are flat within
 the latin-1 noise (ckpt 1: 50, 49, 50, 49 of 50; ckpt 2: 119, cut, 119, 118 of 122), and
@@ -182,6 +183,9 @@ matrix, and the reading. Failure sets in brief:
     entry marked Superseded at checkpoint 6 by the configuration section. Both parsing
     coin flips, single column and the trailing blank line, went the tests' way.
   - v8A repeat (405): strict again, no misses, every checkpoint matching the first run.
+  - v9 (405): strict, no misses, v8A's pace and cost. The new Differs section appeared on all
+    96 entries with a spread of values; both parsing coin flips and the cache flag went the
+    tests' way, each with the divergent reading named beside the choice.
 
 ## Did the v8 testing hints help, or was it the zombie fix?
 
@@ -458,3 +462,18 @@ earlier reading that the extra words buy efficiency and code shape rather than t
 now has two runs behind it: erosion 0.088 and 0.121 against min4's 0.076 and 0.167,
 the same band, at a third less wall clock. Twice-strict prompts: min4, v8A. Once-strict
 with a failed repeat: ABCHJK. Pending: v8B (403 first time), v8.
+
+Amendment 2026-09-05 09:00Z, after v9's first run: 405/405, 7/7 strict, $32, 111 min, the
+cheapest strict run so far. v9 is v8A plus a Differs section in every registry entry: a 0
+to 100 chance that the spec author's own implementation and hidden test prefer a different
+reading, with that reading named (`ambiguity-risk-judge.md`, fourth pass, has the wording's
+provenance). The run produced 96 entries, all scored, spread 0 to 45 with 29 at 25 or
+above. The three questions that flip on other prompts all went the tests' way and all
+carry the divergent reading in the entry: non-tabular content at 45 ("author most likely
+rejects anything from which no delimiter could be inferred"), the cache flag at 30 with
+`os.environ.get(...).strip().lower()` written out at checkpoint 5, a checkpoint before the
+spec added "trimmed", and blank lines at 15. Whether the score changes choices or only
+annotates them is not decidable from one run; v8A also went 405 twice without it. What it
+adds for certain is a ranked review list written during the run. Quality moved the wrong
+way against v8A's repeat (erosion 0.119 against 0.088, ast-grep 0.079 against 0.040), inside
+the run-to-run band seen on every other prompt. Second run is job 19, after the Fable set.

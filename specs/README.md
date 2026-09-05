@@ -12,6 +12,6 @@ own catalog record (`problem_catalog.json`), so a run's spec never changes under
 |---|---|
 | v0 | the cached benchmark spec |
 | v1 | `01-datagate-clarified.patch`: the five sentences from the 2026-09-02 blind-judge review (latin-1 detection, rowid, charset on uploads, charset on spreadsheets, `force` values). Runs made before this folder existed were named `-disambiguated` and read the same copy at `problems/`. |
-| v2 | v1 plus `02-datagate-enrich-single.patch`: "Only a single, exact `enrich=yes` enables enrichment." Six of six blind judges read it as any repetition keeps enrichment off (2026-09-05). |
+| v2 | v1 plus `02-datagate-enrich-single.patch`, "Only a single, exact `enrich=yes` enables enrichment." (six of six blind judges: any repetition keeps enrichment off), and `03-datagate-delimiter-if-present.patch`, "Delimiter must be inferred from input, if present" (six of six: a delimiter-free header-plus-row file is a one-column table, a one-line JSON body still 400). Both 2026-09-05. |
 
 `drafts/` holds patches that were proposed and not adopted as written.

@@ -1,0 +1,11 @@
+--- a/datagate/checkpoint_1.md	2026-09-05 11:57:12.108761101 -0700
++++ b/datagate/checkpoint_1.md	2026-09-05 11:57:12.109905067 -0700
+@@ -83,7 +83,7 @@
+ ### CSV Parsing
+ 
+ - If `/convert` receives `charset`, use it to decode bytes. Otherwise detect encoding.
+-- Delimiter must be inferred from input; minimum supported delimiters are `,`, `;`, and `\t`.
++- Delimiter must be inferred from input, if present; minimum supported delimiters are `,`, `;`, and `\t`.
+ - A valid file requires at least one header row and one data row.
+ 
+ ### Determinism

@@ -35,6 +35,7 @@ tests passed / total at each checkpoint (regressions included), from each checkp
 | v8B disambiguated, repeat (killed) | `…spectest-v8B-disambiguated/20260904T2053` | same config as the first v8B run | 50/50, 122/122, 174/174, 233/233, 276/276 | stopped 2026-09-05 06:30Z at the user's request during checkpoint 6, strict through 5 as the first run was; left partial, not a completed run |
 | v8 disambiguated, repeat (killed) | `…spectest-v8-disambiguated/20260904T2327` | same config as the first v8 run | (none) | stopped 2026-09-05 07:00Z at the user's request during checkpoint 1, with `bin/queue kill`; no checkpoint completed |
 | v9 disambiguated | `…spectest-v9-disambiguated/20260904T2335` | v8A plus a Differs score in every registry entry (`spectest-v9.jinja`, 735 words) + spec patch | 50/50, 122/122, 174/174, 233/233, 276/276, 353/353, 405/405 | complete 2026-09-05; 0 misses, 7/7 strict, $32, 111 min. 96 registry entries, every one scored; Differs spread 0 to 45 with 29 at 25 or above, the single-column question at 45 (chose accept, named the 400 as the author's likely reading) and the cache flag at 30 with the author's `.strip().lower()` written out one checkpoint before the spec said "trimmed". Quality: erosion 0.119, verbosity 0.172, ast 0.079, cloned 0.088 |
+| v9 disambiguated, repeat | `…spectest-v9-disambiguated/20260905T0804` | same config as the first v9 run | 50/50, 122/122, 174/174, 233/233, 276/276, 353/353, 404/405 | complete 2026-09-05; 1 miss, 6/7 strict, $32, 102 min. `test_duplicate_enrich_params_do_not_enable_metadata[yes-then-no]`, the v8B miss: first value wins, so `enrich=yes&enrich=no` enables enrichment. Registry entry T94 chose that reading, scored it Differs 20 and named the exact failing case as the residual risk ("a getlist-based author would keep enrichment off"). 110 entries all scored, 0 to 45; 20 is the median, 64 entries at or above it. Quality: erosion 0.103, verbosity 0.142, ast 0.072, cloned 0.062 |
 
 On hidden tests, v4 through v7 are flat within
 the latin-1 noise (ckpt 1: 50, 49, 50, 49 of 50; ckpt 2: 119, cut, 119, 118 of 122), and
@@ -186,6 +187,9 @@ matrix, and the reading. Failure sets in brief:
   - v9 (405): strict, no misses, v8A's pace and cost. The new Differs section appeared on all
     96 entries with a spread of values; both parsing coin flips and the cache flag went the
     tests' way, each with the divergent reading named beside the choice.
+  - v9 repeat (404): one miss at checkpoint 7, repeated enrich params. Entry T94 took
+    first-value-wins, scored it 20, and wrote the losing case out in its Differs line. The
+    cache flag and both parsing coin flips went the tests' way again.
 
 ## Did the v8 testing hints help, or was it the zombie fix?
 
@@ -484,3 +488,17 @@ annotates them is not decidable from one run; v8A also went 405 twice without it
 adds for certain is a ranked review list written during the run. Quality moved the wrong
 way against v8A's repeat (erosion 0.119 against 0.088, ast-grep 0.079 against 0.040), inside
 the run-to-run band seen on every other prompt. Second run is job 19, after the Fable set.
+
+Amendment 2026-09-05 17:15Z, after v9's repeat: 404/405, 6/7 strict, $32, 102 min. The
+miss is the fourth known flip, repeated enrich params (v8B lost it too): `enrich=yes&enrich=no`
+must leave enrichment off, and the run took first-value-wins. So v9 is once strict, once
+404, like ABCHJK, and the twice-strict prompts stay min4 and v8A. The Differs line's first
+live calibration point: entry T94 scored the choice 20 and named the failing case exactly,
+"a repeated enrich=yes&enrich=no, where a getlist-based author would keep enrichment off".
+Right diagnosis, middling number: 20 is this run's median, 64 of 110 entries sit at or
+above it, and the top of the list (45: charset on non-text sources, distinct-count) held
+questions no test reaches. That matches the single-view judge pass, where the rare flips
+sank while the wording-level coin flips stayed on top. The named reading is the actionable
+half; the number ranks the wording's ambiguity more than the author's idiosyncrasy. Under
+the twice-strict rule the queued min9 subsets have no eligible parent yet; the user chose
+to keep them queued, last.

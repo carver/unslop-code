@@ -44,3 +44,7 @@ and Fable 5 columns are copied here for comparison.
   case. Core 2 of 5 against 1. Cost $8.48 against $32.23, 87 minutes of agent time. The one
   problem so far where quality is worse: erosion 0.639 against 0.576, verbosity 0.410
   against 0.278.
+- sith (in progress): strict at checkpoint 1, then 74/75, 106/108, 139/146 against Fable
+  5's 73, 105, 138. At 14:38Z the driver went to sleep for the usage reset with two
+  checkpoints left; the job was killed at 14:50Z to let the Opus v9 rerun use the remaining
+  window, and resumes from checkpoint 5 next in the queue (`bin/queue resume <run_dir>`).

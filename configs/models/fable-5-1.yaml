@@ -1,0 +1,19 @@
+# Fable 5.1 for slop-code's model registry. Copy to slop-code-bench/configs/models/ (that
+# checkout is not tracked here). Pricing is Fable 5's list price; 5.1's is unpublished here.
+internal_name: claude-fable-5-1
+provider: anthropic
+pricing:
+  input: 10
+  output: 50
+  cache_read: 1.0
+  cache_write: 12.5
+aliases:
+  - claude-fable-5-1
+  - fable-5-1
+
+agent_specific:
+  codex:
+    thinking: high
+
+  opencode:
+    provider_name: anthropic

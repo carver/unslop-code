@@ -31,6 +31,7 @@ tests passed / total at each checkpoint (regressions included), from each checkp
 | min4-ABCFGHJK | `…min4-ABCFGHJK-disambiguated/20260904T0311` | min2b plus F, G, H: choose an interpretation, record it in AMBIGUITIES.md, annotate when resolved (`min4-ABCFGHJK.jinja`, 245 words) + spec patch | 44/50, 116/122, 168/174, 224/233, 267/276, 344/353, 394/405 | complete 2026-09-04; 11 misses, 0/7 strict, $31, 128 min. All eleven from one ckpt-1 choice, registry entry T6: a file with no inferable delimiter is "non-tabular", a 400 the spec never asks for, and the entry says in so many words that a genuinely single-column CSV is rejected. min2's cascade test for test (six at ckpt 1, the three CSV charset tests at ckpt 4) plus two single-column tests at ckpt 7. The cache flag entry was annotated and trimmed at ckpt 6 as in min4 |
 | min4-ABCHJK, repeat | `…min4-ABCHJK-disambiguated/20260904T0608` | same config as the first ABCHJK run | 49/50, 121/122, 173/174, 232/233, 275/276, 352/353, 404/405 | complete 2026-09-04; 1 miss, 0/7 strict, $32, 191 min. A trailing blank line kept as a data row of empty strings, chosen at ckpt 1 (registry entry A11: "no source line silently lost") and never revisited; the first run dropped it "matching normal CSV trailing-newline behaviour". Cache flag annotated and trimmed at ckpt 6 as in every run with H. No stray stress file this time: erosion 0.076, verbosity 0.133, ast 0.044, cloned 0.075 |
 | min4 disambiguated, repeat | `…spectest-min4-disambiguated/20260904T0939` | same config as the first min4 run | 50/50, 122/122, 174/174, 233/233, 276/276, 353/353, 405/405 | complete 2026-09-05; 0 misses, 7/7 strict, $50, 492 min of which about 180 were the host laptop suspended mid-ckpt 2. Registry entry T48 (same number as the first run) took the no-trim reading at ckpt 5 and was marked Superseded at ckpt 6. The first prompt on the ladder to strict-solve twice. Quality better than the first run: erosion 0.076 against 0.167, ast 0.048 against 0.080 |
+| v8A disambiguated, repeat | `…spectest-v8A-disambiguated/20260904T1814` | same config as the first v8A run | 50/50, 122/122, 174/174, 233/233, 276/276, 353/353, 405/405 | complete 2026-09-05; 0 misses, 7/7 strict, $37, 136 min. Second twice-strict prompt after min4, at 690 words. Cache flag fork closed at ckpt 6. Quality: erosion 0.088 against 0.121, verbosity 0.129 against 0.157 |
 
 On hidden tests, v4 through v7 are flat within
 the latin-1 noise (ckpt 1: 50, 49, 50, 49 of 50; ckpt 2: 119, cut, 119, 118 of 122), and
@@ -178,6 +179,7 @@ matrix, and the reading. Failure sets in brief:
   - min4 repeat (405): strict again, no misses. Same no-trim reading at checkpoint 5,
     entry marked Superseded at checkpoint 6 by the configuration section. Both parsing
     coin flips, single column and the trailing blank line, went the tests' way.
+  - v8A repeat (405): strict again, no misses, every checkpoint matching the first run.
 
 ## Did the v8 testing hints help, or was it the zombie fix?
 
@@ -435,3 +437,12 @@ line in 1 of 15 patched runs, so two clean min4 runs are consistent with the sam
 Quality: erosion 0.076 against the first run's 0.167 and ast-grep 0.048 against 0.080,
 the same direction as the ABCHJK repeat, so the first-run quality numbers on the ladder
 were the noisy ones.
+
+Amendment 2026-09-05 04:00Z, after the v8A repeat: 405/405, 7/7 strict, $37, 136 min
+(first run $30, 120 min). v8A is the second prompt to strict-solve twice, and the cheaper
+one: min4's two runs cost $43 and $50 and took about three and five hours; v8A's cost
+$30 and $37 at two hours each. v8A carries 690 words to min4's 312, and the ledger's
+earlier reading that the extra words buy efficiency and code shape rather than tests
+now has two runs behind it: erosion 0.088 and 0.121 against min4's 0.076 and 0.167,
+the same band, at a third less wall clock. Twice-strict prompts: min4, v8A. Once-strict
+with a failed repeat: ABCHJK. Pending: v8B (403 first time), v8.

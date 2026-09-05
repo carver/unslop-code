@@ -15,7 +15,23 @@ and Fable 5 columns are copied here for comparison.
 | file_merger | Medium | 1/2/2 of 4, 25.82 | 1/2/2 of 4, 21.44 | 0/1/2 of 4, 3.28 | 34 |
 | mvvault | Medium | 1/2/6 of 6, 11.82 | 0/1/4 of 6, 17.61 | 0/2/5 of 6, 5.57 | 54 |
 | rejector | Hard | 0/1/2 of 5, 35.55 | 1/1/1 of 5, 32.23 | 1/1/2 of 5, 8.48 | 87 |
-| sith | Hard | 1/1/3 of 6, 51.77 | 1/1/3 of 6, 80.97 | | |
+| sith | Hard | 1/1/3 of 6, 51.77 | 1/1/3 of 6, 80.97 | 1/1/4 of 6, 20.14 | 167 |
+
+## Totals over the five problems, 26 checkpoints
+
+| | Opus 5 | Fable 5 | Fable 5.1 |
+|---|---|---|---|
+| strict checkpoints | 4 | 4 | 3 |
+| isolated | 7 | 7 | 7 |
+| core | 17 | 15 | 18 |
+| Claude Code cost | $131 | $160 | $39 |
+
+Fable 5.1 passes more tests than Fable 5 on four problems and is level on xjq; it has one
+strict checkpoint fewer, the file_merger boolean case missed at checkpoint 1 and carried. It
+costs a quarter of Fable 5 and less than a third of Opus 5 on the same problems, and its
+quality metrics are better on four of five (rejector the exception). Fable 5.1 reads as
+Fable 5 with the same spec readings, faster and cheaper; the misses it shares with Fable 5
+are candidates for spec patches in the datagate sense.
 
 ## Notes per problem
 
@@ -44,7 +60,10 @@ and Fable 5 columns are copied here for comparison.
   case. Core 2 of 5 against 1. Cost $8.48 against $32.23, 87 minutes of agent time. The one
   problem so far where quality is worse: erosion 0.639 against 0.576, verbosity 0.410
   against 0.278.
-- sith (in progress): strict at checkpoint 1, then 74/75, 106/108, 139/146 against Fable
-  5's 73, 105, 138. At 14:38Z the driver went to sleep for the usage reset with two
-  checkpoints left; the job was killed at 14:50Z to let the Opus v9 rerun use the remaining
-  window, and resumes from checkpoint 5 next in the queue (`bin/queue resume <run_dir>`).
+- sith: strict at checkpoint 1 like Fable 5, then ahead at every checkpoint, 74/75, 106/108,
+  139/146, 177/186, 210/228 against 73, 105, 138, 170, 204. The run was paused asleep before
+  checkpoint 5 to let an Opus run use the window, and resumed with `bin/queue resume`; the
+  resume added nothing to the record beyond a two-hour gap. Final misses 18 against 24, 13
+  shared; 5.1's own are environment listing and sorting cases and an extract-variable pair.
+  Core 4 of 6 against 3. Cost $20.14 against $80.97, 167 minutes of agent time. Erosion 0.757
+  against 0.854.

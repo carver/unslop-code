@@ -143,6 +143,23 @@ Library research removed, the tester sub-agent kept. Run only on the disambiguat
 - Implement: "red/green testing as you add libraries or features" becomes "as you add
   features".
 
+## v9 (`spectest-v9.jinja`), diffed against v8A
+
+- Testing: each AMBIGUITIES.md entry gets a fourth section, Differs: a 0 to 100 chance
+  that the spec's author, who has an implementation of their own and writes the hidden
+  tests against it, prefers a different reading on some tested input; the agent is told
+  to reason about the author's implementation and fixtures, to name the author's likely
+  reading when the number is above 0, and to use the whole range. The wording is the
+  fourth judge pass in `ambiguity-risk-judge.md`, which put four of the five patched
+  sentences in v7's top 20 of 125.
+- Testing: the spec source is quoted verbatim (was "quote the relevant spec source"),
+  so entries can be joined across runs on the quote.
+- Environment: the turn-ending block is gone (only a sub-agent can wake you, background
+  commands die five seconds after the turn, wait in the foreground, never end the turn
+  on a file). It was written for the sub-agent setup that v8A already dropped.
+- Environment: the pkill rule says to kill the one found process "by PID".
+- Everything else is v8A unchanged. 735 words against v8A's 685.
+
 ## v8A (`spectest-v8A-no-libs-no-subagent.jinja`), diffed against v8B
 
 The tester sub-agent removed as well, so one agent writes, validates, and implements.

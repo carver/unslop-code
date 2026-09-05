@@ -274,6 +274,10 @@ The v8B and v8 reruns were stopped by request. Queued 2026-09-05 07:10Z behind t
 optimistically: two nested min9 subsets, ABDEFHJKMNOPR (min4's rules in v9 form plus the
 environment and tester-speed rules and the Differs procedure, 558 words) and
 ABCDEFGHIJKMNOPQR (plus the test-writing extras, 690 words); v9 is the latter plus L and S.
+Inserted 2026-09-05 07:40Z between the two v9 runs, to use Fable credits before the usage
+reset: Fable 5.1 just-solve on xjq, file_merger, mvvault, rejector and sith (configs
+`dev6-fable51-<problem>.yaml`, output under `outputs/dev6-fable51/`); their ledger is
+`notes/dev6-fable5.md`'s successor, not this file.
 
 run | scores | strict | cc_$ | erosion | verbosity | ast% | cloned%
 ---|---|---|---|---|---|---|---

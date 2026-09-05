@@ -30,6 +30,7 @@ tests passed / total at each checkpoint (regressions included), from each checkp
 | min4-ABCHJK | `…min4-ABCHJK-disambiguated/20260904T0042` | min2b plus H alone, "annotate the entry instead of removing it" (`min4-ABCHJK.jinja`, 157 words) + spec patch | 50/50, 122/122, 174/174, 233/233, 276/276, 353/353, 405/405 | complete 2026-09-04; 0 misses, 7/7 strict, $30, 129 min. The one sentence made the agent keep a 74-entry AMBIGUITIES.md nobody asked for; its A69 took the no-trim reading of `CACHE_ENABLED` at ckpt 5 and was annotated RESOLVED at ckpt 6, whitespace now stripped. Quality: cloned 0.246 and verbosity 0.349 from `test_zz_stress_tmp.py`, a 1319-line copy of the filtering tests with max_examples 4000, left behind at ckpt 3 |
 | min4-ABCFGHJK | `…min4-ABCFGHJK-disambiguated/20260904T0311` | min2b plus F, G, H: choose an interpretation, record it in AMBIGUITIES.md, annotate when resolved (`min4-ABCFGHJK.jinja`, 245 words) + spec patch | 44/50, 116/122, 168/174, 224/233, 267/276, 344/353, 394/405 | complete 2026-09-04; 11 misses, 0/7 strict, $31, 128 min. All eleven from one ckpt-1 choice, registry entry T6: a file with no inferable delimiter is "non-tabular", a 400 the spec never asks for, and the entry says in so many words that a genuinely single-column CSV is rejected. min2's cascade test for test (six at ckpt 1, the three CSV charset tests at ckpt 4) plus two single-column tests at ckpt 7. The cache flag entry was annotated and trimmed at ckpt 6 as in min4 |
 | min4-ABCHJK, repeat | `…min4-ABCHJK-disambiguated/20260904T0608` | same config as the first ABCHJK run | 49/50, 121/122, 173/174, 232/233, 275/276, 352/353, 404/405 | complete 2026-09-04; 1 miss, 0/7 strict, $32, 191 min. A trailing blank line kept as a data row of empty strings, chosen at ckpt 1 (registry entry A11: "no source line silently lost") and never revisited; the first run dropped it "matching normal CSV trailing-newline behaviour". Cache flag annotated and trimmed at ckpt 6 as in every run with H. No stray stress file this time: erosion 0.076, verbosity 0.133, ast 0.044, cloned 0.075 |
+| min4 disambiguated, repeat | `…spectest-min4-disambiguated/20260904T0939` | same config as the first min4 run | 50/50, 122/122, 174/174, 233/233, 276/276, 353/353, 405/405 | complete 2026-09-05; 0 misses, 7/7 strict, $50, 492 min of which about 180 were the host laptop suspended mid-ckpt 2. Registry entry T48 (same number as the first run) took the no-trim reading at ckpt 5 and was marked Superseded at ckpt 6. The first prompt on the ladder to strict-solve twice. Quality better than the first run: erosion 0.076 against 0.167, ast 0.048 against 0.080 |
 
 On hidden tests, v4 through v7 are flat within
 the latin-1 noise (ckpt 1: 50, 49, 50, 49 of 50; ckpt 2: 119, cut, 119, 118 of 122), and
@@ -174,6 +175,9 @@ matrix, and the reading. Failure sets in brief:
     checkpoint 1 and carried through all seven. Entry A11 read a blank line as a record to
     keep; the first run read it as CSV convention to drop. The only earlier failure of that
     test was v4 on the unpatched spec. The cache flag fork closed at checkpoint 6 again.
+  - min4 repeat (405): strict again, no misses. Same no-trim reading at checkpoint 5,
+    entry marked Superseded at checkpoint 6 by the configuration section. Both parsing
+    coin flips, single column and the trailing blank line, went the tests' way.
 
 ## Did the v8 testing hints help, or was it the zombie fix?
 
@@ -419,3 +423,15 @@ it flipped once in fourteen patched runs. Quality without the stray stress copy 
 best on the ladder: erosion 0.076, cloned 0.075. Per the user's rule the three
 single-chunk drops came off the queue; shrinking starts from a prompt that strict-solves
 twice, and none has yet.
+
+Amendment 2026-09-05 01:20Z, after the min4 repeat: 405/405, 7/7 strict, $50. Wall clock
+492 min, about 180 of them with the host suspended during checkpoint 2, so read it as
+roughly five hours. min4 is the first prompt to strict-solve twice, and under the rule
+that shrinking starts from a twice-strict prompt, it is the first eligible one. The
+annotate step has now reopened the cache flag entry in five of five runs that carried
+it. The two parsing coin flips did not fire here, which says nothing about min4 in
+particular: single-column has flipped in 2 of 8 registry-keeping runs and the blank
+line in 1 of 15 patched runs, so two clean min4 runs are consistent with the same odds.
+Quality: erosion 0.076 against the first run's 0.167 and ast-grep 0.048 against 0.080,
+the same direction as the ABCHJK repeat, so the first-run quality numbers on the ladder
+were the noisy ones.

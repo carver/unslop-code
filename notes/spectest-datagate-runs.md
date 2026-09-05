@@ -284,6 +284,11 @@ reset: Fable 5.1 just-solve on xjq, file_merger, mvvault, rejector and sith (con
 `notes/dev6-fable5.md`'s successor, not this file.
 Added 2026-09-05 11:50Z after sith and before the second Opus v9 run: Fable 5.1 on v9 with the
 patched datagate spec (`spectest-v9-disambiguated-datagate-fable51.yaml`, the Fable agent config).
+15:10Z: the window reserve in `bin/scb-extend` had never used a run's own costs (reset-time
+jitter broke the before/after pairing), so every run reserved 30 points; fixed, and a fresh run
+now seeds from the last three runs of its problem (datagate about 6). The sith Fable run was
+paused asleep before checkpoint 5 and re-queued as a resume, so the second Opus v9 run could use
+the 17 points left in the window instead of waiting 90 minutes for the reset.
 
 run | scores | strict | cc_$ | erosion | verbosity | ast% | cloned%
 ---|---|---|---|---|---|---|---

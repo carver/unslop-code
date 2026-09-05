@@ -293,6 +293,8 @@ jitter broke the before/after pairing), so every run reserved 30 points; fixed, 
 now seeds from the last three runs of its problem (datagate about 6). The sith Fable run was
 paused asleep before checkpoint 5 and re-queued as a resume, so the second Opus v9 run could use
 the 17 points left in the window instead of waiting 90 minutes for the reset.
+18:20Z: the two min9 subsets came off the queue again; the spec may get a second patch first,
+and shrinking waits for a twice-strict parent on whatever spec is current. Their configs stay.
 
 run | scores | strict | cc_$ | erosion | verbosity | ast% | cloned%
 ---|---|---|---|---|---|---|---

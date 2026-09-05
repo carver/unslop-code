@@ -39,9 +39,8 @@ miss is a reading or noise.
 
 ## 2. Spec patch
 
-`/spec-ambiguity-review`, on the best-prompt run. Its output is
-`problems/<problem>-clarified.patch` and a strict run of the best prompt on the patched
-spec. Done when that run is strict, or its halt's misses have gone back through step 1.
+`/spec-ambiguity-review`, on the best-prompt run. Its output is a new spec version under
+`specs/vN/` and a strict run of the best prompt on it. Done when that run is strict, or its halt's misses have gone back through step 1.
 
 ## 3–5. Ladder and report
 

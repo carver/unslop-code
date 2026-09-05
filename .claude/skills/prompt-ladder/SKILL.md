@@ -6,18 +6,18 @@ disable-model-invocation: true
 
 # Prompt ladder
 
-Input: a problem with `problems/<problem>-clarified.patch` materialized by `bin/spec-patch`,
+Input: a problem with a spec version built by `bin/spec-patch <problem> <vN>` (`specs/README.md`),
 and a strict solve of the full generalized prompt on it. Output: in the problem's ledger, a
 rung table and miss matrix from `bin/compare-runs`, naming two minima: the lowest rung that
 strict-solves, and the lowest rung whose code quality matches the full prompt. Every run
-here is launched with `SCBENCH_PROBLEMS_PATH=$PWD/problems`, which `bin/run-config --patched`
+here is launched with `SCBENCH_PROBLEMS_PATH=$PWD/specs/<vN>/problems`, which `bin/run-config --spec <vN>`
 puts in the launch line.
 
 ## 1. Flip
 
 Just-solve on the patched spec:
 
-    bin/run-config --prompt just-solve --problem <problem> --patched --name just-solve-disambiguated
+    bin/run-config --prompt just-solve --problem <problem> --spec <vN>
 
 Done when all checkpoints have an evaluation. If every checkpoint is strict, the ladder has
 one rung: queue a repeat for noise and go to step 4.
@@ -26,7 +26,7 @@ one rung: queue a repeat for noise and go to step 4.
 
 The rungs are `configs/prompts/spectest-min*.jinja`, cumulative: each adds one rule set to
 the one below (tests first; error strictness and never-narrow; hypothesis with the generator
-floor; the ambiguity registry). Generate a config per rung with `bin/run-config --patched`
+floor; the ambiguity registry). Generate a config per rung with `bin/run-config --spec <vN>`
 and queue them lowest first. Run every rung rather than stopping at the first strict one:
 the higher rungs are the quality curve. When a miss needs a rule no rung carries, add a
 new rung above the one that failed instead of editing an existing rung, so earlier results

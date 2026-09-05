@@ -31,11 +31,11 @@ and the sandbox-local venv):
                                              # candidate AMBIGUITIES entries
     bin/judge-ambiguities run|summarize ...  # blind judges over a registry, optionally against
                                              # a spec patch
-    bin/spec-patch <problem>                 # patched problem copy under problems/, for
-                                             # SCBENCH_PROBLEMS_PATH
+    bin/spec-patch <problem> <vN>            # build spec version vN (specs/vN/*.patch over the
+                                             # cache) into specs/vN/problems/, see specs/README.md
     bin/scb-strict <config> <problem> <n>    # one checkpoint per invocation, halt on any miss
     bin/run-config --prompt P --problem X    # write a run config for one prompt on one problem
-                                             # (--patched for the problems/ copy)
+                                             # (--spec vN reads specs/vN/problems; default v0)
     bin/compare-runs <run_dir>...            # runs side by side: scores, cost, quality, miss matrix
     bin/ledger-row <run_dir>                 # after every run: the ledger row and failure summary to fill in
     bin/results [--write]                    # every complete run, one row per problem/prompt/spec -> notes/results.md

@@ -7,10 +7,10 @@ disable-model-invocation: true
 # Spec ambiguity review
 
 Input: a completed spectest run on one problem, with an AMBIGUITIES.md registry in its
-snapshots and hidden-test misses. Output: `problems/<problem>-clarified.patch`, a few
+snapshots and hidden-test misses. Output: a new spec version folder `specs/vN/` (see `specs/README.md`), a few
 reworded sentences that flip the model's reading to the hidden tests' reading, and a
 strict run against the patched spec. datagate is the worked example:
-`notes/critical-ambiguities.md`, `notes/ambiguity-judge.md`, `problems/datagate-clarified.patch`.
+`notes/critical-ambiguities.md`, `notes/ambiguity-judge.md`, `specs/v1/01-datagate-clarified.patch`.
 
 ## 1. Compile the misses
 
@@ -26,31 +26,33 @@ artifacts) or "noise" (flips between runs, like a detector on a tiny sample).
 
 ## 2. Propose the patch
 
-Write `problems/<problem>-clarified.patch` as a unified diff against the cached problem
+Make the next version folder, `specs/vN/`, by copying the current version's patches and adding
+`NN-<problem>-<slug>.patch`, a unified diff against the cached problem
 (`~/.cache/scbench/problems/<problem>`), paths `a/<problem>/checkpoint_N.md`. One hunk
 per sentence, the smallest wording that states the hidden reading, matching what the
 reference solution in `solutions/` does. Header comment lists sentence, entry id, tests.
-Done when `bin/spec-patch <problem>` applies it and prints the changed lines.
+Done when `bin/spec-patch <problem> vN` applies the folder and prints the changed lines. Never edit
+an older version's folder: runs already made against it must stay comparable.
 
 ## 3. Judge, edit, repeat
 
-    SCBENCH_PROBLEMS_PATH=$PWD/problems bin/judge-ambiguities run <run_dir> \
-      --out outputs/judge/<problem>-clarified --spec-patch problems/<problem>-clarified.patch \
+    SCBENCH_PROBLEMS_PATH=$PWD/specs/vN/problems bin/judge-ambiguities run <run_dir> \
+      --out outputs/judge/<problem>-vN --spec-patch specs/vN/01-....patch --spec-patch specs/vN/02-....patch \
       --entries T7,T9 --variants choose,rule --samples 10 --batch 5
-    bin/judge-ambiguities summarize outputs/judge/<problem>-clarified --hidden '{"T7": [1], "T9": [2]}'
+    bin/judge-ambiguities summarize outputs/judge/<problem>-vN --hidden '{"T7": [1], "T9": [2]}'
 
 Judges see the patched spec and the patched quote, never the tester's choice. Read the
 rule-first answers, not only the vote: a vote can pass while every rule reads the words
 the wrong way (datagate T56 "and charset" read as a form field), and a vote can fail while
 every rule is right because the registry's alternatives no longer describe the patched
-sentence (datagate T22). After each edit to the patch, rerun `bin/spec-patch` and judge
+sentence (datagate T22). After each edit to the patch, rerun `bin/spec-patch <problem> vN` and judge
 again into a fresh `--out`. Done when each sentence's rules describe the hidden reading in
 10 of 10, with the smallest wording that gets there.
 
 ## 4. Rerun strict
 
-    bin/run-config --prompt <best generalized prompt> --problem <problem> --patched
-    SCBENCH_PROBLEMS_PATH=$PWD/problems bin/scb-strict configs/runs/<name>.yaml <problem> <n_checkpoints>
+    bin/run-config --prompt <best generalized prompt> --problem <problem> --spec vN
+    SCBENCH_PROBLEMS_PATH=$PWD/specs/vN/problems bin/scb-strict configs/runs/<name>.yaml <problem> <n_checkpoints>
 
 One checkpoint per scb invocation; halts on the first checkpoint with any failing test.
 Done when the driver prints DONE, or halted with the failing tests, which go back to step 1.

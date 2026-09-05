@@ -149,6 +149,15 @@ def outcome(problem_dir, n):
     return sum(d["pass_counts"].values()), sum(d["total_counts"].values()), bool(d.get("infrastructure_failure"))
 
 
+def window_id(resets_at):
+    """The reset time to the nearest minute. Readings of one window report it with sub-second
+    jitter, sometimes across a second boundary, so the raw string never pairs a before with its after."""
+    if not resets_at:  # a reading at 0% carries no reset time
+        return None
+    ts = datetime.datetime.fromisoformat(resets_at).timestamp()
+    return int(round(ts / 60))
+
+
 def window_costs(records):
     """Points of the 5-hour window each finished checkpoint used, from before/after readings in the same window."""
     before = {}
@@ -156,7 +165,10 @@ def window_costs(records):
     for r in records:
         if not r.get("five_hour"):
             continue
-        key = (r["checkpoint"], r["five_hour"]["resets_at"])
+        wid = window_id(r["five_hour"].get("resets_at"))
+        if wid is None:
+            continue
+        key = (r["checkpoint"], wid)
         if r["phase"] == "before":
             before[key] = r["five_hour"]["pct"]
         elif key in before:
@@ -164,9 +176,22 @@ def window_costs(records):
     return [c for c in costs if c > 0]
 
 
-def reserve(records):
-    costs = window_costs(records)
+def reserve(records, prior=()):
+    """Window points to keep free before starting a checkpoint: this run's costliest checkpoint
+    plus a quarter, else the same from recent runs of the problem, else DEFAULT_RESERVE."""
+    costs = window_costs(records) or list(prior)
     return max(costs) * 1.25 if costs else DEFAULT_RESERVE
+
+
+def prior_costs(problem, outputs=None, runs=3):
+    """Checkpoint window costs from the most recent `runs` runs of `problem` under outputs/."""
+    outputs = outputs or HERE.parent / "outputs"
+    logs = sorted(outputs.glob(f"*/*/*/{problem}/window_usage.jsonl"), key=lambda p: p.stat().st_mtime)
+    costs = []
+    for log in logs[-runs:]:
+        records = [json.loads(l) for l in log.read_text().splitlines() if l.strip()]
+        costs += window_costs(records)
+    return costs
 
 
 def seconds_until_room(reading, needed, now):
@@ -207,6 +232,7 @@ def main():
         args = args[1:]
     target = pathlib.Path(args[0]).resolve(); problem = args[1]; total = int(args[2])
     records = []
+    prior = prior_costs(problem)
     log = None
 
     def record(n, phase):
@@ -219,9 +245,9 @@ def main():
 
     def wait_for_room(n):
         reading = record(n, "before")
-        wait = seconds_until_room(reading, reserve(records), datetime.datetime.now(datetime.timezone.utc))
+        wait = seconds_until_room(reading, reserve(records, prior), datetime.datetime.now(datetime.timezone.utc))
         if wait:
-            say(f"window at {pct(reading)} with {reserve(records):.0f} needed; sleeping {wait/60:.0f} min until reset")
+            say(f"window at {pct(reading)} with {reserve(records, prior):.0f} needed; sleeping {wait/60:.0f} min until reset")
             time.sleep(wait)
             reading = record(n, "before")
         return reading

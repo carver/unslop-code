@@ -33,12 +33,16 @@ def run_dirs(outputs=ROOT / "outputs"):
     return sorted(p.parent for p in outputs.glob("*/*/*/checkpoint_results.jsonl") if p.parent.parent.parent.name.startswith(("dev6", "spectest")))
 
 
+MODEL_NAMES = {"fable-5-1": "fable-5.1"}  # registry alias -> the version spelling the table uses
+
+
 def cell_key(run_dir):
     name = run_dir.parent.name
     for prefix in (PREFIX, "sonnet-4.6_2.1.44_high_", "fable-5_2.1.251_high_", "fable-5-1_2.1.251_high_"):
         name = name.removeprefix(prefix)
     patched = name.endswith("-disambiguated")
-    return name.removesuffix("-disambiguated"), "patched" if patched else "cached", run_dir.parent.name.split("_")[0]
+    model = run_dir.parent.name.split("_")[0]
+    return name.removesuffix("-disambiguated"), "patched" if patched else "cached", MODEL_NAMES.get(model, model)
 
 
 def mean(xs):

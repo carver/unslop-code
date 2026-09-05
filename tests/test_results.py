@@ -12,6 +12,7 @@ def test_cell_key_strips_prefix_and_reads_the_spec_from_the_suffix():
     assert rs.cell_key(Path("/o/spectest/opus-5_2.1.251_high_spectest-min4-disambiguated/20260903T1328")) == ("spectest-min4", "patched", "opus-5")
     assert rs.cell_key(Path("/o/dev6-opus5/opus-5_2.1.251_high_just-solve/20260830T0354")) == ("just-solve", "cached", "opus-5")
     assert rs.cell_key(Path("/o/dev6/sonnet-4.6_2.1.44_high_just-solve/20260829T1910")) == ("just-solve", "cached", "sonnet-4.6")
+    assert rs.cell_key(Path("/o/dev6-fable51/fable-5-1_2.1.251_high_just-solve/20260905T0147")) == ("just-solve", "cached", "fable-5.1")
 
 
 def test_table_averages_a_cell_over_its_runs():

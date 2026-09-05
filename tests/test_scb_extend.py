@@ -201,3 +201,40 @@ def test_overloaded_means_capacity_errors_and_no_tool_use(tmp_path):
     (d / "stdout.jsonl").write_text('{"type":"assistant","message":{"content":[{"type":"tool_use","name":"Bash"}]}}\n{"type":"assistant","error":"server_error"}\n')
     assert not ext.overloaded(tmp_path / "checkpoint_1")
     assert not ext.overloaded(tmp_path / "checkpoint_9")
+
+
+def _record(ckpt, phase, pct, resets="2026-09-05T16:00:00+00:00"):
+    return {"checkpoint": ckpt, "phase": phase, "five_hour": {"pct": pct, "resets_at": resets}}
+
+
+def test_reserve_falls_back_to_prior_runs_then_to_the_default():
+    own = [_record("checkpoint_1", "before", 10), _record("checkpoint_1", "after", 18)]
+    assert ext.reserve(own, prior=[3.0]) == 10.0
+    assert ext.reserve([], prior=[3.0, 4.0]) == 5.0
+    assert ext.reserve([], prior=[]) == ext.DEFAULT_RESERVE
+
+
+def test_prior_costs_reads_the_most_recent_runs_of_the_problem(tmp_path):
+    import json
+    for i, (a, b) in enumerate([(0, 2), (10, 13), (20, 26)]):
+        log = tmp_path / "g" / "p" / f"2026090{i}T0000" / "datagate" / "window_usage.jsonl"
+        log.parent.mkdir(parents=True)
+        log.write_text("\n".join(json.dumps(r) for r in (_record("checkpoint_1", "before", a), _record("checkpoint_1", "after", b))) + "\n")
+        import os, time; os.utime(log, (1000 + i, 1000 + i))
+    other = tmp_path / "g" / "p" / "20260901T0000" / "xjq" / "window_usage.jsonl"; other.parent.mkdir(parents=True)
+    other.write_text(json.dumps(_record("checkpoint_1", "before", 0)) + "\n" + json.dumps(_record("checkpoint_1", "after", 40)) + "\n")
+    assert sorted(ext.prior_costs("datagate", outputs=tmp_path, runs=2)) == [3, 6]
+    assert ext.prior_costs("nothing", outputs=tmp_path) == []
+
+
+def test_window_costs_pairs_readings_despite_reset_time_jitter():
+    records = [_record("checkpoint_1", "before", 5.0, "2026-09-05T11:09:59.702269+00:00"),
+               _record("checkpoint_1", "after", 8.0, "2026-09-05T11:10:00.113741+00:00"),
+               _record("checkpoint_2", "before", 8.0, "2026-09-05T11:09:59.513741+00:00"),
+               _record("checkpoint_2", "after", 10.0, "2026-09-05T11:09:59.9+00:00")]
+    assert ext.window_costs(records) == [3.0, 2.0]
+
+
+def test_window_costs_skips_readings_without_a_reset_time():
+    records = [_record("checkpoint_1", "before", 0.0, None), _record("checkpoint_1", "after", 3.0)]
+    assert ext.window_costs(records) == []

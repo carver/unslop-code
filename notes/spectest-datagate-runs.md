@@ -282,6 +282,8 @@ Inserted 2026-09-05 07:40Z between the two v9 runs, to use Fable credits before 
 reset: Fable 5.1 just-solve on xjq, file_merger, mvvault, rejector and sith (configs
 `dev6-fable51-<problem>.yaml`, output under `outputs/dev6-fable51/`); their ledger is
 `notes/dev6-fable5.md`'s successor, not this file.
+Added 2026-09-05 11:50Z after sith and before the second Opus v9 run: Fable 5.1 on v9 with the
+patched datagate spec (`spectest-v9-disambiguated-datagate-fable51.yaml`, the Fable agent config).
 
 run | scores | strict | cc_$ | erosion | verbosity | ast% | cloned%
 ---|---|---|---|---|---|---|---

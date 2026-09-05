@@ -266,6 +266,8 @@ amendments below; as of 2026-09-04 13:00Z the queue holds reruns of every one-ru
 ABCHJ; prompts and configs are in `configs/`) were queued behind them and removed at 16:30Z
 once the ABCHJK rerun lost a test at checkpoint 1: the user wants drops taken only from a
 prompt that strict-solves twice.
+Added 2026-09-05 06:30Z behind the v8 rerun: two runs of v9 (v8A plus the Differs score in
+every registry entry, `spectest-v9.jinja`; chunks in `min9-chunks/`).
 
 run | scores | strict | cc_$ | erosion | verbosity | ast% | cloned%
 ---|---|---|---|---|---|---|---

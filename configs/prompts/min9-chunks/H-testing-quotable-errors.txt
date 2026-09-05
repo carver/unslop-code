@@ -1,0 +1,2 @@
+Critically: The only time a test should expect an error result is if the spec specifically requires an error.
+You should be able to quote where the spec demands it.

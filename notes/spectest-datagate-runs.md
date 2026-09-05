@@ -239,6 +239,11 @@ every "disambiguated" run read, v2 = v1 plus "Only a single, exact `enrich=yes` 
 enrichment", which six of six blind judges read as any repetition keeps enrichment off. The
 results table's spec column now says v0/v1/v2, taken from each run's catalog record, so the v1
 rows above stay comparable and no run's spec changes under it. New runs are named -specvN.
+v2 also carries "Delimiter must be inferred from input, if present" (2026-09-05 19:20Z): six of six
+blind judges read a delimiter-free header-plus-row file as a one-column table and kept a one-line
+JSON body at 400; all six would also accept delimiter-free prose, which no test checks. Queued on v2
+behind the Fable v9 run: two Opus v9 runs, then min9 ABDEFHJKMNOPR, ABCDEFGHIJKMNOPQR and DEFJKOP
+(ABCHJK's rules plus the registry procedure, 391 words).
 
 ## Harness patches that exist (all in `patches/`, all applied in the checkout)
 

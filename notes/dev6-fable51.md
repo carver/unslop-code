@@ -12,7 +12,7 @@ and Fable 5 columns are copied here for comparison.
 | problem | diff | Opus 5 | Fable 5 | Fable 5.1 | agent min |
 |---|---|---|---|---|---|
 | xjq | Easy | 1/1/4 of 5, 6.13 | 1/2/5 of 5, 7.43 | 1/2/5 of 5, 1.49 | 12 |
-| file_merger | Medium | 1/2/2 of 4, 25.82 | 1/2/2 of 4, 21.44 | | |
+| file_merger | Medium | 1/2/2 of 4, 25.82 | 1/2/2 of 4, 21.44 | 0/1/2 of 4, 3.28 | 34 |
 | mvvault | Medium | 1/2/6 of 6, 11.82 | 0/1/4 of 6, 17.61 | | |
 | rejector | Hard | 0/1/2 of 5, 35.55 | 1/1/1 of 5, 32.23 | | |
 | sith | Hard | 1/1/3 of 6, 51.77 | 1/1/3 of 6, 80.97 | | |
@@ -24,3 +24,9 @@ and Fable 5 columns are copied here for comparison.
   string preserving its element, redundant text extraction over mixed pipe paths), at a
   fifth of the cost and twelve minutes of agent time. Quality better on every metric:
   erosion 0.532 against 0.684, verbosity 0.364 against 0.487, ast-grep 0.346 against 0.466.
+- file_merger: more tests than Fable 5 at every checkpoint after the first, 45/46, 83/86,
+  101/104, 138/147 against 46/46, 75/86, 93/104, 129/147, but one strict checkpoint fewer:
+  a strict-mode error case (a nonstandard boolean accepted, exit 0 where the test wants a
+  failure) missed at checkpoint 1 and carried through all four. At checkpoint 4 the nine
+  misses are seven shared with Fable 5 plus that one and a map-lookup error case; Fable 5
+  had eighteen. Cost $3.28 against $21.44. Quality a little better on every metric.

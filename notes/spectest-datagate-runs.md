@@ -37,6 +37,7 @@ tests passed / total at each checkpoint (regressions included), from each checkp
 | v9 disambiguated | `…spectest-v9-disambiguated/20260904T2335` | v8A plus a Differs score in every registry entry (`spectest-v9.jinja`, 735 words) + spec patch | 50/50, 122/122, 174/174, 233/233, 276/276, 353/353, 405/405 | complete 2026-09-05; 0 misses, 7/7 strict, $32, 111 min. 96 registry entries, every one scored; Differs spread 0 to 45 with 29 at 25 or above, the single-column question at 45 (chose accept, named the 400 as the author's likely reading) and the cache flag at 30 with the author's `.strip().lower()` written out one checkpoint before the spec said "trimmed". Quality: erosion 0.119, verbosity 0.172, ast 0.079, cloned 0.088 |
 | v9 disambiguated, repeat | `…spectest-v9-disambiguated/20260905T0804` | same config as the first v9 run | 50/50, 122/122, 174/174, 233/233, 276/276, 353/353, 404/405 | complete 2026-09-05; 1 miss, 6/7 strict, $32, 102 min. `test_duplicate_enrich_params_do_not_enable_metadata[yes-then-no]`, the v8B miss: first value wins, so `enrich=yes&enrich=no` enables enrichment. Registry entry T94 chose that reading, scored it Differs 20 and named the exact failing case as the residual risk ("a getlist-based author would keep enrichment off"). 110 entries all scored, 0 to 45; 20 is the median, 64 entries at or above it. Quality: erosion 0.103, verbosity 0.142, ast 0.072, cloned 0.062 |
 | v9 disambiguated, Fable 5.1 | `…fable-5-1_2.1.251_high_spectest-v9-disambiguated/20260905T1055` | v9 prompt on spec v1 with model fable-5-1 and the Fable agent config | 44/50, 116/122, 168/174, 224/233, 267/276, 344/353, 394/405 | complete 2026-09-05; 11 misses, 0/7 strict, $13, 139 min. The single-column cascade, test for test the same eleven as ABCFGHJK: entry T5 chose the 400 on the Sniffer argument and scored it Differs 30, naming the accepted single-column file as the risk. Cache flag closed at ckpt 6. 67 registry entries all scored, 0 to 50. Quality: erosion 0.158, verbosity 0.188, ast 0.070, cloned 0.104 |
+| v9 on spec v2 | `…spectest-v9-specv2/20260905T1336` | v9 prompt on spec v2 (v1 plus "a single, exact `enrich=yes`" and "Delimiter ... if present") | 50/50, 122/122, 174/174, 233/233, 276/276, 353/353, 405/405 | complete 2026-09-05; 0 misses, 7/7 strict, $40, 118 min. First run on v2. Registry entry T92 on the enrich sentence: "a single is what excludes the repeat", Differs 12 (the v1 runs put this question at 20 and 30); the delimiter entry T14 "handles the one-column case the spec never excludes". 98 entries all scored. Quality: erosion 0.175, verbosity 0.138, ast 0.062, cloned 0.070 |
 
 On hidden tests, v4 through v7 are flat within
 the latin-1 noise (ckpt 1: 50, 49, 50, 49 of 50; ckpt 2: 119, cut, 119, 118 of 122), and
@@ -194,6 +195,8 @@ matrix, and the reading. Failure sets in brief:
   - v9 on Fable 5.1 (394): the single-column cascade, identical to ABCFGHJK's eleven. Entry T5
     took the 400 with the Sniffer argument and a Differs of 30 naming the losing case. Nothing
     else missed; the cache flag closed at checkpoint 6.
+  - v9 on spec v2 (405): strict. The two v2 sentences each show up in the registry as a closed
+    question: repeated enrich at Differs 12, the one-column file handled in the delimiter entry.
 
 ## Did the v8 testing hints help, or was it the zombie fix?
 
@@ -530,3 +533,11 @@ flagged it at 30 with the losing case named, as it did on the Opus run that took
 $13 against Opus's $32 on the same prompt. This is the last run on v1; problems/ is now a
 symlink to specs/v1/problems, and the queue continues on v2, whose delimiter sentence is
 aimed at exactly this reading.
+
+Amendment 2026-09-05 23:00Z, first run on spec v2 (v9 prompt): 405/405, 7/7 strict, $40, 118
+min. Both v2 sentences read as intended by the agent that had to implement them. The enrich
+entry, T92, says "'a single' is what excludes the repeat" and scores the question 12, where
+the two v1 runs of the same prompt scored it 30 and 20 and one of them took the wrong side.
+The delimiter entry, T14, handles the one-column file as a case the spec no longer leaves
+open. Cost is up, $40 against $32 for the v1 runs, inside the run-to-run band. Second v2 run
+is job 28, then the three min9 subsets on v2.

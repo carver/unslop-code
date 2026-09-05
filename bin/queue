@@ -4,7 +4,10 @@
     bin/queue add <run-config.yaml> [n_checkpoints]   enqueue `scb-extend --new` for the config
     bin/queue                                          status (pueue status)
     bin/queue log [id]                                 a job's output (pueue log)
-    bin/queue kill <id>                                stop a job; then check `docker ps`
+    bin/queue kill <id>                                stop a job and clean up after it: a queued job is
+                                                       removed; a running one is killed, its surviving
+                                                       worker processes and agent container removed,
+                                                       and the queue resumed with the next job
     bin/queue <anything else>                          passed to pueue as-is
 
 A config written by bin/run-config for the patched spec carries SCBENCH_PROBLEMS_PATH in
@@ -12,7 +15,7 @@ its launch comment; `add` reads that, the problem from the config, and the check
 count from the catalog. Jobs run through pueue (install.py installs it), whose default
 group runs one task at a time, so the 5-hour window is drawn on by one run only.
 """
-import os, pathlib, re, subprocess, sys
+import json, os, pathlib, re, signal, subprocess, sys, time
 
 import yaml
 
@@ -41,12 +44,114 @@ def job_for(config_path, n=None):
     return label, [str(ROOT / "bin" / "scb-extend"), "--new", str(config_path), problem, str(n)], env
 
 
+def state_of(task):
+    """A pueue task's state name: its status is a string or a one-key object."""
+    s = task["status"]
+    return s if isinstance(s, str) else next(iter(s))
+
+
+def descendants(roots, table):
+    """`roots` plus every process below them, from a (pid, ppid) table."""
+    found = set(roots)
+    while True:
+        more = {pid for pid, ppid in table if ppid in found and pid not in found}
+        if not more:
+            return found
+        found |= more
+
+
+def job_roots(command, table, self_pid):
+    """Pids running the job's command: those whose argv names its config file.
+
+    The wrapper's own argv carries only the task id, so it never matches itself; the
+    check against `self_pid` and "bin/queue" is belt and braces."""
+    m = re.search(r"(\S+\.yaml)", command)
+    key = pathlib.Path(m.group(1)).name if m else command[:80]
+    return {pid for pid, _, args in table if key in args and pid != self_pid and "bin/queue" not in args}
+
+
+def agent_containers(ps_lines):
+    """Container ids from `docker ps --format '{{.ID}} {{.Image}}'` lines whose image is a slop-code agent."""
+    return [line.split()[0] for line in ps_lines if len(line.split()) > 1 and line.split()[1].startswith("slop-code:")]
+
+
+def process_table():
+    out = subprocess.run(["ps", "-eo", "pid,ppid,args"], capture_output=True, text=True, check=True).stdout
+    rows = []
+    for line in out.splitlines()[1:]:
+        parts = line.split(None, 2)
+        if len(parts) >= 2:
+            rows.append((int(parts[0]), int(parts[1]), parts[2] if len(parts) > 2 else ""))
+    return rows
+
+
+def alive(pid):
+    try:
+        os.kill(pid, 0)
+        return True
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True
+
+
+def kill_job(task_id):
+    """Stop one job without leaving a worker or an agent container behind.
+
+    Killing only the pueue task leaves slop-code's spawned worker (it reparents to init) and
+    the agent's docker container running, both still spending the subscription. The queue
+    is paused while cleaning up so the next job cannot start a container that would then
+    look like an orphan; with one job at a time in the group, once the killed job's
+    processes are gone every agent container is an orphan."""
+    status = json.loads(subprocess.run([PUEUE, "status", "--json"], capture_output=True, text=True, check=True).stdout)
+    tasks = status["tasks"]
+    task = tasks.get(str(task_id))
+    if task is None:
+        raise SystemExit(f"queue: no task {task_id}")
+    state = state_of(task)
+    if state == "Queued":
+        subprocess.run([PUEUE, "remove", str(task_id)], check=True)
+        print(f"removed queued task {task_id}")
+        return
+    if state != "Running":
+        raise SystemExit(f"queue: task {task_id} is {state}; nothing to kill")
+    others = [i for i, t in tasks.items() if i != str(task_id) and state_of(t) == "Running"]
+    subprocess.run([PUEUE, "pause", "--wait"], check=True, capture_output=True)
+    try:
+        table = process_table()
+        pids = descendants(job_roots(task["command"], [(p, pp, a) for p, pp, a in table], os.getpid()), [(p, pp) for p, pp, _ in table])
+        subprocess.run([PUEUE, "kill", str(task_id)], check=True, capture_output=True)
+        time.sleep(3)
+        for sig in (signal.SIGTERM, signal.SIGKILL):
+            survivors = sorted(p for p in pids if alive(p))
+            for p in survivors:
+                try:
+                    os.kill(p, sig)
+                except ProcessLookupError:
+                    pass
+            if survivors:
+                print(f"{sig.name} to surviving job processes: {survivors}")
+                time.sleep(5)
+        if others:
+            print(f"tasks {others} still running; leaving containers alone")
+        else:
+            ps = subprocess.run(["docker", "ps", "--format", "{{.ID}} {{.Image}}"], capture_output=True, text=True).stdout.splitlines()
+            for c in agent_containers(ps):
+                subprocess.run(["docker", "rm", "-f", c], check=True, capture_output=True)
+                print(f"removed agent container {c}")
+    finally:
+        subprocess.run([PUEUE, "start"], check=True, capture_output=True)
+    print(f"killed task {task_id}; queue resumed")
+
+
 def main():
     args = sys.argv[1:]
     if args and args[0] == "add":
         label, argv, env = job_for(args[1], int(args[2]) if len(args) > 2 else None)
         cmd = " ".join(f"{k}={v}" for k, v in env.items()) + (" " if env else "") + " ".join(argv)
         subprocess.run([PUEUE, "add", "--label", label, "--working-directory", str(ROOT), "--", cmd], check=True)
+    elif args[:1] == ["kill"] and len(args) == 2:
+        kill_job(int(args[1]))
     elif not args:
         subprocess.run([PUEUE, "status"], check=True)
     else:

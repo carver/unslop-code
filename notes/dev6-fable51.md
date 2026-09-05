@@ -13,7 +13,7 @@ and Fable 5 columns are copied here for comparison.
 |---|---|---|---|---|---|
 | xjq | Easy | 1/1/4 of 5, 6.13 | 1/2/5 of 5, 7.43 | 1/2/5 of 5, 1.49 | 12 |
 | file_merger | Medium | 1/2/2 of 4, 25.82 | 1/2/2 of 4, 21.44 | 0/1/2 of 4, 3.28 | 34 |
-| mvvault | Medium | 1/2/6 of 6, 11.82 | 0/1/4 of 6, 17.61 | | |
+| mvvault | Medium | 1/2/6 of 6, 11.82 | 0/1/4 of 6, 17.61 | 0/2/5 of 6, 5.57 | 54 |
 | rejector | Hard | 0/1/2 of 5, 35.55 | 1/1/1 of 5, 32.23 | | |
 | sith | Hard | 1/1/3 of 6, 51.77 | 1/1/3 of 6, 80.97 | | |
 
@@ -30,3 +30,10 @@ and Fable 5 columns are copied here for comparison.
   failure) missed at checkpoint 1 and carried through all four. At checkpoint 4 the nine
   misses are seven shared with Fable 5 plus that one and a map-lookup error case; Fable 5
   had eighteen. Cost $3.28 against $21.44. Quality a little better on every metric.
+- mvvault: identical to Fable 5 through checkpoint 3 (the same two sync-validation error
+  cases, then the same skip-downloaded-candidate miss), then ahead: 151/155 and 181/185
+  against 150 and 172, passing the chart payload and media-view cases Fable 5 lost at
+  checkpoint 5. The final checkpoint is a fresh 42-test suite where 5.1 lost 39/42 to Fable
+  5's 41/42: both miss POST create, 5.1 also fails two atomic-migration error cases. No
+  strict checkpoint for either; isolated 2 and core 5 of 6 against 1 and 4. Cost $5.57
+  against $17.61. Erosion 0.222 against 0.739, the largest quality gap of the three so far.

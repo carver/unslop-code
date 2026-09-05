@@ -392,7 +392,7 @@ def cmd_run(args, dry: bool) -> None:
     problem = args.problem or infer_problem(Path(args.run_dir))
     entries = select_entries(load_entries(Path(args.run_dir), problem), args.entries)
     if args.spec_patch:
-        changed = rewrite_quotes(entries, patch_sentences(Path(args.spec_patch).read_text()))
+        changed = rewrite_quotes(entries, patch_sentences("\n".join(Path(f).read_text() for f in args.spec_patch)))
         print(f"spec patch {args.spec_patch}: problem root {PROBLEM_ROOT}; rewrote quotes in {', '.join(changed) or 'no entries'}", flush=True)
     variants = args.variants.split(",") if args.variants else list(VARIANTS)
     for v in variants:
@@ -524,7 +524,7 @@ def main() -> None:
         p.add_argument("--problem", help="problem name inside the run dir (inferred when there is one)")
         p.add_argument("--entries"); p.add_argument("--variants"); p.add_argument("--samples", type=int, default=5)
         p.add_argument("--batch", type=int, default=15)
-        p.add_argument("--spec-patch", help="unified diff of the specs; rewrites matching quoted sentences in entries")
+        p.add_argument("--spec-patch", action="append", default=[], help="unified diff of the specs; repeatable (specs/vN/*.patch); rewrites matching quoted sentences in entries")
         p.add_argument("--workers", type=int, default=4); p.add_argument("--pause-at", type=float, default=85)
         p.add_argument("--check-every", type=int, default=5)
     s = sub.add_parser("summarize"); s.add_argument("out")

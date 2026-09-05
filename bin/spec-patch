@@ -1,22 +1,33 @@
 #!/usr/bin/env bash
-# Materialize a patched copy of a benchmark problem under problems/ and verify it.
+# Materialize one version of a benchmark problem's spec and verify the patches apply.
 #
-# Usage: bin/spec-patch <problem> [patch]      default patch: problems/<problem>-clarified.patch
+# Usage: bin/spec-patch <problem> <vN>
 #
-# Copies ~/.cache/scbench/problems/<problem> to problems/<problem> (gitignored: benchmark
-# data), applies the patch, and prints the changed sentences. Run the benchmark against the
-# copy with SCBENCH_PROBLEMS_PATH=$PWD/problems. Re-run after every edit to the patch; the
-# copy is rebuilt from scratch each time.
+# Spec versions live in specs/vN/: v0 is the cached benchmark spec (nothing to build), and
+# every later version is a folder of unified diffs against the cache, applied in filename
+# order (01-<problem>-<slug>.patch, 02-...). Each folder is self-contained: v2 carries v1's
+# patch plus its own. The built copy lands in specs/vN/problems/<problem>/ (not tracked), and
+# a run selects it with SCBENCH_PROBLEMS_PATH=$PWD/specs/vN/problems. Re-run after editing a
+# patch; a hunk that fails to apply fails the build.
 set -euo pipefail
-here="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-problem=$1; patch_file=${2:-$here/problems/$problem-clarified.patch}
+here=$(cd "$(dirname "$0")/.." && pwd)
+problem=${1:-}; version=${2:-}
+[ -n "$problem" ] && [ -n "$version" ] || { echo "usage: bin/spec-patch <problem> <vN>" >&2; exit 2; }
 src="${SCBENCH_CACHE_PROBLEMS:-$HOME/.cache/scbench/problems}/$problem"
+vdir="${SCBENCH_SPECS_ROOT:-$here/specs}/$version"
 [ -d "$src" ] || { echo "spec-patch: no cached problem at $src" >&2; exit 2; }
-[ -f "$patch_file" ] || { echo "spec-patch: no patch at $patch_file" >&2; exit 2; }
-grep -q "^problems/$problem/" "$here/.gitignore" || echo "problems/$problem/" >> "$here/.gitignore"
-rm -rf "$here/problems/$problem"
-cp -r "$src" "$here/problems/$problem"
-patch -p1 -d "$here/problems" --quiet < "$patch_file"
-echo "problems/$problem rebuilt from the cache with $(basename "$patch_file"); changed lines:"
-grep -E '^\+[^+]' "$patch_file" | cut -c1-140
-echo "run with: SCBENCH_PROBLEMS_PATH=$here/problems"
+[ -d "$vdir" ] || { echo "spec-patch: no spec version at $vdir" >&2; exit 2; }
+root="$vdir/problems"
+mkdir -p "$root"
+rm -rf "$root/$problem"
+cp -r "$src" "$root/$problem"
+applied=0
+for patch_file in "$vdir"/[0-9][0-9]-"$problem"-*.patch; do
+  [ -f "$patch_file" ] || continue
+  patch -p1 -d "$root" --quiet < "$patch_file"
+  echo "$(basename "$patch_file"): changed lines"
+  grep -E '^\+[^+]' "$patch_file" | cut -c1-140
+  applied=$((applied + 1))
+done
+echo "specs/$version/problems/$problem rebuilt from the cache with $applied patch(es)"
+echo "run with: SCBENCH_PROBLEMS_PATH=$root"

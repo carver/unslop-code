@@ -1,21 +1,28 @@
 #!/usr/bin/env python3
 """Write a run config for one prompt on one problem, so a new experiment is one command.
 
-Usage: bin/run-config --prompt <name|path> --problem <problem> [--patched] [--name <run-name>]
+Usage: bin/run-config --prompt <name|path> --problem <problem> [--spec vN] [--name <run-name>]
 
 --prompt   a template under configs/prompts/ (by basename, .jinja optional), a path to one,
            or a benchmark prompt name like just-solve
---patched  the run is meant for the patched spec copy under problems/ (bin/spec-patch); the
-           run name gets a -disambiguated suffix and the printed launch command selects it
+--spec vN  which spec version the run reads: v0 is the cached benchmark spec (default), vN a
+           folder of patches under specs/vN/ built by bin/spec-patch; the run name gets a
+           -specvN suffix and the printed launch command selects the built copy
+--patched  the old spelling of --spec v1 (those runs were named -disambiguated)
 --name     run-directory name; default is the prompt's basename plus the suffix
 
 Writes configs/runs/<name>-<problem>-opus5.yaml (same agent, model and thinking as every
 spectest run) and prints the launch command with the problem's checkpoint count.
 """
-import argparse, os, pathlib, sys
+import argparse, os, pathlib, re, sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-CATALOG = pathlib.Path(os.environ.get("SCBENCH_PROBLEMS_PATH", os.path.expanduser("~/.cache/scbench/problems")))
+CACHE = pathlib.Path(os.environ.get("SCBENCH_PROBLEMS_PATH", os.path.expanduser("~/.cache/scbench/problems")))
+
+
+def problems_root(spec):
+    """Where a run of spec version `spec` reads its problems from."""
+    return CACHE if spec == "v0" else ROOT / "specs" / spec / "problems"
 
 
 def resolve_prompt(prompt):
@@ -31,17 +38,18 @@ def resolve_prompt(prompt):
     return prompt
 
 
-def run_name(prompt, patched, name=None):
+def run_name(prompt, spec, name=None):
     base = name or pathlib.Path(prompt).name.removesuffix(".jinja")
-    return base + ("-disambiguated" if patched and not base.endswith("-disambiguated") else "")
+    suffix = f"-spec{spec}"
+    return base + ("" if spec == "v0" or base.endswith(suffix) else suffix)
 
 
 def checkpoint_count(problem):
-    return len(list((CATALOG / problem).glob("checkpoint_*.md")))
+    return len(list((CACHE / problem).glob("checkpoint_*.md")))
 
 
-def config_text(prompt_line, problem, name, patched, launch):
-    where = "the patched spec copy under problems/ (bin/spec-patch)" if patched else "the cached spec"
+def config_text(prompt_line, problem, name, spec, launch):
+    where = "the cached spec (v0)" if spec == "v0" else f"spec {spec}, specs/{spec}/ built by bin/spec-patch"
     return f"""# {name} on {problem}, against {where}. Written by bin/run-config.
 # Same agent, model and thinking as every spectest run.
 #
@@ -63,13 +71,18 @@ save_template: spectest/${{model.name}}_${{agent.version}}_${{thinking}}_{name}/
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--prompt", required=True); ap.add_argument("--problem", required=True)
-    ap.add_argument("--patched", action="store_true"); ap.add_argument("--name")
+    ap.add_argument("--spec", default="v0"); ap.add_argument("--patched", action="store_true"); ap.add_argument("--name")
     a = ap.parse_args()
-    name = run_name(a.prompt, a.patched, a.name)
+    spec = "v1" if a.patched else a.spec
+    if not re.fullmatch(r"v\d+", spec):
+        raise SystemExit(f"run-config: --spec takes v0, v1, ...; got {spec!r}")
+    if spec != "v0" and not (ROOT / "specs" / spec).is_dir():
+        raise SystemExit(f"run-config: no specs/{spec}/ folder; add its patches, then bin/spec-patch {a.problem} {spec}")
+    name = run_name(a.prompt, spec, a.name)
     out = ROOT / "configs" / "runs" / f"{name}-{a.problem}-opus5.yaml"
-    env = f"SCBENCH_PROBLEMS_PATH=$PWD/problems " if a.patched else ""
+    env = "" if spec == "v0" else f"SCBENCH_PROBLEMS_PATH=$PWD/specs/{spec}/problems "
     launch = f"{env}bin/scb-extend --new {out.relative_to(ROOT)} {a.problem} {checkpoint_count(a.problem) or '<n>'}"
-    out.write_text(config_text(resolve_prompt(a.prompt), a.problem, name, a.patched, launch))
+    out.write_text(config_text(resolve_prompt(a.prompt), a.problem, name, spec, launch))
     print(out.relative_to(ROOT)); print(launch)
 
 

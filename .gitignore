@@ -2,5 +2,6 @@ outputs/
 slop-code-bench/
 __pycache__/
 .pytest_cache/
-problems/datagate/
+problems
+specs/*/problems/
 todo.md

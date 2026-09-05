@@ -1,0 +1,11 @@
+--- a/datagate/checkpoint_7.md	2026-09-05 11:35:55.494473227 -0700
++++ b/datagate/checkpoint_7.md	2026-09-05 11:35:55.495942510 -0700
+@@ -7,7 +7,7 @@
+ 
+ ### Enrichment trigger
+ 
+-Only exact `enrich=yes` enables enrichment.
++Only a single, exact `enrich=yes` enables enrichment.
+ All other states keep enrichment off.
+ Success response remains:
+ 

@@ -8,12 +8,12 @@ quality means, averaged over the complete runs of that cell with the run count; 
 show a decimal mean and a min-max range only when the runs in the cell disagree. A run is
 complete when it has every checkpoint the catalog lists for the problem; partial runs are
 listed separately with the checkpoint they reached. The prompt is the run directory's name
-after the model/agent/thinking prefix; "patched" means the run name ends in -disambiguated
+after the model/agent/thinking prefix; spec is v0 (cached), v1, v2, ... from the run's catalog record
 (a run against problems/<problem>-clarified.patch). Runs under outputs/dev6* and
 outputs/spectest are scanned; a run is any directory holding checkpoint_results.jsonl.
 Interpretation belongs in the per-problem ledger; this file is the numbers.
 """
-import collections, os, pathlib, sys, types
+import collections, json, os, pathlib, re, sys, types
 
 HERE = pathlib.Path(__file__).resolve().parent
 ROOT = HERE.parent
@@ -36,13 +36,31 @@ def run_dirs(outputs=ROOT / "outputs"):
 MODEL_NAMES = {"fable-5-1": "fable-5.1"}  # registry alias -> the version spelling the table uses
 
 
+SUFFIX = re.compile(r"-(disambiguated|specv\d+)$")
+
+
+def spec_of(run_dir):
+    """The spec version a run read: v0 is the cached benchmark spec, vN a specs/vN/ build.
+
+    slop-code records the catalog in problem_catalog.json: the cache's version tag, or
+    "env-override" with the SCBENCH_PROBLEMS_PATH it was given. Runs made before specs/
+    existed read the patched copy at problems/, which was v1."""
+    try:
+        record = json.loads((run_dir / "problem_catalog.json").read_text())
+    except (OSError, ValueError):
+        return "v1" if run_dir.parent.name.endswith("-disambiguated") else "v0"
+    if record.get("version") != "env-override":
+        return "v0"
+    m = re.search(r"/specs/(v\d+)/problems/?$", record.get("commit", ""))
+    return m.group(1) if m else "v1"
+
+
 def cell_key(run_dir):
     name = run_dir.parent.name
     for prefix in (PREFIX, "sonnet-4.6_2.1.44_high_", "fable-5_2.1.251_high_", "fable-5-1_2.1.251_high_"):
         name = name.removeprefix(prefix)
-    patched = name.endswith("-disambiguated")
     model = run_dir.parent.name.split("_")[0]
-    return name.removesuffix("-disambiguated"), "patched" if patched else "cached", MODEL_NAMES.get(model, model)
+    return SUFFIX.sub("", name), spec_of(run_dir), MODEL_NAMES.get(model, model)
 
 
 def mean(xs):

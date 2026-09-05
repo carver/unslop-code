@@ -232,6 +232,14 @@ In a later phase:
   differently from its own tester?" for any spec before implementation. Sentences where
   votes split or where the tester's choice is unanimous-but-untested are the lint output.
 
+## Spec versions (2026-09-05)
+
+Specs are versioned in `specs/` (`specs/README.md`): v0 the cache, v1 the five-sentence patch
+every "disambiguated" run read, v2 = v1 plus "Only a single, exact `enrich=yes` enables
+enrichment", which six of six blind judges read as any repetition keeps enrichment off. The
+results table's spec column now says v0/v1/v2, taken from each run's catalog record, so the v1
+rows above stay comparable and no run's spec changes under it. New runs are named -specvN.
+
 ## Harness patches that exist (all in `patches/`, all applied in the checkout)
 
 stream-parser string message; stop-after-checkpoint; agent death detection + prompt

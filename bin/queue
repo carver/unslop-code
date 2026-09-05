@@ -17,7 +17,7 @@
                                                        and the queue resumed with the next job
     bin/queue <anything else>                          passed to pueue as-is
 
-A config written by bin/run-config for the patched spec carries SCBENCH_PROBLEMS_PATH in
+A config written by bin/run-config for a spec version carries SCBENCH_PROBLEMS_PATH in
 its launch comment; `add` reads that, the problem from the config, and the checkpoint
 count from the catalog. Jobs run through pueue (install.py installs it), whose default
 group runs one task at a time, so the 5-hour window is drawn on by one run only.
@@ -30,24 +30,35 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 PUEUE = pathlib.Path.home() / ".local" / "bin" / "pueue"
 
 
-def catalog(patched):
-    return ROOT / "problems" if patched else pathlib.Path(os.environ.get("SCBENCH_PROBLEMS_PATH", os.path.expanduser("~/.cache/scbench/problems")))
+CACHE = pathlib.Path(os.environ.get("SCBENCH_PROBLEMS_PATH", os.path.expanduser("~/.cache/scbench/problems")))
+
+
+def problems_root(config_text):
+    """The problems root a config's launch line selects, or the cache when it selects none."""
+    m = re.search(r"^#.*SCBENCH_PROBLEMS_PATH=(\S+)", config_text, re.M)
+    return pathlib.Path(m.group(1).replace("$PWD", str(ROOT))) if m else CACHE
+
+
+def run_problems_root(run_dir):
+    """The problems root a finished or stopped run read, from the catalog record slop-code writes."""
+    record = json.loads((run_dir / "problem_catalog.json").read_text())
+    return pathlib.Path(record["commit"]) if record.get("version") == "env-override" else CACHE
 
 
 def job_for(config_path, n=None):
     """(label, argv, env) to run one config through bin/scb-extend."""
     config_path = pathlib.Path(config_path).resolve()
     text = config_path.read_text()
-    patched = bool(re.search(r"^#.*SCBENCH_PROBLEMS_PATH=", text, re.M))
+    root = problems_root(text)
     problems = yaml.safe_load(text)["problems"]
     if len(problems) != 1:
         raise SystemExit(f"queue: {config_path.name} lists {len(problems)} problems; one per run")
     problem = problems[0]
-    n = n or len(list((catalog(patched) / problem).glob("checkpoint_*.md")))
+    n = n or len(list((root / problem).glob("checkpoint_*.md")))
     if not n:
-        raise SystemExit(f"queue: no checkpoints found for {problem}; pass n_checkpoints")
+        raise SystemExit(f"queue: no checkpoints found for {problem} under {root}; build it with bin/spec-patch or pass n_checkpoints")
     label = config_path.name.removesuffix(".yaml").removesuffix("-opus5")
-    env = {"SCBENCH_PROBLEMS_PATH": str(ROOT / "problems")} if patched else {}
+    env = {} if root == CACHE else {"SCBENCH_PROBLEMS_PATH": str(root)}
     return label, [str(ROOT / "bin" / "scb-extend"), "--new", str(config_path), problem, str(n)], env
 
 
@@ -59,13 +70,13 @@ def resume_job(run_dir, n=None):
     if len(problems) != 1:
         raise SystemExit(f"queue: {run_dir.name} lists {len(problems)} problems; one per run")
     problem = problems[0]
-    patched = run_dir.parent.name.endswith("-disambiguated")  # the naming convention of every patched-spec run
-    n = n or len(list((catalog(patched) / problem).glob("checkpoint_*.md")))
+    root = run_problems_root(run_dir)
+    n = n or len(list((root / problem).glob("checkpoint_*.md")))
     if not n:
-        raise SystemExit(f"queue: no checkpoints found for {problem}; pass n_checkpoints")
+        raise SystemExit(f"queue: no checkpoints found for {problem} under {root}; pass n_checkpoints")
     done = len(list((run_dir / problem).glob("checkpoint_*")))
     label = f"{run_dir.parent.name}-{problem}-resume-from-{done + 1}"
-    env = {"SCBENCH_PROBLEMS_PATH": str(ROOT / "problems")} if patched else {}
+    env = {} if root == CACHE else {"SCBENCH_PROBLEMS_PATH": str(root)}
     return label, [str(ROOT / "bin" / "scb-extend"), str(run_dir), problem, str(n)], env
 
 

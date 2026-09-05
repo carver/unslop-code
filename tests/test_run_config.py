@@ -8,10 +8,15 @@ rc = types.ModuleType("run_config"); rc.__file__ = str(SCRIPT); sys.modules["run
 exec(compile(SCRIPT.read_text(), str(SCRIPT), "exec"), rc.__dict__)
 
 
-def test_run_name_adds_the_patched_suffix_once():
-    assert rc.run_name("spectest-min2-strict-errors", False) == "spectest-min2-strict-errors"
-    assert rc.run_name("configs/prompts/spectest-min2-strict-errors.jinja", True) == "spectest-min2-strict-errors-disambiguated"
-    assert rc.run_name("just-solve", True, name="just-solve-disambiguated") == "just-solve-disambiguated"
+def test_run_name_adds_the_spec_suffix_once():
+    assert rc.run_name("spectest-min2-strict-errors", "v0") == "spectest-min2-strict-errors"
+    assert rc.run_name("configs/prompts/spectest-v9.jinja", "v2") == "spectest-v9-specv2"
+    assert rc.run_name("just-solve", "v1", name="just-solve-specv1") == "just-solve-specv1"
+
+
+def test_problems_root_is_the_cache_for_v0_and_a_specs_folder_otherwise():
+    assert rc.problems_root("v0") == rc.CACHE
+    assert rc.problems_root("v2") == rc.ROOT / "specs" / "v2" / "problems"
 
 
 def test_prompt_resolves_to_local_template_or_benchmark_name():
@@ -20,6 +25,6 @@ def test_prompt_resolves_to_local_template_or_benchmark_name():
 
 
 def test_config_text_carries_prompt_problem_and_run_dir_name():
-    t = rc.config_text("just-solve", "xjq", "just-solve-disambiguated", True, "LAUNCH")
+    t = rc.config_text("just-solve", "xjq", "just-solve-specv1", "v1", "LAUNCH")
     assert "prompt: just-solve\n" in t and "  - xjq\n" in t
-    assert "_just-solve-disambiguated/${now" in t and "#   LAUNCH" in t and "patched spec copy" in t
+    assert "_just-solve-specv1/${now" in t and "#   LAUNCH" in t and "spec v1" in t

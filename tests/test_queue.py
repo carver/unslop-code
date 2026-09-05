@@ -30,9 +30,18 @@ def test_unpatched_config_has_no_override(tmp_path):
 def test_checkpoint_count_comes_from_the_catalog(tmp_path, monkeypatch):
     cat = tmp_path / "cat"; (cat / "xjq").mkdir(parents=True)
     for i in range(1, 6): (cat / "xjq" / f"checkpoint_{i}.md").write_text("")
-    monkeypatch.setattr(q, "catalog", lambda patched: cat)
+    monkeypatch.setattr(q, "CACHE", cat)
     p = tmp_path / "just-solve-xjq-opus5.yaml"; p.write_text("problems:\n  - xjq\n")
     assert q.job_for(p)[1][-1] == "5"
+
+
+def test_versioned_config_reads_its_own_problems_root(tmp_path):
+    root = tmp_path / "specs" / "v2" / "problems"; (root / "datagate").mkdir(parents=True)
+    for i in range(1, 8): (root / "datagate" / f"checkpoint_{i}.md").write_text("")
+    p = tmp_path / "spectest-v9-specv2-datagate-opus5.yaml"
+    p.write_text(f"# header\n#   SCBENCH_PROBLEMS_PATH={root} bin/scb-extend --new x datagate 7\nproblems:\n  - datagate\n")
+    label, argv, env = q.job_for(p)
+    assert (label, argv[-1], env) == ("spectest-v9-specv2-datagate", "7", {"SCBENCH_PROBLEMS_PATH": str(root)})
 
 
 def test_state_of_reads_string_and_object_statuses():
@@ -68,7 +77,8 @@ def test_resume_job_continues_from_the_next_checkpoint(tmp_path, monkeypatch):
     (run / "config.yaml").write_text("problems:\n- sith\n")
     cat = tmp_path / "catalog" / "sith"; cat.mkdir(parents=True)
     for i in range(1, 7): (cat / f"checkpoint_{i}.md").write_text("spec")
-    monkeypatch.setattr(q, "catalog", lambda patched: cat.parent)
+    (run / "problem_catalog.json").write_text('{"version": "v1.0", "commit": "abc"}')
+    monkeypatch.setattr(q, "CACHE", cat.parent)
     label, argv, env = q.resume_job(run)
     assert label == "fable-5-1_2.1.251_high_just-solve-sith-resume-from-3"
     assert argv[1:] == [str(run), "sith", "6"]
@@ -86,3 +96,14 @@ def test_swap_plan_walks_the_job_to_just_before_the_target():
     assert q.swap_plan([25, 26, 27, 28], 25, 28) == [(25, 26), (26, 27)]
     assert q.swap_plan([25, 26, 27, 28], 26, 27) == []
     assert q.swap_plan([25, 26, 27, 28], 27, 27) == []
+
+
+def test_resume_job_keeps_the_versioned_root_the_run_read(tmp_path):
+    run = tmp_path / "spectest" / "opus-5_2.1.251_high_spectest-v9-specv2" / "20260906T0000"
+    (run / "datagate" / "checkpoint_1").mkdir(parents=True)
+    (run / "config.yaml").write_text("problems:\n- datagate\n")
+    root = tmp_path / "specs" / "v2" / "problems"; (root / "datagate").mkdir(parents=True)
+    for i in range(1, 8): (root / "datagate" / f"checkpoint_{i}.md").write_text("")
+    (run / "problem_catalog.json").write_text('{"version": "env-override", "commit": "%s"}' % root)
+    label, argv, env = q.resume_job(run)
+    assert argv[1:] == [str(run), "datagate", "7"] and env == {"SCBENCH_PROBLEMS_PATH": str(root)}

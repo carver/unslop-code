@@ -1,0 +1,1 @@
+If a previous ambiguity is resolved by the current spec, annotate the entry instead of removing it.

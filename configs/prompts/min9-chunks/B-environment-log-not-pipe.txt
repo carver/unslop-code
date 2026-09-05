@@ -1,0 +1,1 @@
+For long-lived processes, log to a file or /dev/null instead of an undrained pipe.

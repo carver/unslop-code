@@ -36,3 +36,22 @@ def test_unknown_or_repeated_letters_fail():
         bp.build("BZ")
     with pytest.raises(SystemExit):
         bp.build("BB")
+
+
+
+MIN9 = ROOT / "configs/prompts/min9-chunks"
+
+
+def test_all_min9_chunks_rebuild_v9_line_for_line():
+    name, text = bp.build("ABCDEFGHIJKLMNOPQRS", MIN9)
+    assert name == "min9-ABCDEFGHIJKLMNOPQRS"
+    assert nonblank(text) == nonblank((ROOT / "configs/prompts/spectest-v9.jinja").read_text())
+
+
+def test_min9_subset_keeps_every_section_header_and_leaves_no_slot():
+    _, text = bp.build("DFJ", MIN9)
+    for header in ("# Environment", "# Testing", "# Implement", "# Declare complete", "# Spec"):
+        assert header in text
+    assert "<<" not in text
+    assert "\n\n\n" not in text
+    assert "Touch an IN_PROGRESS file. Delete any COMPLETED file.\n\n# Testing" in text

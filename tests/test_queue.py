@@ -60,3 +60,16 @@ def test_job_roots_match_the_config_name_but_never_the_wrapper():
 def test_agent_containers_are_the_slop_code_images_only():
     lines = ["2b49508e1981 slop-code:claude_code-2.1.251-python3.12", "98f1e68da179 postgres:16", "bad"]
     assert q.agent_containers(lines) == ["2b49508e1981"]
+
+
+def test_resume_job_continues_from_the_next_checkpoint(tmp_path, monkeypatch):
+    run = tmp_path / "dev6-x" / "fable-5-1_2.1.251_high_just-solve" / "20260905T0532"
+    (run / "sith" / "checkpoint_1").mkdir(parents=True); (run / "sith" / "checkpoint_2").mkdir()
+    (run / "config.yaml").write_text("problems:\n- sith\n")
+    cat = tmp_path / "catalog" / "sith"; cat.mkdir(parents=True)
+    for i in range(1, 7): (cat / f"checkpoint_{i}.md").write_text("spec")
+    monkeypatch.setattr(q, "catalog", lambda patched: cat.parent)
+    label, argv, env = q.resume_job(run)
+    assert label == "fable-5-1_2.1.251_high_just-solve-sith-resume-from-3"
+    assert argv[1:] == [str(run), "sith", "6"]
+    assert env == {}

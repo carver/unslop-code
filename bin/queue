@@ -4,6 +4,9 @@
     bin/queue add <run-config.yaml> [n_checkpoints]   enqueue `scb-extend --new` for the config
     bin/queue                                          status (pueue status)
     bin/queue log [id]                                 a job's output (pueue log)
+    bin/queue resume <run_dir>                         continue a run that stopped between checkpoints
+                                                       (scb-extend's resume mode; the run's problem and
+                                                       checkpoint count are read from the run)
     bin/queue kill <id>                                stop a job and clean up after it: a queued job is
                                                        removed; a running one is killed, its surviving
                                                        worker processes and agent container removed,
@@ -42,6 +45,24 @@ def job_for(config_path, n=None):
     label = config_path.name.removesuffix(".yaml").removesuffix("-opus5")
     env = {"SCBENCH_PROBLEMS_PATH": str(ROOT / "problems")} if patched else {}
     return label, [str(ROOT / "bin" / "scb-extend"), "--new", str(config_path), problem, str(n)], env
+
+
+def resume_job(run_dir, n=None):
+    """(label, argv, env) to continue a run from its next checkpoint through bin/scb-extend."""
+    run_dir = pathlib.Path(run_dir).resolve()
+    config = yaml.safe_load((run_dir / "config.yaml").read_text())
+    problems = config["problems"]
+    if len(problems) != 1:
+        raise SystemExit(f"queue: {run_dir.name} lists {len(problems)} problems; one per run")
+    problem = problems[0]
+    patched = run_dir.parent.name.endswith("-disambiguated")  # the naming convention of every patched-spec run
+    n = n or len(list((catalog(patched) / problem).glob("checkpoint_*.md")))
+    if not n:
+        raise SystemExit(f"queue: no checkpoints found for {problem}; pass n_checkpoints")
+    done = len(list((run_dir / problem).glob("checkpoint_*")))
+    label = f"{run_dir.parent.name}-{problem}-resume-from-{done + 1}"
+    env = {"SCBENCH_PROBLEMS_PATH": str(ROOT / "problems")} if patched else {}
+    return label, [str(ROOT / "bin" / "scb-extend"), str(run_dir), problem, str(n)], env
 
 
 def state_of(task):
@@ -148,6 +169,10 @@ def main():
     args = sys.argv[1:]
     if args and args[0] == "add":
         label, argv, env = job_for(args[1], int(args[2]) if len(args) > 2 else None)
+        cmd = " ".join(f"{k}={v}" for k, v in env.items()) + (" " if env else "") + " ".join(argv)
+        subprocess.run([PUEUE, "add", "--label", label, "--working-directory", str(ROOT), "--", cmd], check=True)
+    elif args[:1] == ["resume"] and len(args) in (2, 3):
+        label, argv, env = resume_job(args[1], int(args[2]) if len(args) > 2 else None)
         cmd = " ".join(f"{k}={v}" for k, v in env.items()) + (" " if env else "") + " ".join(argv)
         subprocess.run([PUEUE, "add", "--label", label, "--working-directory", str(ROOT), "--", cmd], check=True)
     elif args[:1] == ["kill"] and len(args) == 2:

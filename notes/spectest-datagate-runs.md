@@ -42,6 +42,7 @@ tests passed / total at each checkpoint (regressions included), from each checkp
 | min9-ABDEFHJKMNOPR on v2 | `…min9-ABDEFHJKMNOPR-specv2/20260905T1837` | v9 minus the test-writing extras (C, G, I, Q) and minus assert-the-choice (L) and implementation-time entries (S): min4's rules in v9 form plus pkill and pipe hygiene, the tester-speed pair and the Differs procedure (558 words), spec v2 | 50/50, 122/122, 174/174, 233/233, 276/276, 353/353, 405/405 | complete 2026-09-06; 0 misses, 7/7 strict, $29, 101 min. Cheaper and faster than both v9 runs on v2 ($40, $46). 98 registry entries. Quality: erosion 0.133, verbosity 0.163, ast 0.077, cloned 0.056. Repeat queued |
 | min9-ABCDEFGHIJKMNOPQR on v2 | `…min9-ABCDEFGHIJKMNOPQR-specv2/20260905T2039` | v9 minus assert-the-choice (L) and implementation-time entries (S), 690 words, spec v2 | 50/50, 122/122, 174/174, 233/233, 276/276, 353/353, 405/405 | complete 2026-09-06; 0 misses, 7/7 strict, $35, 140 min. The middle rung of the v9 ladder, strict like the lean rung below it and v9 above it. Quality: erosion 0.064, verbosity 0.151, ast 0.060, cloned 0.063 |
 | min9-DEFJKOP on v2 | `…min9-DEFJKOP-specv2/20260905T2323` | ABCHJK's rules in v9 form plus the full registry procedure with Differs (tests per phrase, hypothesis, generator floor, choose and record, annotate, code until pass, keep spec tests; 391 words), spec v2 | 50/50, 122/122, 174/174, 233/233, 276/276, 353/353, 405/405 | complete 2026-09-06; 0 misses, 7/7 strict, $22, 131 min. The cheapest strict run on any spec. 93 registry entries. Quality: erosion 0.048, verbosity 0.140, ast 0.074, cloned 0.061. Repeat queued as job 34 |
+| min9-ABDEFHJKMNOPR on v2, repeat | `…min9-ABDEFHJKMNOPR-specv2/20260906T0155` | same config as the first lean run | 50/50, 122/122, 174/174, 233/233, 276/276, 353/353, 405/405 | complete 2026-09-06; 0 misses, 7/7 strict, $25, 100 min. The lean rung is twice strict on v2. 92 entries all scored. Quality: erosion 0.049, verbosity 0.126, ast 0.053, cloned 0.061 |
 
 On hidden tests, v4 through v7 are flat within
 the latin-1 noise (ckpt 1: 50, 49, 50, 49 of 50; ckpt 2: 119, cut, 119, 118 of 122), and
@@ -205,6 +206,7 @@ matrix, and the reading. Failure sets in brief:
   - min9-ABDEFHJKMNOPR on v2 (405): strict, no misses, at 558 words and $29.
   - min9-ABCDEFGHIJKMNOPQR on v2 (405): strict, no misses.
   - min9-DEFJKOP on v2 (405): strict, no misses, at 391 words and $22.
+  - min9-ABDEFHJKMNOPR on v2, repeat (405): strict again. Twice strict at 558 words.
 
 ## Did the v8 testing hints help, or was it the zombie fix?
 
@@ -588,3 +590,7 @@ words, and the six chunks between DEFJKOP and the lean rung (pkill and pipe hygi
 quotable-error and never-narrow rules, the tester-speed pair) add nothing to score either.
 Erosion 0.048 is the best on v2. Its repeat (job 34) decides whether it counts, and the xjq
 run behind it (job 35) waits on that.
+
+Amendment 2026-09-06 11:00Z, the lean rung repeated: ABDEFHJKMNOPR on v2, 405/405, 7/7 strict.
+Twice-strict prompts are now min4 (v1), v8A (v1), v9 (v2) and the 558-word lean rung (v2),
+which is the shortest of them and the parent of the ABDEFJKMNOP chain now running.

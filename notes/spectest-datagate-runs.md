@@ -632,3 +632,8 @@ running; if strict, job 37 takes ABDEFJKMNO to xjq on spec v0.
 Changed 2026-09-06 16:30Z at the user's request: the xjq job is now min10-ABDEFJKMNO (the same
 letters cut from v10, 488 words) as job 38, followed by the full v10 on xjq as job 39, then the
 two just-solve runs on v2 (40-41). The rule stays: job 38 comes off if job 36 is not strict.
+Queued 2026-09-06 16:50Z at the user's request, behind the just-solve pair (40-41): v10 on the
+other five dev6 problems (42-46: datagate on v2, then file_merger, mvvault, rejector, sith on
+v0), min10-ABDEFJKMNO on the same five (47-51), then a second pass of both prompts over all six
+problems, v10 first (52-57) and min10 after (58-63). Twenty-two runs; the queue should not run
+dry before 2026-09-08. Non-datagate results go in notes/<problem>-runs.md and the results table.

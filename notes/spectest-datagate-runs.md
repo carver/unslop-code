@@ -45,6 +45,7 @@ tests passed / total at each checkpoint (regressions included), from each checkp
 | min9-ABDEFHJKMNOPR on v2, repeat | `…min9-ABDEFHJKMNOPR-specv2/20260906T0155` | same config as the first lean run | 50/50, 122/122, 174/174, 233/233, 276/276, 353/353, 405/405 | complete 2026-09-06; 0 misses, 7/7 strict, $25, 100 min. The lean rung is twice strict on v2. 92 entries all scored. Quality: erosion 0.049, verbosity 0.126, ast 0.053, cloned 0.061 |
 | min9-ABDEFJKMNOP on v2 | `…min9-ABDEFJKMNOP-specv2/20260906T0356` | the lean rung minus H (quotable errors) and R (never narrow), 495 words; first of two | 50/50, 122/122, 174/174, 233/233, 276/276, 353/353, 405/405 | complete 2026-09-06; 0 misses, 7/7 strict, $23, 75 min. 109 entries all scored, Differs 0-55 (top: query-timeout mechanism 55, mixed-type sort 45; enrich 8; blank-line/one-column 20). Quality: erosion 0.117, verbosity 0.194, ast 0.088, cloned 0.098 |
 | min9-ABDEFJKMNOP on v2, repeat | `…min9-ABDEFJKMNOP-specv2/20260906T0535` | same config as the first run | 50/50, 122/122, 174/174, 233/233, 276/276, 353/353, 405/405 | complete 2026-09-06; 0 misses, 7/7 strict, $25, 83 min. ABDEFJKMNOP is twice strict on v2 at 495 words. 114 entries all scored, Differs 0-45 (top: STORAGE_DIR default 45, repeated force 40; exact enrich=yes 15, enrich downgrade on re-ingest 35). Quality: erosion 0.097, verbosity 0.212, ast 0.088, cloned 0.105 |
+| min9-ABDEFJKMNO on v2 | `…min9-ABDEFJKMNO-specv2/20260906T0720` | ABDEFJKMNOP minus P (do not change the spec or its tests), 483 words; first of two | 50/50, 122/122, 174/174, 233/233, 276/276, 353/353, 405/405 | complete 2026-09-06; 0 misses, 7/7 strict, $23, 80 min. 96 entries all scored, Differs 0-40 (top: ragged rows 40, spreadsheet cell to JSON 40; exact enrich=yes 15, enrich downgrade on re-ingest 30). Quality: erosion 0.069, verbosity 0.145, ast 0.053, cloned 0.080, the best of the chain |
 
 On hidden tests, v4 through v7 are flat within
 the latin-1 noise (ckpt 1: 50, 49, 50, 49 of 50; ckpt 2: 119, cut, 119, 118 of 122), and
@@ -211,6 +212,7 @@ matrix, and the reading. Failure sets in brief:
   - min9-ABDEFHJKMNOPR on v2, repeat (405): strict again. Twice strict at 558 words.
   - min9-ABDEFJKMNOP on v2 (405): strict, no misses, at 495 words and $23. First of two.
   - min9-ABDEFJKMNOP on v2, repeat (405): strict again. Twice strict at 495 words.
+  - min9-ABDEFJKMNO on v2 (405): strict, no misses, at 483 words and $23. First of two.
 
 ## Did the v8 testing hints help, or was it the zombie fix?
 
@@ -619,3 +621,11 @@ enrichment question is whether re-ingesting without the flag downgrades a stored
 dataset (35). So quotable-errors (H) and never-narrow (R) are not needed for score on v2.
 Under the chain rule, ABDEFJKMNO (minus keep-spec-tests, 483 words) now runs twice as jobs
 35-36; if both are strict, job 37 takes it to xjq.
+
+Amendment 2026-09-06 16:15Z, first run of ABDEFJKMNO on v2: 483 words, 405/405, 7/7 strict,
+$23, 80 min. This is ABDEFJKMNOP without keep-spec-tests (P). Nothing flipped against either
+ABDEFJKMNOP run. The spec never sits in the agent's workspace, so P could only ever have kept
+the agent from weakening its own tests; on this run the quality numbers went the other way
+(erosion 0.069, ast 0.053, both better than the parent's 0.117/0.097 and 0.088). Registry: 96
+entries, the enrich-downgrade question again the open one (30). Its repeat (job 36) is
+running; if strict, job 37 takes ABDEFJKMNO to xjq on spec v0.

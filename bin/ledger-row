@@ -7,10 +7,11 @@ Prints the table row for notes/<problem>-runs.md (scores per checkpoint, miss co
 and the failure-summary entry: each missed hidden test under the checkpoint it belongs to,
 with the checkpoints it failed at. The cause of each miss is the reader's to add; the
 evaluation output (`<ckpt>/evaluation/stdout.txt`), `bin/miss-report`, and `bin/askrun`
-are where to look. After a ladder run, also extend the ladder section with
-`bin/compare-runs <runs...> --md`.
+are where to look. Ends by running `bin/results --write`, so the cross-problem table in
+notes/results.md always carries the run; commit it with the ledger. After a ladder run, also
+extend the ladder section with `bin/compare-runs <runs...> --md`.
 """
-import collections, json, pathlib, sys, types
+import collections, json, pathlib, subprocess, sys, types
 
 HERE = pathlib.Path(__file__).resolve().parent
 summarize = types.ModuleType("summarize"); summarize.__file__ = str(HERE / "summarize")
@@ -59,5 +60,12 @@ def main():
         print("  - No misses.")
 
 
+def regenerate_results():
+    """notes/results.md is generated from the run directories; a finished run belongs in it."""
+    subprocess.run([str(pathlib.Path(__file__).resolve().with_name("results")), "--write"], check=True, stdout=subprocess.DEVNULL)
+    print("regenerated notes/results.md; commit it with the ledger", file=sys.stderr)
+
+
 if __name__ == "__main__":
     main()
+    regenerate_results()

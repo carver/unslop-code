@@ -40,6 +40,7 @@ tests passed / total at each checkpoint (regressions included), from each checkp
 | v9 on spec v2 | `…spectest-v9-specv2/20260905T1336` | v9 prompt on spec v2 (v1 plus "a single, exact `enrich=yes`" and "Delimiter ... if present") | 50/50, 122/122, 174/174, 233/233, 276/276, 353/353, 405/405 | complete 2026-09-05; 0 misses, 7/7 strict, $40, 118 min. First run on v2. Registry entry T92 on the enrich sentence: "a single is what excludes the repeat", Differs 12 (the v1 runs put this question at 20 and 30); the delimiter entry T14 "handles the one-column case the spec never excludes". 98 entries all scored. Quality: erosion 0.175, verbosity 0.138, ast 0.062, cloned 0.070 |
 | v9 on spec v2, repeat | `…spectest-v9-specv2/20260905T1556` | same config as the first v2 run | 50/50, 122/122, 174/174, 233/233, 276/276, 353/353, 405/405 | complete 2026-09-06; 0 misses, 7/7 strict, $46, 140 min. v9 on v2 is twice strict. Enrich entry T94 at Differs 10. 102 entries all scored. Quality better than the first v2 run: erosion 0.098 against 0.175, ast 0.045 against 0.062, cloned 0.055 against 0.070 |
 | min9-ABDEFHJKMNOPR on v2 | `…min9-ABDEFHJKMNOPR-specv2/20260905T1837` | v9 minus the test-writing extras (C, G, I, Q) and minus assert-the-choice (L) and implementation-time entries (S): min4's rules in v9 form plus pkill and pipe hygiene, the tester-speed pair and the Differs procedure (558 words), spec v2 | 50/50, 122/122, 174/174, 233/233, 276/276, 353/353, 405/405 | complete 2026-09-06; 0 misses, 7/7 strict, $29, 101 min. Cheaper and faster than both v9 runs on v2 ($40, $46). 98 registry entries. Quality: erosion 0.133, verbosity 0.163, ast 0.077, cloned 0.056. Repeat queued |
+| min9-ABCDEFGHIJKMNOPQR on v2 | `…min9-ABCDEFGHIJKMNOPQR-specv2/20260905T2039` | v9 minus assert-the-choice (L) and implementation-time entries (S), 690 words, spec v2 | 50/50, 122/122, 174/174, 233/233, 276/276, 353/353, 405/405 | complete 2026-09-06; 0 misses, 7/7 strict, $35, 140 min. The middle rung of the v9 ladder, strict like the lean rung below it and v9 above it. Quality: erosion 0.064, verbosity 0.151, ast 0.060, cloned 0.063 |
 
 On hidden tests, v4 through v7 are flat within
 the latin-1 noise (ckpt 1: 50, 49, 50, 49 of 50; ckpt 2: 119, cut, 119, 118 of 122), and
@@ -201,6 +202,7 @@ matrix, and the reading. Failure sets in brief:
     question: repeated enrich at Differs 12, the one-column file handled in the delimiter entry.
   - v9 on spec v2, repeat (405): strict again, no misses. Twice strict on v2.
   - min9-ABDEFHJKMNOPR on v2 (405): strict, no misses, at 558 words and $29.
+  - min9-ABCDEFGHIJKMNOPQR on v2 (405): strict, no misses.
 
 ## Did the v8 testing hints help, or was it the zombie fix?
 
@@ -563,3 +565,10 @@ repeat, which is queued behind the other two subsets.
 Queued after it at the user's request (2026-09-06 04:45Z): min9-DEFJKO on v2 (DEFJKOP without
 "do not change the spec or the tests", 379 words, to price that rule), a DEFJKOP repeat, and
 DEFJKOP on xjq (spec v0, its first problem beyond datagate; runs only if DEFJKOP is strict twice).
+
+Amendment 2026-09-06 06:30Z, the middle v9 rung on v2: ABCDEFGHIJKMNOPQR, 690 words, 405/405,
+7/7 strict, $35, 140 min. All three rungs of the v9 ladder are now strict on v2 on one run
+each: lean (558 words, $29), middle (690, $35), v9 (735, $40 and $46). The six removable
+chunks add nothing to score, and the ladder's quality numbers do not move with the rungs:
+erosion 0.133, 0.064, 0.098 across lean, middle and v9's repeat, the same band every prompt
+shows between its own runs. Next: DEFJKOP at 391 words, then the lean repeat.

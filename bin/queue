@@ -11,7 +11,7 @@
                                                        (pueue priority one above the highest queued)
     bin/queue move <id> before <other-id>              reorder queued jobs so <id> runs right before
                                                        <other-id>; prints the resulting order
-    bin/queue kill <id>                                stop a job and clean up after it: a queued job is
+    bin/queue kill <id> [--keep-paused]                stop a job and clean up after it: a queued job is
                                                        removed; a running one is killed, its surviving
                                                        worker processes and agent container removed,
                                                        and the queue resumed with the next job
@@ -165,7 +165,7 @@ def alive(pid):
         return True
 
 
-def kill_job(task_id):
+def kill_job(task_id, keep_paused=False):
     """Stop one job without leaving a worker or an agent container behind.
 
     Killing only the pueue task leaves slop-code's spawned worker (it reparents to init) and
@@ -210,8 +210,11 @@ def kill_job(task_id):
                 subprocess.run(["docker", "rm", "-f", c], check=True, capture_output=True)
                 print(f"removed agent container {c}")
     finally:
-        subprocess.run([PUEUE, "start"], check=True, capture_output=True)
-    print(f"killed task {task_id}; queue resumed")
+        if keep_paused:
+            print(f"killed task {task_id}; queue left paused (pueue start to continue)")
+        else:
+            subprocess.run([PUEUE, "start"], check=True, capture_output=True)
+            print(f"killed task {task_id}; queue resumed")
 
 
 def main():
@@ -232,8 +235,8 @@ def main():
         label, argv, env = resume_job(args[1], int(args[2]) if len(args) > 2 else None)
         cmd = " ".join(f"{k}={v}" for k, v in env.items()) + (" " if env else "") + " ".join(argv)
         subprocess.run([PUEUE, "add", "--label", label, "--working-directory", str(ROOT), "--", cmd], check=True)
-    elif args[:1] == ["kill"] and len(args) == 2:
-        kill_job(int(args[1]))
+    elif args[:1] == ["kill"] and len(args) in (2, 3) and args[3:] == [] and (len(args) == 2 or args[2] == "--keep-paused"):
+        kill_job(int(args[1]), keep_paused=len(args) == 3)
     elif not args:
         subprocess.run([PUEUE, "status"], check=True)
     else:

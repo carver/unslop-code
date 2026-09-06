@@ -38,6 +38,7 @@ tests passed / total at each checkpoint (regressions included), from each checkp
 | v9 disambiguated, repeat | `…spectest-v9-disambiguated/20260905T0804` | same config as the first v9 run | 50/50, 122/122, 174/174, 233/233, 276/276, 353/353, 404/405 | complete 2026-09-05; 1 miss, 6/7 strict, $32, 102 min. `test_duplicate_enrich_params_do_not_enable_metadata[yes-then-no]`, the v8B miss: first value wins, so `enrich=yes&enrich=no` enables enrichment. Registry entry T94 chose that reading, scored it Differs 20 and named the exact failing case as the residual risk ("a getlist-based author would keep enrichment off"). 110 entries all scored, 0 to 45; 20 is the median, 64 entries at or above it. Quality: erosion 0.103, verbosity 0.142, ast 0.072, cloned 0.062 |
 | v9 disambiguated, Fable 5.1 | `…fable-5-1_2.1.251_high_spectest-v9-disambiguated/20260905T1055` | v9 prompt on spec v1 with model fable-5-1 and the Fable agent config | 44/50, 116/122, 168/174, 224/233, 267/276, 344/353, 394/405 | complete 2026-09-05; 11 misses, 0/7 strict, $13, 139 min. The single-column cascade, test for test the same eleven as ABCFGHJK: entry T5 chose the 400 on the Sniffer argument and scored it Differs 30, naming the accepted single-column file as the risk. Cache flag closed at ckpt 6. 67 registry entries all scored, 0 to 50. Quality: erosion 0.158, verbosity 0.188, ast 0.070, cloned 0.104 |
 | v9 on spec v2 | `…spectest-v9-specv2/20260905T1336` | v9 prompt on spec v2 (v1 plus "a single, exact `enrich=yes`" and "Delimiter ... if present") | 50/50, 122/122, 174/174, 233/233, 276/276, 353/353, 405/405 | complete 2026-09-05; 0 misses, 7/7 strict, $40, 118 min. First run on v2. Registry entry T92 on the enrich sentence: "a single is what excludes the repeat", Differs 12 (the v1 runs put this question at 20 and 30); the delimiter entry T14 "handles the one-column case the spec never excludes". 98 entries all scored. Quality: erosion 0.175, verbosity 0.138, ast 0.062, cloned 0.070 |
+| v9 on spec v2, repeat | `…spectest-v9-specv2/20260905T1556` | same config as the first v2 run | 50/50, 122/122, 174/174, 233/233, 276/276, 353/353, 405/405 | complete 2026-09-06; 0 misses, 7/7 strict, $46, 140 min. v9 on v2 is twice strict. Enrich entry T94 at Differs 10. 102 entries all scored. Quality better than the first v2 run: erosion 0.098 against 0.175, ast 0.045 against 0.062, cloned 0.055 against 0.070 |
 
 On hidden tests, v4 through v7 are flat within
 the latin-1 noise (ckpt 1: 50, 49, 50, 49 of 50; ckpt 2: 119, cut, 119, 118 of 122), and
@@ -197,6 +198,7 @@ matrix, and the reading. Failure sets in brief:
     else missed; the cache flag closed at checkpoint 6.
   - v9 on spec v2 (405): strict. The two v2 sentences each show up in the registry as a closed
     question: repeated enrich at Differs 12, the one-column file handled in the delimiter entry.
+  - v9 on spec v2, repeat (405): strict again, no misses. Twice strict on v2.
 
 ## Did the v8 testing hints help, or was it the zombie fix?
 
@@ -541,3 +543,11 @@ the two v1 runs of the same prompt scored it 30 and 20 and one of them took the 
 The delimiter entry, T14, handles the one-column file as a case the spec no longer leaves
 open. Cost is up, $40 against $32 for the v1 runs, inside the run-to-run band. Second v2 run
 is job 28, then the three min9 subsets on v2.
+
+Amendment 2026-09-06 01:45Z, second run on spec v2: 405/405, 7/7 strict, $46, 140 min. v9 on
+v2 is the third twice-strict prompt after min4 and v8A, and the first on v2. Across the two
+runs the enrich question sat at Differs 12 and 10, against 30 and 20 on v1, which is the
+score behaving as a review flag should when a sentence closes. Costs $40 and $46 against $32
+and $32 on v1, the same prompt: worth watching across the subsets but inside what one prompt
+has shown between runs. The min9 subsets now run against a twice-strict parent on the same
+spec, which is the condition the shrink rule asked for.

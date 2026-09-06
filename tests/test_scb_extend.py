@@ -44,6 +44,16 @@ def test_next_checkpoint_none_when_all_evaluated(tmp_path):
     assert ext.next_checkpoint(p, 2) is None
 
 
+def test_infra_failed_checkpoint_is_not_finished(tmp_path):
+    """Job 60 on 2026-09-06: the evaluation's pip install hit a DNS error, evaluation.json said 0/0 with
+    infrastructure_failure, and the resume guard refused to redo the checkpoint because it looked finished."""
+    p = make_problem(tmp_path, evaluated=[1, 2])
+    ev = p / "checkpoint_2" / "evaluation.json"
+    ev.write_text(json.dumps({**json.loads(ev.read_text()), "infrastructure_failure": True}))
+    assert not ext.finished(p, 2)
+    assert ext.next_checkpoint(p, 2) == 2
+
+
 def test_outcome_sums_pass_and_total_counts(tmp_path):
     p = make_problem(tmp_path, evaluated=[1])
     assert ext.outcome(p, 1) == (5, 6, False)

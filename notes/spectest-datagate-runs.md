@@ -629,3 +629,6 @@ the agent from weakening its own tests; on this run the quality numbers went the
 (erosion 0.069, ast 0.053, both better than the parent's 0.117/0.097 and 0.088). Registry: 96
 entries, the enrich-downgrade question again the open one (30). Its repeat (job 36) is
 running; if strict, job 37 takes ABDEFJKMNO to xjq on spec v0.
+Changed 2026-09-06 16:30Z at the user's request: the xjq job is now min10-ABDEFJKMNO (the same
+letters cut from v10, 488 words) as job 38, followed by the full v10 on xjq as job 39, then the
+two just-solve runs on v2 (40-41). The rule stays: job 38 comes off if job 36 is not strict.

@@ -97,8 +97,17 @@ def deletions(dry_run_output):
 
 
 def finished_dir(path):
-    """A checkpoint the agent completed: evaluated, snapshotted, and its agent run did not error."""
-    return all((path / f).exists() for f in ("evaluation.json", "inference_result.json", "snapshot")) and not agent_errored(path)
+    """A checkpoint the agent completed: evaluated without an infrastructure failure, snapshotted, and its agent run did not error."""
+    return (all((path / f).exists() for f in ("evaluation.json", "inference_result.json", "snapshot"))
+            and not agent_errored(path) and not infra_failed(path))
+
+
+def infra_failed(ckpt_dir):
+    """The evaluation never ran the tests (a network outage during its package install, for one); the checkpoint must be redone."""
+    try:
+        return bool(json.loads((ckpt_dir / "evaluation.json").read_text()).get("infrastructure_failure"))
+    except (OSError, ValueError):
+        return True
 
 
 def backup_dir():

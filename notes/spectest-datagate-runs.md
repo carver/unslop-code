@@ -643,3 +643,7 @@ subsets on datagate v2 went to the head of the queue, in this order: ABDFJKMN (4
 twice-strict ABDEFJKMNOP minus hypothesis E, keep-spec-tests P and code-until-pass O, with the
 Risk wording), ABDEJKMN (460, minus generator-floor F instead of E), ABDJKMN (450, minus both).
 The v10 runs across dev6 (42-46, then 52-57) and the just-solve pair stay behind them.
+Changed 2026-09-06 17:15Z at the user's request: the two v10-on-datagate-v2 jobs came off
+unrun (v10 should mimic v9 there; little signal expected). Dropping O (code until the tests
+pass) from the three min10 subsets is deliberate; the user is optimistic it changes nothing
+and will revisit if it does.

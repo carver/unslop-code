@@ -1,12 +1,14 @@
 # Poll tweets: could you pass Slop Code Bench?
 
-Thread draft. Each poll is one of the five datagate sentences; the correct answer is the
+## Thread draft
+
+Each poll is one of the five datagate sentences; the correct answer is the
 one the hidden tests take, and Opus 5 picked the other one 195 times out of 200 blind
 readings. Reveal thread after the polls close.
 
 **1 / opener**
 We all mock the AI's slop in @GOrlanski's Slop Code Bench. Could you do better? Five spec
-sentences, five polls. The benchmark's hidden tests already decided each one. (cc @dexhorthy)
+sentences, five polls. The benchmark's hidden tests already decided each one.
 
 **2 / force**
 > `force` is a presence flag. If present once, it forces re-ingestion and replaces the cached dataset.

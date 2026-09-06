@@ -238,3 +238,19 @@ def test_window_costs_pairs_readings_despite_reset_time_jitter():
 def test_window_costs_skips_readings_without_a_reset_time():
     records = [_record("checkpoint_1", "before", 0.0, None), _record("checkpoint_1", "after", 3.0)]
     assert ext.window_costs(records) == []
+
+
+def test_usage_failure_names_the_http_status():
+    assert ext.usage_failure('Traceback...\nurllib.error.HTTPError: HTTP Error 429: Too Many Requests\n') == "HTTP 429 Too Many Requests"
+    assert ext.usage_failure("  func(*args)\nValueError: bad json\n") == "ValueError: bad json"
+    assert ext.usage_failure("") == "no output"
+
+
+def test_usage_backs_off_geometrically_on_429(monkeypatch):
+    import types
+    calls = []
+    monkeypatch.setattr(ext.subprocess, "run", lambda *a, **k: types.SimpleNamespace(returncode=1, stdout="", stderr="HTTP Error 429: Too Many Requests"))
+    monkeypatch.setattr(ext.time, "sleep", lambda s: calls.append(s))
+    monkeypatch.setattr(ext, "say", lambda msg: None)
+    assert ext.usage(attempts=4, pause=30) is None
+    assert calls == [30, 60, 120]

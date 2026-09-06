@@ -205,15 +205,27 @@ def seconds_until_room(reading, needed, now):
 
 
 def usage(attempts=5, pause=30):
-    """The 5-hour window reading, or None if bin/usage keeps failing (the endpoint has brief outages)."""
+    """The 5-hour window reading, or None if bin/usage keeps failing.
+
+    The endpoint has brief outages and rate-limits with 429 when polled too often; a 429
+    doubles the pause each attempt (30, 60, 120, 240 s) instead of asking again at once."""
     for i in range(attempts):
         proc = subprocess.run([HERE / "usage"], capture_output=True, text=True)
         if proc.returncode == 0:
             return json.loads(proc.stdout)
-        say(f"bin/usage failed (attempt {i + 1}/{attempts}): {proc.stderr.strip()[-200:]}")
+        reason = usage_failure(proc.stderr)
+        say(f"bin/usage failed (attempt {i + 1}/{attempts}): {reason}")
         if i + 1 < attempts:
-            time.sleep(pause)
+            time.sleep(pause * 2 ** i if reason.startswith("HTTP 429") else pause)
     return None
+
+
+def usage_failure(stderr):
+    """A one-line reason from bin/usage's stderr: the HTTP status when there is one."""
+    m = re.search(r"HTTP Error (\d+)(?::\s*([^\n]*))?", stderr)
+    if m:
+        return f"HTTP {m.group(1)} {m.group(2) or ''}".strip()
+    return stderr.strip().splitlines()[-1][-120:] if stderr.strip() else "no output"
 
 
 def pct(reading):

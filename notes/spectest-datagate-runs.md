@@ -656,3 +656,14 @@ Twice strict at 483 words, now the shortest twice-strict prompt: the chain from 
 has shed H, R and P without a single flip across six runs. The registry's open enrichment
 question stays the downgrade-on-re-ingest one (Risk 40 here, 30 and 35 before). Next up are
 the user's min10 subsets, which drop E, F and O from ABDEFJKMNOP: ABDFJKMN is running.
+Amendment 2026-09-06 23:05Z, the host's internet outage: the network was dead 18:39-20:28Z and
+again about 21:35-22:20Z. All three min10 runs ended in an infrastructure failure (the
+evaluation's pip install lost DNS, 0/0 tests, the agent's work intact): ABDFJKMN at checkpoint
+2 with checkpoint 1 kept (strict), ABDEJKMN and ABDJKMN at checkpoint 1. Their resumes are jobs
+63-65; a first attempt (jobs 39-40) halted with exit 5 because scb-extend counted the
+infra-failed checkpoint as finished, fixed in 00e1caa, and the previews now delete only that
+checkpoint. The v10 first runs on xjq, file_merger, mvvault, rejector and sith and the first
+just-solve v2 run were killed minutes after starting into the second outage; they left only a
+checkpoint-1 prompt and infer log under outputs/spectest (no checkpoint_results.jsonl, so
+results ignores them) and are requeued as jobs 66-77 in the same order. Queue restarted 23:00Z
+with the network stable; job 63 running.

@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Differs scores of a run's AMBIGUITIES.md: count, spread, the top entries, and any entry matching a pattern.
+"""Risk (v10) or Differs (v9) scores of a run's AMBIGUITIES.md: count, spread, the top entries, and any entry matching a pattern.
 
 Usage: bin/registry-scores <run_dir> [checkpoint_N] [--grep REGEX] [--top N]
 Reads <run_dir>/<problem>/checkpoint_N/snapshot/AMBIGUITIES.md (last checkpoint by default) and
-accepts every entry style seen so far (### Differs sections, **Differs** — N and **Differs** N lines). --grep prints the
-Choice and Differs text of entries whose heading matches, which is how a known flip is checked.
+accepts every entry style seen so far (### Differs sections, ### Risk: N headings, **Differs** — N and
+**Differs** N lines, Risk spelled the same ways). --grep prints the Choice and Risk text of entries whose heading matches, which is how a known flip is checked.
 """
 import collections, pathlib, re, sys
 
@@ -15,9 +15,9 @@ def entries(text):
         h = re.match(r"## ([TI]\d+)[^\n]*", e)
         if not h:
             continue
-        d = re.search(r"(?is)(?:###\s*Differs\s*\n\s*|\*\*Differs\*\*\s*[—:-]*\s*)(\d+)", e)
+        d = re.search(r"(?is)(?:###\s*(?:Differs|Risk)\s*:?\s*|\*\*(?:Differs|Risk)\*\*\s*[—:-]*\s*)(\d+)", e)
         c = re.search(r"(?is)(?:###\s*Choice\s*\n|\*\*Choice\*\*\s*[—:-]*\s*)(.*?)(?=\n###|\n\*\*[A-Z]|\Z)", e)
-        dt = re.search(r"(?is)(?:###\s*Differs\s*\n|\*\*Differs\*\*\s*[—:-]*\s*)(.*?)(?=\n###|\n\*\*[A-Z]|\Z)", e)
+        dt = re.search(r"(?is)(?:###\s*(?:Differs|Risk)\s*:?\s*|\*\*(?:Differs|Risk)\*\*\s*[—:-]*\s*)(.*?)(?=\n###|\n\*\*[A-Z]|\Z)", e)
         out.append({"id": h.group(1), "head": h.group(0)[3:].strip(), "score": int(d.group(1)) if d else None,
                     "choice": re.sub(r"\s+", " ", c.group(1)).strip() if c else "", "differs": re.sub(r"\s+", " ", dt.group(1)).strip() if dt else ""})
     return out
@@ -47,7 +47,7 @@ def main():
     if grep:
         for r in rows:
             if re.search(grep, r["head"], re.I):
-                print(f"\n[{r['id']}] {r['head'][:100]} | Differs {r['score']}\n  Choice: {r['choice'][:400]}\n  Differs: {r['differs'][:300]}")
+                print(f"\n[{r['id']}] {r['head'][:100]} | Risk {r['score']}\n  Choice: {r['choice'][:400]}\n  Risk: {r['differs'][:300]}")
 
 
 if __name__ == "__main__":

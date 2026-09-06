@@ -637,3 +637,9 @@ other five dev6 problems (42-46: datagate on v2, then file_merger, mvvault, reje
 v0), min10-ABDEFJKMNO on the same five (47-51), then a second pass of both prompts over all six
 problems, v10 first (52-57) and min10 after (58-63). Twenty-two runs; the queue should not run
 dry before 2026-09-08. Non-datagate results go in notes/<problem>-runs.md and the results table.
+Changed 2026-09-06 17:00Z at the user's request: every queued ABDEFJKMNO run came off (the
+min10 xjq job and the ten across dev6); job 36, the min9 repeat, keeps running. Three min10
+subsets on datagate v2 went to the head of the queue, in this order: ABDFJKMN (473 words, the
+twice-strict ABDEFJKMNOP minus hypothesis E, keep-spec-tests P and code-until-pass O, with the
+Risk wording), ABDEJKMN (460, minus generator-floor F instead of E), ABDJKMN (450, minus both).
+The v10 runs across dev6 (42-46, then 52-57) and the just-solve pair stay behind them.

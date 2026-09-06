@@ -46,6 +46,7 @@ tests passed / total at each checkpoint (regressions included), from each checkp
 | min9-ABDEFJKMNOP on v2 | `…min9-ABDEFJKMNOP-specv2/20260906T0356` | the lean rung minus H (quotable errors) and R (never narrow), 495 words; first of two | 50/50, 122/122, 174/174, 233/233, 276/276, 353/353, 405/405 | complete 2026-09-06; 0 misses, 7/7 strict, $23, 75 min. 109 entries all scored, Differs 0-55 (top: query-timeout mechanism 55, mixed-type sort 45; enrich 8; blank-line/one-column 20). Quality: erosion 0.117, verbosity 0.194, ast 0.088, cloned 0.098 |
 | min9-ABDEFJKMNOP on v2, repeat | `…min9-ABDEFJKMNOP-specv2/20260906T0535` | same config as the first run | 50/50, 122/122, 174/174, 233/233, 276/276, 353/353, 405/405 | complete 2026-09-06; 0 misses, 7/7 strict, $25, 83 min. ABDEFJKMNOP is twice strict on v2 at 495 words. 114 entries all scored, Differs 0-45 (top: STORAGE_DIR default 45, repeated force 40; exact enrich=yes 15, enrich downgrade on re-ingest 35). Quality: erosion 0.097, verbosity 0.212, ast 0.088, cloned 0.105 |
 | min9-ABDEFJKMNO on v2 | `…min9-ABDEFJKMNO-specv2/20260906T0720` | ABDEFJKMNOP minus P (do not change the spec or its tests), 483 words; first of two | 50/50, 122/122, 174/174, 233/233, 276/276, 353/353, 405/405 | complete 2026-09-06; 0 misses, 7/7 strict, $23, 80 min. 96 entries all scored, Differs 0-40 (top: ragged rows 40, spreadsheet cell to JSON 40; exact enrich=yes 15, enrich downgrade on re-ingest 30). Quality: erosion 0.069, verbosity 0.145, ast 0.053, cloned 0.080, the best of the chain |
+| min9-ABDEFJKMNO on v2, repeat | `…min9-ABDEFJKMNO-specv2/20260906T0901` | same config as the first run | 50/50, 122/122, 174/174, 233/233, 276/276, 353/353, 405/405 | complete 2026-09-06; 0 misses, 7/7 strict, $26, 93 min (spans an internet outage on the host, unharmed). ABDEFJKMNO is twice strict on v2 at 483 words. 98 entries all scored, Differs 0-50 (top: query timeout 50, one-column file 45; exact enrich=yes 10, enrich downgrade on re-ingest 40). Quality: erosion 0.109, verbosity 0.118, ast 0.066, cloned 0.043 |
 
 On hidden tests, v4 through v7 are flat within
 the latin-1 noise (ckpt 1: 50, 49, 50, 49 of 50; ckpt 2: 119, cut, 119, 118 of 122), and
@@ -213,6 +214,7 @@ matrix, and the reading. Failure sets in brief:
   - min9-ABDEFJKMNOP on v2 (405): strict, no misses, at 495 words and $23. First of two.
   - min9-ABDEFJKMNOP on v2, repeat (405): strict again. Twice strict at 495 words.
   - min9-ABDEFJKMNO on v2 (405): strict, no misses, at 483 words and $23. First of two.
+  - min9-ABDEFJKMNO on v2, repeat (405): strict again. Twice strict at 483 words.
 
 ## Did the v8 testing hints help, or was it the zombie fix?
 
@@ -647,3 +649,10 @@ Changed 2026-09-06 17:15Z at the user's request: the two v10-on-datagate-v2 jobs
 unrun (v10 should mimic v9 there; little signal expected). Dropping O (code until the tests
 pass) from the three min10 subsets is deliberate; the user is optimistic it changes nothing
 and will revisit if it does.
+
+
+Amendment 2026-09-06 18:05Z, ABDEFJKMNO repeated on v2: 405/405, 7/7 strict, $26, 93 min.
+Twice strict at 483 words, now the shortest twice-strict prompt: the chain from the lean rung
+has shed H, R and P without a single flip across six runs. The registry's open enrichment
+question stays the downgrade-on-re-ingest one (Risk 40 here, 30 and 35 before). Next up are
+the user's min10 subsets, which drop E, F and O from ABDEFJKMNOP: ABDFJKMN is running.

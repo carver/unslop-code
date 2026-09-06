@@ -560,3 +560,6 @@ condition, e2e, phrase interactions, disposable tests) and the two ambiguity add
 (assert-the-choice, implementation-time entries). One run says none of the six is needed for
 score on v2, at a third less cost than the parent. Under the shrink rule it counts after a
 repeat, which is queued behind the other two subsets.
+Queued after it at the user's request (2026-09-06 04:45Z): min9-DEFJKO on v2 (DEFJKOP without
+"do not change the spec or the tests", 379 words, to price that rule), a DEFJKOP repeat, and
+DEFJKOP on xjq (spec v0, its first problem beyond datagate; runs only if DEFJKOP is strict twice).

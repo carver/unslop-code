@@ -1,0 +1,31 @@
+#!/bin/bash
+# Event stream for the run queue, for the Monitor tool: one line per checkpoint result, halt,
+# DONE, traceback or pueue status change, across every task log. Exits when nothing is running
+# or queued. Arm with: Monitor(command="bin/queue-watch", persistent=true). Seeds on the current
+# log positions so old lines are not replayed.
+LOGS=~/.local/share/pueue/task_logs
+declare -A seen status
+for f in "$LOGS"/*.log; do [ -e "$f" ] && seen[$(basename "$f" .log)]=$(wc -l < "$f"); done
+filter='^EXTEND: (checkpoint_[0-9]+ [0-9]+/[0-9]+|DONE|.*halting|.*overload|.*errored|scb exited|window at|run_dir=)|^Traceback|^Killed'
+while true; do
+  for f in "$LOGS"/*.log; do
+    [ -e "$f" ] || continue
+    id=$(basename "$f" .log)
+    n=$(wc -l < "$f")
+    from=${seen[$id]:-0}
+    if [ "$n" -gt "$from" ]; then
+      sed -n "$((from+1)),${n}p" "$f" | grep -E "$filter" | sed "s/^/job $id: /"
+      seen[$id]=$n
+    fi
+  done
+  cur=$(pueue status --json 2>/dev/null | jq -r '.tasks[] | "\(.id) \(.label) \(.status|if type=="object" then keys[0] else . end)"' | sort -n)
+  while read -r id label st; do
+    [ -z "$id" ] && continue
+    if [ -n "${status[$id]}" ] && [ "${status[$id]}" != "$st" ]; then
+      echo "pueue: job $id ($label) ${status[$id]} -> $st"
+    fi
+    status[$id]=$st
+  done <<< "$cur"
+  if ! grep -qE ' (Running|Queued)$' <<< "$cur"; then echo "queue drained: nothing running or queued"; exit 0; fi
+  sleep 60
+done

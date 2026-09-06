@@ -32,10 +32,15 @@ the higher rungs are the quality curve. When a miss needs a rule no rung carries
 new rung above the one that failed instead of editing an existing rung, so earlier results
 stay comparable. Done when every rung has all checkpoints.
 
-Below the rung level, `configs/prompts/min4-chunks/` holds min4 one rule per lettered file and
-`bin/build-prompt BEG` writes `min4-BEG.jinja` from any subset, so a single rule can be
-added or removed at a time (`bin/build-prompt --list` for the index; `min4-chunks/README.md`
-for which chunks presuppose others).
+Below the rung level, chunk sets hold a prompt one rule per lettered file, and
+`bin/build-prompt [--set NAME] LETTERS` writes `NAME-LETTERS.jinja` from any subset, so a single
+rule can be added or removed at a time (`--list` for the index; each set's README says which
+chunks presuppose others). `min4-chunks/` is the original ladder; `min9-chunks/` is v9, the
+current top prompt (v8A plus a Differs score per registry entry), whose skeleton keeps section
+headers when rules are dropped. On spec v2 every v9 rung from DEFJKOP (391 words, $22) up was
+strict on its first run; the user's rules for the search: shrink only from a prompt that is
+strict twice on the current spec, repeat any strict subset before it counts, and keep the
+tester-speed chunks (M, N) in any minimal prompt.
 
 ## 3. Noise
 

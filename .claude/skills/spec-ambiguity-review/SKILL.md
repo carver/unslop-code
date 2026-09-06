@@ -49,6 +49,15 @@ sentence (datagate T22). After each edit to the patch, rerun `bin/spec-patch <pr
 again into a fresh `--out`. Done when each sentence's rules describe the hidden reading in
 10 of 10, with the smallest wording that gets there.
 
+## 3b. Panel a candidate sentence before it goes in
+
+Six blind judge sub-agents, each given a scratch copy of the spec with the candidate line in
+place, the fixtures' shape as a question ("a body of the two lines `name` and `a`"), and the
+candidate readings in a per-judge shuffled order with a key file; judges may read the spec and
+nothing under outputs/, notes/ or tests. Map answers through the keys and require unanimity; a
+split means the wording still leans on the reader. The two v2 sentences went in this way
+(`specs/README.md`). The judge's `why` line should quote the spec words that decided it.
+
 ## 4. Rerun strict
 
     bin/run-config --prompt <best generalized prompt> --problem <problem> --spec vN

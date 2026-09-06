@@ -39,6 +39,7 @@ tests passed / total at each checkpoint (regressions included), from each checkp
 | v9 disambiguated, Fable 5.1 | `…fable-5-1_2.1.251_high_spectest-v9-disambiguated/20260905T1055` | v9 prompt on spec v1 with model fable-5-1 and the Fable agent config | 44/50, 116/122, 168/174, 224/233, 267/276, 344/353, 394/405 | complete 2026-09-05; 11 misses, 0/7 strict, $13, 139 min. The single-column cascade, test for test the same eleven as ABCFGHJK: entry T5 chose the 400 on the Sniffer argument and scored it Differs 30, naming the accepted single-column file as the risk. Cache flag closed at ckpt 6. 67 registry entries all scored, 0 to 50. Quality: erosion 0.158, verbosity 0.188, ast 0.070, cloned 0.104 |
 | v9 on spec v2 | `…spectest-v9-specv2/20260905T1336` | v9 prompt on spec v2 (v1 plus "a single, exact `enrich=yes`" and "Delimiter ... if present") | 50/50, 122/122, 174/174, 233/233, 276/276, 353/353, 405/405 | complete 2026-09-05; 0 misses, 7/7 strict, $40, 118 min. First run on v2. Registry entry T92 on the enrich sentence: "a single is what excludes the repeat", Differs 12 (the v1 runs put this question at 20 and 30); the delimiter entry T14 "handles the one-column case the spec never excludes". 98 entries all scored. Quality: erosion 0.175, verbosity 0.138, ast 0.062, cloned 0.070 |
 | v9 on spec v2, repeat | `…spectest-v9-specv2/20260905T1556` | same config as the first v2 run | 50/50, 122/122, 174/174, 233/233, 276/276, 353/353, 405/405 | complete 2026-09-06; 0 misses, 7/7 strict, $46, 140 min. v9 on v2 is twice strict. Enrich entry T94 at Differs 10. 102 entries all scored. Quality better than the first v2 run: erosion 0.098 against 0.175, ast 0.045 against 0.062, cloned 0.055 against 0.070 |
+| min9-ABDEFHJKMNOPR on v2 | `…min9-ABDEFHJKMNOPR-specv2/20260905T1837` | v9 minus the test-writing extras (C, G, I, Q) and minus assert-the-choice (L) and implementation-time entries (S): min4's rules in v9 form plus pkill and pipe hygiene, the tester-speed pair and the Differs procedure (558 words), spec v2 | 50/50, 122/122, 174/174, 233/233, 276/276, 353/353, 405/405 | complete 2026-09-06; 0 misses, 7/7 strict, $29, 101 min. Cheaper and faster than both v9 runs on v2 ($40, $46). 98 registry entries. Quality: erosion 0.133, verbosity 0.163, ast 0.077, cloned 0.056. Repeat queued |
 
 On hidden tests, v4 through v7 are flat within
 the latin-1 noise (ckpt 1: 50, 49, 50, 49 of 50; ckpt 2: 119, cut, 119, 118 of 122), and
@@ -199,6 +200,7 @@ matrix, and the reading. Failure sets in brief:
   - v9 on spec v2 (405): strict. The two v2 sentences each show up in the registry as a closed
     question: repeated enrich at Differs 12, the one-column file handled in the delimiter entry.
   - v9 on spec v2, repeat (405): strict again, no misses. Twice strict on v2.
+  - min9-ABDEFHJKMNOPR on v2 (405): strict, no misses, at 558 words and $29.
 
 ## Did the v8 testing hints help, or was it the zombie fix?
 
@@ -551,3 +553,10 @@ score behaving as a review flag should when a sentence closes. Costs $40 and $46
 and $32 on v1, the same prompt: worth watching across the subsets but inside what one prompt
 has shown between runs. The min9 subsets now run against a twice-strict parent on the same
 spec, which is the condition the shrink rule asked for.
+
+Amendment 2026-09-06 03:45Z, first min9 subset on v2: ABDEFHJKMNOPR, 558 words, 405/405, 7/7
+strict, $29, 101 min. This is v9 with six chunks removed: the four test-writing extras (finish
+condition, e2e, phrase interactions, disposable tests) and the two ambiguity add-ons
+(assert-the-choice, implementation-time entries). One run says none of the six is needed for
+score on v2, at a third less cost than the parent. Under the shrink rule it counts after a
+repeat, which is queued behind the other two subsets.

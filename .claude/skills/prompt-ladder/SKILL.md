@@ -37,7 +37,8 @@ Below the rung level, chunk sets hold a prompt one rule per lettered file, and
 rule can be added or removed at a time (`--list` for the index; each set's README says which
 chunks presuppose others). `min4-chunks/` is the original ladder; `min9-chunks/` is v9, the
 current top prompt (v8A plus a Differs score per registry entry), whose skeleton keeps section
-headers when rules are dropped. On spec v2 every v9 rung from DEFJKOP (391 words, $22) up was
+headers when rules are dropped; `min10-chunks/` is v10 (Differs renamed Risk with a `### Risk: N`
+template line, all inside J) with the same letters, so `min9-XYZ` and `min10-XYZ` are twins. On spec v2 every v9 rung from DEFJKOP (391 words, $22) up was
 strict on its first run; the user's rules for the search: shrink only from a prompt that is
 strict twice on the current spec, repeat any strict subset before it counts, and keep the
 tester-speed chunks (M, N) in any minimal prompt.

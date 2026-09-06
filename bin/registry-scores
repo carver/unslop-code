@@ -3,7 +3,7 @@
 
 Usage: bin/registry-scores <run_dir> [checkpoint_N] [--grep REGEX] [--top N]
 Reads <run_dir>/<problem>/checkpoint_N/snapshot/AMBIGUITIES.md (last checkpoint by default) and
-accepts both entry styles (### Differs sections and **Differs** — N lines). --grep prints the
+accepts every entry style seen so far (### Differs sections, **Differs** — N and **Differs** N lines). --grep prints the
 Choice and Differs text of entries whose heading matches, which is how a known flip is checked.
 """
 import collections, pathlib, re, sys
@@ -15,7 +15,7 @@ def entries(text):
         h = re.match(r"## ([TI]\d+)[^\n]*", e)
         if not h:
             continue
-        d = re.search(r"(?is)(?:###\s*Differs\s*\n\s*|\*\*Differs\*\*\s*[—:-]+\s*)(\d+)", e)
+        d = re.search(r"(?is)(?:###\s*Differs\s*\n\s*|\*\*Differs\*\*\s*[—:-]*\s*)(\d+)", e)
         c = re.search(r"(?is)(?:###\s*Choice\s*\n|\*\*Choice\*\*\s*[—:-]*\s*)(.*?)(?=\n###|\n\*\*[A-Z]|\Z)", e)
         dt = re.search(r"(?is)(?:###\s*Differs\s*\n|\*\*Differs\*\*\s*[—:-]*\s*)(.*?)(?=\n###|\n\*\*[A-Z]|\Z)", e)
         out.append({"id": h.group(1), "head": h.group(0)[3:].strip(), "score": int(d.group(1)) if d else None,

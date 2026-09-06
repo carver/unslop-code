@@ -567,6 +567,11 @@ repeat, which is queued behind the other two subsets.
 Queued after it at the user's request (2026-09-06 04:45Z): min9-DEFJKO on v2 (DEFJKOP without
 "do not change the spec or the tests", 379 words, to price that rule), a DEFJKOP repeat, and
 DEFJKOP on xjq (spec v0, its first problem beyond datagate; runs only if DEFJKOP is strict twice).
+Replaced 2026-09-06 10:15Z at the user's request (the super-minimal sets cut the tester-speed
+rules, which the user wants kept): the DEFJKO, DEFJKOP-repeat and DEFJKOP-xjq jobs came off unrun,
+and the chain is now ABDEFJKMNOP on v2 twice (the lean rung minus quotable-errors and never-narrow,
+495 words), then if twice strict ABDEFJKMNO twice (minus keep-spec-tests, 483 words), then if
+twice strict ABDEFJKMNO on xjq (spec v0).
 
 Amendment 2026-09-06 06:30Z, the middle v9 rung on v2: ABCDEFGHIJKMNOPQR, 690 words, 405/405,
 7/7 strict, $35, 140 min. All three rungs of the v9 ladder are now strict on v2 on one run

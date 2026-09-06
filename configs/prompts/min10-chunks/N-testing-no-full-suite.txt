@@ -1,0 +1,1 @@
+Never run the full suite to completion or long hypothesis runs; a green suite is the implementer's job, not yours.

@@ -1,0 +1,4 @@
+Sometimes, a phrase will impact how other parts of the spec work.
+Add sub-notes in the test section mentioning the phrase and add a test confirming that the spec phrase is always true.
+If there are existing property or e2e tests, and there is a logical ambiguity, prefer to interpret in a way that both the old spec and new spec can be true.
+If absolutely necessary, merge the new spec in, preferring the new understanding.

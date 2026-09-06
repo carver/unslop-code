@@ -55,3 +55,21 @@ def test_min9_subset_keeps_every_section_header_and_leaves_no_slot():
     assert "<<" not in text
     assert "\n\n\n" not in text
     assert "Touch an IN_PROGRESS file. Delete any COMPLETED file.\n\n# Testing" in text
+
+
+MIN10 = ROOT / "configs/prompts/min10-chunks"
+
+
+def test_all_min10_chunks_rebuild_v10_line_for_line():
+    name, text = bp.build("ABCDEFGHIJKLMNOPQRS", MIN10)
+    assert name == "min10-ABCDEFGHIJKLMNOPQRS"
+    assert nonblank(text) == nonblank((ROOT / "configs/prompts/spectest-v10.jinja").read_text())
+
+
+def test_min10_is_min9_with_only_the_registry_chunk_changed():
+    """The two sets share letters and slugs, so a min9 subset name means the same rules in min10."""
+    nine = {p.name: p.read_text() for p in MIN9.glob("?-*.txt")}
+    ten = {p.name: p.read_text() for p in MIN10.glob("?-*.txt")}
+    assert nine.keys() == ten.keys()
+    assert [n for n in nine if nine[n] != ten[n]] == ["J-testing-ambiguity-registry.txt"]
+    assert (MIN9 / "SKELETON.jinja").read_text() == (MIN10 / "SKELETON.jinja").read_text()

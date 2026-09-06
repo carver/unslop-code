@@ -37,6 +37,10 @@ and the sandbox-local venv):
     bin/run-config --prompt P --problem X    # write a run config for one prompt on one problem
                                              # (--spec vN reads specs/vN/problems; default v0)
     bin/compare-runs <run_dir>...            # runs side by side: scores, cost, quality, miss matrix
+    bin/registry-scores <run_dir> [--grep X] # a run's AMBIGUITIES.md Differs scores: spread, top entries,
+                                             # the Choice and Differs text of matching entries
+    bin/queue-watch                          # event stream for a Monitor: checkpoint results, halts, DONE
+                                             # lines and job status changes across the whole queue
     bin/ledger-row <run_dir>                 # after every run: the ledger row and failure summary to fill in
     bin/results [--write]                    # every complete run, one row per problem/prompt/spec -> notes/results.md
     bin/queue add configs/runs/<name>.yaml   # enqueue a run (one at a time); bin/queue = status

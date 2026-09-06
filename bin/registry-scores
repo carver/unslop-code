@@ -1,0 +1,54 @@
+#!/usr/bin/env python3
+"""Differs scores of a run's AMBIGUITIES.md: count, spread, the top entries, and any entry matching a pattern.
+
+Usage: bin/registry-scores <run_dir> [checkpoint_N] [--grep REGEX] [--top N]
+Reads <run_dir>/<problem>/checkpoint_N/snapshot/AMBIGUITIES.md (last checkpoint by default) and
+accepts both entry styles (### Differs sections and **Differs** — N lines). --grep prints the
+Choice and Differs text of entries whose heading matches, which is how a known flip is checked.
+"""
+import collections, pathlib, re, sys
+
+
+def entries(text):
+    out = []
+    for e in re.split(r"(?m)^(?=## [TI]\d+)", text):
+        h = re.match(r"## ([TI]\d+)[^\n]*", e)
+        if not h:
+            continue
+        d = re.search(r"(?is)(?:###\s*Differs\s*\n\s*|\*\*Differs\*\*\s*[—:-]+\s*)(\d+)", e)
+        c = re.search(r"(?is)(?:###\s*Choice\s*\n|\*\*Choice\*\*\s*[—:-]*\s*)(.*?)(?=\n###|\n\*\*[A-Z]|\Z)", e)
+        dt = re.search(r"(?is)(?:###\s*Differs\s*\n|\*\*Differs\*\*\s*[—:-]*\s*)(.*?)(?=\n###|\n\*\*[A-Z]|\Z)", e)
+        out.append({"id": h.group(1), "head": h.group(0)[3:].strip(), "score": int(d.group(1)) if d else None,
+                    "choice": re.sub(r"\s+", " ", c.group(1)).strip() if c else "", "differs": re.sub(r"\s+", " ", dt.group(1)).strip() if dt else ""})
+    return out
+
+
+def registry(run_dir, checkpoint=None):
+    problems = [p for p in pathlib.Path(run_dir).iterdir() if p.is_dir() and any(p.glob("checkpoint_*"))]
+    cks = sorted(problems[0].glob("checkpoint_*"), key=lambda p: int(p.name.split("_")[1]))
+    ck = problems[0] / checkpoint if checkpoint else cks[-1]
+    return ck / "snapshot" / "AMBIGUITIES.md"
+
+
+def main():
+    args = sys.argv[1:]
+    grep = args[args.index("--grep") + 1] if "--grep" in args else None
+    top = int(args[args.index("--top") + 1]) if "--top" in args else 6
+    pos = [a for i, a in enumerate(args) if not a.startswith("--") and (i == 0 or not args[i - 1].startswith("--"))]
+    if not pos:
+        raise SystemExit(__doc__)
+    path = registry(pos[0], pos[1] if len(pos) > 1 else None)
+    rows = entries(path.read_text())
+    scored = [r for r in rows if r["score"] is not None]
+    by_decade = dict(sorted(collections.Counter((r["score"] // 10) * 10 for r in scored).items()))
+    print(f"{path.relative_to(pos[0]) if str(path).startswith(str(pos[0])) else path}: {len(rows)} entries, {len(scored)} scored, by decade {by_decade}")
+    for r in sorted(scored, key=lambda r: -r["score"])[:top]:
+        print(f"  {r['score']:>3}  {r['head'][:90]}")
+    if grep:
+        for r in rows:
+            if re.search(grep, r["head"], re.I):
+                print(f"\n[{r['id']}] {r['head'][:100]} | Differs {r['score']}\n  Choice: {r['choice'][:400]}\n  Differs: {r['differs'][:300]}")
+
+
+if __name__ == "__main__":
+    main()

@@ -52,3 +52,8 @@ per-checkpoint `cost_limit: 20` is documented as not enforced for the claude_cod
 table: `disallowed_tools: [Monitor]` in `configs/agents/claude_code-2.1.251.yaml` (the
 harness passes it as `--disallowedTools`), so the agent waits with a blocking command
 instead.
+Applied 2026-09-07 14:15Z at the user's request: `disallowed_tools: [Monitor]` in
+`configs/agents/claude_code-2.1.251.yaml`, and the same line added by hand to job 84's saved
+`config.yaml` (`…min11-ABDFJKMN/20260907T0654`, the min11 xjq run then on checkpoint 2), since a
+resume reads the agent block embedded in the run config rather than the agents file. Job 85 and
+everything after start fresh and pick it up from the file.

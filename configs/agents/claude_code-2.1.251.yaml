@@ -33,6 +33,12 @@ timeout: 86400
 # by the 86400s checkpoint timeout above.
 env:
   CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS: "0"
+# Monitor events never reach a print-mode session (background Bash completions do). On the second
+# v11 xjq run the agent armed Monitor on its test shards, was told not to poll or sleep, and spent
+# 1,020 no-op turns waiting for an event that never came: $103 for one checkpoint (notes/xjq-runs.md,
+# 2026-09-07). Without the tool it waits with a blocking command, as the first run did.
+disallowed_tools:
+  - Monitor
 cost_limits:
   cost_limit: 20
   step_limit: 0

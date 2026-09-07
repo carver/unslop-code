@@ -708,3 +708,8 @@ user's 3731a1b) is v10 minus "without questions" in the task line and with the g
 ending "empty, one element, etc." as min4's chunk C always did; `min11-chunks/` mirrors min10
 letter for letter, F and the skeleton's task line being the only edits (tests pin both). Compare
 each against the min10-ABDFJKMN run (405 strict) and the two ABDEFJKMNOP runs.
+Queued 2026-09-07 02:35Z at the user's request, behind the second just-solve run: two runs of
+the full v11 on xjq (jobs 81-82, spec v0, five checkpoints; ledger in notes/xjq-runs.md).
+Conditional rule: if both min11-ABDFJKMN datagate runs (80, 79) are strict, queue two
+min11-ABDFJKMN runs on xjq (config `min11-ABDFJKMN-xjq-opus5.yaml` is written and unqueued);
+if either misses, they stay off. Order now: 67, 80, 79, 68, 81, 82.

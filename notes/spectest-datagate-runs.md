@@ -47,6 +47,7 @@ tests passed / total at each checkpoint (regressions included), from each checkp
 | min9-ABDEFJKMNOP on v2, repeat | `…min9-ABDEFJKMNOP-specv2/20260906T0535` | same config as the first run | 50/50, 122/122, 174/174, 233/233, 276/276, 353/353, 405/405 | complete 2026-09-06; 0 misses, 7/7 strict, $25, 83 min. ABDEFJKMNOP is twice strict on v2 at 495 words. 114 entries all scored, Differs 0-45 (top: STORAGE_DIR default 45, repeated force 40; exact enrich=yes 15, enrich downgrade on re-ingest 35). Quality: erosion 0.097, verbosity 0.212, ast 0.088, cloned 0.105 |
 | min9-ABDEFJKMNO on v2 | `…min9-ABDEFJKMNO-specv2/20260906T0720` | ABDEFJKMNOP minus P (do not change the spec or its tests), 483 words; first of two | 50/50, 122/122, 174/174, 233/233, 276/276, 353/353, 405/405 | complete 2026-09-06; 0 misses, 7/7 strict, $23, 80 min. 96 entries all scored, Differs 0-40 (top: ragged rows 40, spreadsheet cell to JSON 40; exact enrich=yes 15, enrich downgrade on re-ingest 30). Quality: erosion 0.069, verbosity 0.145, ast 0.053, cloned 0.080, the best of the chain |
 | min9-ABDEFJKMNO on v2, repeat | `…min9-ABDEFJKMNO-specv2/20260906T0901` | same config as the first run | 50/50, 122/122, 174/174, 233/233, 276/276, 353/353, 405/405 | complete 2026-09-06; 0 misses, 7/7 strict, $26, 93 min (spans an internet outage on the host, unharmed). ABDEFJKMNO is twice strict on v2 at 483 words. 98 entries all scored, Differs 0-50 (top: query timeout 50, one-column file 45; exact enrich=yes 10, enrich downgrade on re-ingest 40). Quality: erosion 0.109, verbosity 0.118, ast 0.066, cloned 0.043 |
+| min10-ABDFJKMN on v2 | `…min10-ABDFJKMN-specv2/20260906T1055` | ABDEFJKMNOP minus E (hypothesis), O (code until the tests pass) and P, with v10's Risk wording, 473 words; first of two | 50/50, 122/122, 174/174, 233/233, 276/276, 353/353, 405/405 | complete 2026-09-07; 0 misses, 7/7 strict, $26, 78 min of agent time (checkpoint 2 was redone after an infra failure in the outage; the run spanned 13.5 h of wall clock). 92 entries all scored, Risk 0-45 (top: type labels 45, losing sort param 40; exact enrich=yes 8, enrich downgrade on re-ingest 30). Quality: erosion 0.158, verbosity 0.170, ast 0.067, cloned 0.070 |
 
 On hidden tests, v4 through v7 are flat within
 the latin-1 noise (ckpt 1: 50, 49, 50, 49 of 50; ckpt 2: 119, cut, 119, 118 of 122), and
@@ -215,6 +216,7 @@ matrix, and the reading. Failure sets in brief:
   - min9-ABDEFJKMNOP on v2, repeat (405): strict again. Twice strict at 495 words.
   - min9-ABDEFJKMNO on v2 (405): strict, no misses, at 483 words and $23. First of two.
   - min9-ABDEFJKMNO on v2, repeat (405): strict again. Twice strict at 483 words.
+  - min10-ABDFJKMN on v2 (405): strict, no misses, at 473 words and $26, without O. First of two.
 
 ## Did the v8 testing hints help, or was it the zombie fix?
 
@@ -667,3 +669,11 @@ just-solve v2 run were killed minutes after starting into the second outage; the
 checkpoint-1 prompt and infer log under outputs/spectest (no checkpoint_results.jsonl, so
 results ignores them) and are requeued as jobs 66-77 in the same order. Queue restarted 23:00Z
 with the network stable; job 63 running.
+
+Amendment 2026-09-07 00:35Z, ABDFJKMN on v2, first run: 405/405, 7/7 strict, $26, 78 min of
+agent time across the outage (checkpoint 2 redone). Dropping O, code until the tests pass, cost
+nothing on correctness; the quality figures went the other way from ABDEFJKMNO (erosion 0.158
+against 0.069 and 0.109, cloned 0.070 against 0.080 and 0.043), which is inside the noise the
+ladder has shown so far but worth a second look on the repeat. Registry: 92 entries, the
+downgrade-on-re-ingest question still the open one (Risk 30), exact enrich=yes closed at 8.
+Its repeat is not queued; under the twice-strict rule it needs one. ABDEJKMN's resume is running.

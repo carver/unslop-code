@@ -48,6 +48,7 @@ tests passed / total at each checkpoint (regressions included), from each checkp
 | min9-ABDEFJKMNO on v2 | `…min9-ABDEFJKMNO-specv2/20260906T0720` | ABDEFJKMNOP minus P (do not change the spec or its tests), 483 words; first of two | 50/50, 122/122, 174/174, 233/233, 276/276, 353/353, 405/405 | complete 2026-09-06; 0 misses, 7/7 strict, $23, 80 min. 96 entries all scored, Differs 0-40 (top: ragged rows 40, spreadsheet cell to JSON 40; exact enrich=yes 15, enrich downgrade on re-ingest 30). Quality: erosion 0.069, verbosity 0.145, ast 0.053, cloned 0.080, the best of the chain |
 | min9-ABDEFJKMNO on v2, repeat | `…min9-ABDEFJKMNO-specv2/20260906T0901` | same config as the first run | 50/50, 122/122, 174/174, 233/233, 276/276, 353/353, 405/405 | complete 2026-09-06; 0 misses, 7/7 strict, $26, 93 min (spans an internet outage on the host, unharmed). ABDEFJKMNO is twice strict on v2 at 483 words. 98 entries all scored, Differs 0-50 (top: query timeout 50, one-column file 45; exact enrich=yes 10, enrich downgrade on re-ingest 40). Quality: erosion 0.109, verbosity 0.118, ast 0.066, cloned 0.043 |
 | min10-ABDFJKMN on v2 | `…min10-ABDFJKMN-specv2/20260906T1055` | ABDEFJKMNOP minus E (hypothesis), O (code until the tests pass) and P, with v10's Risk wording, 473 words; first of two | 50/50, 122/122, 174/174, 233/233, 276/276, 353/353, 405/405 | complete 2026-09-07; 0 misses, 7/7 strict, $26, 78 min of agent time (checkpoint 2 was redone after an infra failure in the outage; the run spanned 13.5 h of wall clock). 92 entries all scored, Risk 0-45 (top: type labels 45, losing sort param 40; exact enrich=yes 8, enrich downgrade on re-ingest 30). Quality: erosion 0.158, verbosity 0.170, ast 0.067, cloned 0.070 |
+| min10-ABDEJKMN on v2 | `…min10-ABDEJKMN-specv2/20260906T1139` | ABDEFJKMNOP minus F (generator floor), O and P, with v10's Risk wording, 460 words; first of two | 49/50, 121/122, 172/174, 231/233, 274/276, 351/353, 403/405 | complete 2026-09-07; 2 misses (header/time whitespace trimmed: test_preserves_header_and_time_whitespace from checkpoint 1, test_header_no_trim from checkpoint 3), 0/7 strict, $20, 68 min of agent time (checkpoint 1 redone after an infra failure in the outage; 14 h of wall clock). 91 entries all scored, Risk 0-50 (top: query timeout 50, numeric recognition 40; whitespace T7 30 with the tests' reading named as the divergence; enrich downgrade on re-ingest 35). Quality: erosion 0.068, verbosity 0.147, ast 0.069, cloned 0.070 |
 
 On hidden tests, v4 through v7 are flat within
 the latin-1 noise (ckpt 1: 50, 49, 50, 49 of 50; ckpt 2: 119, cut, 119, 118 of 122), and
@@ -217,6 +218,9 @@ matrix, and the reading. Failure sets in brief:
   - min9-ABDEFJKMNO on v2 (405): strict, no misses, at 483 words and $23. First of two.
   - min9-ABDEFJKMNO on v2, repeat (405): strict again. Twice strict at 483 words.
   - min10-ABDFJKMN on v2 (405): strict, no misses, at 473 words and $26, without O. First of two.
+  - min10-ABDEJKMN on v2 (403): the header-trim coin flip, two tests from checkpoints 1 and 3,
+    carried to the end. The first miss on this question since min2; registry T7 chose to strip
+    at Risk 30 and named the tests' reading. Nothing else missed; 460 words, $20.
 
 ## Did the v8 testing hints help, or was it the zombie fix?
 
@@ -681,3 +685,13 @@ Changed 2026-09-07 01:50Z at the user's request: the ABDJKMN resume (job 65) cam
 a second run of min10-ABDFJKMN (job 78) took its place at the head of the queue, ahead of the
 v10 and just-solve jobs. ABDEJKMN (job 64) is at checkpoint 7 carrying the two header-trim
 misses from checkpoint 1.
+
+Amendment 2026-09-07 02:05Z, ABDEJKMN on v2, first run: 403/405, 0/7 strict, $20, 68 min of
+agent time. The agent stripped whitespace from header cells and time values at checkpoint 1
+and never revisited it, so two tests failed from the checkpoint each was introduced in. Registry
+entry T7 saw the fork, chose to strip at Risk 30 and named the never-strip reading as the likely
+divergence: a known coin flip (miss-matrix rows 1 and 3) that every rung from min3 to
+ABDEFJKMNO had won, ten-plus runs in a row, until this one. Chunk F is about generator inputs,
+not whitespace, so the drop of F is not the obvious cause; a repeat would say. Quality was the
+best of the min10 pair (erosion 0.068 against ABDFJKMN's 0.158). Job 78, the ABDFJKMN repeat,
+started 01:56Z.

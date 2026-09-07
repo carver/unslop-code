@@ -51,6 +51,7 @@ tests passed / total at each checkpoint (regressions included), from each checkp
 | min10-ABDEJKMN on v2 | `…min10-ABDEJKMN-specv2/20260906T1139` | ABDEFJKMNOP minus F (generator floor), O and P, with v10's Risk wording, 460 words; first of two | 49/50, 121/122, 172/174, 231/233, 274/276, 351/353, 403/405 | complete 2026-09-07; 2 misses (header/time whitespace trimmed: test_preserves_header_and_time_whitespace from checkpoint 1, test_header_no_trim from checkpoint 3), 0/7 strict, $20, 68 min of agent time (checkpoint 1 redone after an infra failure in the outage; 14 h of wall clock). 91 entries all scored, Risk 0-50 (top: query timeout 50, numeric recognition 40; whitespace T7 30 with the tests' reading named as the divergence; enrich downgrade on re-ingest 35). Quality: erosion 0.068, verbosity 0.147, ast 0.069, cloned 0.070 |
 | min11-ABDFJKMN on v2 | `…min11-ABDFJKMN-specv2/20260906T2012` | min10-ABDFJKMN with v11's two edits (generator floor ends "empty, one element, etc."; no "without questions"), 468 words; first of two | 50/50, 122/122, 174/174, 233/233, 276/276, 353/353, 405/405 | complete 2026-09-07; 0 misses, 7/7 strict, $28, 89 min. 89 entries all scored, Risk 0-48 (top: type labels 48, query timeout 45; header trim T77 30; enrich downgrade on re-ingest 30; enrich states 12). Quality: erosion 0.099, verbosity 0.124, ast 0.056, cloned 0.060 |
 | min11-ABDFJKMN on v2, repeat | `…min11-ABDFJKMN-specv2/20260906T2202` | same config as the first run | 50/50, 122/122, 174/174, 233/233, 276/276, 353/353, 405/405 | complete 2026-09-07; 0 misses, 7/7 strict, $25, 79 min. min11-ABDFJKMN is twice strict on v2 at 468 words. 101 entries all scored, Risk 0-40 (top: losing sort param 40, type labels 40; cache flag trim 20; enrich downgrade on re-ingest 30). Quality: erosion 0.022, verbosity 0.205, ast 0.076, cloned 0.090 |
+| just-solve on v2 | `…just-solve-specv2/20260906T1908` | benchmark's own prompt on spec v2; first of two | 48/50, 120/122, 169/174, 228/233, 271/276, 348/353, 400/405 | complete 2026-09-07; 5 misses, all whitespace (the ckpt-1 pair and the ckpt-3 trio), the same five as the v1 repeat, checkpoint for checkpoint; 0/7 strict, $15, 72 min of agent time (resumed from ckpt 5 after the outage; ckpt 4's spurious infra flag cleared by hand). Quality: erosion 0.666, verbosity 0.560, ast 0.499, cloned 0.104, the worst of any run |
 
 On hidden tests, v4 through v7 are flat within
 the latin-1 noise (ckpt 1: 50, 49, 50, 49 of 50; ckpt 2: 119, cut, 119, 118 of 122), and
@@ -131,6 +132,12 @@ sentences held in both runs: latin-1, rowid, both charset blocks, `force`.
 The patch alone recovers 20 of the control's 28 misses. What is left is whitespace
 handling and one lenient-parsing cluster that flips between runs. Erosion 0.535 then
 0.306 with the same prompt, which is the noise scale for quality comparisons.
+
+### just-solve on spec v2
+
+  - first run (400): five whitespace misses, the checkpoint-1 pair and the checkpoint-3 trio,
+    the same set as the v1 repeat and min0. Neither v2 sentence touched them: the repeated
+    enrich and one-column tests passed. Quality collapsed (erosion 0.666 against 0.306 on v1).
 
 ### v8A (no libraries, no tester sub-agent; patched spec)
 
@@ -740,3 +747,9 @@ against the first run; the trim questions closed the tests' way again. Erosion 0
 lowest of the ladder so far (verbosity 0.205 the price). Registry: 101 entries. The conditional
 rule fired: two min11-ABDFJKMN runs on xjq are queued (jobs 84-85, spec v0) behind the v11 xjq
 pair. The just-solve resume (job 68) is running from checkpoint 5.
+
+Amendment 2026-09-07 07:35Z, just-solve on v2, first run: 400/405, 0/7 strict, $15, 72 min of
+agent time. Score by score the v1 repeat: the five whitespace tests and nothing else, so the
+two v2 sentences cost the bare prompt nothing and the whitespace band stays its noise floor.
+Quality is the outlier: erosion 0.666, verbosity 0.560, ast 0.499, twice the v1 pair's worst.
+The second run (job 81) started 07:29Z.

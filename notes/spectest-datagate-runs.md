@@ -50,6 +50,7 @@ tests passed / total at each checkpoint (regressions included), from each checkp
 | min10-ABDFJKMN on v2 | `…min10-ABDFJKMN-specv2/20260906T1055` | ABDEFJKMNOP minus E (hypothesis), O (code until the tests pass) and P, with v10's Risk wording, 473 words; first of two | 50/50, 122/122, 174/174, 233/233, 276/276, 353/353, 405/405 | complete 2026-09-07; 0 misses, 7/7 strict, $26, 78 min of agent time (checkpoint 2 was redone after an infra failure in the outage; the run spanned 13.5 h of wall clock). 92 entries all scored, Risk 0-45 (top: type labels 45, losing sort param 40; exact enrich=yes 8, enrich downgrade on re-ingest 30). Quality: erosion 0.158, verbosity 0.170, ast 0.067, cloned 0.070 |
 | min10-ABDEJKMN on v2 | `…min10-ABDEJKMN-specv2/20260906T1139` | ABDEFJKMNOP minus F (generator floor), O and P, with v10's Risk wording, 460 words; first of two | 49/50, 121/122, 172/174, 231/233, 274/276, 351/353, 403/405 | complete 2026-09-07; 2 misses (header/time whitespace trimmed: test_preserves_header_and_time_whitespace from checkpoint 1, test_header_no_trim from checkpoint 3), 0/7 strict, $20, 68 min of agent time (checkpoint 1 redone after an infra failure in the outage; 14 h of wall clock). 91 entries all scored, Risk 0-50 (top: query timeout 50, numeric recognition 40; whitespace T7 30 with the tests' reading named as the divergence; enrich downgrade on re-ingest 35). Quality: erosion 0.068, verbosity 0.147, ast 0.069, cloned 0.070 |
 | min11-ABDFJKMN on v2 | `…min11-ABDFJKMN-specv2/20260906T2012` | min10-ABDFJKMN with v11's two edits (generator floor ends "empty, one element, etc."; no "without questions"), 468 words; first of two | 50/50, 122/122, 174/174, 233/233, 276/276, 353/353, 405/405 | complete 2026-09-07; 0 misses, 7/7 strict, $28, 89 min. 89 entries all scored, Risk 0-48 (top: type labels 48, query timeout 45; header trim T77 30; enrich downgrade on re-ingest 30; enrich states 12). Quality: erosion 0.099, verbosity 0.124, ast 0.056, cloned 0.060 |
+| min11-ABDFJKMN on v2, repeat | `…min11-ABDFJKMN-specv2/20260906T2202` | same config as the first run | 50/50, 122/122, 174/174, 233/233, 276/276, 353/353, 405/405 | complete 2026-09-07; 0 misses, 7/7 strict, $25, 79 min. min11-ABDFJKMN is twice strict on v2 at 468 words. 101 entries all scored, Risk 0-40 (top: losing sort param 40, type labels 40; cache flag trim 20; enrich downgrade on re-ingest 30). Quality: erosion 0.022, verbosity 0.205, ast 0.076, cloned 0.090 |
 
 On hidden tests, v4 through v7 are flat within
 the latin-1 noise (ckpt 1: 50, 49, 50, 49 of 50; ckpt 2: 119, cut, 119, 118 of 122), and
@@ -223,6 +224,8 @@ matrix, and the reading. Failure sets in brief:
     carried to the end. The first miss on this question since min2; registry T7 chose to strip
     at Risk 30 and named the tests' reading. Nothing else missed; 460 words, $20.
   - min11-ABDFJKMN on v2 (405): strict, no misses, at 468 words and $28. First of two.
+  - min11-ABDFJKMN on v2, repeat (405): strict again. Twice strict at 468 words, the shortest
+    twice-strict prompt, and the first without O (code until the tests pass).
 
 ## Did the v8 testing hints help, or was it the zombie fix?
 
@@ -730,3 +733,10 @@ The header-trim coin flip went the tests' way (entry T77 at Risk 30), as did the
 Quality sits between the two min10 subsets (erosion 0.099 against ABDFJKMN's 0.158 and
 ABDEJKMN's 0.068). Registry: 89 entries; the downgrade-on-re-ingest question open at 30. Its
 repeat (job 79) started 05:03Z; if strict, the rule queues min11-ABDFJKMN on xjq twice.
+
+Amendment 2026-09-07 06:50Z, min11-ABDFJKMN on v2 repeated: 405/405, 7/7 strict, $25, 79 min.
+Twice strict at 468 words: the shortest twice-strict prompt, and the first without O. No flip
+against the first run; the trim questions closed the tests' way again. Erosion 0.022, the
+lowest of the ladder so far (verbosity 0.205 the price). Registry: 101 entries. The conditional
+rule fired: two min11-ABDFJKMN runs on xjq are queued (jobs 84-85, spec v0) behind the v11 xjq
+pair. The just-solve resume (job 68) is running from checkpoint 5.

@@ -1,0 +1,1 @@
+You run tests only to validate the tests themselves: collection succeeds, helpers and generators work{% if is_continuation -%}, and each failure is because behavior is missing, not because the test is broken{% endif -%}. Quick, targeted runs.

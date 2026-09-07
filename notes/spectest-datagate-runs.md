@@ -713,3 +713,12 @@ the full v11 on xjq (jobs 81-82, spec v0, five checkpoints; ledger in notes/xjq-
 Conditional rule: if both min11-ABDFJKMN datagate runs (80, 79) are strict, queue two
 min11-ABDFJKMN runs on xjq (config `min11-ABDFJKMN-xjq-opus5.yaml` is written and unqueued);
 if either misses, they stay off. Order now: 67, 80, 79, 68, 81, 82.
+Amendment 2026-09-07 03:25Z, just-solve v2 first run (`…just-solve-specv2/20260906T1908`, job 67):
+halted after checkpoint 4 with infrastructure_failure set, although the evaluation was complete
+(228/233: Core 12/12, Functionality 32/32, Error 15/15, Regression 169/174, pytest exit 1). Six
+of the seven collection passes had failed with uv's exit 2 during a network blip 02:51-03:08Z;
+the test run itself came after it and collected every test. At the user's request the flag
+was cleared by hand in checkpoint_4/evaluation.json (the original is beside it as
+evaluation.json.infra-flag.bak) and the run resumes from checkpoint 5 as job 68, ahead of the
+second just-solve run (now job 81; the v11 xjq pair is 82-83, the move renumbered them).
+Checkpoints so far: 48/50, 120/122, 169/174, 228/233, five misses carried from checkpoint 3.

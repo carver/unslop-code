@@ -73,3 +73,26 @@ def test_min10_is_min9_with_only_the_registry_chunk_changed():
     assert nine.keys() == ten.keys()
     assert [n for n in nine if nine[n] != ten[n]] == ["J-testing-ambiguity-registry.txt"]
     assert (MIN9 / "SKELETON.jinja").read_text() == (MIN10 / "SKELETON.jinja").read_text()
+
+
+MIN11 = ROOT / "configs/prompts/min11-chunks"
+
+
+def test_all_min11_chunks_rebuild_v11_line_for_line():
+    name, text = bp.build("ABCDEFGHIJKLMNOPQRS", MIN11)
+    assert name == "min11-ABCDEFGHIJKLMNOPQRS"
+    assert nonblank(text) == nonblank((ROOT / "configs/prompts/spectest-v11.jinja").read_text())
+
+
+def test_min11_is_min10_with_only_the_generator_floor_and_task_line_changed():
+    """Same letters and slugs again, so a min10 subset name means the same rules in min11."""
+    ten = {p.name: p.read_text() for p in MIN10.glob("?-*.txt")}
+    eleven = {p.name: p.read_text() for p in MIN11.glob("?-*.txt")}
+    assert ten.keys() == eleven.keys()
+    assert [n for n in ten if ten[n] != eleven[n]] == ["F-testing-generator-floor.txt"]
+    assert eleven["F-testing-generator-floor.txt"].rstrip().endswith("empty, one element, etc.")
+    ten_skeleton = (MIN10 / "SKELETON.jinja").read_text().splitlines()
+    eleven_skeleton = (MIN11 / "SKELETON.jinja").read_text().splitlines()
+    assert [(a, b) for a, b in zip(ten_skeleton, eleven_skeleton) if a != b] == [
+        ("Fully implement the following spec, without questions. Use the approach:",
+         "Fully implement the following spec. Use the approach:")]

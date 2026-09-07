@@ -1,0 +1,1 @@
+For new ambiguities that arise during implementation that aren't resolved by the spec tests, follow the same procedure: choose, and record it in AMBIGUITIES.md numbered starting at I1.

@@ -695,3 +695,10 @@ ABDEFJKMNO had won, ten-plus runs in a row, until this one. Chunk F is about gen
 not whitespace, so the drop of F is not the obvious cause; a repeat would say. Quality was the
 best of the min10 pair (erosion 0.068 against ABDFJKMN's 0.158). Job 78, the ABDFJKMN repeat,
 started 01:56Z.
+Changed 2026-09-07 02:10Z at the user's request: every queued v10 run came off (xjq, file_merger,
+mvvault, rejector, sith, two passes each; jobs 66, 69-77), and the ABDFJKMN repeat (job 78,
+`…min10-ABDFJKMN-specv2/20260906T1855`) was killed right after checkpoint 1 (50/50, strict) and
+stays incomplete. Reason: chunk F still carries v4's "Every generator must be able to produce
+the smallest inputs ... empty, one element, one row, one column"; the user had generalised
+that line in v4 and the change never reached v9 or v10, so the min9/min10 chunks and both
+templates need it before more runs. The just-solve v2 pair (67-68) is all that remains queued.

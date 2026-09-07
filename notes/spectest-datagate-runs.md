@@ -677,3 +677,7 @@ against 0.069 and 0.109, cloned 0.070 against 0.080 and 0.043), which is inside 
 ladder has shown so far but worth a second look on the repeat. Registry: 92 entries, the
 downgrade-on-re-ingest question still the open one (Risk 30), exact enrich=yes closed at 8.
 Its repeat is not queued; under the twice-strict rule it needs one. ABDEJKMN's resume is running.
+Changed 2026-09-07 01:50Z at the user's request: the ABDJKMN resume (job 65) came off unrun, and
+a second run of min10-ABDFJKMN (job 78) took its place at the head of the queue, ahead of the
+v10 and just-solve jobs. ABDEJKMN (job 64) is at checkpoint 7 carrying the two header-trim
+misses from checkpoint 1.

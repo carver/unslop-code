@@ -767,3 +767,9 @@ parameter's value, not about upgrading, so this is a fresh reading rather than a
 the patch. The v2 just-solve pair is 400 and 392, against 397 and 400 on v1: the bare prompt's
 band is unchanged. Erosion 0.621 and 0.666 on the pair, both far above every prompted run.
 Job 82, the first full v11 on xjq, started 08:37Z; its ledger is notes/xjq-runs.md.
+
+Queued 2026-09-07 15:15Z at the user's request, behind the second min11-ABDFJKMN xjq run (job
+85): min11-ABDFJKMN on file_merger, mvvault, rejector and sith (jobs 86-89, spec v0), then the
+same four again (90-93). Ledgers: notes/<problem>-runs.md, created from this file's shape as
+each first run lands; control rows come from the dev6 sweep (notes/dev6-opus5.md).
+

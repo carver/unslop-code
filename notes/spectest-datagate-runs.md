@@ -702,3 +702,9 @@ stays incomplete. Reason: chunk F still carries v4's "Every generator must be ab
 the smallest inputs ... empty, one element, one row, one column"; the user had generalised
 that line in v4 and the change never reached v9 or v10, so the min9/min10 chunks and both
 templates need it before more runs. The just-solve v2 pair (67-68) is all that remains queued.
+Queued 2026-09-07 02:25Z at the user's request, ahead of the second just-solve run: two runs of
+min11-ABDFJKMN on datagate v2 (jobs 80 then 79; 468 words). v11 (`spectest-v11.jinja`, the
+user's 3731a1b) is v10 minus "without questions" in the task line and with the generator floor
+ending "empty, one element, etc." as min4's chunk C always did; `min11-chunks/` mirrors min10
+letter for letter, F and the skeleton's task line being the only edits (tests pin both). Compare
+each against the min10-ABDFJKMN run (405 strict) and the two ABDEFJKMNOP runs.

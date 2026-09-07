@@ -29,3 +29,26 @@ is the dev6 sweep's just-solve run (`notes/dev6-opus5.md`).
   - repeat (160): the same seven misses at the same checkpoints, so the family is settled
     for v11 on xjq, and the registry again scored it (whitespace-only text results at Risk 45
     this time). $134, twenty-two times the control: checkpoints 2 and 4 carry most of it.
+
+## Why v11's checkpoint 4 cost $103 (2026-09-07 14:30Z)
+
+The repeat's checkpoint 4 (`…spectest-v11/20260907T0401/xjq/checkpoint_4`) ran 80 min and
+1,479 assistant turns, 1,372 of them a polling loop. At 12:47Z, tests validated and the
+implementation reviewed, the agent launched its full suite as four `nohup` pytest shards
+writing to /tmp, armed the Monitor tool on a `pgrep` wait for them, and was told "you will be
+notified on each event, keep working, do not poll or sleep". No Monitor event ever reached the
+session (zero in the transcript, for either of the two monitors it armed), so with nothing else
+to do it ran `true` 1,020 times, each call a full turn over a 130k to 244k context, saying
+"Waiting." between them. At 13:21Z it read the shard files itself, fixed one stale test,
+re-ran the CSS shard, armed a second monitor and polled again until 13:36Z. The loop is 96%
+of the checkpoint's 264M input tokens; every checkpoint outside it in both v11 xjq runs, and
+every min11 datagate checkpoint, has zero `true` calls. The first run's $39 checkpoint 4 was
+plain length (569 turns), not a loop. Background Bash completions do get delivered in the
+harness's print-mode session (the "Validate property tests" task notified), Monitor events do
+not; the agent config's `CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=0` (set so background
+sub-agents survive the parent's turn ending) is the likely reason and is unverified. The
+per-checkpoint `cost_limit: 20` is documented as not enforced for the claude_code agent, and
+`net_cost_limit: 100` is checked only between checkpoints, so nothing capped it. Fix on the
+table: `disallowed_tools: [Monitor]` in `configs/agents/claude_code-2.1.251.yaml` (the
+harness passes it as `--disallowedTools`), so the agent waits with a blocking command
+instead.

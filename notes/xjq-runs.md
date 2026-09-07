@@ -12,6 +12,7 @@ is the dev6 sweep's just-solve run (`notes/dev6-opus5.md`).
 | v11 | `…spectest-v11/20260907T0137` | full v11 (`spectest-v11.jinja`); first of two | 23/23, 47/51, 91/96, 116/122, 160/167 | complete 2026-09-07; 7 misses, six shared with the control (the `--text-all` family: joining multiple elements with newlines, deeply nested whitespace, `::text` first-match-only, `first` with `--text-all`, the empty-string JSON element) plus whitespace-only element as empty output; the control's mixed-pipe-path miss passed. 1/5 strict, $73, 137 min. 49 registry entries all scored, Risk 0-45 (top: non-node-set results 45, mixed `::text` comma lists 40, "immediate text content" 40; whitespace-only text results 25). Quality: erosion 0.080, verbosity 0.228, ast 0.050, cloned 0.156 |
 | v11, repeat | `…spectest-v11/20260907T0401` | same config as the first run | 23/23, 47/51, 91/96, 116/122, 160/167 | complete 2026-09-07; the first run's seven misses, test for test, at every checkpoint; 1/5 strict, $134 (per checkpoint $2, 21, 3, 103, 4), 165 min. 53 registry entries all scored, Risk 0-45 (top: pretty-print 45, whitespace-only text results 45, exported text normalisation 40). Quality: erosion 0.051, verbosity 0.287, ast 0.059, cloned 0.206 |
 | min11-ABDFJKMN | `…min11-ABDFJKMN/20260907T0654` | the 468-word min11 subset (twice strict on datagate v2); first of two | 23/23, 47/51, 91/96, 116/122, 160/167 | complete 2026-09-07; the v11 runs' seven misses, test for test; 1/5 strict, $14 (per checkpoint 2, 3, 2, 3, 3), 69 min; checkpoints 3-5 ran with Monitor disallowed. 51 registry entries all scored, Risk 0-45 (top: non-node XPath results 45, whitespace-only descendant text nodes 45). Quality: erosion 0.050, verbosity 0.355, ast 0.067, cloned 0.283 |
+| min11-ABDFJKMN, repeat | `…min11-ABDFJKMN/20260907T0810` | same config as the first run | 23/23, 47/51, 91/96, 116/122, 160/167 | complete 2026-09-07; the same seven misses; 1/5 strict, $17 (per checkpoint 2, 4, 3, 4, 3), 83 min, Monitor disallowed throughout. 60 registry entries all scored, Risk 0-45 (top: non-node-set results 45; whitespace-only text nodes 25; null vs empty text node 35). Quality: erosion 0.046, verbosity 0.322, ast 0.055, cloned 0.245 |
 
 ## Test failure summaries
 
@@ -37,6 +38,8 @@ is the dev6 sweep's just-solve run (`notes/dev6-opus5.md`).
     at a tenth of v11's price ($14 against $73 and $134). The text-joining family is a
     reading the prompt does not move; the registry names it every time (whitespace-only
     descendant text nodes, Risk 45) and chooses against the tests.
+  - repeat (160): the same seven, so xjq is settled for min11 too: 160/167 on all five prompted
+    runs and the control. min11 pair $14 and $17 against v11's $73 and $134.
 
 ## Why v11's checkpoint 4 cost $103 (2026-09-07 14:30Z)
 

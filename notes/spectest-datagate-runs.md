@@ -52,6 +52,7 @@ tests passed / total at each checkpoint (regressions included), from each checkp
 | min11-ABDFJKMN on v2 | `…min11-ABDFJKMN-specv2/20260906T2012` | min10-ABDFJKMN with v11's two edits (generator floor ends "empty, one element, etc."; no "without questions"), 468 words; first of two | 50/50, 122/122, 174/174, 233/233, 276/276, 353/353, 405/405 | complete 2026-09-07; 0 misses, 7/7 strict, $28, 89 min. 89 entries all scored, Risk 0-48 (top: type labels 48, query timeout 45; header trim T77 30; enrich downgrade on re-ingest 30; enrich states 12). Quality: erosion 0.099, verbosity 0.124, ast 0.056, cloned 0.060 |
 | min11-ABDFJKMN on v2, repeat | `…min11-ABDFJKMN-specv2/20260906T2202` | same config as the first run | 50/50, 122/122, 174/174, 233/233, 276/276, 353/353, 405/405 | complete 2026-09-07; 0 misses, 7/7 strict, $25, 79 min. min11-ABDFJKMN is twice strict on v2 at 468 words. 101 entries all scored, Risk 0-40 (top: losing sort param 40, type labels 40; cache flag trim 20; enrich downgrade on re-ingest 30). Quality: erosion 0.022, verbosity 0.205, ast 0.076, cloned 0.090 |
 | just-solve on v2 | `…just-solve-specv2/20260906T1908` | benchmark's own prompt on spec v2; first of two | 48/50, 120/122, 169/174, 228/233, 271/276, 348/353, 400/405 | complete 2026-09-07; 5 misses, all whitespace (the ckpt-1 pair and the ckpt-3 trio), the same five as the v1 repeat, checkpoint for checkpoint; 0/7 strict, $15, 72 min of agent time (resumed from ckpt 5 after the outage; ckpt 4's spurious infra flag cleared by hand). Quality: erosion 0.666, verbosity 0.560, ast 0.499, cloned 0.104, the worst of any run |
+| just-solve on v2, repeat | `…just-solve-specv2/20260907T0029` | same config as the first run | 48/50, 120/122, 169/174, 228/233, 271/276, 342/353, 392/405 | complete 2026-09-07; 13 misses: the five whitespace tests of the first run, the six-test CACHE_ENABLED trimming cluster from checkpoint 6, and two cache-upgrade tests at checkpoint 7 (test_cache_upgrade_reingests, test_spreadsheet_cache_upgrade_to_enriched: enrich=yes on a cached dataset did not re-ingest); 0/7 strict, $12, 47 min. Quality: erosion 0.621, verbosity 0.506, ast 0.455, cloned 0.077 |
 
 On hidden tests, v4 through v7 are flat within
 the latin-1 noise (ckpt 1: 50, 49, 50, 49 of 50; ckpt 2: 119, cut, 119, 118 of 122), and
@@ -138,6 +139,9 @@ handling and one lenient-parsing cluster that flips between runs. Erosion 0.535 
   - first run (400): five whitespace misses, the checkpoint-1 pair and the checkpoint-3 trio,
     the same set as the v1 repeat and min0. Neither v2 sentence touched them: the repeated
     enrich and one-column tests passed. Quality collapsed (erosion 0.666 against 0.306 on v1).
+  - repeat (392): the same five, plus the six-test cache-flag trimming cluster at checkpoint 6
+    (the plain prompt's known flip) and two new checkpoint-7 misses, the cache-upgrade pair:
+    `enrich=yes` on an already cached dataset did not re-ingest it. Erosion 0.621.
 
 ### v8A (no libraries, no tester sub-agent; patched spec)
 
@@ -753,3 +757,13 @@ agent time. Score by score the v1 repeat: the five whitespace tests and nothing 
 two v2 sentences cost the bare prompt nothing and the whitespace band stays its noise floor.
 Quality is the outlier: erosion 0.666, verbosity 0.560, ast 0.499, twice the v1 pair's worst.
 The second run (job 81) started 07:29Z.
+
+Amendment 2026-09-07 08:45Z, just-solve on v2 repeated: 392/405, 0/7 strict, $12, 47 min. The
+five whitespace misses again, the six-test CACHE_ENABLED trimming cluster flipped the wrong way
+at checkpoint 6 (as on the first v1 just-solve run), and two checkpoint-7 misses the bare
+prompt had not shown before, both cache-upgrade tests: a second ingest with `enrich=yes` left
+the cached dataset as it was. Spec v2's "single, exact enrich=yes" sentence is about the
+parameter's value, not about upgrading, so this is a fresh reading rather than a regression from
+the patch. The v2 just-solve pair is 400 and 392, against 397 and 400 on v1: the bare prompt's
+band is unchanged. Erosion 0.621 and 0.666 on the pair, both far above every prompted run.
+Job 82, the first full v11 on xjq, started 08:37Z; its ledger is notes/xjq-runs.md.

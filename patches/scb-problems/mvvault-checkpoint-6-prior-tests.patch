@@ -1,0 +1,29 @@
+mvvault: checkpoint 6 should keep the earlier checkpoints' tests
+
+For gabeorlanski/scb-problems (main, 4d38d30). Not applied to the cache here: every run
+so far scored checkpoint 6 the upstream way, and flipping it would make new runs
+incomparable. To try it, apply to a copy and point SCBENCH_PROBLEMS_PATH at it.
+
+Checkpoints 2 to 5 of mvvault set include_prior_tests: true and checkpoint 6 sets it
+false, so the last checkpoint runs only its own 42 tests (5 core, 23 functionality, 14
+error) and none of the 185 from checkpoints 1 to 5. A run that carries misses through
+five checkpoints is then "strict" on the sixth for free: the Opus 5 just-solve control
+scored 35/37, 64/67, 110/115, 149/155, 179/185 and then 42/42, its one strict
+checkpoint. The README says tests for checkpoint N assume all prior checkpoints still
+pass, and checkpoint 6's spec (annotations, with auto-migration of v1 and v2 vaults to
+v3) extends the earlier behaviour rather than replacing it. The reference solution
+agrees: evaluated as checkpoint 6 with prior tests on, solutions/checkpoint_6 passes
+5/5 core, 23/23 functionality, 14/14 error and 185/185 regression (scb eval-snapshot,
+2026-09-08).
+
+--- a/mvvault/config.yaml
++++ b/mvvault/config.yaml
+@@ -63,7 +63,7 @@
+     version: 2
+     order: 6
+     state: Core Tests
+-    include_prior_tests: false
++    include_prior_tests: true
+ 
+ test_dependencies:
+   - httpx

@@ -22,14 +22,15 @@ deliberate or the reference solution is wrong, and a PR needs the author's answe
 | l2m | 2, 3, 4, 5 (of 5) | ckpt 2 52/52; ckpts 3-5 each fail the same five checkpoint-1 tests: `test_list_convert[enum_in_itemize, itemize_in_enum, enum_in_itemize_start, formatting_comments, itemize_in_started_enum]` | blocked: checkpoint 3 changes nested-list conversion, so the checkpoint-1 expectations may be superseded on purpose; ask upstream whether those five should be updated or the flag is intended |
 | meshctl | 6, 7, 8 (of 8) | each fails one checkpoint-1 test, `test_runtime_zero_version`, everything else passes (266/267, 306/307, 348/349) | blocked on one test: probably a superseded expectation about a zero runtime version; worth asking, since 8 checkpoints of regressions are otherwise clean |
 | dynamic_config_service_api | 3, 4 (of 4) | ckpt 4: core 81/81 but regression 113/169, the failures being numbered stateful sequences from the earlier files (create, list, activate, resolve); ckpt 3: core 12/12, functionality 34/34, error 30/30, regression 41/93, the same shape | deliberate: the test files assume a fresh server, so running them together breaks the sequences; not a config omission |
-| execution_server | 6 (of 6) | pending | pending |
+| execution_server | 6 (of 6) | own tests 34/34, regression 62/221: numbered sequence tests from the earlier files fail (continue-on-error hit/miss and the like) | deliberate: like dynamic_config, the earlier files are stateful sequences against one server; nothing to file |
 | metric_transform_lang | 5 (of 5) | own tests 26/26, regression 74/274: the reference solution fails 200 earlier tests across every checkpoint-1 to -4 file (cli format, core, errors, expressions, windows) | deliberate: checkpoint 5 redefines the language, so the earlier tests no longer apply; nothing to file |
 
-Raw outputs of the check: scratchpad `check-prior.log` and `priorfix-<problem>-<n>/eval/`
-of the session that ran it (2026-09-08); rerun with the loop in that session's
-`check-prior.sh` (copy the problem, flip the flag, `bin/scb eval-snapshot` the reference
-solution as that checkpoint). Worth folding into a `bin/` tool if the pending three come
-back clean.
+Verdict (2026-09-08): mvvault is the only omission; the other five drop the earlier tests
+because their reference solutions would fail them (superseded expectations on l2m and
+meshctl, stateful test sequences on dynamic_config and execution_server, a redesign on
+metric_transform). The mvvault PR stands alone. To repeat the check: copy the problem, flip
+the flag, `bin/scb eval-snapshot` the reference solution as that checkpoint with
+SCBENCH_PROBLEMS_PATH at the copy (the session's `check-prior.sh` loop, 2026-09-08).
 
 ## Harness: patches we carry (all in `patches/`, applied to the checkout)
 

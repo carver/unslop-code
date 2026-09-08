@@ -794,3 +794,6 @@ with Red Green testing" in the intro's approach list; `min12-chunks/` mirrors mi
 the skeleton changed (tests pin it), so min12-ABDFJKMN is min11-ABDFJKMN minus those four
 words, 464 words. The v0 pair is the first ABDFJKMN-shaped prompt on the unpatched spec;
 compare it with the v0 controls (just-solve 377, v3/v4/v7 382-392) rather than the v2 rows.
+Queued 2026-09-08 14:45Z at the user's request, after the min12 v0 pair: one min11-ABDFJKMN
+run on datagate v0 (job 99), the same prompt with the red/green line, as the comparison for
+the min12 v0 pair.

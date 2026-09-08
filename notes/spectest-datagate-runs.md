@@ -787,3 +787,10 @@ resume is job 89, queued right after the running rejector job (the move renumber
 first run to 94). mvvault's checkpoint 6 now includes the prior tests in our cache
 (`notes/upstream-prs.md`), so this run scores it the corrected way natively.
 
+Queued 2026-09-08 14:35Z at the user's request, behind the sith repeat: min12-ABDFJKMN on
+datagate, twice on spec v2 (jobs 95-96) and twice on spec v0 (97-98). v12
+(`spectest-v12.jinja`, the user's 3cc37fd) is v11 with "Implement" in place of "Implement
+with Red Green testing" in the intro's approach list; `min12-chunks/` mirrors min11 with only
+the skeleton changed (tests pin it), so min12-ABDFJKMN is min11-ABDFJKMN minus those four
+words, 464 words. The v0 pair is the first ABDFJKMN-shaped prompt on the unpatched spec;
+compare it with the v0 controls (just-solve 377, v3/v4/v7 382-392) rather than the v2 rows.

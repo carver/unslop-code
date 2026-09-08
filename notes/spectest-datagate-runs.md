@@ -308,8 +308,8 @@ problem copy. For the problem set (gabeorlanski/scb-problems): mvvault's checkpo
 185 earlier tests it had been missing six of; the reference solution passes all 185 with the
 flag on, so it is an omission (`patches/scb-problems/mvvault-checkpoint-6-prior-tests.patch`,
 2026-09-08, evidence in its preamble). Five other problems switch the flag off on some
-checkpoint (l2m 2-5, meshctl 6-8, dynamic_config_service_api 3-4, execution_server 6,
-metric_transform_lang 5); their reference solutions are being checked the same way.
+checkpoint; the check of their reference solutions, and every other upstream PR idea with
+its evidence and blockers, lives in `notes/upstream-prs.md`.
 
 Quality scoring, checked 2026-09-04: `scb-check` 0.1.3 runs on the whole snapshot,
 tests included (datagate: one source module, conftest, and eight test files). Its
@@ -778,4 +778,12 @@ Queued 2026-09-07 15:15Z at the user's request, behind the second min11-ABDFJKMN
 85): min11-ABDFJKMN on file_merger, mvvault, rejector and sith (jobs 86-89, spec v0), then the
 same four again (90-93). Ledgers: notes/<problem>-runs.md, created from this file's shape as
 each first run lands; control rows come from the dev6 sweep (notes/dev6-opus5.md).
+
+Changed 2026-09-08 02:30Z: job 87 (min11 on mvvault) halted at checkpoint 4 on the spurious
+infra flag again (two collection passes failed 02:15-02:18Z with the network up, while two
+of our re-evaluation containers ran alongside; the test run scored 150/155, all 155
+collected). Flag cleared by hand as before (backup `evaluation.json.infra-flag.bak`); the
+resume is job 89, queued right after the running rejector job (the move renumbered sith's
+first run to 94). mvvault's checkpoint 6 now includes the prior tests in our cache
+(`notes/upstream-prs.md`), so this run scores it the corrected way natively.
 

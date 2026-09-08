@@ -68,3 +68,6 @@ Applied 2026-09-07 14:15Z at the user's request: `disallowed_tools: [Monitor]` i
 `config.yaml` (`…min11-ABDFJKMN/20260907T0654`, the min11 xjq run then on checkpoint 2), since a
 resume reads the agent block embedded in the run config rather than the agents file. Job 85 and
 everything after start fresh and pick it up from the file.
+Queued 2026-09-08 14:55Z at the user's request, at the end of the queue: two runs of
+min12-ABDFJKMN on xjq (jobs 100-101; min11-ABDFJKMN minus the intro's "with Red Green
+testing", 464 words). Compare with the min11 pair (160 and 160, $14 and $17).

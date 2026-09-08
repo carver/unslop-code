@@ -53,6 +53,7 @@ tests passed / total at each checkpoint (regressions included), from each checkp
 | min11-ABDFJKMN on v2, repeat | `…min11-ABDFJKMN-specv2/20260906T2202` | same config as the first run | 50/50, 122/122, 174/174, 233/233, 276/276, 353/353, 405/405 | complete 2026-09-07; 0 misses, 7/7 strict, $25, 79 min. min11-ABDFJKMN is twice strict on v2 at 468 words. 101 entries all scored, Risk 0-40 (top: losing sort param 40, type labels 40; cache flag trim 20; enrich downgrade on re-ingest 30). Quality: erosion 0.022, verbosity 0.205, ast 0.076, cloned 0.090 |
 | just-solve on v2 | `…just-solve-specv2/20260906T1908` | benchmark's own prompt on spec v2; first of two | 48/50, 120/122, 169/174, 228/233, 271/276, 348/353, 400/405 | complete 2026-09-07; 5 misses, all whitespace (the ckpt-1 pair and the ckpt-3 trio), the same five as the v1 repeat, checkpoint for checkpoint; 0/7 strict, $15, 72 min of agent time (resumed from ckpt 5 after the outage; ckpt 4's spurious infra flag cleared by hand). Quality: erosion 0.666, verbosity 0.560, ast 0.499, cloned 0.104, the worst of any run |
 | just-solve on v2, repeat | `…just-solve-specv2/20260907T0029` | same config as the first run | 48/50, 120/122, 169/174, 228/233, 271/276, 342/353, 392/405 | complete 2026-09-07; 13 misses: the five whitespace tests of the first run, the six-test CACHE_ENABLED trimming cluster from checkpoint 6, and two cache-upgrade tests at checkpoint 7 (test_cache_upgrade_reingests, test_spreadsheet_cache_upgrade_to_enriched: enrich=yes on a cached dataset did not re-ingest); 0/7 strict, $12, 47 min. Quality: erosion 0.621, verbosity 0.506, ast 0.455, cloned 0.077 |
+| min12-ABDFJKMN on v2 | `…min12-ABDFJKMN-specv2/20260908T1223` | min11-ABDFJKMN minus "with Red Green testing" in the intro's approach list, 464 words; first of two | 50/50, 122/122, 174/174, 233/233, 276/276, 353/353, 405/405 | complete 2026-09-08; 0 misses, 7/7 strict, $28, 88 min (min11 pair: 89 and 79; per checkpoint 12, 8, 8, 14, 11, 20, 15). 99 entries all scored, Risk 0-45 (top: undecodable charset 45; enrich downgrade on re-ingest 30). Quality: erosion 0.039, verbosity 0.153, ast 0.076, cloned 0.061, inside the min11 pair's band on every column |
 
 On hidden tests, v4 through v7 are flat within
 the latin-1 noise (ckpt 1: 50, 49, 50, 49 of 50; ckpt 2: 119, cut, 119, 118 of 122), and
@@ -237,6 +238,8 @@ matrix, and the reading. Failure sets in brief:
   - min11-ABDFJKMN on v2 (405): strict, no misses, at 468 words and $28. First of two.
   - min11-ABDFJKMN on v2, repeat (405): strict again. Twice strict at 468 words, the shortest
     twice-strict prompt, and the first without O (code until the tests pass).
+  - min12-ABDFJKMN on v2 (405): strict, no misses, at 464 words and $28, without the red/green
+    line. First of two.
 
 ## Did the v8 testing hints help, or was it the zombie fix?
 
@@ -797,3 +800,12 @@ compare it with the v0 controls (just-solve 377, v3/v4/v7 382-392) rather than t
 Queued 2026-09-08 14:45Z at the user's request, after the min12 v0 pair: one min11-ABDFJKMN
 run on datagate v0 (job 99), the same prompt with the red/green line, as the comparison for
 the min12 v0 pair.
+
+Amendment 2026-09-08 21:15Z, min12-ABDFJKMN on v2, first run: 405/405, 7/7 strict, $28, 88 min.
+Dropping "with Red Green testing" from the intro changed nothing measurable on this run: no
+flip against either min11 run, wall clock 88 min against min11's 89 and 79, turns per
+checkpoint in the same range (the last two checkpoints ran longer, 86 and 91 turns against
+min11's 57-115), and every quality column inside the min11 pair's band (erosion 0.039 between
+0.022 and 0.099, verbosity 0.153 between 0.124 and 0.205, cloned 0.061 against 0.060 and
+0.090). The rule's effect, if any, is smaller than same-prompt noise on datagate; the repeat
+(job 96) and the v0 runs may say more. The repeat started 21:10Z.

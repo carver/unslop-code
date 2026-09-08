@@ -107,6 +107,7 @@ any pull, re-apply them in this order:
 (gabeorlanski/scb-problems), not applied to the cache, each with its evidence as a
 preamble: `mvvault-checkpoint-6-prior-tests.patch` turns the earlier checkpoints' tests
 back on for mvvault's last checkpoint, which the reference solution passes 185/185.
+Every upstream PR idea, with evidence and blockers, is in `notes/upstream-prs.md`.
 
 `outputs/` holds the three dev6 baseline runs. The setup-token lives at
 `~/.config/scbench/claude-oauth-token` (mint a new one with `bin/setup-token-wizard`).

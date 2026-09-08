@@ -15,7 +15,7 @@ ROOT = HERE.parent
 sys.path.insert(0, str(ROOT / "slop-code-bench" / "src"))
 VENV_PYTHON = pathlib.Path(os.environ.get("UV_PROJECT_ENVIRONMENT", pathlib.Path.home() / ".venvs" / "slop-code-bench")) / "bin" / "python"
 try:
-    import slop_code  # noqa: F401  (the harness's dependencies live in bin/scb's venv)
+    from slop_code.metrics.checkpoint.extractors import get_evaluation_metrics  # the harness's deps live in bin/scb's venv
 except ImportError:
     if VENV_PYTHON.exists() and pathlib.Path(sys.executable).resolve() != VENV_PYTHON.resolve():
         os.execv(str(VENV_PYTHON), [str(VENV_PYTHON), *sys.argv])
@@ -31,9 +31,17 @@ def evaluate(run_dir, problem, checkpoint, out_dir):
         sys.exit(f"eval-snapshot failed ({r.returncode}):\n{r.stdout[-2000:]}\n{r.stderr[-1000:]}")
 
 
-def score_fields(checkpoint_dir):
-    from slop_code.metrics.checkpoint.extractors import get_evaluation_metrics
-    return get_evaluation_metrics(checkpoint_dir)
+def rewrite_row(run_dir, problem, checkpoint):
+    """Rebuild the checkpoint's score fields in checkpoint_results.jsonl from its evaluation.json."""
+    fields = get_evaluation_metrics(run_dir / problem / checkpoint)
+    rows_path = run_dir / "checkpoint_results.jsonl"
+    rows = [json.loads(l) for l in rows_path.read_text().splitlines() if l.strip()]
+    hit = [r for r in rows if r.get("problem") == problem and r.get("checkpoint") == checkpoint]
+    if len(hit) != 1:
+        sys.exit(f"{rows_path}: expected one row for {problem} {checkpoint}, found {len(hit)}")
+    hit[0].update(fields)
+    rows_path.write_text("".join(json.dumps(r) + "\n" for r in rows))
+    return fields
 
 
 def install(run_dir, problem, checkpoint, fresh, tag):
@@ -48,15 +56,7 @@ def install(run_dir, problem, checkpoint, fresh, tag):
     shutil.copy2(fresh / "evaluation.json", ck / "evaluation.json")
     if (fresh / "evaluation").exists():
         shutil.copytree(fresh / "evaluation", ck / "evaluation")
-    fields = score_fields(ck)
-    rows_path = run_dir / "checkpoint_results.jsonl"
-    rows = [json.loads(l) for l in rows_path.read_text().splitlines() if l.strip()]
-    hit = [r for r in rows if r.get("problem") == problem and r.get("checkpoint") == checkpoint]
-    if len(hit) != 1:
-        sys.exit(f"{rows_path}: expected one row for {problem} {checkpoint}, found {len(hit)}")
-    hit[0].update(fields)
-    rows_path.write_text("".join(json.dumps(r) + "\n" for r in rows))
-    return fields
+    return rewrite_row(run_dir, problem, checkpoint)
 
 
 def main():

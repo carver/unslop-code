@@ -303,7 +303,13 @@ the first attempt's, and only the copied Claude session file under
 patched: `retry()` resets the usage tracker, so a checkpoint that timed out and continued
 under-reports its cost (v7 ckpt 6 recorded $3 of roughly $15). Candidates for upstream
 PRs, along with documenting `SCBENCH_PROBLEMS_PATH` for running against a modified
-problem copy.
+problem copy. For the problem set (gabeorlanski/scb-problems): mvvault's checkpoint 6 sets
+`include_prior_tests: false`, so the control's 42/42 "strict" last checkpoint never ran the
+185 earlier tests it had been missing six of; the reference solution passes all 185 with the
+flag on, so it is an omission (`patches/scb-problems/mvvault-checkpoint-6-prior-tests.patch`,
+2026-09-08, evidence in its preamble). Five other problems switch the flag off on some
+checkpoint (l2m 2-5, meshctl 6-8, dynamic_config_service_api 3-4, execution_server 6,
+metric_transform_lang 5); their reference solutions are being checked the same way.
 
 Quality scoring, checked 2026-09-04: `scb-check` 0.1.3 runs on the whole snapshot,
 tests included (datagate: one source module, conftest, and eight test files). Its

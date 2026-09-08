@@ -93,3 +93,12 @@ control if the model-vs-model number matters.
 4. file_merger's four rows carry `state: unknown` in checkpoint_results.jsonl
    because its stale run_info.yaml (from the crashed first attempt) was set
    aside; pass rates and costs are correct.
+
+Amendment 2026-09-08: mvvault's checkpoint 6 re-scored with the earlier checkpoints' tests
+included. Upstream's config runs only checkpoint 6's own 42 tests there (an omission; the
+reference solution passes all 185 earlier ones, see `notes/upstream-prs.md`), which made the
+last checkpoint "strict" for every model while the misses carried from earlier checkpoints
+were never run. Corrected checkpoint-6 totals, by `bin/reeval` on the existing snapshots
+(the upstream-config evaluation is kept beside each as `before-prior-tests`): Opus 5
+221/227, Fable 5.1 220/227, Fable 5 213/227, Sonnet 4.6 206/227. Each model's mvvault strict
+count drops from 1 to 0 of 6; `notes/results.md` is regenerated from the corrected rows.

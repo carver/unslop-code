@@ -1,0 +1,1 @@
+Every generator must be able to produce the smallest inputs the spec doesn't quotably exclude — empty, one element, etc.

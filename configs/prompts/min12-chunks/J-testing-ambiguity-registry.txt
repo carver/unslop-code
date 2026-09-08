@@ -1,0 +1,10 @@
+If the spec is non-trivially under-specified, such that alternative interpretations would change the behavior of a conforming implementation on some input, then never ask for clarification.
+Instead, make your best choice at how to interpret the intention of the spec.
+Then, add a numbered entry to an AMBIGUITIES.md file, starting with T1.
+The entry must have sections for Spec Text, Alternatives, Choice, and Risk.
+The entry will quote the relevant spec source verbatim, explain the reasonable alternative interpretations, and your choice & why it seems to best fit the spec.
+The "### Risk: N" section
+Risk is a number from 0 to 100: the chance that the spec's author, who has an implementation of their own and writes the hidden tests against it, prefers a different reading from your choice on some tested input.
+Reason about what the author's implementation most likely does and what fixture they would naturally write, not only about which reading the prose supports best.
+If Risk is above 0, name the reading the author most likely prefers in one line.
+Use the whole range: a flat number on every entry is useless.

@@ -96,3 +96,23 @@ def test_min11_is_min10_with_only_the_generator_floor_and_task_line_changed():
     assert [(a, b) for a, b in zip(ten_skeleton, eleven_skeleton) if a != b] == [
         ("Fully implement the following spec, without questions. Use the approach:",
          "Fully implement the following spec. Use the approach:")]
+
+
+MIN12 = ROOT / "configs/prompts/min12-chunks"
+
+
+def test_all_min12_chunks_rebuild_v12_line_for_line():
+    name, text = bp.build("ABCDEFGHIJKLMNOPQRS", MIN12)
+    assert name == "min12-ABCDEFGHIJKLMNOPQRS"
+    assert nonblank(text) == nonblank((ROOT / "configs/prompts/spectest-v12.jinja").read_text())
+
+
+def test_min12_is_min11_with_only_the_intro_line_changed():
+    """Same letters, slugs and chunk text; only the skeleton's approach list differs."""
+    eleven = {p.name: p.read_text() for p in MIN11.glob("?-*.txt")}
+    twelve = {p.name: p.read_text() for p in MIN12.glob("?-*.txt")}
+    assert eleven == twelve
+    a = (MIN11 / "SKELETON.jinja").read_text().splitlines()
+    b = (MIN12 / "SKELETON.jinja").read_text().splitlines()
+    assert [(x, y) for x, y in zip(a, b) if x != y] == [("- Implement with Red Green testing", "- Implement")]
+    assert len(a) == len(b)

@@ -1,0 +1,3 @@
+Use red/green testing as you add features.
+Consider these unit tests as disposable, though, if they exist from previous implementations.
+If they ever disagree with the spec, these are the tests to change.

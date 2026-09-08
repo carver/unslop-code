@@ -42,6 +42,7 @@ and the sandbox-local venv):
     bin/queue-watch                          # event stream for a Monitor: checkpoint results, halts, DONE
                                              # lines and job status changes across the whole queue
     bin/ledger-row <run_dir>                 # after every run: the ledger row and failure summary to fill in
+    bin/reeval <run_dir> <problem> <ckpt> --tag T  # re-score one checkpoint under the current problem config; keeps the old evaluation as before-T
     bin/results [--write]                    # every complete run, one row per problem/prompt/spec -> notes/results.md
     bin/queue add configs/runs/<name>.yaml   # enqueue a run (one at a time); bin/queue = status
     bin/build-prompt BEG                     # configs/prompts/min4-BEG.jinja from the chunks in

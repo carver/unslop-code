@@ -1,0 +1,77 @@
+#!/usr/bin/env python3
+"""Re-score one checkpoint of a finished run against the current problem config, in place.
+    bin/reeval <run_dir> <problem> <checkpoint_N> --tag <slug> [--from <eval_dir>]
+Runs `scb eval-snapshot` on the checkpoint's snapshot (honouring SCBENCH_PROBLEMS_PATH), or
+takes an evaluation already produced with --from, then installs it: evaluation.json and the
+evaluation/ directory move aside as evaluation.json.before-<tag> and evaluation.before-<tag>
+(never overwritten; pick a new tag to re-score again), the fresh ones take their place, and
+the checkpoint's row in checkpoint_results.jsonl gets its score fields rebuilt by the
+harness's own extractor. The agent's work, cost and quality figures are untouched: this is
+for scoring changes, such as a problem config that starts including prior tests.
+"""
+import json, os, pathlib, shutil, subprocess, sys, tempfile
+HERE = pathlib.Path(__file__).resolve().parent
+ROOT = HERE.parent
+sys.path.insert(0, str(ROOT / "slop-code-bench" / "src"))
+VENV_PYTHON = pathlib.Path(os.environ.get("UV_PROJECT_ENVIRONMENT", pathlib.Path.home() / ".venvs" / "slop-code-bench")) / "bin" / "python"
+try:
+    import slop_code  # noqa: F401  (the harness's dependencies live in bin/scb's venv)
+except ImportError:
+    if VENV_PYTHON.exists() and pathlib.Path(sys.executable).resolve() != VENV_PYTHON.resolve():
+        os.execv(str(VENV_PYTHON), [str(VENV_PYTHON), *sys.argv])
+    raise
+ENV = ROOT / "slop-code-bench" / "configs" / "environments" / "docker-python3.12-uv.yaml"
+
+
+def evaluate(run_dir, problem, checkpoint, out_dir):
+    snapshot = run_dir / problem / checkpoint / "snapshot"
+    cmd = [HERE / "scb", "eval-snapshot", str(snapshot), "-o", str(out_dir), "-p", problem, "-c", checkpoint, "-e", str(ENV)]
+    r = subprocess.run(cmd, capture_output=True, text=True)
+    if r.returncode != 0 or not (out_dir / "evaluation.json").exists():
+        sys.exit(f"eval-snapshot failed ({r.returncode}):\n{r.stdout[-2000:]}\n{r.stderr[-1000:]}")
+
+
+def score_fields(checkpoint_dir):
+    from slop_code.metrics.checkpoint.extractors import get_evaluation_metrics
+    return get_evaluation_metrics(checkpoint_dir)
+
+
+def install(run_dir, problem, checkpoint, fresh, tag):
+    ck = run_dir / problem / checkpoint
+    json_aside, dir_aside = ck / f"evaluation.json.before-{tag}", ck / f"evaluation.before-{tag}"
+    for aside in (json_aside, dir_aside):
+        if aside.exists():
+            sys.exit(f"{aside} exists; choose another --tag")
+    (ck / "evaluation.json").rename(json_aside)
+    if (ck / "evaluation").exists():
+        (ck / "evaluation").rename(dir_aside)
+    shutil.copy2(fresh / "evaluation.json", ck / "evaluation.json")
+    if (fresh / "evaluation").exists():
+        shutil.copytree(fresh / "evaluation", ck / "evaluation")
+    fields = score_fields(ck)
+    rows_path = run_dir / "checkpoint_results.jsonl"
+    rows = [json.loads(l) for l in rows_path.read_text().splitlines() if l.strip()]
+    hit = [r for r in rows if r.get("problem") == problem and r.get("checkpoint") == checkpoint]
+    if len(hit) != 1:
+        sys.exit(f"{rows_path}: expected one row for {problem} {checkpoint}, found {len(hit)}")
+    hit[0].update(fields)
+    rows_path.write_text("".join(json.dumps(r) + "\n" for r in rows))
+    return fields
+
+
+def main():
+    args = sys.argv[1:]
+    if len(args) < 5 or "--tag" not in args:
+        sys.exit(__doc__)
+    run_dir, problem, checkpoint = pathlib.Path(args[0]).resolve(), args[1], args[2]
+    tag = args[args.index("--tag") + 1]
+    fresh = pathlib.Path(args[args.index("--from") + 1]).resolve() if "--from" in args else None
+    if fresh is None:
+        fresh = pathlib.Path(tempfile.mkdtemp(prefix="reeval-"))
+        evaluate(run_dir, problem, checkpoint, fresh)
+    f = install(run_dir, problem, checkpoint, fresh, tag)
+    print(f"{run_dir.name} {problem} {checkpoint}: {f['passed_tests']}/{f['total_tests']} (regression {f['regression_passed']}/{f['regression_total']}), row rewritten, old evaluation kept as before-{tag}")
+
+
+if __name__ == "__main__":
+    main()

@@ -5,8 +5,8 @@ Usage: bin/run-config --prompt <name|path> --problem <problem> [--spec vN] [--na
 
 --prompt   a template under configs/prompts/ (by basename, .jinja optional), a path to one,
            or a benchmark prompt name like just-solve
---spec vN  which spec version the run reads: v0 is the cached benchmark spec (default), vN a
-           folder of patches under specs/vN/ built by bin/spec-patch; the run name gets a
+--spec vN  which spec version the run reads: v0 is the cached benchmark spec (default), vN the
+           problem's folder of patches under specs/<problem>/vN/ built by bin/spec-patch; the run name gets a
            -specvN suffix and the printed launch command selects the built copy
 --patched  the old spelling of --spec v1 (those runs were named -disambiguated)
 --name     run-directory name; default is the prompt's basename plus the suffix
@@ -20,9 +20,9 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 CACHE = pathlib.Path(os.environ.get("SCBENCH_PROBLEMS_PATH", os.path.expanduser("~/.cache/scbench/problems")))
 
 
-def problems_root(spec):
-    """Where a run of spec version `spec` reads its problems from."""
-    return CACHE if spec == "v0" else ROOT / "specs" / spec / "problems"
+def problems_root(problem, spec):
+    """Where a run of `problem` at spec version `spec` reads its problems from."""
+    return CACHE if spec == "v0" else ROOT / "specs" / problem / spec / "problems"
 
 
 def resolve_prompt(prompt):
@@ -49,7 +49,7 @@ def checkpoint_count(problem):
 
 
 def config_text(prompt_line, problem, name, spec, launch):
-    where = "the cached spec (v0)" if spec == "v0" else f"spec {spec}, specs/{spec}/ built by bin/spec-patch"
+    where = "the cached spec (v0)" if spec == "v0" else f"spec {spec}, specs/{problem}/{spec}/ built by bin/spec-patch"
     return f"""# {name} on {problem}, against {where}. Written by bin/run-config.
 # Same agent, model and thinking as every spectest run.
 #
@@ -76,11 +76,11 @@ def main():
     spec = "v1" if a.patched else a.spec
     if not re.fullmatch(r"v\d+", spec):
         raise SystemExit(f"run-config: --spec takes v0, v1, ...; got {spec!r}")
-    if spec != "v0" and not (ROOT / "specs" / spec).is_dir():
-        raise SystemExit(f"run-config: no specs/{spec}/ folder; add its patches, then bin/spec-patch {a.problem} {spec}")
+    if spec != "v0" and not (ROOT / "specs" / a.problem / spec).is_dir():
+        raise SystemExit(f"run-config: no specs/{a.problem}/{spec}/ folder; add its patches, then bin/spec-patch {a.problem} {spec}")
     name = run_name(a.prompt, spec, a.name)
     out = ROOT / "configs" / "runs" / f"{name}-{a.problem}-opus5.yaml"
-    env = "" if spec == "v0" else f"SCBENCH_PROBLEMS_PATH=$PWD/specs/{spec}/problems "
+    env = "" if spec == "v0" else f"SCBENCH_PROBLEMS_PATH=$PWD/specs/{a.problem}/{spec}/problems "
     launch = f"{env}bin/scb-extend --new {out.relative_to(ROOT)} {a.problem} {checkpoint_count(a.problem) or '<n>'}"
     out.write_text(config_text(resolve_prompt(a.prompt), a.problem, name, spec, launch))
     print(out.relative_to(ROOT)); print(launch)

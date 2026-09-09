@@ -14,9 +14,9 @@ def test_run_name_adds_the_spec_suffix_once():
     assert rc.run_name("just-solve", "v1", name="just-solve-specv1") == "just-solve-specv1"
 
 
-def test_problems_root_is_the_cache_for_v0_and_a_specs_folder_otherwise():
-    assert rc.problems_root("v0") == rc.CACHE
-    assert rc.problems_root("v2") == rc.ROOT / "specs" / "v2" / "problems"
+def test_problems_root_is_the_cache_for_v0_and_the_problems_specs_folder_otherwise():
+    assert rc.problems_root("xjq", "v0") == rc.CACHE
+    assert rc.problems_root("xjq", "v2") == rc.ROOT / "specs" / "xjq" / "v2" / "problems"
 
 
 def test_prompt_resolves_to_local_template_or_benchmark_name():
@@ -27,4 +27,4 @@ def test_prompt_resolves_to_local_template_or_benchmark_name():
 def test_config_text_carries_prompt_problem_and_run_dir_name():
     t = rc.config_text("just-solve", "xjq", "just-solve-specv1", "v1", "LAUNCH")
     assert "prompt: just-solve\n" in t and "  - xjq\n" in t
-    assert "_just-solve-specv1/${now" in t and "#   LAUNCH" in t and "spec v1" in t
+    assert "_just-solve-specv1/${now" in t and "#   LAUNCH" in t and "spec v1, specs/xjq/v1/" in t

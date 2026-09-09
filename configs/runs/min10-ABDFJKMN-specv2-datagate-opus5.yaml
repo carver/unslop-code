@@ -1,7 +1,7 @@
 # min10-ABDFJKMN-specv2 on datagate, against spec v2, specs/v2/ built by bin/spec-patch. Written by bin/run-config.
 # Same agent, model and thinking as every spectest run.
 #
-#   SCBENCH_PROBLEMS_PATH=$PWD/specs/v2/problems bin/scb-extend --new configs/runs/min10-ABDFJKMN-specv2-datagate-opus5.yaml datagate 7
+#   SCBENCH_PROBLEMS_PATH=$PWD/specs/datagate/v2/problems bin/scb-extend --new configs/runs/min10-ABDFJKMN-specv2-datagate-opus5.yaml datagate 7
 agent: /home/carver/code/claudedev/unslop-code-bench/configs/agents/claude_code-2.1.251.yaml
 environment: docker-python3.12-uv
 prompt: /home/carver/code/claudedev/unslop-code-bench/configs/prompts/min10-ABDFJKMN.jinja

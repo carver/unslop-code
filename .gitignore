@@ -3,5 +3,5 @@ slop-code-bench/
 __pycache__/
 .pytest_cache/
 problems
-specs/*/problems/
+specs/*/*/problems/
 todo.md

@@ -528,7 +528,7 @@ def main() -> None:
         p.add_argument("--problem", help="problem name inside the run dir (inferred when there is one)")
         p.add_argument("--entries"); p.add_argument("--variants"); p.add_argument("--samples", type=int, default=5)
         p.add_argument("--batch", type=int, default=15)
-        p.add_argument("--spec-patch", action="append", default=[], help="unified diff of the specs; repeatable (specs/vN/*.patch); rewrites matching quoted sentences in entries")
+        p.add_argument("--spec-patch", action="append", default=[], help="unified diff of the specs; repeatable (specs/<problem>/vN/*.patch); rewrites matching quoted sentences in entries")
         p.add_argument("--workers", type=int, default=4); p.add_argument("--pause-at", type=float, default=85)
         p.add_argument("--check-every", type=int, default=5)
     s = sub.add_parser("summarize"); s.add_argument("out")

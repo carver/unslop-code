@@ -22,6 +22,7 @@ def test_spec_comes_from_the_catalog_record_when_the_run_has_one(tmp_path):
         d = tmp_path / name / "20260906T0000"; d.mkdir(parents=True)
         (d / "problem_catalog.json").write_text(json.dumps(record)); return d
     assert rs.spec_of(run("opus-5_2.1.251_high_spectest-v9-specv2", {"version": "env-override", "commit": "/x/specs/v2/problems"})) == "v2"
+    assert rs.spec_of(run("opus-5_2.1.251_high_min12-specv1", {"version": "env-override", "commit": "/x/specs/xjq/v1/problems"})) == "v1"
     assert rs.spec_of(run("opus-5_2.1.251_high_spectest-v9-disambiguated", {"version": "env-override", "commit": "/x/problems"})) == "v1"
     assert rs.spec_of(run("opus-5_2.1.251_high_just-solve", {"version": "v1.0", "commit": "4d38d3"})) == "v0"
 

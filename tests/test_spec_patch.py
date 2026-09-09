@@ -1,4 +1,4 @@
-"""bin/spec-patch builds one spec version from the cache and its folder of patches."""
+"""bin/spec-patch builds one problem's spec version from the cache and its folder of patches (specs/<problem>/vN/)."""
 import os
 import subprocess
 from pathlib import Path
@@ -23,9 +23,9 @@ def run(tmp_path, version):
 
 def test_patches_apply_in_filename_order_into_the_version_root(tmp_path):
     make_cache(tmp_path)
-    v = tmp_path / "specs" / "v2"; v.mkdir(parents=True)
-    (v / "01-toy-first.patch").write_text(patch_text("beta", "BETA"))
-    (v / "02-toy-second.patch").write_text(patch_text("BETA", "delta"))
+    v = tmp_path / "specs" / "toy" / "v2"; v.mkdir(parents=True)
+    (v / "01-first.patch").write_text(patch_text("beta", "BETA"))
+    (v / "02-toy-second.patch").write_text(patch_text("BETA", "delta"))  # the old problem-prefixed name still counts
     r = run(tmp_path, "v2")
     assert r.returncode == 0, r.stderr
     assert (v / "problems" / "toy" / "checkpoint_1.md").read_text() == "alpha\ndelta\ngamma\n"
@@ -34,11 +34,17 @@ def test_patches_apply_in_filename_order_into_the_version_root(tmp_path):
 
 def test_a_hunk_that_does_not_apply_fails_the_build(tmp_path):
     make_cache(tmp_path)
-    v = tmp_path / "specs" / "v3"; v.mkdir(parents=True)
-    (v / "01-toy-wrong.patch").write_text(patch_text("nothing-here", "x"))
+    v = tmp_path / "specs" / "toy" / "v3"; v.mkdir(parents=True)
+    (v / "01-wrong.patch").write_text(patch_text("nothing-here", "x"))
     assert run(tmp_path, "v3").returncode != 0
 
 
 def test_unknown_version_is_an_error(tmp_path):
     make_cache(tmp_path)
     assert run(tmp_path, "v9").returncode == 2
+
+
+def test_another_problems_version_folder_is_not_this_problems(tmp_path):
+    make_cache(tmp_path)
+    (tmp_path / "specs" / "other" / "v2").mkdir(parents=True)
+    assert run(tmp_path, "v2").returncode == 2

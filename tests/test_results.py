@@ -40,10 +40,29 @@ def test_collect_separates_partial_runs(tmp_path, monkeypatch):
     run = tmp_path / "spectest" / "opus-5_2.1.251_high_spectest-min3-disambiguated" / "20260903T1057"; run.mkdir(parents=True)
     rows = [{"problem": "datagate", "checkpoint": f"checkpoint_{i}", "idx": i, "passed_tests": 10, "total_tests": 10, "strict_pass_rate": 1.0, "cost": 1.0} for i in (1, 2)]
     (run / "checkpoint_results.jsonl").write_text("\n".join(json.dumps(r) for r in rows) + "\n")
-    cells, partial = rs.collect([run], count=lambda problem: 7)
+    cells, partial = rs.collect([run], checkpoints=lambda problem, run: {f"checkpoint_{i}" for i in range(1, 8)})
     assert cells == {} and partial[0][:3] == ("datagate", "spectest-min3", "v1") and partial[0][4:6] == (2, 7)
-    cells, partial = rs.collect([run], count=lambda problem: 2)
+    cells, partial = rs.collect([run], checkpoints=lambda problem, run: {"checkpoint_1", "checkpoint_2"})
     assert list(cells) == [("datagate", "spectest-min3", "v1", "opus-5")] and partial == []
+
+
+def test_collect_uses_the_catalog_record_and_requires_each_checkpoint(tmp_path, monkeypatch):
+    import json
+    catalog = tmp_path / "catalog"
+    problem_dir = catalog / "datagate"; problem_dir.mkdir(parents=True)
+    for i in range(1, 4):
+        (problem_dir / f"checkpoint_{i}.md").write_text("")
+    run = tmp_path / "spectest" / "opus-5_2.1.251_high_test" / "20260909T0000"; run.mkdir(parents=True)
+    (run / "problem_catalog.json").write_text(json.dumps({"version": "env-override", "commit": str(catalog)}))
+    rows = [
+        {"problem": "datagate", "checkpoint": "checkpoint_1", "idx": 1, "passed_tests": 10, "total_tests": 10},
+        {"problem": "datagate", "checkpoint": "checkpoint_1", "idx": 1, "passed_tests": 10, "total_tests": 10},
+        {"problem": "datagate", "checkpoint": "checkpoint_3", "idx": 3, "passed_tests": 10, "total_tests": 10},
+    ]
+    (run / "checkpoint_results.jsonl").write_text("\n".join(json.dumps(r) for r in rows) + "\n")
+    cells, partial = rs.collect([run])
+    assert cells == {}
+    assert partial[0][4:6] == (2, 3)
 
 
 def test_single_run_score_has_no_decimal():

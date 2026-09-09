@@ -25,8 +25,19 @@ PREFIX = "opus-5_2.1.251_high_"
 CATALOG = pathlib.Path(os.path.expanduser("~/.cache/scbench/problems"))
 
 
-def checkpoint_count(problem):
-    return len(list((CATALOG / problem).glob("checkpoint_*.md")))
+def checkpoint_names(problem, run_dir=None):
+    """Checkpoint names in the catalog this run actually used."""
+    catalog = CATALOG
+    if run_dir is not None:
+        try:
+            record = json.loads((run_dir / "problem_catalog.json").read_text())
+            if record.get("version") == "env-override":
+                recorded = pathlib.Path(os.path.expanduser(record.get("commit", "")))
+                if recorded.is_dir():
+                    catalog = recorded
+        except (OSError, ValueError):
+            pass
+    return {p.stem for p in (catalog / problem).glob("checkpoint_*.md")}
 
 
 def run_dirs(outputs=ROOT / "outputs"):
@@ -69,7 +80,7 @@ def mean(xs):
     return sum(xs) / len(xs) if xs else None
 
 
-def collect(dirs, count=checkpoint_count):
+def collect(dirs, checkpoints=checkpoint_names):
     """({(problem, prompt, spec, model): [per-run summaries]} for complete runs, [(problem, prompt, spec, run, reached, of)] for partial ones)."""
     cells = collections.defaultdict(list); partial = []
     for run in dirs:
@@ -81,8 +92,12 @@ def collect(dirs, count=checkpoint_count):
             last = rows[-1]
             if last.get("passed_tests") is None:
                 continue
-            if len(rows) < count(problem):
-                partial.append((problem, prompt, spec, run.parent.name.removeprefix(PREFIX) + "/" + run.name, len(rows), count(problem), f"{last['passed_tests']}/{last['total_tests']}"))
+            expected = checkpoints(problem, run)
+            observed = {r.get("checkpoint") for r in rows}
+            if not expected or not expected.issubset(observed):
+                reached = len(observed & expected) if expected else len(observed)
+                total = len(expected) if expected else "?"
+                partial.append((problem, prompt, spec, run.parent.name.removeprefix(PREFIX) + "/" + run.name, reached, total, f"{last['passed_tests']}/{last['total_tests']}"))
                 continue
             cells[(problem, prompt, spec, model)].append({
                 "score": last["passed_tests"] / last["total_tests"], "passed": last["passed_tests"], "total": last["total_tests"],

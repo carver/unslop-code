@@ -82,3 +82,13 @@ everything after start fresh and pick it up from the file.
 Queued 2026-09-08 14:55Z at the user's request, at the end of the queue: two runs of
 min12-ABDFJKMN on xjq (jobs 100-101; min11-ABDFJKMN minus the intro's "with Red Green
 testing", 464 words). Compare with the min11 pair (160 and 160, $14 and $17).
+
+## Spec v1 (2026-09-09)
+
+The review in `notes/xjq-misses.md` put every one of the seven standing misses under two
+sentences. `specs/xjq/v1/`: the `--text` and `--text-all` bullets end ", one per element"
+(five misses; blind judges 37 of 40 for the tests' reading against 26 of 40 unpatched) and the
+checkpoint-1 output rule gains "No trailing newline." (two misses; judges 1 of 40, the user's
+call to try it). Queued 11:25Z at the head of the queue: two runs of min12-ABDFJKMN on xjq v1
+(jobs 115-116), against the v0 pairs at 160 (min11 $14/$17, min12 $13/$15). Strict would be
+167/167.

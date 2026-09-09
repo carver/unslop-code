@@ -74,11 +74,12 @@ def registry(run_dir: Path, problem: str) -> list[tuple[str, str, str]]:
     if not snaps:
         return []
     text = snaps[-1].read_text()
-    heads = list(re.finditer(r"^## (?P<id>[TI]\d+) — (?P<title>.*)$", text, re.M))
+    heads = list(re.finditer(r"^## (?P<id>[TI]\d+)(?: — |\. )(?P<title>.*)$", text, re.M))
     out = []
     for i, h in enumerate(heads):
         body = text[h.end(): heads[i + 1].start() if i + 1 < len(heads) else len(text)]
-        q = re.search(r"\*\*Spec Text\*\*(.*?)(?=\*\*Alternatives\*\*|\Z)", body, re.S)
+        # `**Spec Text**` labels (v7-era registries) or `### Spec Text` headings (min9 and later).
+        q = re.search(r"(?:\*\*Spec Text\*\*|###\s*Spec Text[^\n]*)(.*?)(?=\*\*Alternatives\*\*|^###\s|\Z)", body, re.S | re.M)
         out.append((h.group("id"), h.group("title").strip(), (q.group(1) if q else "").strip()))
     return out
 

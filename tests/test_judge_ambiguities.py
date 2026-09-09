@@ -192,3 +192,52 @@ def test_miss_report_ranks_entries_by_word_overlap():
                ("T2", "charset for uploads", "> `charset` applies only to text CSV sources.")]
     ranked = mr.rank_entries(entries, mr.words_of("test_shape_objects_includes_rowid", "includes each row's source-file rowid"))
     assert [r[2] for r in ranked][0] == "T1"
+
+
+HEADING_SAMPLE = """# Ambiguities
+
+## T13. What "direct text extraction" produces per matched element
+
+### Spec Text
+> `-t`, `--text`: direct text extraction from matched elements.
+
+> `selector::text` returns direct text;
+
+### Alternatives
+1. Every direct child text node is its own result, so `<a>x<b/>z</a>` yields two
+   results, `x` and `z`, on two lines.
+2. The direct text children of an element are concatenated into a single result
+   per element.
+
+### Choice
+Alternative 1. The `::text` rule spells the descendant mode as "one text node per
+line".
+
+### Risk: 40
+Most likely divergence: the author joins the text.
+
+## T14. Whether descendant text includes the matched element's own text
+
+### Spec Text
+> `selector ::text` returns all descendant text nodes (one text node per line).
+
+### Alternatives
+1. All text nodes in the subtree.
+2. Strictly below the children.
+
+### Choice
+Alternative 2, because of the combinator.
+"""
+
+
+def test_parse_registry_reads_the_heading_layout_too():
+    """min9-and-later registries write `## T1. title` and `### Section` headings, not bold labels."""
+    entries = judge.parse_registry(HEADING_SAMPLE)
+    assert [e.id for e in entries] == ["T13", "T14"]
+    t13 = entries[0]
+    assert t13.title == 'What "direct text extraction" produces per matched element'
+    assert t13.spec_text.startswith("> `-t`, `--text`") and "`selector::text`" in t13.spec_text
+    assert "Risk" not in t13.spec_text
+    assert len(t13.alternatives) == 2 and t13.alternatives[1].startswith("The direct text children")
+    assert t13.choice == 1 and "Risk" not in t13.choice_raw and "Most likely" not in t13.choice_raw
+    assert entries[1].choice == 2

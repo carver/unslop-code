@@ -96,7 +96,9 @@ class Entry:
 
 # --------------------------------------------------------------------------- parsing
 
-ENTRY_RE = re.compile(r"^## (?P<id>[TI]\d+) — (?P<title>.*)$", re.M)
+# Two registry layouts exist: the v7-era `## T1 — title` with `**Section**` labels, and the
+# min9-and-later `## T1. title` with `### Section` headings and a `### Risk: N` block.
+ENTRY_RE = re.compile(r"^## (?P<id>[TI]\d+)(?: — |\. )(?P<title>.*)$", re.M)
 
 
 def parse_registry(text: str) -> list[Entry]:
@@ -108,17 +110,19 @@ def parse_registry(text: str) -> list[Entry]:
         alts = _section(body, "Alternatives")
         choice_raw = _section(body, "Choice")
         alternatives = _split_alternatives(alts)
-        cm = re.match(r"\s*—\s*\((\d+)\)", choice_raw)
+        cm = re.match(r"\s*(?:—\s*\((\d+)\)|Alternative\s+(\d+))", choice_raw)
+        choice = int(cm.group(1) or cm.group(2)) if cm else None
         entries.append(Entry(
             id=m.group("id"), title=m.group("title").strip(), spec_text=spec.strip(),
-            alternatives=alternatives, choice=int(cm.group(1)) if cm else None,
+            alternatives=alternatives, choice=choice,
             choice_raw=choice_raw.strip(),
         ))
     return entries
 
 
 def _section(body: str, name: str) -> str:
-    m = re.search(rf"^\*\*{re.escape(name)}\*\*(.*?)(?=^\*\*[A-Z][^*]*\*\*|^---|\Z)", body, re.M | re.S)
+    """The text under a `**Name**` label or a `### Name` heading, up to the next label or heading."""
+    m = re.search(rf"^(?:\*\*{re.escape(name)}\*\*|###[ \t]*{re.escape(name)}[ \t]*:?[^\n]*)(.*?)(?=^\*\*[A-Z][^*]*\*\*|^###\s|^---|\Z)", body, re.M | re.S)
     return m.group(1) if m else ""
 
 

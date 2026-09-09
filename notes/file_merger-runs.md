@@ -60,3 +60,7 @@ min12-ABDEFJKMN (E back in) on v1 under bin/scb-strict, job 135, alone. The halt
 registry T3 had quoted both spec lines in play, the priority list and "`bool` includes `1`/`0`
 along with standard values", and still chose "a `0`/`1` column stays `int`" on a blast-radius
 argument; so the spec was not short of words there and no patch was drafted for it.
+Changed 2026-09-09 22:20Z at the user's request: every pending job removed (the 21 stashed
+backfill runs of ABDJKMN and ABDEFJKMN across dev6); job 135 runs on. The user found T3's
+argument compelling and asked for a draft that ties inference to the casting rules rather than
+restating the bool case: `specs/drafts/file_merger-05-infer-by-cast-rules.patch`, their call.

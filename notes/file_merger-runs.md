@@ -64,3 +64,11 @@ Changed 2026-09-09 22:20Z at the user's request: every pending job removed (the 
 backfill runs of ABDJKMN and ABDEFJKMN across dev6); job 135 runs on. The user found T3's
 argument compelling and asked for a draft that ties inference to the casting rules rather than
 restating the bool case: `specs/drafts/file_merger-05-infer-by-cast-rules.patch`, their call.
+
+## Spec v2 (2026-09-09)
+
+v1 plus `05-infer-by-cast-rules.patch`, the user's "Inference recognises values by the casting
+rules below" under the checkpoint-1 inference bullets, answering registry T3's reading that the
+`1`/`0` rule governs casting only. Queued 22:35Z at the user's request behind job 135:
+min12-ABDJKMN on v2 under bin/scb-strict (job 136), the same plan: halt at the first non-strict
+checkpoint; strict through all four, run a second; twice strict, run just-solve on v2.

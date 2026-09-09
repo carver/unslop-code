@@ -1,0 +1,25 @@
+file_merger: inference uses the casting rules to type a value (checkpoint 1)
+
+Sentence: the schema-inference bullets under "If --schema not provided", next to "Type
+priority: timestamp > date > bool > int > float > string". The strict-driver run of
+min12-ABDJKMN on v1 (registry T3, Risk 35) quoted both the priority list and the casting
+rule "`bool` includes `1`/`0` along with standard values" and still read the `1`/`0`
+allowance as governing casting into a declared bool column only, so a `1` and a `true` across
+two files conflicted and the column fell to string. The hidden test cross_family_coercion
+expects `bool`, and the reference solution's detector applies the same parsers inference and
+casting share, bool first. The added line ties inference to the casting rules instead of
+restating the bool case. Test: spec_correct/cross_family_coercion (checkpoint 1).
+
+See the ambiguity registry in:
+outputs/spectest/opus-5_2.1.251_high_min12-ABDJKMN-specv1/20260909T1429/file_merger/checkpoint_1/snapshot/AMBIGUITIES.md
+
+--- a/file_merger/checkpoint_1.md
++++ b/file_merger/checkpoint_1.md
+@@ -65,6 +65,7 @@
+ 
+    - Valid types: `string`, `int`, `float`, `bool`, `date`, `timestamp`
+     - Type priority: `timestamp` > `date` > `bool` > `int` > `float` > `string`
++    - Inference recognises values by the casting rules below
+    - Cast every input cell into target type (rules below)
+    - Extra input columns not in schema are ignored
+    - Missing input columns filled with null literal

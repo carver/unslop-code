@@ -55,3 +55,8 @@ Halted 21:45Z after checkpoint 1: 45/46, cross_family_coercion (`1` and `true` a
 files must infer `bool`; the run's registry T3 chose the other reading at Risk 35). None of
 v1's sentences had been exercised yet; the halt is the strict driver doing its job on a
 checkpoint-1 coin. Nothing queued after it; the 21 backfill jobs stay stashed.
+Retried 2026-09-09 22:05Z at the user's request with a prompt that writes more tests:
+min12-ABDEFJKMN (E back in) on v1 under bin/scb-strict, job 135, alone. The halted run's
+registry T3 had quoted both spec lines in play, the priority list and "`bool` includes `1`/`0`
+along with standard values", and still chose "a `0`/`1` column stays `int`" on a blast-radius
+argument; so the spec was not short of words there and no patch was drafted for it.

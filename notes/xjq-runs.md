@@ -132,3 +132,11 @@ guard produces `<key type="str"/>`. The reference solution assigns the converted
 unconditionally, which gives the open-close form for both `""` and `null`. Candidate for a
 v2, pending the user: name the empty string beside null and say the element keeps an empty
 text node. The ABDJKMN sweep resumed with xjq (job 104) at 13:50Z.
+Queued 2026-09-09 16:30Z at the user's request: `specs/xjq/v2/` = v1 plus
+`03-empty-string-text.patch`, the user's wording "null as empty (no self-closing tags)" on the
+checkpoint-3 primitive rule. One run of min12-ABDFJKMN on it (job 129), started alone while the
+rest of the queue stays paused for the usage limit; the user's rule is to cancel it if
+checkpoint 3 is not clean (the one v1 miss lives there). Note for the queue: `pueue start <id>`
+resumes the whole group; job 106 (ABDJKMN on mvvault) started by mistake, was killed within a
+minute (its stub run dir stays under outputs, ignored by results) and re-queued in place. To
+start one job under a pause: stash the others, `pueue start`, `pueue pause --wait`, enqueue.

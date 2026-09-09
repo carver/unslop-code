@@ -58,6 +58,7 @@ tests passed / total at each checkpoint (regressions included), from each checkp
 | min12-ABDFJKMN on v0 | `…min12-ABDFJKMN/20260908T1547` | min12-ABDFJKMN on the unpatched spec; first of two | 49/50, 118/122, 169/174, 223/233, 261/276, 338/353, 389/405 | complete 2026-09-09; 16 misses, 11 shared with v7 on v0 (the rowid trio from checkpoint 2, three spreadsheet cases from 4, five from 5) and five its own (the header-trim pair, spreadsheet upload with an invalid charset for xls and xlsx, the yes-then-no enrich params); 0/7 strict, $24, 82 min (per checkpoint 12, 7, 8, 12, 15, 15, 13). The v0 ladder: control 377, v3 382, v7 391 ($74), v4 392 ($170). 99 entries all scored, Risk 0-40 (top: delimiter-less single-column file 40, empty charset and error precedence 40; header whitespace 20). Quality: erosion 0.231, verbosity 0.219, ast 0.122, cloned 0.088 |
 | min12-ABDFJKMN on v0, repeat | `…min12-ABDFJKMN/20260908T1728` | same config as the first run | 49/50, 118/122, 170/174, 228/233, 266/276, 343/353, 394/405 | complete 2026-09-09; 11 misses, ten shared with the first v0 run (the rowid trio, spreadsheet query controls, the five-test force cluster, the yes-then-no enrich case) plus latin-1 autodetection; the first run's header-trim pair and all four spreadsheet invalid-charset tests passed. 0/7 strict, $25, 85 min (per checkpoint 15, 8, 6, 12, 10, 23, 10). The best v0 score by any prompt (v4 392 at $170, v7 391 at $74). 112 entries all scored, Risk 0-45 (top: what makes a filter value non-numeric 45; what rowid counts 30). Quality: erosion 0.159, verbosity 0.230, ast 0.091, cloned 0.132 |
 | min11-ABDFJKMN on v0 | `…min11-ABDFJKMN/20260908T1911` | min11-ABDFJKMN (with the red/green line) on the unpatched spec, the comparison for the min12 v0 pair | 44/50, 113/122, 165/174, 218/233, 256/276, 333/353, 383/405 | complete 2026-09-09; 22 misses, the eleven the min12 repeat has (latin-1 autodetect, the rowid trio, spreadsheet query controls, the force cluster, yes-then-no enrich) plus eleven of its own: five from checkpoint 1 (explicit latin-1, the single-column CSV, two dataset-id tests, negative values as numbers; the same six-miss start as v3 on v0), five charset cases at checkpoint 4 (CSV charset honoured on convert and upload, spreadsheet invalid charset ignored on convert, export charset upload) and the mixed-numeric column type at 7. 0/7 strict, $20, 66 min (per checkpoint 9, 7, 7, 11, 9, 15, 8). 95 entries all scored, Risk 0-42 (single-column file at 30). Quality: erosion 0.088, verbosity 0.217, ast 0.094, cloned 0.118 |
+| min11-ABDFJKMN on v0, repeat | `…min11-ABDFJKMN/20260908T2330` | same config as the first run | 44/50, 113/122, 165/174, 216/233, 254/276, 331/353, 382/405 | complete 2026-09-09; 23 misses, 21 shared with the first min11 v0 run (the single-column cascade's six from checkpoint 1, the rowid trio, the charset family, the force cluster, query controls) plus the two spreadsheet-upload invalid-charset cases; the yes-then-no enrich case passed. 0/7 strict, $28, 90 min (per checkpoint 14, 8, 8, 14, 10, 22, 12). 115 entries all scored, Risk 0-45 (single-column file at 40). Quality: erosion 0.046, verbosity 0.170, ast 0.078, cloned 0.060 |
 
 On hidden tests, v4 through v7 are flat within
 the latin-1 noise (ckpt 1: 50, 49, 50, 49 of 50; ckpt 2: 119, cut, 119, 118 of 122), and
@@ -257,6 +258,9 @@ matrix, and the reading. Failure sets in brief:
     dataset-id readings among them) carried to the end, plus the charset family at checkpoint 4.
     The eleven spec-gap misses are the min12 pair's; the other eleven are v0 coin flips landing
     badly. Cheapest and fastest ABDFJKMN run on datagate, $20 and 66 min.
+  - min11-ABDFJKMN on v0, repeat (382): the same opening, the single-column cascade again
+    (registry T2 at Risk 40 chose "at least two columns"), and 90 min this time, so the first
+    run's 66 min was a fast toss, not the prompt. Pair 383 and 382 against min12's 389 and 394.
 
 ## Did the v8 testing hints help, or was it the zombie fix?
 
@@ -877,3 +881,14 @@ and v2 moved to `specs/datagate/v1` and `specs/datagate/v2` with their names and
 unchanged; `specs/v1` and `specs/v2` stay as symlinks so every recorded run, catalog record and
 config still resolves. The xjq review's two candidate sentences sit in `specs/drafts/` pending a
 decision (`notes/xjq-misses.md`); nothing about datagate's rows changes.
+
+Amendment 2026-09-09 08:25Z, min11-ABDFJKMN on v0 repeated: 382/405, 0/7 strict, $28, 90 min.
+The first run's 66 min does not repeat (90 here, against min12's 82 and 85), so wall clock is
+noise across the four v0 runs. The score gap between the prompts on v0 is now two of two
+against two of two: both min11 runs opened with the single-column cascade (six checkpoint-1
+tests fed a one-column file, all 400 under the "at least two columns" reading, registry T2/T3 at
+Risk 30-40) and both min12 runs took the looser reading and passed them. The four words the
+prompts differ by ("with Red Green testing") have no mechanism that reaches a delimiter
+sentence, and a two-two split is one chance in eight on a fair coin, so the ledger's call stays
+"inert" with that caveat on record; v2's "if present" sentence settles the question where it
+matters. Quality was the better of the min11 pair (erosion 0.046). The queue drained at 08:19Z.

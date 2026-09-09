@@ -1,0 +1,21 @@
+xjq: a union that mixes text and nodes is text output (checkpoint 5)
+
+The checkpoint-5 sibling of the checkpoint-1 draft (xjq-04): the same reading, placed where
+the failing test lives so a run resumed at checkpoint 5 can see it. Sentence context: the
+union rules; "If any union sub-path already performs text extraction, text flags are treated
+as no-op query modifiers." says nothing about how the mixed result set is then written. The
+min12-ABDFJKMN run on v2 dispatched `//name/text()|//city` to the XML branch and printed the
+first node; test_redundant_text_extraction_mixed_pipe_paths wants `Alice` on the first line
+and the same output as without `--text`. The reference solution takes the XML branch only when
+every result is an element.
+
+--- a/xjq/checkpoint_5.md
++++ b/xjq/checkpoint_5.md
+@@ -40,6 +40,7 @@
+ - If `--first` is also active with union + `--text-all`, only the first matched
+   union node contributes to the output.
+ - If any union sub-path already performs text extraction, text flags are treated as no-op query modifiers.
++- A union with mixed result types is written as text results.
+ - In CSS mode, pass `|` through as CSS query text (no XPath union semantics).
+   If the CSS engine rejects the selector, report a CSS selector error on stderr
+   with exit code `1`.

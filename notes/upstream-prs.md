@@ -32,6 +32,16 @@ metric_transform). The mvvault PR stands alone. To repeat the check: copy the pr
 the flag, `bin/scb eval-snapshot` the reference solution as that checkpoint with
 SCBENCH_PROBLEMS_PATH at the copy (the session's `check-prior.sh` loop, 2026-09-08).
 
+## Problem set: xjq's reference prints lxml reprs for mixed result sets
+
+`solutions/checkpoint_5/xjq.py` takes the XML branch only when every result is an element;
+a set that mixes text nodes and elements (`//name/text()|//city`) goes down the text path,
+where each item is `str()`-ed, so the element prints as `<Element city at 0x7f...>`. The
+hidden test for it (test_redundant_text_extraction_mixed_pipe_paths, checkpoint 5) knows:
+it regex-normalizes element addresses before comparing. Worth a PR that renders such items as
+their string value and drops the normalization, or at least an issue; found 2026-09-09 while
+drafting `specs/drafts/xjq-04-mixed-results-as-text.patch`.
+
 ## Harness: patches we carry (all in `patches/`, applied to the checkout)
 
 Listed in `README.md` with what each fixes: stream-parser string message; stop-after-

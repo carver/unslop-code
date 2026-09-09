@@ -872,3 +872,8 @@ spread), wall clock 66 min against 82/85 (the fastest ABDFJKMN run, with fewer t
 checkpoint), quality erosion 0.088 against 0.231/0.159 (the best of the three). Nothing here
 argues for keeping the red/green line; a second min11 v0 run would say whether the 66 min is
 real. The min12 xjq pair (jobs 100-101) started 03:37Z; the queue ends with it.
+Changed 2026-09-09 05:10Z at the user's request: spec versions are per problem. datagate's v1
+and v2 moved to `specs/datagate/v1` and `specs/datagate/v2` with their names and contents
+unchanged; `specs/v1` and `specs/v2` stay as symlinks so every recorded run, catalog record and
+config still resolves. The xjq review's two candidate sentences sit in `specs/drafts/` pending a
+decision (`notes/xjq-misses.md`); nothing about datagate's rows changes.

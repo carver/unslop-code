@@ -29,7 +29,7 @@ its launch comment; `add` reads that, the problem from the config, and the check
 count from the catalog. Jobs run through pueue (install.py installs it), whose default
 group runs one task at a time, so the 5-hour window is drawn on by one run only.
 """
-import json, os, pathlib, re, signal, subprocess, sys, time
+import json, os, pathlib, re, shlex, signal, subprocess, sys, time
 
 import yaml
 
@@ -52,12 +52,25 @@ def run_problems_root(run_dir):
     return pathlib.Path(record["commit"]) if record.get("version") == "env-override" else CACHE
 
 
+def provider_env(config):
+    """Codex subscription jobs use their launcher without Claude usage polling."""
+    model = config.get("model", {})
+    if not isinstance(model, dict) or model.get("provider") != "codex_auth":
+        return {}
+    launchers = {"gpt-5.6-sol": "scb-sol", "gpt-6-astra": "scb-astra"}
+    if model.get("name") not in launchers:
+        raise SystemExit(f"queue: no Codex launcher for {model.get('name')}")
+    return {"SCB_LAUNCHER": str(ROOT / "bin" / launchers[model["name"]]),
+            "SCB_USAGE_TRACKING": "0"}
+
+
 def job_for(config_path, n=None):
     """(label, argv, env) to run one config through bin/scb-extend."""
     config_path = pathlib.Path(config_path).resolve()
     text = config_path.read_text()
     root = problems_root(text)
-    problems = yaml.safe_load(text)["problems"]
+    config = yaml.safe_load(text)
+    problems = config["problems"]
     if len(problems) != 1:
         raise SystemExit(f"queue: {config_path.name} lists {len(problems)} problems; one per run")
     problem = problems[0]
@@ -66,6 +79,10 @@ def job_for(config_path, n=None):
         raise SystemExit(f"queue: no checkpoints found for {problem} under {root}; build it with bin/spec-patch or pass n_checkpoints")
     label = config_path.name.removesuffix(".yaml").removesuffix("-opus5")
     env = {} if root == CACHE else {"SCBENCH_PROBLEMS_PATH": str(root)}
+    provider = provider_env(config)
+    env.update(provider)
+    if provider:
+        env["SCBENCH_PROBLEMS_PATH"] = str(root)
     return label, [str(ROOT / "bin" / "scb-extend"), "--new", str(config_path), problem, str(n)], env
 
 
@@ -91,7 +108,7 @@ def solo_plan(tasks, task_id):
 
 def add_task(label, argv, env, extra=()):
     """Enqueue a shell command through pueue and print the new task id last, whatever pueue warns."""
-    cmd = " ".join(f"{k}={v}" for k, v in env.items()) + (" " if env else "") + " ".join(argv)
+    cmd = shlex.join(["env", *(f"{k}={v}" for k, v in env.items()), *map(str, argv)])
     reply = subprocess.run([PUEUE, "add", "--label", label, "--working-directory", str(ROOT), *extra, "--", cmd],
                            capture_output=True, text=True, check=True).stdout
     task_id = added_id(reply)
@@ -114,14 +131,17 @@ def solo(task_id):
     print(f"task {task_id} running alone; {len(others)} job(s) queued behind a paused group")
 
 
-def resume_job(run_dir, n=None):
+def resume_job(run_dir, n=None, problem=None):
     """(label, argv, env) to continue a run from its next checkpoint through bin/scb-extend."""
     run_dir = pathlib.Path(run_dir).resolve()
     config = yaml.safe_load((run_dir / "config.yaml").read_text())
     problems = config["problems"]
-    if len(problems) != 1:
-        raise SystemExit(f"queue: {run_dir.name} lists {len(problems)} problems; one per run")
-    problem = problems[0]
+    if problem is None:
+        if len(problems) != 1:
+            raise SystemExit("queue: multi-problem resume requires --problem NAME")
+        problem = problems[0]
+    elif problem not in problems:
+        raise SystemExit(f"queue: {problem} is not in this run")
     root = run_problems_root(run_dir)
     n = n or len(list((root / problem).glob("checkpoint_*.md")))
     if not n:
@@ -129,6 +149,10 @@ def resume_job(run_dir, n=None):
     done = len(list((run_dir / problem).glob("checkpoint_*")))
     label = f"{run_dir.parent.name}-{problem}-resume-from-{done + 1}"
     env = {} if root == CACHE else {"SCBENCH_PROBLEMS_PATH": str(root)}
+    provider = provider_env(config)
+    env.update(provider)
+    if provider:
+        env["SCBENCH_PROBLEMS_PATH"] = str(root)
     return label, [str(ROOT / "bin" / "scb-extend"), str(run_dir), problem, str(n)], env
 
 
@@ -286,8 +310,14 @@ def main():
         solo(int(args[1]))
     elif args[:1] == ["move"] and len(args) == 4 and args[2] == "before":
         move_job(int(args[1]), int(args[3]))
-    elif args[:1] == ["resume"] and len(args) in (2, 3):
-        add_task(*resume_job(args[1], int(args[2]) if len(args) > 2 else None))
+    elif args[:1] == ["resume"]:
+        import argparse
+        parser = argparse.ArgumentParser(prog="queue resume")
+        parser.add_argument("run_dir")
+        parser.add_argument("n", nargs="?", type=int)
+        parser.add_argument("--problem")
+        options = parser.parse_args(args[1:])
+        add_task(*resume_job(options.run_dir, options.n, options.problem))
     elif args[:1] == ["kill"] and len(args) in (2, 3) and args[3:] == [] and (len(args) == 2 or args[2] == "--keep-paused"):
         kill_job(int(args[1]), keep_paused=len(args) == 3)
     elif not args:

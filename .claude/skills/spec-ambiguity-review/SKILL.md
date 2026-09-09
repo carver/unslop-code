@@ -29,10 +29,12 @@ artifacts) or "noise" (flips between runs, like a detector on a tiny sample).
 Make the next version folder, `specs/vN/`, by copying the current version's patches and adding
 `NN-<problem>-<slug>.patch`, a unified diff against the cached problem
 (`~/.cache/scbench/problems/<problem>`), paths `a/<problem>/checkpoint_N.md`. One hunk
-per sentence, the smallest wording that states the hidden reading, matching what the
+per sentence, the smallest wording that nudges toward the hidden reading, matching what the
 reference solution in `solutions/` does. Header comment lists sentence, entry id, tests.
 Done when `bin/spec-patch <problem> vN` applies the folder and prints the changed lines. Never edit
 an older version's folder: runs already made against it must stay comparable.
+
+Pause and succinctly summarize the proposed changes for me to approve. We might discuss in several rounds. Then when I approve all patches, continue.
 
 ## 3. Judge, edit, repeat
 

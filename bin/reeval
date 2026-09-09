@@ -14,12 +14,22 @@ HERE = pathlib.Path(__file__).resolve().parent
 ROOT = HERE.parent
 sys.path.insert(0, str(ROOT / "slop-code-bench" / "src"))
 VENV_PYTHON = pathlib.Path(os.environ.get("UV_PROJECT_ENVIRONMENT", pathlib.Path.home() / ".venvs" / "slop-code-bench")) / "bin" / "python"
-try:
-    from slop_code.metrics.checkpoint.extractors import get_evaluation_metrics  # the harness's deps live in bin/scb's venv
-except ImportError:
+
+
+def harness_available():
+    """The harness's extractor imports only inside bin/scb's venv, where its dependencies live."""
+    try:
+        from slop_code.metrics.checkpoint import extractors  # noqa: F401
+        return True
+    except ImportError:
+        return False
+
+
+def reexec_in_venv():
+    """Restart under the harness venv (only from main: an import-time exec would swallow a test runner)."""
     if VENV_PYTHON.exists() and pathlib.Path(sys.executable).resolve() != VENV_PYTHON.resolve():
         os.execv(str(VENV_PYTHON), [str(VENV_PYTHON), *sys.argv])
-    raise
+    sys.exit(f"the harness is not importable and no venv python at {VENV_PYTHON}")
 ENV = ROOT / "slop-code-bench" / "configs" / "environments" / "docker-python3.12-uv.yaml"
 
 
@@ -33,6 +43,7 @@ def evaluate(run_dir, problem, checkpoint, out_dir):
 
 def rewrite_row(run_dir, problem, checkpoint):
     """Rebuild the checkpoint's score fields in checkpoint_results.jsonl from its evaluation.json."""
+    from slop_code.metrics.checkpoint.extractors import get_evaluation_metrics
     fields = get_evaluation_metrics(run_dir / problem / checkpoint)
     rows_path = run_dir / "checkpoint_results.jsonl"
     rows = [json.loads(l) for l in rows_path.read_text().splitlines() if l.strip()]
@@ -60,6 +71,8 @@ def install(run_dir, problem, checkpoint, fresh, tag):
 
 
 def main():
+    if not harness_available():
+        reexec_in_venv()
     args = sys.argv[1:]
     if len(args) < 5 or "--tag" not in args:
         sys.exit(__doc__)

@@ -13,7 +13,7 @@ test_json_empty_string_preserves_element_with_empty_text (checkpoint 3).
  ## Output
  
 -- Text/attribute results: strip each result, collapse internal whitespace runs to single spaces, then join results with each on a newline.
-+- Text/attribute results: strip each result, collapse internal whitespace runs to single spaces, then join results with `\n` between them and nothing after the last, so a lone result that normalizes to the empty string writes nothing at all.
++- Text/attribute results: strip each result, collapse internal whitespace runs to single spaces, then join results with each on a newline. No trailing newline.
  - XML node results: pretty-print serialized XML; when multiple XML nodes match, output only the first node.
  - No-match output: write nothing to stdout/stderr.
  

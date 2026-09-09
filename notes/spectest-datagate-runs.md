@@ -55,6 +55,7 @@ tests passed / total at each checkpoint (regressions included), from each checkp
 | just-solve on v2, repeat | `…just-solve-specv2/20260907T0029` | same config as the first run | 48/50, 120/122, 169/174, 228/233, 271/276, 342/353, 392/405 | complete 2026-09-07; 13 misses: the five whitespace tests of the first run, the six-test CACHE_ENABLED trimming cluster from checkpoint 6, and two cache-upgrade tests at checkpoint 7 (test_cache_upgrade_reingests, test_spreadsheet_cache_upgrade_to_enriched: enrich=yes on a cached dataset did not re-ingest); 0/7 strict, $12, 47 min. Quality: erosion 0.621, verbosity 0.506, ast 0.455, cloned 0.077 |
 | min12-ABDFJKMN on v2 | `…min12-ABDFJKMN-specv2/20260908T1223` | min11-ABDFJKMN minus "with Red Green testing" in the intro's approach list, 464 words; first of two | 50/50, 122/122, 174/174, 233/233, 276/276, 353/353, 405/405 | complete 2026-09-08; 0 misses, 7/7 strict, $28, 88 min (min11 pair: 89 and 79; per checkpoint 12, 8, 8, 14, 11, 20, 15). 99 entries all scored, Risk 0-45 (top: undecodable charset 45; enrich downgrade on re-ingest 30). Quality: erosion 0.039, verbosity 0.153, ast 0.076, cloned 0.061, inside the min11 pair's band on every column |
 | min12-ABDFJKMN on v2, repeat | `…min12-ABDFJKMN-specv2/20260908T1410` | same config as the first run | 50/50, 122/122, 174/174, 233/233, 276/276, 353/353, 405/405 | complete 2026-09-08; 0 misses, 7/7 strict, $22, 76 min (per checkpoint 12, 7, 9, 12, 10, 17, 9). min12-ABDFJKMN is twice strict on v2 at 464 words, the shortest twice-strict prompt. 93 entries all scored, Risk 0-40 (top: mixed-type sort 40; enrich downgrade on re-ingest 40). Quality: erosion 0.055, verbosity 0.177, ast 0.067, cloned 0.088 |
+| min12-ABDFJKMN on v0 | `…min12-ABDFJKMN/20260908T1547` | min12-ABDFJKMN on the unpatched spec; first of two | 49/50, 118/122, 169/174, 223/233, 261/276, 338/353, 389/405 | complete 2026-09-09; 16 misses, 11 shared with v7 on v0 (the rowid trio from checkpoint 2, three spreadsheet cases from 4, five from 5) and five its own (the header-trim pair, spreadsheet upload with an invalid charset for xls and xlsx, the yes-then-no enrich params); 0/7 strict, $24, 82 min (per checkpoint 12, 7, 8, 12, 15, 15, 13). The v0 ladder: control 377, v3 382, v7 391 ($74), v4 392 ($170). 99 entries all scored, Risk 0-40 (top: delimiter-less single-column file 40, empty charset and error precedence 40; header whitespace 20). Quality: erosion 0.231, verbosity 0.219, ast 0.122, cloned 0.088 |
 
 On hidden tests, v4 through v7 are flat within
 the latin-1 noise (ckpt 1: 50, 49, 50, 49 of 50; ckpt 2: 119, cut, 119, 118 of 122), and
@@ -243,6 +244,9 @@ matrix, and the reading. Failure sets in brief:
     line. First of two.
   - min12-ABDFJKMN on v2, repeat (405): strict again. Twice strict at 464 words, the shortest
     so far; $22 and 76 min, the cheapest and fastest of the ABDFJKMN runs on v2.
+  - min12-ABDFJKMN on v0 (389): the v0 spec's known gaps (rowid, spreadsheets, the checkpoint-5
+    cluster) plus the header-trim pair and the yes-then-no enrich case, which v2's sentences close.
+    Two and three below v7 and v4 on v0 at a third and a seventh of their cost. First of two.
 
 ## Did the v8 testing hints help, or was it the zombie fix?
 
@@ -822,3 +826,14 @@ time or cost, and every quality column of both min12 runs sits inside the min11 
 inert. The v0 pair (jobs 97-98) started 22:47Z; the min11 v0 run (99) follows as its comparison.
 The usage-window reading after checkpoint 7 came back unknown once (a usage-endpoint read
 failed); the run itself was unaffected.
+
+Amendment 2026-09-09 00:35Z, min12-ABDFJKMN on v0, first run: 389/405, 0/7 strict, $24, 82 min.
+On the unpatched spec the 464-word prompt lands two below v7 (391, $74) and three below v4
+(392, $170), tracking v7 checkpoint for checkpoint (49, 118, 169/170, 223/224, 261/262,
+338/339). Eleven of its sixteen misses are v7's too: the rowid trio (what rowid is 1-based
+against, which v1's "starting at the header" settles; registry T23 at Risk 25 took the other
+reading), the spreadsheet family and the checkpoint-5 cluster. Its own five are the header-trim
+pair (Risk 20 in the registry, the coin flip again) and the yes-then-no enrich case (closed by
+v2's sentence). Quality is the run's weak side: erosion 0.231 against v7's 0.105 and v4's 0.073,
+the highest of any ABDFJKMN run; on v2 the same prompt sat at 0.02-0.10. The repeat (job 98)
+started 00:28Z; the min11 v0 run (99) follows for the red/green comparison.

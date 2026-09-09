@@ -65,3 +65,16 @@ def test_failed_scb_check_leaves_no_file(tmp_path, monkeypatch, capsys):
     assert summarize.quality_report(ck) is None
     assert not (ck / "quality_analysis" / "scb_check.json").exists()
     assert "boom" in capsys.readouterr().err
+
+
+def test_missing_uvx_preserves_existing_metrics(tmp_path, monkeypatch, capsys):
+    ck = checkpoint(tmp_path)
+    row = {'problem': 'datagate', 'checkpoint': 'checkpoint_1', 'idx': 1,
+           'passed_tests': 50, 'erosion': 0.2}
+    (tmp_path / 'checkpoint_results.jsonl').write_text(json.dumps(row) + '\n')
+    def missing(*args, **kwargs):
+        raise FileNotFoundError(2, 'No such file or directory', 'uvx')
+    monkeypatch.setattr(subprocess, 'run', missing)
+    assert summarize.load_rows(tmp_path) == [row]
+    assert not (ck / 'quality_analysis/scb_check.json').exists()
+    assert 'uvx' in capsys.readouterr().err

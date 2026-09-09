@@ -4,10 +4,14 @@ import sys
 import types
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parent.parent
 SCRIPT = ROOT / "bin" / "reeval"
 mod = types.ModuleType("reeval"); mod.__file__ = str(SCRIPT); sys.modules["reeval"] = mod
 exec(compile(SCRIPT.read_text(), str(SCRIPT), "exec"), mod.__dict__)
+if not mod.harness_available():  # the row rewrite needs the harness: run these under bin/scb's venv
+    pytest.skip("slop_code is not importable here; run with ~/.venvs/slop-code-bench/bin/python", allow_module_level=True)
 
 
 def make_run(tmp_path):

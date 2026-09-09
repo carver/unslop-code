@@ -17,7 +17,7 @@ is the dev6 sweep's just-solve run (`notes/dev6-opus5.md`).
 | min12-ABDFJKMN, repeat | `…min12-ABDFJKMN/20260908T2212` | same config as the first run | 22/23, 47/51, 91/96, 116/122, 160/167 | complete 2026-09-09; seven misses again but a different seven: the malformed-XML error case from checkpoint 1 (the first checkpoint-1 miss in ten xjq runs; registry T1, parse-as-HTML versus hard failure) carried to the end, while the whitespace-only element under `--text-all` passed; 0/5 strict, $15 (per checkpoint 9, 12, 12, 17, 22 min), 72 min. 63 registry entries all scored. Quality: erosion 0.030, verbosity 0.401, ast 0.025, cloned 0.360 |
 | min12-ABDFJKMN on v1 | `…min12-ABDFJKMN-specv1/20260909T0430` | min12-ABDFJKMN on spec v1 (text flags one per element; no trailing newline); first of two | 23/23, 51/51, 95/96, 121/122, 166/167 | complete 2026-09-09; every one of the seven v0 misses passed; the one miss is the element half of the checkpoint-3 JSON empty-string test, which the old runs never reached: the empty string was serialized self-closing (`<key type="str"/>`) where the test wants an open-close pair, a reading no registry entry recorded this run. 2/5 strict, $13 (per checkpoint 11, 11, 9, 13, 14 min), 58 min. 57 registry entries all scored, Risk 0-45 (top: numeric XPath results 45; empty and whitespace-only text results 40). Quality: erosion 0.089, verbosity 0.312, ast 0.052, cloned 0.243 |
 | min12-ABDFJKMN on v1, repeat | `…min12-ABDFJKMN-specv1/20260909T0533` | same config as the first run | 23/23, 51/51, 95/96, 121/122, 166/167 | complete 2026-09-09; the same single miss, the empty-string element serialized self-closing; 2/5 strict, $18 (per checkpoint 15, 13, 10, 14, 20 min), 72 min. 62 registry entries all scored, Risk 0-45. Quality: erosion 0.048, verbosity 0.276, ast 0.067, cloned 0.171 |
-| min12-ABDJKMN | `…min12-ABDJKMN/20260909T0650` | min12-ABDFJKMN minus F (generator floor), 444 words, on v0; first of two | 23/23, 47/51, 91/96, 116/122, 160/167 | complete 2026-09-09; the seven v0 misses; 1/5 strict, $12, 50 min. No hypothesis in the snapshot, as in every ABDFJKMN run. Quality in the table below |
+| min12-ABDJKMN | `…min12-ABDJKMN/20260909T0650` | min12-ABDFJKMN minus F (generator floor), 444 words, on v0; first of two | 23/23, 47/51, 91/96, 116/122, 160/167 | complete 2026-09-09; the seven v0 misses; 1/5 strict, $10 (per checkpoint 6, 9, 8, 10, 12 min), 45 min. No hypothesis in the snapshot, as in every ABDFJKMN run. Quality in the table below |
 
 ## Test failure summaries
 
@@ -88,7 +88,7 @@ testing", 464 words). Compare with the min11 pair (160 and 160, $14 and $17).
 
 ### min12-ABDJKMN (without F)
 
-  - first run (160): the seven v0 misses, $12 and 50 min, the cheapest and fastest xjq run.
+  - first run (160): the seven v0 misses, $10 and 45 min, the cheapest and fastest xjq run.
     F had nothing to govern here either: no hypothesis in the snapshot. First of two.
 
 ### min12-ABDFJKMN on spec v1

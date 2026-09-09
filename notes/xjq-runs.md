@@ -18,6 +18,7 @@ is the dev6 sweep's just-solve run (`notes/dev6-opus5.md`).
 | min12-ABDFJKMN on v1 | `…min12-ABDFJKMN-specv1/20260909T0430` | min12-ABDFJKMN on spec v1 (text flags one per element; no trailing newline); first of two | 23/23, 51/51, 95/96, 121/122, 166/167 | complete 2026-09-09; every one of the seven v0 misses passed; the one miss is the element half of the checkpoint-3 JSON empty-string test, which the old runs never reached: the empty string was serialized self-closing (`<key type="str"/>`) where the test wants an open-close pair, a reading no registry entry recorded this run. 2/5 strict, $13 (per checkpoint 11, 11, 9, 13, 14 min), 58 min. 57 registry entries all scored, Risk 0-45 (top: numeric XPath results 45; empty and whitespace-only text results 40). Quality: erosion 0.089, verbosity 0.312, ast 0.052, cloned 0.243 |
 | min12-ABDFJKMN on v1, repeat | `…min12-ABDFJKMN-specv1/20260909T0533` | same config as the first run | 23/23, 51/51, 95/96, 121/122, 166/167 | complete 2026-09-09; the same single miss, the empty-string element serialized self-closing; 2/5 strict, $18 (per checkpoint 15, 13, 10, 14, 20 min), 72 min. 62 registry entries all scored, Risk 0-45. Quality: erosion 0.048, verbosity 0.276, ast 0.067, cloned 0.171 |
 | min12-ABDJKMN | `…min12-ABDJKMN/20260909T0650` | min12-ABDFJKMN minus F (generator floor), 444 words, on v0; first of two | 23/23, 47/51, 91/96, 116/122, 160/167 | complete 2026-09-09; the seven v0 misses; 1/5 strict, $10 (per checkpoint 6, 9, 8, 10, 12 min), 45 min. No hypothesis in the snapshot, as in every ABDFJKMN run. Quality in the table below |
+| min12-ABDFJKMN on v2 | `…min12-ABDFJKMN-specv2/20260909T0907` | min12-ABDFJKMN on spec v2 (v1 plus "null as empty (no self-closing tags)") | 23/23, 51/51, 96/96, 122/122, 166/167 | complete 2026-09-09; the v1 miss passed (empty string serialized open-close), and the one miss is new to the min runs: the mixed union `//name/text()\|//city` under `--text` must print the text node `Alice` first, and this run printed the element (registry T3, result sets mixing elements and strings, Risk 25: whole-result dispatch to the XML branch); the control missed the same test, every earlier min run passed it. 4/5 strict, $13 (per checkpoint 8, 11, 11, 16, 22 min), 67 min. Quality: erosion 0.048, verbosity 0.387, ast 0.044, cloned 0.319 |
 
 ## Test failure summaries
 
@@ -91,6 +92,13 @@ testing", 464 words). Compare with the min11 pair (160 and 160, $14 and $17).
   - first run (160): the seven v0 misses, $10 and 45 min, the cheapest and fastest xjq run.
     F had nothing to govern here either: no hypothesis in the snapshot. First of two.
 
+### min12-ABDFJKMN on spec v2
+
+  - first run (166): four strict checkpoints, the first on xjq. v2's sentence closed the
+    empty-string miss; the one miss left is a checkpoint-5 coin (mixed union under `--text`,
+    dispatched whole-result to XML) that the control also missed and eleven min runs passed.
+    A repeat would most likely be strict; queue paused for the usage limit.
+
 ### min12-ABDFJKMN on spec v1
 
   - first run (166): the seven v0 misses all passed, sentence B's two included, although the
@@ -140,3 +148,13 @@ checkpoint 3 is not clean (the one v1 miss lives there). Note for the queue: `pu
 resumes the whole group; job 106 (ABDJKMN on mvvault) started by mistake, was killed within a
 minute (its stub run dir stays under outputs, ignored by results) and re-queued in place. To
 start one job under a pause: stash the others, `pueue start`, `pueue pause --wait`, enqueue.
+
+Amendment 2026-09-09 17:25Z, min12-ABDFJKMN on xjq v2: 166/167, 4/5 strict, $13, 67 min. The
+user's "null as empty (no self-closing tags)" cleared the last v1 miss at checkpoint 3, and
+checkpoints 1 to 4 are the first clean ones xjq has had. The single miss is a different test
+from anything v1 or v2 touched: `--text` over `//name/text()|//city` should print `Alice`
+first, and this run printed `<city>NYC</city>`, having dispatched a mixed node-set to the XML
+branch as a whole (registry T3 at Risk 25). The control missed it too; every min run before
+this one passed it, so it is a coin, not a gap the spec opened. xjq's three spec sentences
+now cover its seven standing misses; a strict run needs one more toss. Nothing was queued
+after this run: the queue stays paused for the user's usage limit.

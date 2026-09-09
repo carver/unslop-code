@@ -22,6 +22,7 @@ is the dev6 sweep's just-solve run (`notes/dev6-opus5.md`).
 | min12-ABDFJKMN on v3 (clone, checkpoint 5 only) | `…min12-ABDFJKMN-specv3/20260909T0907` | the v2 run's checkpoints 1-4 as they were, checkpoint 5 rerun against v3 (v2 plus "A union with mixed result types is written as text results." in checkpoint 5's union rules) | 23/23, 51/51, 96/96, 122/122, 167/167 | complete 2026-09-09; 0 misses, 5/5 strict; the rerun checkpoint cost $4 and 18 min ($14 and 64 min with the inherited four). The first strict xjq run, on a clone: the T3 registry entry (mixed result sets, Risk 25) still chose whole-result XML dispatch in its wording, but the union sentence carried the test. A full v3 run from checkpoint 1 is the honest confirmation |
 | min12-ABDFJKMN on v3 | `…min12-ABDFJKMN-specv3/20260909T1123` | min12-ABDFJKMN on spec v3 from checkpoint 1 | 23/23, 51/51, 96/96, 122/122, 167/167 | complete 2026-09-09; 0 misses, 5/5 strict, $13 (per checkpoint 8, 18, 8, 16, 17 min), 67 min. The first strict xjq run from scratch; one of two. 60 registry entries, 56 scored, Risk 0-45 (top: non-node-set results 45; "scope of no self-closing tags" 32, the v2 sentence read as a question in its own right). Quality: erosion 0.020, verbosity 0.233, ast 0.031, cloned 0.191, the best xjq figures on record |
 | just-solve on v3 | `…just-solve-specv3/20260909T1249` | benchmark's own prompt on spec v3; first of two | 23/23, 51/51, 96/96, 122/122, 167/167 | complete 2026-09-09; 0 misses, 5/5 strict, $6 (per checkpoint 2, 8, 3, 3, 3 min), 20 min. The bare prompt clears every one of the control's seven v0 misses on v3. Quality: erosion 0.321, verbosity 0.209, ast 0.178, cloned 0.000, the control's shape |
+| just-solve on v3, repeat | `…just-solve-specv3/20260909T1314` | same config as the first run | 23/23, 51/51, 96/96, 122/122, 167/167 | complete 2026-09-09; 0 misses, 5/5 strict, $5 (per checkpoint 2, 6, 3, 3, 5 min), 19 min. just-solve is twice strict on xjq v3. Quality: erosion 0.498, verbosity 0.247, ast 0.213, cloned 0.000 |
 
 ## Test failure summaries
 
@@ -101,6 +102,8 @@ testing", 464 words). Compare with the min11 pair (160 and 160, $14 and $17).
     bare prompt all the way; the min prompt's registry procedure was not what xjq needed once
     the spec said what the tests read. Quality stays the control's (erosion 0.321 against
     min12's 0.020): the sentences fixed the reading, not the code. First of two.
+  - repeat (167): strict again, $5 and 19 min. Twice strict, the first prompt to be so on xjq.
+    Erosion 0.498 this time, the bare prompt's usual band.
 
 ### min12-ABDFJKMN on spec v3 (checkpoint 5 rerun on the v2 clone)
 
@@ -209,3 +212,9 @@ prompt, which scored 160 on v0 with the same seven misses as every min run, is s
 On xjq the whole gap was the spec: four sentences, and the bare prompt solves it at half the
 min prompt's cost and a third of its time. What the min prompt still buys on xjq is code
 quality (erosion 0.020 against 0.321). The repeat (job 133) started 20:15Z.
+
+Amendment 2026-09-09 20:45Z, just-solve on xjq v3 repeated: 167/167, 5/5 strict, $5, 19 min.
+The benchmark's own prompt is twice strict on xjq v3, the first prompt twice strict on this
+problem; min12-ABDFJKMN is strict once (plus the clone). xjq is closed as a spec question:
+four sentences, and every prompt tried on v3 passes every hidden test. The queue is paused
+again with the 21 sweep jobs back in it.

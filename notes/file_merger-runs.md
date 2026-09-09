@@ -40,3 +40,13 @@ The control is the dev6 sweep's just-solve run (`notes/dev6-opus5.md`).
     mixed-format inference and TSV families are stable readings for this prompt, and the
     registry scores the consensus question at 50 both times. Pair: 130 and 131 against the
     control's 116, $29 and $28.
+
+## Spec v1 (2026-09-09)
+
+`notes/file_merger-misses.md` puts the min11-ABDFJKMN repeat's sixteen misses under four
+sentences; the user's wording of each is in `specs/file_merger/v1/` (0b22ff3): TSV lines may
+end in `\r\n`; "JSONL does not outrank CSV" under the authoritative strategy; backslash-escaped
+quotes are accepted in CSV; map keys in field paths are double-quoted. Started 20:55Z at the
+user's request, alone with the 21 backfill jobs stashed: min12-ABDJKMN on v1 under
+`bin/scb-strict` (job 134), which halts at the first checkpoint that is not strict. The user's
+rules: strict all the way, run a second; twice strict, run just-solve on v1.

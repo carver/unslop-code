@@ -20,6 +20,7 @@ is the dev6 sweep's just-solve run (`notes/dev6-opus5.md`).
 | min12-ABDJKMN | `…min12-ABDJKMN/20260909T0650` | min12-ABDFJKMN minus F (generator floor), 444 words, on v0; first of two | 23/23, 47/51, 91/96, 116/122, 160/167 | complete 2026-09-09; the seven v0 misses; 1/5 strict, $10 (per checkpoint 6, 9, 8, 10, 12 min), 45 min. No hypothesis in the snapshot, as in every ABDFJKMN run. Quality in the table below |
 | min12-ABDFJKMN on v2 | `…min12-ABDFJKMN-specv2/20260909T0907` | min12-ABDFJKMN on spec v2 (v1 plus "null as empty (no self-closing tags)") | 23/23, 51/51, 96/96, 122/122, 166/167 | complete 2026-09-09; the v1 miss passed (empty string serialized open-close), and the one miss is new to the min runs: the mixed union `//name/text()\|//city` under `--text` must print the text node `Alice` first, and this run printed the element (registry T3, result sets mixing elements and strings, Risk 25: whole-result dispatch to the XML branch); the control missed the same test, every earlier min run passed it. 4/5 strict, $13 (per checkpoint 8, 11, 11, 16, 22 min), 67 min. Quality: erosion 0.048, verbosity 0.387, ast 0.044, cloned 0.319 |
 | min12-ABDFJKMN on v3 (clone, checkpoint 5 only) | `…min12-ABDFJKMN-specv3/20260909T0907` | the v2 run's checkpoints 1-4 as they were, checkpoint 5 rerun against v3 (v2 plus "A union with mixed result types is written as text results." in checkpoint 5's union rules) | 23/23, 51/51, 96/96, 122/122, 167/167 | complete 2026-09-09; 0 misses, 5/5 strict; the rerun checkpoint cost $4 and 18 min ($14 and 64 min with the inherited four). The first strict xjq run, on a clone: the T3 registry entry (mixed result sets, Risk 25) still chose whole-result XML dispatch in its wording, but the union sentence carried the test. A full v3 run from checkpoint 1 is the honest confirmation |
+| min12-ABDFJKMN on v3 | `…min12-ABDFJKMN-specv3/20260909T1123` | min12-ABDFJKMN on spec v3 from checkpoint 1 | 23/23, 51/51, 96/96, 122/122, 167/167 | complete 2026-09-09; 0 misses, 5/5 strict, $13 (per checkpoint 8, 18, 8, 16, 17 min), 67 min. The first strict xjq run from scratch; one of two. 60 registry entries, 56 scored, Risk 0-45 (top: non-node-set results 45; "scope of no self-closing tags" 32, the v2 sentence read as a question in its own right). Quality: erosion 0.020, verbosity 0.233, ast 0.031, cloned 0.191, the best xjq figures on record |
 
 ## Test failure summaries
 
@@ -99,6 +100,9 @@ testing", 464 words). Compare with the min11 pair (160 and 160, $14 and $17).
     else changed since checkpoints 1-4 are the v2 run's. Strict on xjq for the first time,
     with the caveat that a clone is one toss of one checkpoint; a full v3 run and a repeat
     are what the twice-strict rule wants.
+  - full run (167): strict from checkpoint 1, $13, 67 min, with the best erosion xjq has
+    shown (0.020). Four registry entries carry no score this time; the v2 sentence itself
+    became an entry ("scope of no self-closing tags", Risk 32). Once strict; a repeat makes it twice.
 
 ### min12-ABDFJKMN on spec v2
 
@@ -180,3 +184,10 @@ versions, four sentences, and every hidden test on xjq passes once. The checkpoi
 cost $4; the run dir carries the v2 run's first four checkpoints unchanged and is labelled
 v3 in the results table because its catalog record was pointed at the v3 build. The queue
 stays paused; a full v3 pair (about $30) is the next step when usage allows.
+
+Amendment 2026-09-09 19:40Z, min12-ABDFJKMN on xjq v3, full run: 167/167, 5/5 strict, $13, 67
+min. xjq is solved strictly from checkpoint 1 on a spec with four added sentences (v1: text
+flags one per element, no trailing newline; v2: no self-closing tags; v3: a mixed union is
+text output), at the same cost as the v0 runs that scored 160. Quality is the best xjq has
+shown (erosion 0.020, verbosity 0.233). Under the twice-strict rule a repeat (about $13) is
+what remains; not queued, the queue stays paused for the usage limit.

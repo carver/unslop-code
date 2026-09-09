@@ -59,6 +59,7 @@ tests passed / total at each checkpoint (regressions included), from each checkp
 | min12-ABDFJKMN on v0, repeat | `…min12-ABDFJKMN/20260908T1728` | same config as the first run | 49/50, 118/122, 170/174, 228/233, 266/276, 343/353, 394/405 | complete 2026-09-09; 11 misses, ten shared with the first v0 run (the rowid trio, spreadsheet query controls, the five-test force cluster, the yes-then-no enrich case) plus latin-1 autodetection; the first run's header-trim pair and all four spreadsheet invalid-charset tests passed. 0/7 strict, $25, 85 min (per checkpoint 15, 8, 6, 12, 10, 23, 10). The best v0 score by any prompt (v4 392 at $170, v7 391 at $74). 112 entries all scored, Risk 0-45 (top: what makes a filter value non-numeric 45; what rowid counts 30). Quality: erosion 0.159, verbosity 0.230, ast 0.091, cloned 0.132 |
 | min11-ABDFJKMN on v0 | `…min11-ABDFJKMN/20260908T1911` | min11-ABDFJKMN (with the red/green line) on the unpatched spec, the comparison for the min12 v0 pair | 44/50, 113/122, 165/174, 218/233, 256/276, 333/353, 383/405 | complete 2026-09-09; 22 misses, the eleven the min12 repeat has (latin-1 autodetect, the rowid trio, spreadsheet query controls, the force cluster, yes-then-no enrich) plus eleven of its own: five from checkpoint 1 (explicit latin-1, the single-column CSV, two dataset-id tests, negative values as numbers; the same six-miss start as v3 on v0), five charset cases at checkpoint 4 (CSV charset honoured on convert and upload, spreadsheet invalid charset ignored on convert, export charset upload) and the mixed-numeric column type at 7. 0/7 strict, $20, 66 min (per checkpoint 9, 7, 7, 11, 9, 15, 8). 95 entries all scored, Risk 0-42 (single-column file at 30). Quality: erosion 0.088, verbosity 0.217, ast 0.094, cloned 0.118 |
 | min11-ABDFJKMN on v0, repeat | `…min11-ABDFJKMN/20260908T2330` | same config as the first run | 44/50, 113/122, 165/174, 216/233, 254/276, 331/353, 382/405 | complete 2026-09-09; 23 misses, 21 shared with the first min11 v0 run (the single-column cascade's six from checkpoint 1, the rowid trio, the charset family, the force cluster, query controls) plus the two spreadsheet-upload invalid-charset cases; the yes-then-no enrich case passed. 0/7 strict, $28, 90 min (per checkpoint 14, 8, 8, 14, 10, 22, 12). 115 entries all scored, Risk 0-45 (single-column file at 40). Quality: erosion 0.046, verbosity 0.170, ast 0.078, cloned 0.060 |
+| min12-ABDJKMN on v0 | `…min12-ABDJKMN/20260909T0313` | min12-ABDFJKMN minus F (the generator floor), 444 words, on the unpatched spec; first of two | 44/50, 113/122, 165/174, 216/233, 254/276, 331/353, 381/405 | complete 2026-09-09; 24 misses, the second min11 v0 run's 23 (the single-column cascade from checkpoint 1, rowid, charset, force, query controls) plus the yes-then-no enrich case; 0/7 strict, $19, 58 min (per checkpoint 10, 5, 6, 10, 8, 12, 7), the cheapest and fastest datagate run of the ladder. Neither this snapshot nor the ABDFJKMN one imports hypothesis, so F's generator floor had no generators to govern. 95 entries all scored, Risk 0-55 (query timeout 55). Quality: erosion 0.055, verbosity 0.233, ast 0.092, cloned 0.137 |
 
 On hidden tests, v4 through v7 are flat within
 the latin-1 noise (ckpt 1: 50, 49, 50, 49 of 50; ckpt 2: 119, cut, 119, 118 of 122), and
@@ -261,6 +262,9 @@ matrix, and the reading. Failure sets in brief:
   - min11-ABDFJKMN on v0, repeat (382): the same opening, the single-column cascade again
     (registry T2 at Risk 40 chose "at least two columns"), and 90 min this time, so the first
     run's 66 min was a fast toss, not the prompt. Pair 383 and 382 against min12's 389 and 394.
+  - min12-ABDJKMN on v0 (381): without F, the cascade path again and the min11 v0 repeat's
+    misses plus one. F is about hypothesis generators, and with E gone none of these runs
+    write any, so on datagate the rule is dead text; the drop bought $19 and 58 min. First of two.
 
 ## Did the v8 testing hints help, or was it the zombie fix?
 
@@ -897,3 +901,12 @@ Queued 2026-09-09 08:40Z at the user's request: min12-ABDJKMN, the 444-word subs
 file_merger, mvvault, rejector, sith (jobs 103-108) and then the same again (109-114). The
 question is how much F does per problem; compare each pair with the min11/min12-ABDFJKMN
 pairs on that problem (datagate v0 389/394 and 383/382; the other five in their own ledgers).
+
+Amendment 2026-09-09 11:35Z, min12-ABDJKMN on v0, first run: 381/405, 0/7 strict, $19, 58 min.
+The prompt without the generator floor took the single-column cascade like both min11 v0
+runs, then the usual v0 gaps, and lost the yes-then-no enrich case on top: the second min11 v0
+run's misses plus one. Two things worth having on record. F's sentence governs hypothesis
+generators, and since E (hypothesis tests per phrase) left the prompt at ABDEFJKMNO, no
+ABDFJKMN or ABDJKMN snapshot imports hypothesis at all; on datagate F has had nothing to act on.
+And this is the cheapest and fastest datagate run in the ladder: $19 and 58 min against the
+ABDFJKMN v0 runs' $20-28 and 66-90 min. Its repeat is job 109, behind the xjq v1 pair.

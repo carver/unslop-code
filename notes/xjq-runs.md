@@ -158,3 +158,11 @@ branch as a whole (registry T3 at Risk 25). The control missed it too; every min
 this one passed it, so it is a coin, not a gap the spec opened. xjq's three spec sentences
 now cover its seven standing misses; a strict run needs one more toss. Nothing was queued
 after this run: the queue stays paused for the user's usage limit.
+Started 2026-09-09 18:20Z at the user's request, alone under the pause: `specs/xjq/v3/` = v2
+plus `04-union-mixed-results-as-text.patch`, the user's "A union with mixed result types is
+written as text results." in checkpoint 5's union rules, placed there because a checkpoint's
+prompt carries only that checkpoint's spec. The run is a clone of the v2 run
+(`…min12-ABDFJKMN-specv2/20260909T0907`) at `…min12-ABDFJKMN-specv3/20260909T0907` with its
+checkpoint 5 removed, its config and catalog record pointed at v3, and the checkpoint-5 row
+dropped from checkpoint_results.jsonl; the resume redoes checkpoint 5 only. Strict there is
+167/167. The checkpoint-1 wording ("XML node results (exclusively)") stays an untracked draft.

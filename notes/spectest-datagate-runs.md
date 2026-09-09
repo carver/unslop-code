@@ -892,3 +892,8 @@ prompts differ by ("with Red Green testing") have no mechanism that reaches a de
 sentence, and a two-two split is one chance in eight on a fair coin, so the ledger's call stays
 "inert" with that caveat on record; v2's "if present" sentence settles the question where it
 matters. Quality was the better of the min11 pair (erosion 0.046). The queue drained at 08:19Z.
+Queued 2026-09-09 08:40Z at the user's request: min12-ABDJKMN, the 444-word subset without F
+(the generator floor), on all six dev6 problems at v0, one pass in the order datagate, xjq,
+file_merger, mvvault, rejector, sith (jobs 103-108) and then the same again (109-114). The
+question is how much F does per problem; compare each pair with the min11/min12-ABDFJKMN
+pairs on that problem (datagate v0 389/394 and 383/382; the other five in their own ledgers).

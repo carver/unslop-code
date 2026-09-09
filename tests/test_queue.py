@@ -131,3 +131,29 @@ def test_solo_plan_stashes_every_other_queued_job():
              "4": {"status": {"Stashed": {}}}, "5": {"status": {"Done": {}}}}
     assert q.solo_plan(tasks, 3) == [2]
     assert q.solo_plan(tasks, 2) == [3]
+
+
+def test_codex_queue_selects_launcher_and_disables_usage(tmp_path, monkeypatch):
+    monkeypatch.setattr(q, 'CACHE', tmp_path / 'catalog')
+    config = tmp_path / 'sol.yaml'
+    config.write_text('model:\n  provider: codex_auth\n  name: gpt-5.6-sol\nproblems: [xjq]\n')
+    _, _, env = q.job_for(config, 5)
+    assert env['SCB_LAUNCHER'] == str(q.ROOT / 'bin/scb-sol')
+    assert env['SCB_USAGE_TRACKING'] == '0'
+    assert env['SCBENCH_PROBLEMS_PATH'] == str(tmp_path / 'catalog')
+
+
+def test_codex_resume_preserves_provider_and_catalog(tmp_path):
+    (tmp_path / 'config.yaml').write_text('model:\n  provider: codex_auth\n  name: gpt-5.6-sol\nproblems: [xjq]\n')
+    (tmp_path / 'problem_catalog.json').write_text('{"version":"env-override","commit":"/test/catalog"}')
+    _, _, env = q.resume_job(tmp_path, 5)
+    assert env['SCB_USAGE_TRACKING'] == '0'
+    assert env['SCBENCH_PROBLEMS_PATH'] == '/test/catalog'
+
+
+def test_multi_problem_resume_selects_one_problem(tmp_path):
+    (tmp_path / 'config.yaml').write_text('model:\n  provider: codex_auth\n  name: gpt-5.6-sol\nproblems: [file_merger, xjq]\n')
+    (tmp_path / 'problem_catalog.json').write_text('{"version":"env-override","commit":"/test/catalog"}')
+    _, argv, env = q.resume_job(tmp_path, 5, 'xjq')
+    assert argv[-2:] == ['xjq', '5']
+    assert env['SCB_USAGE_TRACKING'] == '0'

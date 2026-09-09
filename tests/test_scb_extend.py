@@ -162,7 +162,7 @@ def test_backup_tars_each_finished_checkpoint_once(tmp_path, monkeypatch):
     write_run_info(problem_dir, {"checkpoint_1": "ran"})
     monkeypatch.setattr(ext, "backup_dir", lambda: tmp_path / "backups")
     assert ext.backup_finished(run_dir, "datagate", 7) == ["checkpoint_1"]
-    tgz = tmp_path / "backups" / "spectest-v4-20260902T2100-checkpoint_1.tgz"
+    tgz = tmp_path / "backups" / "spectest-v4-20260902T2100-datagate-checkpoint_1.tgz"
     assert tgz.exists()
     assert ext.backup_finished(run_dir, "datagate", 7) == []
     import tarfile
@@ -264,3 +264,17 @@ def test_usage_backs_off_geometrically_on_429(monkeypatch):
     monkeypatch.setattr(ext, "say", lambda msg: None)
     assert ext.usage(attempts=4, pause=30) is None
     assert calls == [30, 60, 120]
+
+
+def test_usage_disabled_never_launches_usage_command(monkeypatch):
+    monkeypatch.setenv('SCB_USAGE_TRACKING', '0')
+    def unexpected(*args, **kwargs):
+        raise AssertionError('Usage polling must be bypassed')
+    monkeypatch.setattr(ext.subprocess, 'run', unexpected)
+    assert ext.usage() is None
+    assert ext.seconds_until_room({'five_hour': None}, 30, datetime.datetime.now(UTC)) == 0
+
+
+def test_launcher_override(monkeypatch):
+    monkeypatch.setenv('SCB_LAUNCHER', '/test/scb-sol')
+    assert ext.launcher() == Path('/test/scb-sol')

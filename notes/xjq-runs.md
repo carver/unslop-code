@@ -16,6 +16,7 @@ is the dev6 sweep's just-solve run (`notes/dev6-opus5.md`).
 | min12-ABDFJKMN | `…min12-ABDFJKMN/20260908T2036` | min11-ABDFJKMN minus the intro's "with Red Green testing", 464 words; first of two | 23/23, 47/51, 91/96, 116/122, 160/167 | complete 2026-09-09; the same seven misses as every xjq run; 1/5 strict, $13 (per checkpoint 9, 16, 15, 22, 21 min), 83 min. 63 registry entries all scored, Risk 0-45. Quality: erosion 0.030, verbosity 0.274, ast 0.053, cloned 0.216, each a little under the min11 pair |
 | min12-ABDFJKMN, repeat | `…min12-ABDFJKMN/20260908T2212` | same config as the first run | 22/23, 47/51, 91/96, 116/122, 160/167 | complete 2026-09-09; seven misses again but a different seven: the malformed-XML error case from checkpoint 1 (the first checkpoint-1 miss in ten xjq runs; registry T1, parse-as-HTML versus hard failure) carried to the end, while the whitespace-only element under `--text-all` passed; 0/5 strict, $15 (per checkpoint 9, 12, 12, 17, 22 min), 72 min. 63 registry entries all scored. Quality: erosion 0.030, verbosity 0.401, ast 0.025, cloned 0.360 |
 | min12-ABDFJKMN on v1 | `…min12-ABDFJKMN-specv1/20260909T0430` | min12-ABDFJKMN on spec v1 (text flags one per element; no trailing newline); first of two | 23/23, 51/51, 95/96, 121/122, 166/167 | complete 2026-09-09; every one of the seven v0 misses passed; the one miss is the element half of the checkpoint-3 JSON empty-string test, which the old runs never reached: the empty string was serialized self-closing (`<key type="str"/>`) where the test wants an open-close pair, a reading no registry entry recorded this run. 2/5 strict, $13 (per checkpoint 11, 11, 9, 13, 14 min), 58 min. 57 registry entries all scored, Risk 0-45 (top: numeric XPath results 45; empty and whitespace-only text results 40). Quality: erosion 0.089, verbosity 0.312, ast 0.052, cloned 0.243 |
+| min12-ABDFJKMN on v1, repeat | `…min12-ABDFJKMN-specv1/20260909T0533` | same config as the first run | 23/23, 51/51, 95/96, 121/122, 166/167 | complete 2026-09-09; the same single miss, the empty-string element serialized self-closing; 2/5 strict, $18 (per checkpoint 15, 13, 10, 14, 20 min), 72 min. 62 registry entries all scored, Risk 0-45. Quality: erosion 0.048, verbosity 0.276, ast 0.067, cloned 0.171 |
 
 ## Test failure summaries
 
@@ -90,6 +91,12 @@ testing", 464 words). Compare with the min11 pair (160 and 160, $14 and $17).
     judges never took B. The remaining miss is the element half of the JSON empty-string
     test (self-closing tag for an empty string), a checkpoint-3 conversion reading that sat
     behind the text half until v1 cleared it. First of two; strict is 167.
+  - repeat (166): the same one miss, so v1 is settled at 166 and the self-closing tag is a
+    stable reading, not a coin. Both v1 runs guard the text assignment with `if text:`, so an
+    empty string leaves the element without a text node and lxml serializes it `<key
+    type="str"/>`; the reference assigns the string unconditionally and lxml then writes
+    `<key type="str"></key>` (null gets the same treatment there). Neither registry has an
+    entry on it.
 
 ## Spec v1 (2026-09-09)
 
@@ -108,3 +115,14 @@ passed, the two under "No trailing newline." included, which the blind judges ha
 `<key type="str"></key>` and this run printed the self-closing form. The old runs failed the
 same test on its text assertion first, so the element assertion was never scored. The repeat
 (job 115) started 12:34Z.
+
+Amendment 2026-09-09 13:55Z, min12-ABDFJKMN on xjq v1 repeated: 166/167, 2/5 strict, $18, 72
+min. Two of two on v1 with one identical miss, so v1's two sentences did their work twice
+over and the remaining reading is stable. The sentence: checkpoint 3, "Primitive values map to
+element text: booleans as `true`/`false`, numbers as minimal string form, null as empty." It
+says what null becomes and nothing about the empty string; the tests want `{"key": ""}` to
+serialize as `<key type="str"></key>` (an element with empty text), and the agent's `if text:`
+guard produces `<key type="str"/>`. The reference solution assigns the converted text
+unconditionally, which gives the open-close form for both `""` and `null`. Candidate for a
+v2, pending the user: name the empty string beside null and say the element keeps an empty
+text node. The ABDJKMN sweep resumed with xjq (job 104) at 13:50Z.

@@ -31,11 +31,11 @@ and the sandbox-local venv):
                                              # candidate AMBIGUITIES entries
     bin/judge-ambiguities run|summarize ...  # blind judges over a registry, optionally against
                                              # a spec patch
-    bin/spec-patch <problem> <vN>            # build spec version vN (specs/vN/*.patch over the
-                                             # cache) into specs/vN/problems/, see specs/README.md
+    bin/spec-patch <problem> <vN>            # build the problem's spec version vN (specs/<problem>/vN/*.patch
+                                             # over the cache) into specs/<problem>/vN/problems/, see specs/README.md
     bin/scb-strict <config> <problem> <n>    # one checkpoint per invocation, halt on any miss
     bin/run-config --prompt P --problem X    # write a run config for one prompt on one problem
-                                             # (--spec vN reads specs/vN/problems; default v0)
+                                             # (--spec vN reads specs/<problem>/vN/problems; default v0)
     bin/compare-runs <run_dir>...            # runs side by side: scores, cost, quality, miss matrix
     bin/registry-scores <run_dir> [--grep X] # a run's AMBIGUITIES.md Differs scores: spread, top entries,
                                              # the Choice and Differs text of matching entries

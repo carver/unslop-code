@@ -3,31 +3,32 @@
 #
 # Usage: bin/spec-patch <problem> <vN>
 #
-# Spec versions live in specs/vN/: v0 is the cached benchmark spec (nothing to build), and
-# every later version is a folder of unified diffs against the cache, applied in filename
-# order (01-<problem>-<slug>.patch, 02-...). Each folder is self-contained: v2 carries v1's
-# patch plus its own. The built copy lands in specs/vN/problems/<problem>/ (not tracked), and
-# a run selects it with SCBENCH_PROBLEMS_PATH=$PWD/specs/vN/problems. Re-run after editing a
-# patch; a hunk that fails to apply fails the build.
+# Spec versions are per problem, in specs/<problem>/vN/: v0 is the cached benchmark spec
+# (nothing to build), and every later version is a folder of unified diffs against the cache,
+# applied in filename order (01-<slug>.patch, 02-...; paths a/<problem>/checkpoint_N.md). Each
+# folder is self-contained: v2 carries v1's patch plus its own. The built copy lands in
+# specs/<problem>/vN/problems/<problem>/ (not tracked), and a run selects it with
+# SCBENCH_PROBLEMS_PATH=$PWD/specs/<problem>/vN/problems. Re-run after editing a patch; a
+# hunk that fails to apply fails the build.
 set -euo pipefail
 here=$(cd "$(dirname "$0")/.." && pwd)
 problem=${1:-}; version=${2:-}
 [ -n "$problem" ] && [ -n "$version" ] || { echo "usage: bin/spec-patch <problem> <vN>" >&2; exit 2; }
 src="${SCBENCH_CACHE_PROBLEMS:-$HOME/.cache/scbench/problems}/$problem"
-vdir="${SCBENCH_SPECS_ROOT:-$here/specs}/$version"
+vdir="${SCBENCH_SPECS_ROOT:-$here/specs}/$problem/$version"
 [ -d "$src" ] || { echo "spec-patch: no cached problem at $src" >&2; exit 2; }
-[ -d "$vdir" ] || { echo "spec-patch: no spec version at $vdir" >&2; exit 2; }
+[ -d "$vdir" ] || { echo "spec-patch: no spec version $version for $problem at $vdir" >&2; exit 2; }
 root="$vdir/problems"
 mkdir -p "$root"
 rm -rf "$root/$problem"
 cp -r "$src" "$root/$problem"
 applied=0
-for patch_file in "$vdir"/[0-9][0-9]-"$problem"-*.patch; do
+for patch_file in "$vdir"/[0-9][0-9]-*.patch; do
   [ -f "$patch_file" ] || continue
   patch -p1 -d "$root" --quiet < "$patch_file"
   echo "$(basename "$patch_file"): changed lines"
   grep -E '^\+[^+]' "$patch_file" | cut -c1-140
   applied=$((applied + 1))
 done
-echo "specs/$version/problems/$problem rebuilt from the cache with $applied patch(es)"
+echo "specs/$problem/$version/problems/$problem rebuilt from the cache with $applied patch(es)"
 echo "run with: SCBENCH_PROBLEMS_PATH=$root"

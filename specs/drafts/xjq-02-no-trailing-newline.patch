@@ -1,0 +1,19 @@
+xjq: no trailing newline after the last text result (checkpoint 1)
+
+Sentence: "then join results with each on a newline". Registry T7/T45 read a result that
+normalizes to the empty string as still occupying its line, so a lone empty result printed
+"\n"; the hidden tests want "" and the reference solution writes "\n".join(results).
+Tests: test_text_all_on_whitespace_only_element_is_empty_output (checkpoint 2),
+test_json_empty_string_preserves_element_with_empty_text (checkpoint 3).
+
+--- a/xjq/checkpoint_1.md
++++ b/xjq/checkpoint_1.md
+@@ -21,7 +21,7 @@
+ 
+ ## Output
+ 
+-- Text/attribute results: strip each result, collapse internal whitespace runs to single spaces, then join results with each on a newline.
++- Text/attribute results: strip each result, collapse internal whitespace runs to single spaces, then join results with `\n` between them and nothing after the last, so a lone result that normalizes to the empty string writes nothing at all.
+ - XML node results: pretty-print serialized XML; when multiple XML nodes match, output only the first node.
+ - No-match output: write nothing to stdout/stderr.
+ 

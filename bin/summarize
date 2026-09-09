@@ -36,7 +36,11 @@ def quality_report(ckpt):
     if not snapshot.is_dir():
         return None
     version = os.environ.get("SCB_CHECK_VERSION", "0.1.3")
-    proc = subprocess.run(["uvx", f"scb-check=={version}", "check", "--report", "--include-all", str(snapshot)], capture_output=True, text=True)
+    try:
+        proc = subprocess.run(["uvx", f"scb-check=={version}", "check", "--report", "--include-all", str(snapshot)], capture_output=True, text=True)
+    except OSError as exc:
+        print(f"Cannot run scb-check on {ckpt}: {exc}. Ensure uvx is installed and on PATH; using existing metrics.", file=sys.stderr)
+        return None
     if proc.returncode != 0:
         print(f"scb-check failed on {ckpt}: {proc.stderr.strip()[-300:]}", file=sys.stderr)
         return None

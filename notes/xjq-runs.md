@@ -13,6 +13,7 @@ is the dev6 sweep's just-solve run (`notes/dev6-opus5.md`).
 | v11, repeat | `…spectest-v11/20260907T0401` | same config as the first run | 23/23, 47/51, 91/96, 116/122, 160/167 | complete 2026-09-07; the first run's seven misses, test for test, at every checkpoint; 1/5 strict, $134 (per checkpoint $2, 21, 3, 103, 4), 165 min. 53 registry entries all scored, Risk 0-45 (top: pretty-print 45, whitespace-only text results 45, exported text normalisation 40). Quality: erosion 0.051, verbosity 0.287, ast 0.059, cloned 0.206 |
 | min11-ABDFJKMN | `…min11-ABDFJKMN/20260907T0654` | the 468-word min11 subset (twice strict on datagate v2); first of two | 23/23, 47/51, 91/96, 116/122, 160/167 | complete 2026-09-07; the v11 runs' seven misses, test for test; 1/5 strict, $14 (per checkpoint 2, 3, 2, 3, 3), 69 min; checkpoints 3-5 ran with Monitor disallowed. 51 registry entries all scored, Risk 0-45 (top: non-node XPath results 45, whitespace-only descendant text nodes 45). Quality: erosion 0.050, verbosity 0.355, ast 0.067, cloned 0.283 |
 | min11-ABDFJKMN, repeat | `…min11-ABDFJKMN/20260907T0810` | same config as the first run | 23/23, 47/51, 91/96, 116/122, 160/167 | complete 2026-09-07; the same seven misses; 1/5 strict, $17 (per checkpoint 2, 4, 3, 4, 3), 83 min, Monitor disallowed throughout. 60 registry entries all scored, Risk 0-45 (top: non-node-set results 45; whitespace-only text nodes 25; null vs empty text node 35). Quality: erosion 0.046, verbosity 0.322, ast 0.055, cloned 0.245 |
+| min12-ABDFJKMN | `…min12-ABDFJKMN/20260908T2036` | min11-ABDFJKMN minus the intro's "with Red Green testing", 464 words; first of two | 23/23, 47/51, 91/96, 116/122, 160/167 | complete 2026-09-09; the same seven misses as every xjq run; 1/5 strict, $13 (per checkpoint 9, 16, 15, 22, 21 min), 83 min. 63 registry entries all scored, Risk 0-45. Quality: erosion 0.030, verbosity 0.274, ast 0.053, cloned 0.216, each a little under the min11 pair |
 
 ## Test failure summaries
 
@@ -40,6 +41,12 @@ is the dev6 sweep's just-solve run (`notes/dev6-opus5.md`).
     descendant text nodes, Risk 45) and chooses against the tests.
   - repeat (160): the same seven, so xjq is settled for min11 too: 160/167 on all five prompted
     runs and the control. min11 pair $14 and $17 against v11's $73 and $134.
+
+### min12-ABDFJKMN
+
+  - first run (160): the seven misses again, $13 against min11's $14 and $17, 83 min against
+    69 and 83, every quality column slightly under the min11 pair. On xjq the red/green line
+    is inert too. First of two.
 
 ## Why v11's checkpoint 4 cost $103 (2026-09-07 14:30Z)
 

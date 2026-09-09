@@ -910,3 +910,7 @@ generators, and since E (hypothesis tests per phrase) left the prompt at ABDEFJK
 ABDFJKMN or ABDJKMN snapshot imports hypothesis at all; on datagate F has had nothing to act on.
 And this is the cheapest and fastest datagate run in the ladder: $19 and 58 min against the
 ABDFJKMN v0 runs' $20-28 and 66-90 min. Its repeat is job 109, behind the xjq v1 pair.
+Queued 2026-09-09 11:50Z at the user's request, at the end of the queue: min12-ABDEFJKMN (474
+words, ABDFJKMN plus E, hypothesis tests per phrase) on all six dev6 problems at v0, one pass
+(jobs 117-122, datagate first) and a second (123-128). E is the rule that gives F's generator
+floor something to govern; the question is whether property tests move correctness at all.

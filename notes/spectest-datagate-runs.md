@@ -56,6 +56,7 @@ tests passed / total at each checkpoint (regressions included), from each checkp
 | min12-ABDFJKMN on v2 | `…min12-ABDFJKMN-specv2/20260908T1223` | min11-ABDFJKMN minus "with Red Green testing" in the intro's approach list, 464 words; first of two | 50/50, 122/122, 174/174, 233/233, 276/276, 353/353, 405/405 | complete 2026-09-08; 0 misses, 7/7 strict, $28, 88 min (min11 pair: 89 and 79; per checkpoint 12, 8, 8, 14, 11, 20, 15). 99 entries all scored, Risk 0-45 (top: undecodable charset 45; enrich downgrade on re-ingest 30). Quality: erosion 0.039, verbosity 0.153, ast 0.076, cloned 0.061, inside the min11 pair's band on every column |
 | min12-ABDFJKMN on v2, repeat | `…min12-ABDFJKMN-specv2/20260908T1410` | same config as the first run | 50/50, 122/122, 174/174, 233/233, 276/276, 353/353, 405/405 | complete 2026-09-08; 0 misses, 7/7 strict, $22, 76 min (per checkpoint 12, 7, 9, 12, 10, 17, 9). min12-ABDFJKMN is twice strict on v2 at 464 words, the shortest twice-strict prompt. 93 entries all scored, Risk 0-40 (top: mixed-type sort 40; enrich downgrade on re-ingest 40). Quality: erosion 0.055, verbosity 0.177, ast 0.067, cloned 0.088 |
 | min12-ABDFJKMN on v0 | `…min12-ABDFJKMN/20260908T1547` | min12-ABDFJKMN on the unpatched spec; first of two | 49/50, 118/122, 169/174, 223/233, 261/276, 338/353, 389/405 | complete 2026-09-09; 16 misses, 11 shared with v7 on v0 (the rowid trio from checkpoint 2, three spreadsheet cases from 4, five from 5) and five its own (the header-trim pair, spreadsheet upload with an invalid charset for xls and xlsx, the yes-then-no enrich params); 0/7 strict, $24, 82 min (per checkpoint 12, 7, 8, 12, 15, 15, 13). The v0 ladder: control 377, v3 382, v7 391 ($74), v4 392 ($170). 99 entries all scored, Risk 0-40 (top: delimiter-less single-column file 40, empty charset and error precedence 40; header whitespace 20). Quality: erosion 0.231, verbosity 0.219, ast 0.122, cloned 0.088 |
+| min12-ABDFJKMN on v0, repeat | `…min12-ABDFJKMN/20260908T1728` | same config as the first run | 49/50, 118/122, 170/174, 228/233, 266/276, 343/353, 394/405 | complete 2026-09-09; 11 misses, ten shared with the first v0 run (the rowid trio, spreadsheet query controls, the five-test force cluster, the yes-then-no enrich case) plus latin-1 autodetection; the first run's header-trim pair and all four spreadsheet invalid-charset tests passed. 0/7 strict, $25, 85 min (per checkpoint 15, 8, 6, 12, 10, 23, 10). The best v0 score by any prompt (v4 392 at $170, v7 391 at $74). 112 entries all scored, Risk 0-45 (top: what makes a filter value non-numeric 45; what rowid counts 30). Quality: erosion 0.159, verbosity 0.230, ast 0.091, cloned 0.132 |
 
 On hidden tests, v4 through v7 are flat within
 the latin-1 noise (ckpt 1: 50, 49, 50, 49 of 50; ckpt 2: 119, cut, 119, 118 of 122), and
@@ -247,6 +248,10 @@ matrix, and the reading. Failure sets in brief:
   - min12-ABDFJKMN on v0 (389): the v0 spec's known gaps (rowid, spreadsheets, the checkpoint-5
     cluster) plus the header-trim pair and the yes-then-no enrich case, which v2's sentences close.
     Two and three below v7 and v4 on v0 at a third and a seventh of their cost. First of two.
+  - min12-ABDFJKMN on v0, repeat (394): the best v0 score by a prompt. Ten misses are the spec
+    gaps v1 and v2 close (rowid, force, yes-then-no) plus query controls; the header-trim pair
+    and the four spreadsheet-charset tests flipped to passing with the identical prompt, so
+    those are readings the agent takes either way, not rules it lacks.
 
 ## Did the v8 testing hints help, or was it the zombie fix?
 
@@ -837,3 +842,14 @@ pair (Risk 20 in the registry, the coin flip again) and the yes-then-no enrich c
 v2's sentence). Quality is the run's weak side: erosion 0.231 against v7's 0.105 and v4's 0.073,
 the highest of any ABDFJKMN run; on v2 the same prompt sat at 0.02-0.10. The repeat (job 98)
 started 00:28Z; the min11 v0 run (99) follows for the red/green comparison.
+
+Amendment 2026-09-09 02:15Z, min12-ABDFJKMN on v0 repeated: 394/405, 0/7 strict, $25, 85 min.
+The best score on the unpatched spec by any prompt, above v4's 392 ($170) and v7's 391 ($74).
+The pair is 389 and 394: the five-test swing is entirely the header-trim pair and the four
+spreadsheet invalid-charset tests passing this time with the identical prompt, which answers
+the question of whether a dropped rule (H, errors only where the spec quotably requires) was
+what those needed: the same prompt takes both readings. What remains stable across both v0
+runs is the spec's own gaps, closed by v1 and v2: the rowid trio (registry T25 "what rowid
+counts" at Risk 30), the force cluster, spreadsheet query controls, the yes-then-no enrich
+case. Quality: erosion 0.159 against the first run's 0.231; both above the v2 pair. The
+red/green comparison, min11-ABDFJKMN on v0 (job 99), started 02:12Z.

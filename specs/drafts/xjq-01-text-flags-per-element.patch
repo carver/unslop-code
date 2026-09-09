@@ -18,8 +18,8 @@ test_css_text_all_first_match_only (checkpoints 2, 4, 5).
  - `--css`: interpret `QUERY` as CSS selector.
 -- `-t`, `--text`: direct text extraction from matched elements.
 -- `--text-all`: descendant text extraction from matched elements.
-+- `-t`, `--text`: direct text extraction from matched elements; one result per matched element, its direct text nodes concatenated.
-+- `--text-all`: descendant text extraction from matched elements; one result per matched element, its descendant text nodes concatenated.
++- `-t`, `--text`: direct text extraction from matched elements, one per element.
++- `--text-all`: descendant text extraction from matched elements, one per element.
  
  ## CSS Query Mode
  

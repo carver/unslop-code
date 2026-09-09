@@ -1,0 +1,21 @@
+xjq: the empty string keeps an empty text node (checkpoint 3)
+
+Sentence: "Primitive values map to element text: booleans as `true`/`false`, numbers as
+minimal string form, null as empty." It says what null becomes and nothing about `""`. Both
+min12-ABDFJKMN runs on v1 guarded the text assignment with `if text:`, so `{"key": ""}`
+serialized as `<key type="str"/>`; the hidden test wants `<key type="str"></key>` and the
+reference solution assigns the converted text unconditionally (lxml then writes the open-close
+form for `""` and for null alike). Test: test_json_empty_string_preserves_element_with_empty_text
+(checkpoint 3, carried to 5; the one miss left on v1, 166/167 twice).
+
+--- a/xjq/checkpoint_3.md
++++ b/xjq/checkpoint_3.md
+@@ -17,7 +17,7 @@
+ - For top-level arrays: each entry becomes an `<item>` child of `<root>`.
+ - Object keys become element tag names (case preserved).
+ - Primitive values map to element text:
+-  booleans as `true`/`false`, numbers as minimal string form, null as empty.
++  booleans as `true`/`false`, numbers as minimal string form, null as empty (no self-closing tags).
+   Examples: `1 -> "1"`, `1.0 -> "1"`, `1.50 -> "1.5"`, `0.00012 -> "0.00012"`.
+ - Every converted element except `<root>` carries `type` in:
+   `str`, `int`, `float`, `bool`, `dict`, `list`, `null`.

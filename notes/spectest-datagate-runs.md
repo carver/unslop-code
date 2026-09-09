@@ -914,3 +914,7 @@ Queued 2026-09-09 11:50Z at the user's request, at the end of the queue: min12-A
 words, ABDFJKMN plus E, hypothesis tests per phrase) on all six dev6 problems at v0, one pass
 (jobs 117-122, datagate first) and a second (123-128). E is the rule that gives F's generator
 floor something to govern; the question is whether property tests move correctness at all.
+Paused 2026-09-09 15:30Z at the user's request (weekly usage limit): the queue is paused with
+`pueue pause --wait`, so job 105 (ABDJKMN on file_merger, at checkpoint 3) finishes and nothing
+after it starts. Queued and waiting: 106-108 and 109-114 (the rest of the ABDJKMN sweep and its
+second pass), 117-128 (the ABDEFJKMN sweep). `pueue start` resumes.

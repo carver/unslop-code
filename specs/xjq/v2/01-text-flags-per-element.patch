@@ -1,0 +1,25 @@
+xjq: the text flags yield one result per matched element (checkpoint 2)
+
+Sentence: "`--text-all`: descendant text extraction from matched elements" (and the `--text`
+bullet beside it). Registry T13/T21 of every strong run read the flags like the `::text`
+pseudo-element, one line per text node; the hidden tests and the reference solution
+(`_extract_descendant_text` returns one string per element) want one line per matched
+element with its text nodes concatenated, then normalized.
+Tests: test_text_all_with_multiple_elements_joins_with_newlines,
+test_css_text_all_with_multiple_elements_joins_with_newlines,
+test_text_all_deeply_nested_with_whitespace, test_first_with_text_all,
+test_css_text_all_first_match_only (checkpoints 2, 4, 5).
+
+--- a/xjq/checkpoint_2.md
++++ b/xjq/checkpoint_2.md
+@@ -6,8 +6,8 @@
+ ## CLI Additions
+ 
+ - `--css`: interpret `QUERY` as CSS selector.
+-- `-t`, `--text`: direct text extraction from matched elements.
+-- `--text-all`: descendant text extraction from matched elements.
++- `-t`, `--text`: direct text extraction from matched elements, one per element.
++- `--text-all`: descendant text extraction from matched elements, one per element.
+ 
+ ## CSS Query Mode
+ 

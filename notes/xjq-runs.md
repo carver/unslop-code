@@ -191,3 +191,7 @@ flags one per element, no trailing newline; v2: no self-closing tags; v3: a mixe
 text output), at the same cost as the v0 runs that scored 160. Quality is the best xjq has
 shown (erosion 0.020, verbosity 0.233). Under the twice-strict rule a repeat (about $13) is
 what remains; not queued, the queue stays paused for the usage limit.
+Started 2026-09-09 19:50Z at the user's request: just-solve on xjq v3, twice (jobs 132-133), the
+control prompt against the clarified spec; the v0 control scored 160/167 with the same seven
+misses the min prompts had. The 21 other queued jobs are stashed while these two run, so the
+group is unpaused; they go back to Queued under a pause once 133 finishes.

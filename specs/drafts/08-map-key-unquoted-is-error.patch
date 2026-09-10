@@ -1,0 +1,24 @@
+file_merger: a bracket key without double quotes is a malformed path (checkpoint 4)
+
+Sentences: "map lookups with bracketed, double-quoted string keys" (v1's patch 04) and "Map
+lookups with `["key"]` read value by exact key". They give the spelling, never that another
+spelling is an error. Test errors/map_lookup_no_quotes passes `--key attrs[country]` against a
+map column and expects a failure (exit 2, "ERR 2 invalid key path syntax: attrs[country]"; the
+harness's error cases check only a non-zero exit). The reference's tokenizer rejects a bracket
+whose content is neither a double-quoted string nor an index. The min12-ABDJKMN clone on v5
+read the bracket as a key lookup with any content (registry T58 "uniform steps" over "strict
+grammar", Risk 25, naming the unquoted spelling as the likely divergence) and exited 0; the v3
+and v4 runs rejected it, exit 2 and exit 3. Before patch 04 the min11 runs and min12 on v0
+failed the case too.
+
+--- a/file_merger/checkpoint_4.md
++++ b/file_merger/checkpoint_4.md
+@@ -122,7 +122,7 @@
+ * Examples: `user.id`, `items.0.qty`, `attrs["country"]`
+ * Array indices must be non-negative integers
+   * If out of range or element is null/missing → key fragment is null for that row
+-* Map lookups with `["key"]` read value by exact key
++* Map lookups with `["key"]` read value by exact key; quotes are required
+   * If absent → null for that fragment
+ * Each path must resolve to primitive value after casting
+   * Otherwise: `ERR 3 key column "<path>" does not resolve to a primitive` (exit 3)

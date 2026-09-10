@@ -99,3 +99,11 @@ built-ins or other aliases (resolve transitively; detect cycles → error 2)". T
 T52 (Risk 20) is about resolution order, not when the cycle check runs; the run's own tests
 cover the cycle only through a schema that uses it. The v0 run of this prompt passed the case.
 The queue is empty; a second v3 run and the just-solve on v3 wait on the user.
+
+## Spec v4 (2026-09-10)
+
+v3 plus `06-alias-cycle-at-load.patch`: the user's "detect cycles proactively → error 2" in place
+of "detect cycles → error 2". Judged with the v0 min12-ABDJKMN run's T55 ("eagerly or only when
+used") against the v4 build, ten samples each of choose and rule: 20 of 20 for the eager reading,
+every rule line saying a cycle errors even if no schema column references it ($1.31,
+`outputs/judge/file_merger-v4`). Queued: min12-ABDJKMN on v4 under bin/scb-strict, the same plan.

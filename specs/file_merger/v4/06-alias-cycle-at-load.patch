@@ -1,0 +1,23 @@
+file_merger: when an alias cycle is detected (checkpoint 4)
+
+Sentence: "May refer to built-ins or other aliases (resolve transitively; detect cycles →
+error 2)". It names the outcome, not the moment. Test errors/alias_cycle gives the alias file
+`{"a": "b", "b": "a"}` with a schema whose only type is `int` and expects exit 2, stderr
+"ERR 2 alias cycle detected in --type-alias-file"; the reference's load_aliases resolves every
+key when the file is loaded. The min12-ABDJKMN run on v3 resolved aliases lazily, so the unused
+cycle exited 0 (146/147, no registry entry); the v0 run of the same prompt registered the
+question (T55, Risk 20), chose eager, and passed. Unknown alias targets stay lazy in the
+reference (alias_to_unknown errors only because the schema uses the alias), so the sentence
+speaks of cycles only.
+
+--- a/file_merger/checkpoint_4.md
++++ b/file_merger/checkpoint_4.md
+@@ -81,7 +81,7 @@
+ ```
+ 
+   * Aliases apply after lowercasing names
+-  * May refer to built-ins or other aliases (resolve transitively; detect cycles → error 2)
++  * May refer to built-ins or other aliases (resolve transitively; detect cycles proactively → error 2)
+   * Special alias `json`: when field declared as `"type":"json"`, accept any JSON value (object/array/primitive) and emit as JSON text
+ 
+ **Input Handling for Nested**

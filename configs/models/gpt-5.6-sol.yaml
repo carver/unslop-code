@@ -1,0 +1,14 @@
+# Official model pricing, 2026-09-09; subscription run, estimates only.
+internal_name: gpt-5.6-sol
+provider: openai
+pricing:
+  input: 8
+  output: 30
+  cache_read: 0.8
+  cache_write: 10
+  prompt_tiers:
+    - max_input_tokens: 272000
+      input: 4
+      output: 20
+      cache_read: 0.4
+      cache_write: 5

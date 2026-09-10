@@ -1,0 +1,19 @@
+file_merger: an unquoted map key in a field path is a syntax error (checkpoint 4)
+
+Sentence: "map lookups with bracketed string keys" with the example `attrs["country"]`. The
+hidden test passes `--key attrs[country]` and expects exit 2, "ERR 2 invalid key path syntax";
+the min11-ABDFJKMN runs accepted the unquoted key. The reference solution accepts only a
+digit index or a double-quoted key inside brackets. Test: errors/map_lookup_no_quotes
+(checkpoint 4).
+
+--- a/file_merger/checkpoint_4.md
++++ b/file_merger/checkpoint_4.md
+@@ -118,7 +118,7 @@
+
+ **Keys & Partitioning with Nested**
+
+-* Field paths traverse structs, use numeric indices into arrays, and map lookups with bracketed string keys
++* Field paths traverse structs, use numeric indices into arrays, and map lookups with bracketed, double-quoted string keys
+ * Examples: `user.id`, `items.0.qty`, `attrs["country"]`
+ * Array indices must be non-negative integers
+   * If out of range or element is null/missing → key fragment is null for that row

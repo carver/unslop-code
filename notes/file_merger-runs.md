@@ -152,3 +152,10 @@ and "Map lookups with `["key"]` read value by exact key": the canonical spelling
 other spellings are errors. History: min11 both runs and v0 min12 failed the case (before patch
 04); v3 (exit 2) and v4 (exit 3) rejected it. Not a full strict run, so no repeat queued; the
 sentence waits on the user.
+
+## Spec v6 (2026-09-10)
+
+v5 plus `08-map-key-unquoted-is-error.patch`: the map-lookup bullet at checkpoint 4 ends
+"; quotes are required", the user's wording (8ac4cb5), no judge run. Only checkpoint 4 changes,
+so the v5 clone is forked after checkpoint 3 with `bin/fork-run … --spec v6 --keep 3 --queue`:
+checkpoints 1-2 are the v4 run's, 3 the v5 clone's, 4 re-run on v6.

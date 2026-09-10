@@ -45,6 +45,8 @@ and the sandbox-local venv):
     bin/reeval <run_dir> <problem> <ckpt> --tag T  # re-score one checkpoint under the current problem config; keeps the old evaluation as before-T
     bin/results [--write]                    # every complete run, one row per problem/prompt/spec -> notes/results.md
     bin/queue add configs/runs/<name>.yaml   # enqueue a run (one at a time); bin/queue = status
+    bin/queue add-strict configs/runs/<name>.yaml  # enqueue it under bin/scb-strict: halts at the first non-strict checkpoint
+    bin/queue solo <id>                      # run one queued job while the rest wait (stash, start, pause --wait, re-queue)
     bin/build-prompt BEG                     # configs/prompts/min4-BEG.jinja from the chunks in
                                              # configs/prompts/min4-chunks/ (--list for the index)
 

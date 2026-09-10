@@ -11,6 +11,13 @@
                                                        (pueue priority one above the highest queued)
     bin/queue move <id> before <other-id>              reorder queued jobs so <id> runs right before
                                                        <other-id>; prints the resulting order
+    bin/queue add-strict <run-config.yaml> [n_checkpoints]  enqueue `scb-strict` for the config: one
+                                                       checkpoint per scb call, halting at the first
+                                                       that is not a strict solve
+    bin/queue solo <id>                                run one queued job while everything else waits:
+                                                       stashes the other queued jobs, starts the group,
+                                                       pauses it again with --wait, re-queues the stash.
+                                                       (`pueue start <id>` resumes the whole group.)
     bin/queue kill <id> [--keep-paused]                stop a job and clean up after it: a queued job is
                                                        removed; a running one is killed, its surviving
                                                        worker processes and agent container removed,
@@ -60,6 +67,51 @@ def job_for(config_path, n=None):
     label = config_path.name.removesuffix(".yaml").removesuffix("-opus5")
     env = {} if root == CACHE else {"SCBENCH_PROBLEMS_PATH": str(root)}
     return label, [str(ROOT / "bin" / "scb-extend"), "--new", str(config_path), problem, str(n)], env
+
+
+def strict_job(config_path, n=None):
+    """(label, argv, env) to run one config through bin/scb-strict, which halts on the first non-strict checkpoint."""
+    label, argv, env = job_for(config_path, n)
+    _, _, config, problem, count = argv
+    return f"{label}-strict", [str(ROOT / "bin" / "scb-strict"), config, problem, count], env
+
+
+def added_id(pueue_reply):
+    """The id in pueue's `New task added (id N).`, wherever it sits in the reply."""
+    m = re.search(r"New task added \(id (\d+)\)", pueue_reply)
+    if not m:
+        raise SystemExit(f"queue: pueue did not report a new task:\n{pueue_reply}")
+    return int(m.group(1))
+
+
+def solo_plan(tasks, task_id):
+    """The other queued task ids, the ones `solo` stashes so only task_id runs."""
+    return sorted(int(i) for i, t in tasks.items() if int(i) != task_id and state_of(t) == "Queued")
+
+
+def add_task(label, argv, env, extra=()):
+    """Enqueue a shell command through pueue and print the new task id last, whatever pueue warns."""
+    cmd = " ".join(f"{k}={v}" for k, v in env.items()) + (" " if env else "") + " ".join(argv)
+    reply = subprocess.run([PUEUE, "add", "--label", label, "--working-directory", str(ROOT), *extra, "--", cmd],
+                           capture_output=True, text=True, check=True).stdout
+    task_id = added_id(reply)
+    print(f"added task {task_id}: {label}")
+    return task_id
+
+
+def solo(task_id):
+    tasks = json.loads(subprocess.run([PUEUE, "status", "--json"], capture_output=True, text=True, check=True).stdout)["tasks"]
+    if state_of(tasks.get(str(task_id), {})) != "Queued":
+        raise SystemExit(f"queue: task {task_id} is not queued")
+    others = [str(i) for i in solo_plan(tasks, task_id)]
+    if others:
+        subprocess.run([PUEUE, "stash", *others], check=True, capture_output=True)
+    subprocess.run([PUEUE, "start"], check=True, capture_output=True)
+    time.sleep(3)
+    subprocess.run([PUEUE, "pause", "--wait"], check=True, capture_output=True)
+    if others:
+        subprocess.run([PUEUE, "enqueue", *others], check=True, capture_output=True)
+    print(f"task {task_id} running alone; {len(others)} job(s) queued behind a paused group")
 
 
 def resume_job(run_dir, n=None):
@@ -223,18 +275,19 @@ def main():
         first = args[1:2] == ["--next"]
         rest = args[2:] if first else args[1:]
         label, argv, env = job_for(rest[0], int(rest[1]) if len(rest) > 1 else None)
-        cmd = " ".join(f"{k}={v}" for k, v in env.items()) + (" " if env else "") + " ".join(argv)
         extra = []
         if first:
             tasks = json.loads(subprocess.run([PUEUE, "status", "--json"], capture_output=True, text=True, check=True).stdout)["tasks"]
             extra = ["--priority", str(next_priority(tasks))]
-        subprocess.run([PUEUE, "add", "--label", label, "--working-directory", str(ROOT), *extra, "--", cmd], check=True)
+        add_task(label, argv, env, extra)
+    elif args[:1] == ["add-strict"] and len(args) in (2, 3):
+        add_task(*strict_job(args[1], int(args[2]) if len(args) > 2 else None))
+    elif args[:1] == ["solo"] and len(args) == 2:
+        solo(int(args[1]))
     elif args[:1] == ["move"] and len(args) == 4 and args[2] == "before":
         move_job(int(args[1]), int(args[3]))
     elif args[:1] == ["resume"] and len(args) in (2, 3):
-        label, argv, env = resume_job(args[1], int(args[2]) if len(args) > 2 else None)
-        cmd = " ".join(f"{k}={v}" for k, v in env.items()) + (" " if env else "") + " ".join(argv)
-        subprocess.run([PUEUE, "add", "--label", label, "--working-directory", str(ROOT), "--", cmd], check=True)
+        add_task(*resume_job(args[1], int(args[2]) if len(args) > 2 else None))
     elif args[:1] == ["kill"] and len(args) in (2, 3) and args[3:] == [] and (len(args) == 2 or args[2] == "--keep-paused"):
         kill_job(int(args[1]), keep_paused=len(args) == 3)
     elif not args:

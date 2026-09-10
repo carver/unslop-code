@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# Subscription-only Astra benchmark wrapper. Does not use the Claude usage guard.
+set -euo pipefail
+here="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+export SCB_ROOT="$here"
+export SCBENCH_PROBLEMS_PATH="${SCBENCH_PROBLEMS_PATH:-$here/specs/v2/problems}"
+export UV_PROJECT_ENVIRONMENT="${UV_PROJECT_ENVIRONMENT:-$here/outputs/astra-setup/harness-venv}"
+export UV_CACHE_DIR="${UV_CACHE_DIR:-$here/outputs/astra-setup/uv-cache}"
+export DOCKER_HOST="${DOCKER_HOST:-unix:///tmp/unslop-docker.sock}"
+unset OPENAI_API_KEY ANTHROPIC_API_KEY
+python3 - <<'PY'
+import json
+from pathlib import Path
+path = Path.home() / '.codex/auth.json'
+if not path.is_file():
+    raise SystemExit('scb-astra: Codex login required; no auth.json found')
+auth = json.loads(path.read_text())
+if auth.get('OPENAI_API_KEY') or not isinstance(auth.get('tokens'), dict):
+    raise SystemExit('scb-astra: expected Codex subscription authentication')
+PY
+if [[ ! -x "$UV_PROJECT_ENVIRONMENT/bin/slop-code" ]]; then
+  echo 'scb-astra: install the pinned harness first (see notes/astra-run.md)' >&2
+  exit 2
+fi
+cp "$here/configs/models/gpt-6-astra.yaml" "$here/slop-code-bench/configs/models/gpt-6-astra.yaml"
+exec "$UV_PROJECT_ENVIRONMENT/bin/slop-code" "$@"

@@ -111,6 +111,11 @@ any pull, re-apply them in this order:
   of the work before the crash survived only in the copied Claude session
   file under `agent/workspace/projects/` (min4-ABCHJK datagate ckpt1,
   2026-09-04).
+- `patches/resume-only-problem.patch` — `scb run --resume` honours
+  `SCB_RESUME_ONLY_PROBLEM=<problem>` and resumes that problem alone. Upstream's
+  `--problem` merges into the run's saved list on resume, so a queue job for one
+  problem of a multi-problem run would otherwise resume every problem.
+  `bin/scb-extend` sets the variable for its child.
 
 `patches/scb-problems/` holds patches for the upstream problem set
 (gabeorlanski/scb-problems), not applied to the cache, each with its evidence as a

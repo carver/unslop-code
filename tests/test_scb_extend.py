@@ -278,3 +278,24 @@ def test_usage_disabled_never_launches_usage_command(monkeypatch):
 def test_launcher_override(monkeypatch):
     monkeypatch.setenv('SCB_LAUNCHER', '/test/scb-sol')
     assert ext.launcher() == Path('/test/scb-sol')
+
+
+def test_quota_halts_before_retry_and_pauses_queue(tmp_path, monkeypatch):
+    import pytest
+    ck = tmp_path / 'checkpoint_2'
+    (ck / 'agent').mkdir(parents=True)
+    (ck / 'inference_result.json').write_text('{"had_error":true}')
+    (ck / 'agent/stdout.jsonl').write_text(json.dumps({'type':'error','message':"You've hit your usage limit. Try again later."})+'\n')
+    calls = []
+    monkeypatch.setattr(ext.subprocess, 'run', lambda cmd, **kw: (calls.append(cmd) or subprocess.CompletedProcess(cmd, 0, '', '')))
+    with pytest.raises(SystemExit) as error:
+        ext.halt_on_quota(ck)
+    assert error.value.code == 6
+    assert calls[0][1:] == ['pause', '--wait']
+    assert (ck / 'inference_result.json').exists()
+
+
+def test_quota_detection_ignores_solver_text(tmp_path):
+    (tmp_path / 'agent').mkdir()
+    (tmp_path / 'agent/stdout.jsonl').write_text(json.dumps({'type':'item.completed','item':{'text':'usage limit'}})+'\n')
+    assert ext.quota_error(tmp_path) is None

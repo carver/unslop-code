@@ -19,6 +19,7 @@ The control is the dev6 sweep's just-solve run (`notes/dev6-opus5.md`).
 | min12-ABDJKMN on v4 (halted) | `…min12-ABDJKMN-specv4/20260910T1126` | min12-ABDJKMN on spec v4 under bin/scb-strict | 46/46, 86/86, 104/104, 146/147 | halted 2026-09-10 after checkpoint 4 on test_core_cases[correct_partition_nested/partition_by_map_value]: `--partition-by 'attrs["region"]'` must write `out/attrs["region"]=east/`; the snapshot percent-encodes the column name too, `out/attrs%5B%22region%22%5D=east/`, so the expected files are missing. alias_cycle passed: v4's sentence held one for one. A 2-of-4 coin before v4; three runs registered the question (v0 min12 T44 Risk 15, min11-first T47, this run T46 Risk 10) and every one that chose "both halves" failed; min11-repeat and v3 encoded the value only and passed. Checkpoint 3's "Apply percent-encoding of UTF-8 bytes for characters outside `[A-Za-z0-9._-]`" sits under the `<col>=<val>` segment and does not say value only. $21, 73 min |
 | min12-ABDJKMN on v5 (clone, halted) | `…min12-ABDJKMN-specv5/20260910T1126` | the v4 run forked after checkpoint 2 (bin/fork-run), checkpoints 3 and 4 re-run on spec v5 | 46/46, 86/86, 104/104, 146/147 | checkpoints 1-2 are the v4 run's; 3 strict on v5 (partition sentence exercised at 4: partition_by_map_value passed, one for one); halted after 4 on test_error_cases[errors/map_lookup_no_quotes]: `--key attrs[country]` (no quotes) must fail; the snapshot accepts an unquoted bracket key as a map lookup (registry T58 "uniform steps", Risk 25) and exits 0. v3 and v4 rejected it (exit 2 and 3; the harness checks only non-zero). $20 for the two checkpoints, 39 min |
 | min12-ABDJKMN on v6 (fork, strict) | `…min12-ABDJKMN-specv6/20260910T1126` | the v5 clone forked after checkpoint 3 (bin/fork-run), checkpoint 4 re-run on spec v6 | 46/46, 86/86, 104/104, 147/147 | checkpoints 1-2 are the v4 run's, 3 the v5 clone's, 4 on v6: map_lookup_no_quotes passed ("quotes are required" one for one) and nothing regressed. First 147/147 on file_merger, assembled from three spec versions; not yet one fresh run. $21 ladder total, 27 min for checkpoint 4 |
+| min12-ABDJKMN on v6, fresh (strict) | `…min12-ABDJKMN-specv6/20260910T1510` | min12-ABDJKMN on spec v6 under bin/scb-strict, a fresh run from checkpoint 1; first of two | 46/46, 86/86, 104/104, 147/147 | complete 2026-09-10, 0 misses: the first fresh full strict run on file_merger, on the eight-patch v6 spec. Every sentence of v1-v6 held in one run. $22, 73 min |
 
 ## Test failure summaries
 
@@ -166,3 +167,8 @@ quotes sentence is one for one, and every other checkpoint-4 case held. That is 
 specs differ only at the checkpoints re-run after each change). Queued 22:11Z at the user's
 standing instruction: a fresh full run of min12-ABDJKMN on v6 under bin/scb-strict (job 143),
 the first of the two the twice bar needs.
+Fresh run on v6, 22:11Z to 23:28Z (job 143): 46/46, 86/86, 104/104, 147/147, all four strict,
+$22, 73 min. The first fresh full strict run on file_merger; the stitched fork had shown it once
+across three spec versions, this is once in one run. v6 is strict once by the user's bar; queued
+23:30Z under the standing plan: a second fresh run of the same config under bin/scb-strict
+(job 144). Twice, and just-solve on v6 is next.

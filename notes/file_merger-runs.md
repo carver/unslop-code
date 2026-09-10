@@ -15,6 +15,7 @@ The control is the dev6 sweep's just-solve run (`notes/dev6-opus5.md`).
 | min12-ABDJKMN on v1 (halted) | `…min12-ABDJKMN-specv1/20260909T1429` | min12-ABDJKMN on spec v1 under bin/scb-strict; first attempt | 45/46, halted | halted 2026-09-09 after checkpoint 1 by the strict driver: one miss, cross_family_coercion, a checkpoint-1 test every earlier file_merger run passed. A column holding `1` in one file and `true` in another must infer `bool` (the priority list puts `bool` above `int`); this run's registry T3 at Risk 35 chose "`1`/`0` does not make a column `bool`", so the two files conflicted and the column fell to string. A checkpoint-1 coin, not one of v1's four sentences, none of which is in play before checkpoint 2 except the CSV escape rule. Cost $5, 18 min |
 | min12-ABDEFJKMN on v1 (halted) | `…min12-ABDEFJKMN-specv1/20260909T1515` | min12-ABDEFJKMN (with E) on spec v1 under bin/scb-strict | 46/46, 84/86, halted | halted 2026-09-09 after checkpoint 2: two misses, authoritative_strategy and authoritative_interleaved, tests every earlier run passed. Both merge a CSV of ints with a JSONL of floats under the default strategy and expect `float`; this run's registry T26 (Risk 55) read v1's "JSONL does not outrank CSV" as CSV outranking JSONL (ranks parquet 3, csv 2, jsonl 1, the highest rank with an opinion wins), so CSV's `100` fixed `int` and the JSONL floats were nulled. The TSV, escape and map-key sentences were not reached by a failing test; the nine CRLF cases all passed |
 | min12-ABDJKMN on v2 (halted) | `…min12-ABDJKMN-specv2/20260909T1609` | min12-ABDJKMN on spec v2 under bin/scb-strict | 46/46, 84/86, halted | halted 2026-09-09 after checkpoint 2 on the same two authoritative tests as the v1 run before it: "JSONL does not outrank CSV" read as CSV outranking JSONL, two of two. Checkpoint 1 clean, so v2's inference sentence held its first toss; the nine TSV cases passed again |
+| min12-ABDJKMN on v3 (halted) | `…min12-ABDJKMN-specv3/20260910T0934` | min12-ABDJKMN on spec v3 under bin/scb-strict | 46/46, 86/86, 104/104, 146/147 | halted 2026-09-10 after checkpoint 4 on test_error_cases[errors/alias_cycle]: the alias file `{"a": "b", "b": "a"}` with a schema that uses only `int` must exit 2 at load; the snapshot detects a cycle only while resolving a type that uses it, so an unused cycle passes and it exits 0. First run through checkpoints 1-3 strict: v3's "JSONL ranks equal to CSV" held both authoritative tests, the CRLF and inference sentences held again. Not in the registry (T52 covers alias order, Risk 20); the v0 run passed it. $23, 77 min |
 
 ## Test failure summaries
 
@@ -82,3 +83,19 @@ The nine TSV cases passed at checkpoint 2, so the CRLF sentence did its work. Jo
 (ABDJKMN on v2, which carries the same sentence) is on checkpoint 1.
 Halted 23:45Z after checkpoint 2: 84/86, the same two authoritative tests, two of two runs on
 that sentence. The queue is empty; the authoritative wording waits on the user.
+
+## Spec v3 (2026-09-10)
+
+v2 with patch 02 reworded to the user's draft, "JSONL ranks equal to CSV" (8aba62e).
+Queued 16:34Z: min12-ABDJKMN on v3 under bin/scb-strict (job 137), alone, the queue
+otherwise empty; the same plan, halt at the first non-strict checkpoint.
+Halted 17:56Z after checkpoint 4: 46/46, 86/86, 104/104, 146/147. Checkpoints 1 to 3 strict
+for the first time on this problem: both authoritative tests passed, so the reworded sentence
+is one for one, and the CRLF, backslash-quote and casting-rule sentences held again. The one
+miss is errors/alias_cycle at checkpoint 4: the alias file is `{"a": "b", "b": "a"}` and the
+schema declares `id` as `int`, so no type ever names either alias; the test wants exit 2 at
+load, the snapshot resolves aliases lazily and exits 0. The spec's words: "May refer to
+built-ins or other aliases (resolve transitively; detect cycles → error 2)". The registry's
+T52 (Risk 20) is about resolution order, not when the cycle check runs; the run's own tests
+cover the cycle only through a schema that uses it. The v0 run of this prompt passed the case.
+The queue is empty; a second v3 run and the just-solve on v3 wait on the user.

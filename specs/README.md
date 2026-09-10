@@ -21,5 +21,8 @@ paths still resolve.
 | datagate | v1 | `01-datagate-clarified.patch`: the five sentences from the 2026-09-02 blind-judge review (latin-1 detection, rowid, charset on uploads, charset on spreadsheets, `force` values). Runs made before the folder existed were named `-disambiguated` and read the same copy at `problems/`. |
 | datagate | v2 | v1 plus `02-datagate-enrich-single.patch`, "Only a single, exact `enrich=yes` enables enrichment." (six of six blind judges: any repetition keeps enrichment off), and `03-datagate-delimiter-if-present.patch`, "Delimiter must be inferred from input, if present" (six of six: a delimiter-free header-plus-row file is a one-column table, a one-line JSON body still 400). Both 2026-09-05. |
 | xjq | v1 | `01-text-flags-per-element.patch`: `--text` and `--text-all` bullets end ", one per element" (blind judges 37 of 40 for the tests' reading, from 26 of 40 unpatched; five of xjq's seven misses); `02-no-trailing-newline.patch`: "No trailing newline." after the output rule (judges 1 of 40; the user's call to try it; the other two misses). 2026-09-09, `notes/xjq-misses.md`. |
+| file_merger | v1 | `01-tsv-crlf.patch` (TSV accepts CRLF), `02-authoritative-typed-sources.patch` ("JSONL does not outrank CSV"), `03-csv-backslash-quote.patch` (CSV accepts `\"`), `04-map-key-quoted.patch` (map keys are double-quoted). 2026-09-09. |
+| file_merger | v2 | v1 plus `05-infer-by-cast-rules.patch`, "Inference recognises values by the casting rules below". 2026-09-09. |
+| file_merger | v3 | v2 with 02 reworded: "JSONL ranks equal to CSV". Both strict runs on v1 and v2 read "does not outrank" as CSV outranking JSONL and halted at checkpoint 2. 2026-09-10. |
 
 `drafts/` holds patches that were proposed and not adopted as written.

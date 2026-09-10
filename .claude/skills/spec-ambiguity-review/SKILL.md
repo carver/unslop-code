@@ -7,10 +7,12 @@ disable-model-invocation: true
 # Spec ambiguity review
 
 Input: a completed spectest run on one problem, with an AMBIGUITIES.md registry in its
-snapshots and hidden-test misses. Output: a new spec version folder `specs/vN/` (see `specs/README.md`), a few
+snapshots and hidden-test misses. Output: a new version folder for the problem, `specs/<problem>/vN/` (see `specs/README.md`), a few
 reworded sentences that flip the model's reading to the hidden tests' reading, and a
 strict run against the patched spec. datagate is the worked example:
-`notes/critical-ambiguities.md`, `notes/ambiguity-judge.md`, `specs/v1/01-datagate-clarified.patch`.
+`notes/critical-ambiguities.md`, `notes/ambiguity-judge.md`, `specs/datagate/v1/01-datagate-clarified.patch`;
+xjq (`notes/xjq-runs.md`, four sentences over three versions) and file_merger (`notes/file_merger-misses.md`)
+are the later ones.
 
 ## 1. Compile the misses
 
@@ -20,26 +22,35 @@ One section per distinct failing hidden test: docstring, assertions, spec lines 
 the test's words, candidate registry entries by word overlap. The candidates are hints.
 For every failing test, read the test, the spec section, and the registry until you can
 name the one sentence the test and the tester read differently, and the reading the test
-takes. Group tests by sentence. Done when every failing test is under exactly one
+takes. When misses smell of parsing, read the fixture's bytes too: file_merger's TSV fixtures
+end lines in `\r\n` and its CSV fixtures escape quotes with backslashes, against the spec's
+own words, and nine misses were one such byte. Group tests by sentence. Done when every failing test is under exactly one
 sentence, or is marked "process" (a crashed or cut checkpoint, visible in the run's
 artifacts) or "noise" (flips between runs, like a detector on a tiny sample).
 
 ## 2. Propose the patch
 
-Make the next version folder, `specs/vN/`, by copying the current version's patches and adding
-`NN-<problem>-<slug>.patch`, a unified diff against the cached problem
+Make the next version folder, `specs/<problem>/vN/`, by copying the current version's patches
+and adding `NN-<slug>.patch`, a unified diff against the cached problem
 (`~/.cache/scbench/problems/<problem>`), paths `a/<problem>/checkpoint_N.md`. One hunk
 per sentence, the smallest wording that nudges toward the hidden reading, matching what the
 reference solution in `solutions/` does. Header comment lists sentence, entry id, tests.
 Done when `bin/spec-patch <problem> vN` applies the folder and prints the changed lines. Never edit
 an older version's folder: runs already made against it must stay comparable.
 
+Two things the wording must respect. State a relation positively: "JSONL and CSV are inferred
+peers" was read as intended, while "JSONL does not outrank CSV" was read as CSV outranking
+JSONL, two runs of two (file_merger v1). And put the sentence in the checkpoint whose agent
+writes the behaviour: a checkpoint's prompt carries only that checkpoint's spec, so a sentence
+added to checkpoint 1 is invisible to the agent at checkpoint 5 (xjq v3 needed a checkpoint-5
+copy of its rule).
+
 Pause and succinctly summarize the proposed changes for me to approve. We might discuss in several rounds. Then when I approve all patches, continue.
 
 ## 3. Judge, edit, repeat
 
-    SCBENCH_PROBLEMS_PATH=$PWD/specs/vN/problems bin/judge-ambiguities run <run_dir> \
-      --out outputs/judge/<problem>-vN --spec-patch specs/vN/01-....patch --spec-patch specs/vN/02-....patch \
+    SCBENCH_PROBLEMS_PATH=$PWD/specs/<problem>/vN/problems bin/judge-ambiguities run <run_dir> \
+      --out outputs/judge/<problem>-vN --spec-patch specs/<problem>/vN/01-....patch --spec-patch specs/<problem>/vN/02-....patch \
       --entries T7,T9 --variants choose,rule --samples 10 --batch 5
     bin/judge-ambiguities summarize outputs/judge/<problem>-vN --hidden '{"T7": [1], "T9": [2]}'
 
@@ -63,10 +74,14 @@ split means the wording still leans on the reader. The two v2 sentences went in 
 ## 4. Rerun strict
 
     bin/run-config --prompt <best generalized prompt> --problem <problem> --spec vN
-    SCBENCH_PROBLEMS_PATH=$PWD/specs/vN/problems bin/scb-strict configs/runs/<name>.yaml <problem> <n_checkpoints>
+    bin/queue add-strict configs/runs/<name>.yaml     # then bin/queue solo <id> if other jobs must wait
 
 One checkpoint per scb invocation; halts on the first checkpoint with any failing test.
 Done when the driver prints DONE, or halted with the failing tests, which go back to step 1.
+A sentence whose checkpoint is late can be tried for a few dollars first: copy the last run's
+dir to a `-specvN`-named dir, delete the checkpoints from that one on, point the copy's
+`config.yaml` and `problem_catalog.json` at the new build, drop their rows from
+`checkpoint_results.jsonl`, and `bin/queue resume` the copy (xjq v3, 2026-09-09).
 
 ## Reference
 

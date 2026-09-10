@@ -16,6 +16,7 @@ The control is the dev6 sweep's just-solve run (`notes/dev6-opus5.md`).
 | min12-ABDEFJKMN on v1 (halted) | `…min12-ABDEFJKMN-specv1/20260909T1515` | min12-ABDEFJKMN (with E) on spec v1 under bin/scb-strict | 46/46, 84/86, halted | halted 2026-09-09 after checkpoint 2: two misses, authoritative_strategy and authoritative_interleaved, tests every earlier run passed. Both merge a CSV of ints with a JSONL of floats under the default strategy and expect `float`; this run's registry T26 (Risk 55) read v1's "JSONL does not outrank CSV" as CSV outranking JSONL (ranks parquet 3, csv 2, jsonl 1, the highest rank with an opinion wins), so CSV's `100` fixed `int` and the JSONL floats were nulled. The TSV, escape and map-key sentences were not reached by a failing test; the nine CRLF cases all passed |
 | min12-ABDJKMN on v2 (halted) | `…min12-ABDJKMN-specv2/20260909T1609` | min12-ABDJKMN on spec v2 under bin/scb-strict | 46/46, 84/86, halted | halted 2026-09-09 after checkpoint 2 on the same two authoritative tests as the v1 run before it: "JSONL does not outrank CSV" read as CSV outranking JSONL, two of two. Checkpoint 1 clean, so v2's inference sentence held its first toss; the nine TSV cases passed again |
 | min12-ABDJKMN on v3 (halted) | `…min12-ABDJKMN-specv3/20260910T0934` | min12-ABDJKMN on spec v3 under bin/scb-strict | 46/46, 86/86, 104/104, 146/147 | halted 2026-09-10 after checkpoint 4 on test_error_cases[errors/alias_cycle]: the alias file `{"a": "b", "b": "a"}` with a schema that uses only `int` must exit 2 at load; the snapshot detects a cycle only while resolving a type that uses it, so an unused cycle passes and it exits 0. First run through checkpoints 1-3 strict: v3's "JSONL ranks equal to CSV" held both authoritative tests, the CRLF and inference sentences held again. Not in the registry (T52 covers alias order, Risk 20); the v0 run passed it. $23, 77 min |
+| min12-ABDJKMN on v4 (halted) | `…min12-ABDJKMN-specv4/20260910T1126` | min12-ABDJKMN on spec v4 under bin/scb-strict | 46/46, 86/86, 104/104, 146/147 | halted 2026-09-10 after checkpoint 4 on test_core_cases[correct_partition_nested/partition_by_map_value]: `--partition-by 'attrs["region"]'` must write `out/attrs["region"]=east/`; the snapshot percent-encodes the column name too, `out/attrs%5B%22region%22%5D=east/`, so the expected files are missing. alias_cycle passed: v4's sentence held one for one. A 2-of-4 coin before v4; three runs registered the question (v0 min12 T44 Risk 15, min11-first T47, this run T46 Risk 10) and every one that chose "both halves" failed; min11-repeat and v3 encoded the value only and passed. Checkpoint 3's "Apply percent-encoding of UTF-8 bytes for characters outside `[A-Za-z0-9._-]`" sits under the `<col>=<val>` segment and does not say value only. $21, 73 min |
 
 ## Test failure summaries
 
@@ -107,3 +108,18 @@ of "detect cycles → error 2". Judged with the v0 min12-ABDJKMN run's T55 ("eag
 used") against the v4 build, ten samples each of choose and rule: 20 of 20 for the eager reading,
 every rule line saying a cycle errors even if no schema column references it ($1.31,
 `outputs/judge/file_merger-v4`). Queued: min12-ABDJKMN on v4 under bin/scb-strict, the same plan.
+Halted 19:44Z after checkpoint 4: 46/46, 86/86, 104/104, 146/147. alias_cycle passed, so the v4
+sentence is one for one and checkpoints 1 to 3 are strict a second time. The miss is
+correct_partition_nested/partition_by_map_value: `--partition-by 'attrs["region"]'` must write
+`out/attrs["region"]=east/part-00000.csv`; the snapshot percent-encodes the column name along with
+the value (`out/attrs%5B%22region%22%5D=east/`), so the harness reads the expected files as empty.
+The rule is checkpoint 3's "Apply percent-encoding of UTF-8 bytes for characters outside
+`[A-Za-z0-9._-]`", a sub-bullet of the `<col1>=<val1>/...` segment line, silent on whether the
+column name is encoded; the reference's encode_partition_value encodes the value only, and the
+name only differs at checkpoint 4, where a field path carries brackets and quotes. History: the v0
+min12-ABDJKMN run registered the question (T44 "Is the partition column name percent-encoded, or
+only the value?", Risk 15, chose the name too) and failed; min11-ABDFJKMN's first run failed the
+same way (T47, "applied to the column-name half of the segment as well"); this run's T46 (Risk 10)
+chose both halves too, noting "encoding of the name half is untested in all likelihood". The
+min11 repeat and the v3 run encoded the value only and passed. Three registered, three failed;
+two silent, two passed. The queue is empty; the sentence waits on the user.

@@ -25,5 +25,6 @@ paths still resolve.
 | file_merger | v2 | v1 plus `05-infer-by-cast-rules.patch`, "Inference recognises values by the casting rules below". 2026-09-09. |
 | file_merger | v3 | v2 with 02 reworded: "JSONL ranks equal to CSV". Both strict runs on v1 and v2 read "does not outrank" as CSV outranking JSONL and halted at checkpoint 2. 2026-09-10. |
 | file_merger | v4 | v3 plus `06-alias-cycle-at-load.patch`, "detect cycles proactively → error 2" (the user's wording; ten of ten blind judges, choose and rule variants: an unused cycle exits 2, `outputs/judge/file_merger-v4`). 2026-09-10. |
+| file_merger | v5 | v4 plus `07-partition-encode-value-only.patch`, checkpoint 3: "Values use percent-encoding of UTF-8 bytes..." in place of "Apply percent-encoding..." (the user's wording, no judge run: the three runs that registered the question all encoded the column name too and failed at checkpoint 4). 2026-09-10. |
 
 `drafts/` holds patches that were proposed and not adopted as written.

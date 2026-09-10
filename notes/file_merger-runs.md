@@ -123,3 +123,10 @@ same way (T47, "applied to the column-name half of the segment as well"); this r
 chose both halves too, noting "encoding of the name half is untested in all likelihood". The
 min11 repeat and the v3 run encoded the value only and passed. Three registered, three failed;
 two silent, two passed. The queue is empty; the sentence waits on the user.
+
+## Spec v5 (2026-09-10)
+
+v4 plus `07-partition-encode-value-only.patch`: checkpoint 3's percent-encoding bullet now opens
+"Values use percent-encoding" instead of "Apply percent-encoding", the user's one-word edit of
+the draft. No judge run, the user's call: the evidence was three registered readings that all
+went the wrong way. Queued: min12-ABDJKMN on v5 under bin/scb-strict, the same plan.

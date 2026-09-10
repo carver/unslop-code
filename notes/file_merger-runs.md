@@ -131,3 +131,10 @@ v4 plus `07-partition-encode-value-only.patch`: checkpoint 3's percent-encoding 
 the draft. No judge run, the user's call: the evidence was three registered readings that all
 went the wrong way. Queued: min12-ABDJKMN on v5 under bin/scb-strict (job 139, 20:45Z); killed two minutes in at the
 user's request and its run directory deleted, nothing scored.
+Continuation 20:49Z at the user's request, the xjq v3 trick: the v4 run
+(`…min12-ABDJKMN-specv4/20260910T1126`) cloned to `…min12-ABDJKMN-specv5/20260910T1126` with
+checkpoints 3 and 4 removed, config and catalog record pointed at v5, the two rows dropped from
+checkpoint_results.jsonl and from run_info.yaml's summary; the resume preview kept checkpoints 1
+and 2 and deleted nothing. Checkpoint 3 is v5's changed spec, so the clone stops there
+(`bin/queue resume <dir> 3`, job 140); checkpoint 4 is queued only if 3 is strict. Checkpoints 1
+and 2 of this run are the v4 run's, spec-identical under v5.

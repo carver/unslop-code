@@ -19,6 +19,10 @@ Start here:
 Running things (always through the wrapper; it enforces subscription-only auth
 and the sandbox-local venv):
 
+    bin/scb sync v1.0                        # install the problem catalog (scb-problems release v1.0, commit
+                                             # 4d38d30) into ~/.cache/scbench/problems; a bare `run` fetches
+                                             # the latest release instead, which may not be v1.0. Then
+                                             # `python3 install.py` for pueue and the patches
     bin/scb run --config configs/runs/<name>.yaml --no-live-progress
     bin/scb run --resume <run_dir>           # after any interruption
     bin/usage                                # 5h/7d rate-limit windows

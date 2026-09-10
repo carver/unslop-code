@@ -138,3 +138,5 @@ checkpoint_results.jsonl and from run_info.yaml's summary; the resume preview ke
 and 2 and deleted nothing. Checkpoint 3 is v5's changed spec, so the clone stops there
 (`bin/queue resume <dir> 3`, job 140); checkpoint 4 is queued only if 3 is strict. Checkpoints 1
 and 2 of this run are the v4 run's, spec-identical under v5.
+Checkpoint 3 on v5, 21:04Z: 104/104, strict (job 140, 15 min). Checkpoint 4 queued on the same
+clone (job 141). `bin/fork-run` (a5f6c8b) now does the clone.

@@ -61,6 +61,9 @@ def spec_of(run_dir):
     try:
         record = json.loads((run_dir / "problem_catalog.json").read_text())
     except (OSError, ValueError):
+        m = re.search(r"-spec(v\d+)$", run_dir.parent.name)
+        if m:
+            return m.group(1)
         return "v1" if run_dir.parent.name.endswith("-disambiguated") else "v0"
     if record.get("version") != "env-override":
         return "v0"

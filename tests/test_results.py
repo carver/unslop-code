@@ -10,12 +10,12 @@ exec(compile(SCRIPT.read_text(), str(SCRIPT), "exec"), rs.__dict__)
 
 def test_cell_key_strips_prefix_and_falls_back_to_the_suffix_for_the_spec():
     assert rs.cell_key(Path("/o/spectest/opus-5_2.1.251_high_spectest-min4-disambiguated/20260903T1328")) == ("spectest-min4", "v1", "opus-5")
-    assert rs.cell_key(Path("/o/spectest/opus-5_2.1.251_high_spectest-v9-specv2/20260906T0000")) == ("spectest-v9", "v0", "opus-5")
+    assert rs.cell_key(Path("/o/spectest/opus-5_2.1.251_high_spectest-v9-specv2/20260906T0000")) == ("spectest-v9", "v2", "opus-5")
     assert rs.cell_key(Path("/o/dev6-opus5/opus-5_2.1.251_high_just-solve/20260830T0354")) == ("just-solve", "v0", "opus-5")
     assert rs.cell_key(Path("/o/dev6/sonnet-4.6_2.1.44_high_just-solve/20260829T1910")) == ("just-solve", "v0", "sonnet-4.6")
     assert rs.cell_key(Path("/o/dev6-fable51/fable-5-1_2.1.251_high_just-solve/20260905T0147")) == ("just-solve", "v0", "fable-5.1")
-    assert rs.cell_key(Path("/o/spectest/gpt-5.6-sol_0.153.4_high_min12-ABDFJKMN-specv2/20260909T045443")) == ("min12-ABDFJKMN", "v0", "gpt-5.6-sol")
-    assert rs.cell_key(Path("/o/spectest/gpt-6-astra_0.153.4_high_min11-ABDFJKMN-specv2/20260908T081305")) == ("min11-ABDFJKMN", "v0", "gpt-6-astra")
+    assert rs.cell_key(Path("/o/spectest/gpt-5.6-sol_0.153.4_high_min12-ABDFJKMN-specv2/20260909T045443")) == ("min12-ABDFJKMN", "v2", "gpt-5.6-sol")
+    assert rs.cell_key(Path("/o/spectest/gpt-6-astra_0.153.4_high_min11-ABDFJKMN-specv2/20260908T081305")) == ("min11-ABDFJKMN", "v2", "gpt-6-astra")
 
 
 def test_spec_comes_from_the_catalog_record_when_the_run_has_one(tmp_path):

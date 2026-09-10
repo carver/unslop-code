@@ -3,12 +3,15 @@
 set -euo pipefail
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 export SCB_ROOT="$here"
-export SCBENCH_PROBLEMS_PATH="${SCBENCH_PROBLEMS_PATH:-$here/specs/v2/problems}"
+# SCBENCH_PROBLEMS_PATH passes through when a run sets it; unset, slop-code reads the cache.
 export UV_PROJECT_ENVIRONMENT="${UV_PROJECT_ENVIRONMENT:-$here/outputs/astra-setup/harness-venv}"
 export UV_CACHE_DIR="${UV_CACHE_DIR:-$here/outputs/astra-setup/uv-cache}"
 export DOCKER_HOST="${DOCKER_HOST:-unix:///tmp/unslop-docker.sock}"
-export HUID=1000 HGID=1000
 export PATH="$here/outputs/astra-setup/tools-venv/bin:$PATH"
+# Container commands outside evaluation run as HUID:HGID, root when unset, and a
+# root-owned .venv in the workspace breaks host-side cleanup (see bin/scb).
+export HUID="${HUID:-$(id -u)}"
+export HGID="${HGID:-$(id -g)}"
 unset OPENAI_API_KEY ANTHROPIC_API_KEY
 python3 - <<'PY'
 import json

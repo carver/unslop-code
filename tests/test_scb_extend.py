@@ -2,6 +2,7 @@
 import datetime
 import yaml
 import json
+import os
 import subprocess
 import sys
 import types
@@ -299,3 +300,11 @@ def test_quota_detection_ignores_solver_text(tmp_path):
     (tmp_path / 'agent').mkdir()
     (tmp_path / 'agent/stdout.jsonl').write_text(json.dumps({'type':'item.completed','item':{'text':'usage limit'}})+'\n')
     assert ext.quota_error(tmp_path) is None
+
+
+def test_resume_narrows_to_its_problem_through_the_child_environment(tmp_path, monkeypatch):
+    monkeypatch.delenv("SCB_RESUME_ONLY_PROBLEM", raising=False)
+    argv, env = ext.resume_command(tmp_path / "run", "xjq", 3)
+    assert argv[1:] == ["run", "--resume", str(tmp_path / "run"), "--problem", "xjq", "--no-live-progress", "--stop-after-checkpoint", "3"]
+    assert env["SCB_RESUME_ONLY_PROBLEM"] == "xjq"
+    assert "SCB_RESUME_ONLY_PROBLEM" not in os.environ

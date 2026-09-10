@@ -28,8 +28,12 @@ Then `scb run --resume --dry-run` previews the resume, and the driver halts (exi
 preview would delete a finished checkpoint, whatever the reason. Every finished checkpoint
 is also tarred once into outputs/backups/ before the next resume touches the run.
 Progress lines start with EXTEND: so a log watcher can filter on them.
-Exit codes: 0 all checkpoints ran   3 checkpoint left no usable evaluation   4 scb failed
-             5 the resume preview would delete a finished checkpoint
+Exit codes:
+    0 all checkpoints ran
+    3 checkpoint left no usable evaluation
+    4 scb failed
+    5 the resume preview would delete a finished checkpoint
+    6 usage quota reached
 """
 import os
 import datetime, json, pathlib, re, shutil, subprocess, sys, time
@@ -57,6 +61,42 @@ def overloaded(ckpt_dir):
     except OSError:
         return False
     return ('"error":"overloaded"' in text or '"error":"server_error"' in text) and '"tool_use"' not in text
+
+
+def quota_error(ckpt_dir):
+    """Read explicit Codex failure events, not arbitrary solver/tool text."""
+    path = ckpt_dir / "agent" / "stdout.jsonl"
+    if not path.exists():
+        return None
+    for line in path.read_text().splitlines():
+        try:
+            event = json.loads(line)
+        except ValueError:
+            continue
+        if event.get("type") == "error":
+            message = event.get("message", "")
+        elif event.get("type") == "turn.failed":
+            message = (event.get("error") or {}).get("message", "")
+        else:
+            continue
+        if "usage limit" in message.lower() or "usage_limit_reached" in message.lower():
+            return message
+    return None
+
+
+def halt_on_quota(ckpt_dir):
+    if not agent_errored(ckpt_dir):
+        return
+    message = quota_error(ckpt_dir)
+    if message is None:
+        return
+    # Pause scheduling, without killing this task or touching its artifacts.
+    pueue = pathlib.Path.home() / ".local/bin/pueue"
+    result = subprocess.run([pueue, "pause", "--wait"], capture_output=True, text=True)
+    say(f"usage limit: {message}; halting with checkpoint preserved; queue pause exit={result.returncode}")
+    if result.returncode:
+        say(f"queue pause failed: {result.stderr.strip()}")
+    raise SystemExit(6)
 
 
 def agent_errored(ckpt_dir):
@@ -299,6 +339,7 @@ def main():
             for r in records:
                 f.write(json.dumps(r) + "\n")
         after = record(1, "after")
+        halt_on_quota(problem_dir / "checkpoint_1")
         res = outcome(problem_dir, 1)
         if res is None:
             say(f"checkpoint_1 left no evaluation; halting (run_dir={run_dir})"); sys.exit(3)
@@ -328,6 +369,7 @@ def main():
         after = record(n, "after")
         if proc.returncode != 0:
             say(f"scb exited {proc.returncode} on checkpoint_{n}")
+        halt_on_quota(problem_dir / f"checkpoint_{n}")
         res = outcome(problem_dir, n)
         if res is None:
             say(f"checkpoint_{n} left no evaluation; halting (run_dir={run_dir})"); sys.exit(3)

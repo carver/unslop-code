@@ -1,0 +1,25 @@
+file_merger: what "typed sources" and "precedence" mean for the default strategy (checkpoint 2)
+
+Sentence: "`--schema-strategy=authoritative` (default): prefer typed sources in precedence
+order". Both min11-ABDFJKMN runs (registry T26, Risk 55, and T37, Risk 45) ranked JSONL's
+per-value types as "typed" above CSV, so a JSONL file with `amount: 10` fixed the column as
+`int` and the CSV file's `2.5` and `3.7` were cast to null. The reference solution treats
+only Parquet's declared types as typed; JSONL and CSV/TSV are inferred alike, and inferred
+`int` and `float` join to `float` (in strict and loose mode). Tests:
+cross_file_type_inference, jsonl_nulls_loose (checkpoint 2).
+
+v1 and v2 ended the line "JSONL does not outrank CSV"; both strict runs read that as CSV
+outranking JSONL and halted at checkpoint 2 (tests authoritative_strategy,
+authoritative_interleaved). v3 says the two rank equal.
+
+--- a/file_merger/checkpoint_2.md
++++ b/file_merger/checkpoint_2.md
+@@ -58,7 +58,7 @@
+   - Column order: ascending lexicographic by column name
+   - Type inference per `--infer` mode (strict or loose)
+ - **Schema disagreement strategy** when inputs have conflicting types for same column:
+-  - `--schema-strategy=authoritative` (default): prefer typed sources in precedence order
++  - `--schema-strategy=authoritative` (default): prefer typed sources in precedence order; JSONL ranks equal to CSV.
+   - `--schema-strategy=consensus`: choose type that majority of files support
+   - `--schema-strategy=union`: choose simplest common type that can hold all observed values
+

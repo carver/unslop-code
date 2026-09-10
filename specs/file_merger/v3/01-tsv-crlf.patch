@@ -1,0 +1,21 @@
+file_merger: TSV lines may end in CRLF (checkpoint 2)
+
+Sentence: "TSV: ... `\n` line endings". The hidden fixtures are written by csv.DictWriter,
+whose default line terminator is `\r\n`, so every TSV input ends its lines in CRLF while the
+spec promises `\n`. Both min11-ABDFJKMN runs hand-parse TSV (the spec forbids quoting) and
+strip only `\n`, so the last column of every TSV keeps a `\r` and the merged output grows a
+phantom column. The reference solution strips `\r\n`. Tests: tsv_empty_fields, tsv_gzip,
+tsv_whitespace_values, unicode_tsv, consensus_type_tie, five_file_mixed, four_format_merge,
+auto_mix_union, consensus_inference (nine, every case with a TSV input, all from checkpoint 2).
+
+--- a/file_merger/checkpoint_2.md
++++ b/file_merger/checkpoint_2.md
+@@ -45,7 +45,7 @@
+ **Source Dialect Assumptions**
+
+ - **CSV**: same as checkpoint 1 (RFC-4180, header row, `\n`, default quote `"`, escape by doubling)
+-- **TSV**: delimiter is tab (`\t`), no quoting, header row required, `\n` line endings; literal tabs inside field not allowed (error 5)
++- **TSV**: delimiter is tab (`\t`), no quoting, header row required, `\n` or `\r\n` line endings; literal tabs inside field not allowed (error 5)
+ - **JSONL**: one UTF-8 JSON object per line; objects must be flat (no arrays/objects as values); `null` permitted; keys case-sensitive; blank/whitespace lines ignored
+ - **Parquet**: flat schemas only (no nested/list/map types); nested fields trigger error 6
+

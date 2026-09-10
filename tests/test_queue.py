@@ -1,6 +1,8 @@
 """bin/queue: a run config becomes one scb-extend job with the right catalog."""
 import sys
 import types
+
+import pytest
 from pathlib import Path
 
 SCRIPT = Path(__file__).resolve().parent.parent / "bin" / "queue"
@@ -151,9 +153,36 @@ def test_codex_resume_preserves_provider_and_catalog(tmp_path):
     assert env['SCBENCH_PROBLEMS_PATH'] == '/test/catalog'
 
 
-def test_multi_problem_resume_selects_one_problem(tmp_path):
-    (tmp_path / 'config.yaml').write_text('model:\n  provider: codex_auth\n  name: gpt-5.6-sol\nproblems: [file_merger, xjq]\n')
-    (tmp_path / 'problem_catalog.json').write_text('{"version":"env-override","commit":"/test/catalog"}')
-    _, argv, env = q.resume_job(tmp_path, 5, 'xjq')
-    assert argv[-2:] == ['xjq', '5']
-    assert env['SCB_USAGE_TRACKING'] == '0'
+def multi_problem_run(tmp_path):
+    run = tmp_path / "spectest" / "gpt-5.6-sol_0.153.4_high_min12-ABDJKMN-specv2" / "20260909T0454"
+    for problem, done in (("file_merger", 2), ("xjq", 3)):
+        for i in range(1, done + 1):
+            (run / problem / f"checkpoint_{i}").mkdir(parents=True)
+    (run / "config.yaml").write_text("model:\n  provider: codex_auth\n  name: gpt-5.6-sol\nproblems: [file_merger, xjq]\n")
+    root = tmp_path / "specs" / "xjq" / "v2" / "problems"
+    for problem, n in (("file_merger", 4), ("xjq", 5)):
+        (root / problem).mkdir(parents=True)
+        for i in range(1, n + 1): (root / problem / f"checkpoint_{i}.md").write_text("")
+    (run / "problem_catalog.json").write_text('{"version": "env-override", "commit": "%s"}' % root)
+    return run, root
+
+
+def test_multi_problem_resume_runs_the_named_problem_alone(tmp_path):
+    run, root = multi_problem_run(tmp_path)
+    label, argv, env = q.resume_job(run, problem="xjq")
+    assert argv == [str(q.ROOT / "bin" / "scb-extend"), str(run), "xjq", "5"]
+    assert "file_merger" not in argv and "file_merger" not in label
+    assert label.endswith("-xjq-resume-from-4")
+    assert env == {"SCBENCH_PROBLEMS_PATH": str(root), "SCB_LAUNCHER": str(q.ROOT / "bin" / "scb-sol"), "SCB_USAGE_TRACKING": "0"}
+
+
+def test_multi_problem_resume_needs_a_problem(tmp_path):
+    run, _ = multi_problem_run(tmp_path)
+    with pytest.raises(SystemExit, match="requires --problem"):
+        q.resume_job(run)
+
+
+def test_resume_rejects_a_problem_the_run_does_not_have(tmp_path):
+    run, _ = multi_problem_run(tmp_path)
+    with pytest.raises(SystemExit, match="datagate is not in this run"):
+        q.resume_job(run, problem="datagate")

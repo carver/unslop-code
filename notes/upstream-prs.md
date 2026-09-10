@@ -42,6 +42,18 @@ it regex-normalizes element addresses before comparing. Worth a PR that renders 
 their string value and drops the normalization, or at least an issue; found 2026-09-09 while
 drafting `specs/drafts/xjq-04-mixed-results-as-text.patch`.
 
+## Problem set: file_merger's fixtures contradict the spec's own dialect words
+
+Found by the 2026-09-09 review (`notes/file_merger-misses.md`). The checkpoint-2 TSV fixtures
+are written by `csv.DictWriter`, so their lines end in `\r\n` while the spec says TSV has
+`\n` line endings; nine hidden cases fail for any reader that takes the spec at its word and
+strips `\n`. The checkpoint-4 CSV fixtures escape the quotes inside JSON cells with
+backslashes (`"{\"name\":\"ok\"}"`) while the spec says escaping is by doubling; the
+reference solution sniffs for `\"` and switches escape characters. Either the fixtures should
+follow the spec (write TSV with `lineterminator="\n"`, write CSV by doubling) or the spec
+should say what the fixtures do; our `specs/file_merger/v1` patches 01 and 03 take the second
+road for our runs. Two PRs' worth, both small.
+
 ## Harness: patches we carry (all in `patches/`, applied to the checkout)
 
 Listed in `README.md` with what each fixes: stream-parser string message; stop-after-

@@ -87,10 +87,11 @@ def collect(dirs, checkpoints=checkpoint_names):
     cells = collections.defaultdict(list); partial = []
     for run in dirs:
         prompt, spec, model = cell_key(run)
-        by_problem = collections.defaultdict(list)
+        by_problem = collections.defaultdict(dict)
         for r in summarize.load_rows(run):
-            by_problem[r["problem"]].append(r)
-        for problem, rows in by_problem.items():
+            by_problem[r["problem"]][r["checkpoint"]] = r  # a re-run checkpoint's last row wins
+        for problem, by_checkpoint in by_problem.items():
+            rows = sorted(by_checkpoint.values(), key=lambda r: r["idx"])
             last = rows[-1]
             if last.get("passed_tests") is None:
                 continue

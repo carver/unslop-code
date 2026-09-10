@@ -1,4 +1,5 @@
 """bin/results: run directories map to (problem, prompt, spec, model) cells."""
+import json
 import sys
 import types
 from pathlib import Path
@@ -19,7 +20,6 @@ def test_cell_key_strips_prefix_and_falls_back_to_the_suffix_for_the_spec():
 
 
 def test_spec_comes_from_the_catalog_record_when_the_run_has_one(tmp_path):
-    import json
     def run(name, record):
         d = tmp_path / name / "20260906T0000"; d.mkdir(parents=True)
         (d / "problem_catalog.json").write_text(json.dumps(record)); return d
@@ -38,7 +38,6 @@ def test_table_averages_a_cell_over_its_runs():
 
 
 def test_collect_separates_partial_runs(tmp_path, monkeypatch):
-    import json
     run = tmp_path / "spectest" / "opus-5_2.1.251_high_spectest-min3-disambiguated" / "20260903T1057"; run.mkdir(parents=True)
     rows = [{"problem": "datagate", "checkpoint": f"checkpoint_{i}", "idx": i, "passed_tests": 10, "total_tests": 10, "strict_pass_rate": 1.0, "cost": 1.0} for i in (1, 2)]
     (run / "checkpoint_results.jsonl").write_text("\n".join(json.dumps(r) for r in rows) + "\n")
@@ -49,7 +48,6 @@ def test_collect_separates_partial_runs(tmp_path, monkeypatch):
 
 
 def test_collect_uses_the_catalog_record_and_requires_each_checkpoint(tmp_path, monkeypatch):
-    import json
     catalog = tmp_path / "catalog"
     problem_dir = catalog / "datagate"; problem_dir.mkdir(parents=True)
     for i in range(1, 4):
@@ -65,6 +63,17 @@ def test_collect_uses_the_catalog_record_and_requires_each_checkpoint(tmp_path, 
     cells, partial = rs.collect([run])
     assert cells == {}
     assert partial[0][4:6] == (2, 3)
+
+
+def test_collect_keeps_one_row_per_checkpoint_the_last_written(tmp_path):
+    run = tmp_path / "spectest" / "opus-5_2.1.251_high_test" / "20260909T0000"; run.mkdir(parents=True)
+    rows = [{"problem": "datagate", "checkpoint": "checkpoint_1", "idx": 1, "passed_tests": 10, "total_tests": 10, "strict_pass_rate": 1.0, "cost": 1.0},
+            {"problem": "datagate", "checkpoint": "checkpoint_2", "idx": 2, "passed_tests": 5, "total_tests": 10, "strict_pass_rate": 0.5, "cost": 1.0},
+            {"problem": "datagate", "checkpoint": "checkpoint_2", "idx": 2, "passed_tests": 10, "total_tests": 10, "strict_pass_rate": 1.0, "cost": 3.0}]
+    (run / "checkpoint_results.jsonl").write_text("\n".join(json.dumps(r) for r in rows) + "\n")
+    cells, partial = rs.collect([run], checkpoints=lambda problem, run: {"checkpoint_1", "checkpoint_2"})
+    [summary] = cells[("datagate", "test", "v0", "opus-5")]
+    assert partial == [] and (summary["ckpts"], summary["strict"], summary["cost"], summary["passed"]) == (2, 2, 4.0, 10)
 
 
 def test_single_run_score_has_no_decimal():

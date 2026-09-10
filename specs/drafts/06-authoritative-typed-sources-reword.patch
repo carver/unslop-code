@@ -1,0 +1,16 @@
+file_merger: what "typed sources" and "precedence" mean for the default strategy (checkpoint 2)
+
+The previous patch (02) implied that CSV outranks JSONL. Be clearer that they are equal rank.
+
+--- a/file_merger/checkpoint_2.md
++++ b/file_merger/checkpoint_2.md
+@@ -58,7 +58,7 @@
+   - Column order: ascending lexicographic by column name
+   - Type inference per `--infer` mode (strict or loose)
+ - **Schema disagreement strategy** when inputs have conflicting types for same column:
+-  - `--schema-strategy=authoritative` (default): prefer typed sources in precedence order
++  - `--schema-strategy=authoritative` (default): prefer typed sources in precedence order; JSONL ranks equal to CSV.
+   - `--schema-strategy=consensus`: choose type that majority of files support
+   - `--schema-strategy=union`: choose simplest common type that can hold all observed values
+
+

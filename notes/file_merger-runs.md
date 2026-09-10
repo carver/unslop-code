@@ -129,4 +129,5 @@ two silent, two passed. The queue is empty; the sentence waits on the user.
 v4 plus `07-partition-encode-value-only.patch`: checkpoint 3's percent-encoding bullet now opens
 "Values use percent-encoding" instead of "Apply percent-encoding", the user's one-word edit of
 the draft. No judge run, the user's call: the evidence was three registered readings that all
-went the wrong way. Queued: min12-ABDJKMN on v5 under bin/scb-strict, the same plan.
+went the wrong way. Queued: min12-ABDJKMN on v5 under bin/scb-strict (job 139, 20:45Z); killed two minutes in at the
+user's request and its run directory deleted, nothing scored.

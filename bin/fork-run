@@ -1,0 +1,92 @@
+#!/usr/bin/env python3
+"""Fork a finished run at a checkpoint so a later spec version re-runs only the checkpoints after it.
+    bin/fork-run <run_dir> --spec vN --keep <k> [--queue]
+Copies the run to a sibling directory named for spec vN (same timestamp), keeps checkpoints 1..k,
+removes the rest, and points the copy at vN: config.yaml paths, the catalog record
+(problem_catalog.json), the rows of checkpoint_results.jsonl and run_info.yaml's checkpoint
+summary. Prints the copy and the command that continues it, `bin/queue resume <copy> <k+1>`,
+which runs checkpoint k+1 alone so it can be checked for a strict solve before k+2 is queued;
+--queue runs that command. The kept checkpoints must be spec-identical under vN: keep only
+checkpoints whose spec files vN leaves unchanged. Refuses an existing destination and a k beyond
+the run's finished checkpoints. First done by hand for xjq v3 on 2026-09-09.
+"""
+import argparse, json, pathlib, re, shutil, subprocess, sys
+import yaml
+
+HERE = pathlib.Path(__file__).resolve().parent
+ROOT = HERE.parent
+SPEC_SUFFIX = re.compile(r"-spec(v\d+)$")
+
+
+def forked_name(parent_name, spec):
+    """The run family name for spec vN: the -specvN suffix replaced, or added."""
+    base = SPEC_SUFFIX.sub("", parent_name)
+    return f"{base}-spec{spec}"
+
+
+def the_problem(run_dir):
+    problems = yaml.safe_load((run_dir / "config.yaml").read_text())["problems"]
+    if len(problems) != 1:
+        raise SystemExit(f"fork-run: {run_dir.name} lists {len(problems)} problems; one per run")
+    return problems[0]
+
+
+def finished_checkpoints(problem_dir):
+    """Checkpoint numbers that have an evaluation, in order."""
+    return sorted(int(p.name.split("_")[1]) for p in problem_dir.glob("checkpoint_*") if (p / "evaluation.json").exists())
+
+
+def fork(run_dir, spec, keep):
+    """Copy run_dir for spec vN with checkpoints 1..keep; return the copy."""
+    run_dir = run_dir.resolve()
+    problem = the_problem(run_dir)
+    if not re.fullmatch(r"v[1-9]\d*", spec):
+        raise SystemExit(f"fork-run: --spec takes a patched version such as v3, not {spec}")
+    spec_root = ROOT / "specs" / problem / spec / "problems"
+    if not (spec_root / problem).is_dir():
+        raise SystemExit(f"fork-run: no built spec at {spec_root / problem}; run bin/spec-patch {problem} {spec}")
+    done = finished_checkpoints(run_dir / problem)
+    if keep < 1 or keep not in done:
+        raise SystemExit(f"fork-run: --keep {keep} is not a finished checkpoint of {run_dir.name} (finished: {done})")
+    dst = run_dir.parent.parent / forked_name(run_dir.parent.name, spec) / run_dir.name
+    if dst.exists():
+        raise SystemExit(f"fork-run: {dst} exists; remove it first if it is not a run you want")
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copytree(run_dir, dst, symlinks=True)
+    for path in (dst / problem).glob("checkpoint_*"):
+        if int(path.name.split("_")[1]) > keep:
+            shutil.rmtree(path)
+    rename = lambda text: text.replace(run_dir.parent.name, dst.parent.name)
+    (dst / "config.yaml").write_text(rename((dst / "config.yaml").read_text()))
+    (dst / "problem_catalog.json").write_text(json.dumps({"version": "env-override", "commit": str(spec_root)}))
+    rows = [json.loads(line) for line in (dst / "checkpoint_results.jsonl").read_text().splitlines() if line.strip()]
+    kept = [row for row in rows if int(row["checkpoint"].split("_")[1]) <= keep]
+    (dst / "checkpoint_results.jsonl").write_text("".join(rename(json.dumps(row)) + "\n" for row in kept))
+    info_path = dst / problem / "run_info.yaml"
+    info = yaml.safe_load(info_path.read_text())
+    states = info.get("summary", {}).get("checkpoints", {})
+    for name in list(states):
+        if int(name.split("_")[1]) > keep:
+            del states[name]
+    info_path.write_text(yaml.safe_dump(info, sort_keys=False))
+    return dst
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument("run_dir", type=pathlib.Path)
+    parser.add_argument("--spec", required=True, help="spec version the copy runs on, such as v5")
+    parser.add_argument("--keep", required=True, type=int, help="last checkpoint to keep")
+    parser.add_argument("--queue", action="store_true", help="enqueue bin/queue resume <copy> <keep+1>")
+    args = parser.parse_args(argv)
+    dst = fork(args.run_dir, args.spec, args.keep)
+    print(dst)
+    command = [str(HERE / "queue"), "resume", str(dst), str(args.keep + 1)]
+    if args.queue:
+        subprocess.run(command, check=True)
+    else:
+        print("continue with: " + " ".join(command))
+
+
+if __name__ == "__main__":
+    main()

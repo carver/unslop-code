@@ -78,10 +78,11 @@ split means the wording still leans on the reader. The two v2 sentences went in 
 
 One checkpoint per scb invocation; halts on the first checkpoint with any failing test.
 Done when the driver prints DONE, or halted with the failing tests, which go back to step 1.
-A sentence whose checkpoint is late can be tried for a few dollars first: copy the last run's
-dir to a `-specvN`-named dir, delete the checkpoints from that one on, point the copy's
-`config.yaml` and `problem_catalog.json` at the new build, drop their rows from
-`checkpoint_results.jsonl`, and `bin/queue resume` the copy (xjq v3, 2026-09-09).
+A sentence whose checkpoint is late can be tried for a few dollars first:
+`bin/fork-run <last_run_dir> --spec vN --keep <k>` copies the run with checkpoints 1..k kept
+and pointed at vN (k is the last checkpoint whose spec vN leaves unchanged), then
+`bin/queue resume <copy> <k+1>` runs checkpoint k+1 alone; queue k+2 once it is strict
+(xjq v3 2026-09-09 by hand, file_merger v5 2026-09-10).
 
 ## Reference
 

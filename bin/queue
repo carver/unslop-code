@@ -4,9 +4,10 @@
     bin/queue add <run-config.yaml> [n_checkpoints]   enqueue `scb-extend --new` for the config
     bin/queue                                          status (pueue status)
     bin/queue log [id]                                 a job's output (pueue log)
-    bin/queue resume <run_dir>                         continue a run that stopped between checkpoints
+    bin/queue resume <run_dir> [n] [--problem NAME]    continue a run that stopped between checkpoints
                                                        (scb-extend's resume mode; the run's problem and
-                                                       checkpoint count are read from the run)
+                                                       checkpoint count are read from the run; a run
+                                                       with several problems names one with --problem)
     bin/queue add --next <config.yaml> [n_checkpoints]  the same, but ahead of every queued job
                                                        (pueue priority one above the highest queued)
     bin/queue move <id> before <other-id>              reorder queued jobs so <id> runs right before

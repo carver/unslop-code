@@ -107,3 +107,27 @@ def test_resume_job_keeps_the_versioned_root_the_run_read(tmp_path):
     (run / "problem_catalog.json").write_text('{"version": "env-override", "commit": "%s"}' % root)
     label, argv, env = q.resume_job(run)
     assert argv[1:] == [str(run), "datagate", "7"] and env == {"SCBENCH_PROBLEMS_PATH": str(root)}
+
+
+def test_strict_job_runs_the_driver_with_the_configs_root(tmp_path, monkeypatch):
+    cfg = write_config(tmp_path, "min12-ABDJKMN-specv2", patched=True)
+    monkeypatch.setattr(q, "ROOT", tmp_path)
+    (tmp_path / "problems" / "datagate").mkdir(parents=True)
+    for i in range(1, 8):
+        (tmp_path / "problems" / "datagate" / f"checkpoint_{i}.md").write_text("x")
+    label, argv, env = q.strict_job(cfg)
+    assert label == "min12-ABDJKMN-specv2-datagate-strict"
+    assert argv == [str(tmp_path / "bin" / "scb-strict"), str(cfg), "datagate", "7"]
+    assert env == {"SCBENCH_PROBLEMS_PATH": str(tmp_path / "problems")}
+
+
+def test_added_id_is_read_from_pueues_reply_even_with_a_warning_after_it():
+    assert q.added_id("New task added (id 129).\nThe group of this task is currently paused!\n") == 129
+    assert q.added_id("New task added (id 7).") == 7
+
+
+def test_solo_plan_stashes_every_other_queued_job():
+    tasks = {"1": {"status": "Running"}, "2": {"status": {"Queued": {}}}, "3": {"status": {"Queued": {}}},
+             "4": {"status": {"Stashed": {}}}, "5": {"status": {"Done": {}}}}
+    assert q.solo_plan(tasks, 3) == [2]
+    assert q.solo_plan(tasks, 2) == [3]

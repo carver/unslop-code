@@ -27,6 +27,8 @@ state is not "ran" is set back to "ran", with the old file kept as run_info.yaml
 Then `scb run --resume --dry-run` previews the resume, and the driver halts (exit 5) if the
 preview would delete a finished checkpoint, whatever the reason. Every finished checkpoint
 is also tarred once into outputs/backups/ before the next resume touches the run.
+A run with several problems is resumed one problem at a time: the child scb gets
+SCB_RESUME_ONLY_PROBLEM=<problem>, which patches/resume-only-problem.patch teaches it to honour.
 Progress lines start with EXTEND: so a log watcher can filter on them.
 Exit codes:
     0 all checkpoints ran
@@ -180,6 +182,15 @@ def launcher():
     return pathlib.Path(os.environ.get("SCB_LAUNCHER", str(HERE / "scb")))
 
 
+def resume_command(run_dir, problem, n):
+    """The scb invocation that runs checkpoint n of one problem of a run, and its environment.
+    SCB_RESUME_ONLY_PROBLEM narrows the resume to that problem (patches/resume-only-problem.patch);
+    upstream's own --problem merges into the run's list on resume, so without the variable a
+    multi-problem run would resume every problem."""
+    argv = [launcher(), "run", "--resume", str(run_dir), "--problem", problem, "--no-live-progress", "--stop-after-checkpoint", str(n)]
+    return argv, {**os.environ, "SCB_RESUME_ONLY_PROBLEM": problem}
+
+
 def start_run(config):
     """Run checkpoint 1 of a fresh run from a config; stream scb's output and return (run_dir, returncode)."""
     proc = subprocess.Popen([launcher(), "run", "--config", str(config), "--no-live-progress", "--stop-after-checkpoint", "1"],
@@ -299,7 +310,6 @@ def main():
     if fresh:
         args = args[1:]
     target = pathlib.Path(args[0]).resolve(); problem = args[1]; total = int(args[2])
-    os.environ["SCB_RESUME_ONLY_PROBLEM"] = problem
     records = []
     prior = prior_costs(problem)
     log = None
@@ -357,15 +367,15 @@ def main():
         for name in backup_finished(run_dir, problem, total):
             say(f"backed up {name} to {backup_dir()}")
         reading = wait_for_room(n)
-        resume = [launcher(), "run", "--resume", str(run_dir), "--problem", problem, "--no-live-progress", "--stop-after-checkpoint", str(n)]
-        preview = subprocess.run(resume + ["--dry-run"], capture_output=True, text=True)
+        resume, env = resume_command(run_dir, problem, n)
+        preview = subprocess.run(resume + ["--dry-run"], env=env, capture_output=True, text=True)
         doomed = [d for d in deletions(preview.stdout) if finished_dir(d)]
         if preview.returncode != 0 or doomed:
             say(f"resume preview would delete finished {[d.name for d in doomed]} (exit {preview.returncode}); halting")
             print(preview.stdout[-2000:], preview.stderr[-1000:], sep="\n", flush=True)
             sys.exit(5)
         say(f"starting checkpoint_{n} (window {pct(reading)})")
-        proc = subprocess.run(resume)
+        proc = subprocess.run(resume, env=env)
         after = record(n, "after")
         if proc.returncode != 0:
             say(f"scb exited {proc.returncode} on checkpoint_{n}")

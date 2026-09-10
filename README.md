@@ -43,6 +43,7 @@ and the sandbox-local venv):
     bin/compare-runs <run_dir>...            # runs side by side: scores, cost, quality, miss matrix
     bin/registry-scores <run_dir> [--grep X] # a run's AMBIGUITIES.md Differs scores: spread, top entries,
                                              # the Choice and Differs text of matching entries
+    python3 -m pytest                        # the bin tools' tests; GitHub Actions runs them on every PR
     bin/fork-run <run_dir> --spec vN --keep k  # copy a run keeping checkpoints 1..k, pointed at spec vN;
                                              # then bin/queue resume <copy> k+1 re-runs only the later ones
     bin/queue-watch                          # event stream for a Monitor: checkpoint results, halts, DONE

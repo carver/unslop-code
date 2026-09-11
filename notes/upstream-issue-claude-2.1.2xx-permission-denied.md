@@ -1,31 +1,22 @@
-# ClaudeCodeAgent crashes on Claude Code 2.1.251's `permission_denied` stream event
+## tl;dr
 
-Claude Code 2.1.251 emits a `system` / `permission_denied` event whose `message` field is a
-string. `ClaudeCodeAgent._run()` assumes `message` is a dict and raises
-`AttributeError: 'str' object has no attribute 'get'`, which fails the whole problem. Claude
-Code 2.1.44, the version on the leaderboard, never emits this event, so the crash only shows
-up on current CLI versions. Fix and test on branch `claude-2.1.2xx-compatibility`.
+If Claude Code v2.1.251 interrupts a tool call with a `permission_denied` event, it crashes `ClaudeCodeAgent` with an `AttributeError`.
+
+I don't know exactly which version this started, but I confirmed that it is not reproducible in v2.1.44
+
+Disclosure: Fable prepared the below text (and linked PR). I made hand-edits for clarity.
 
 ## What I tried
 
-Ran the benchmark with `version=2.1.251` (Opus 5 and Fable 5.1, `just-solve` prompt,
-`bypassPermissions`, harness at `06b5c06`). On the first Opus 5 run, file_merger died at
-checkpoint 2 with the traceback below. The agent had asked Bash to run
+I ran the benchmark with CC `version=2.1.251` (Opus 5, `just-solve` prompt,
+`bypassPermissions`, harness at `06b5c06`). On the first Opus 5 run, the file_merger problem died at
+checkpoint 2 with the traceback below.
+
+The agent had asked Bash to run
 `mkdir -p /tmp/x && cd /tmp/x && rm -rf *`, the CLI's safety check blocked it, and the
 harness crashed on the event the CLI streamed to explain the block.
 
-The same event sits in three other saved runs on 2.1.251 (sith checkpoint 4 and file_merger
-checkpoint 4 on Opus 5, file_merger checkpoint 2 on Fable 5.1). Every one of them is the
-same shape: a `cd` followed by an `rm -rf *`, blocked with `decision_reason_type:
-"safetyCheck"`. This is a habit the models have, so any 2.1.2xx run that lasts long enough
-hits it.
-
-## What I expected
-
-The harness records the event as a step, the agent sees the tool error in its `tool_result`
-and moves on, and the checkpoint completes. That is what happens on 2.1.44, where the CLI
-blocks the same command but reports it only inside the `tool_result` and in the result
-payload's `permission_denials` list.
+This isn't a one-off, it happens repeatedly. The models like this temp deletion maneuver.
 
 ## What actually happened
 
@@ -52,20 +43,34 @@ content = payload.get("message", {}).get("content", {})
 if "text" in content:
 ```
 
-A side effect worth knowing about while you debug this: a checkpoint whose `_run()` raises
+An unfortunate side effect of this crash is: when a checkpoint raises during `_run()`, it
 saves the previous checkpoint's `stdout.jsonl`, because `final_result` is only set by a
 finished `_run()` and nothing clears it. So the crashed checkpoint's own stream is gone and
-the cause looks like a mystery. That is a separate issue and I have a separate branch for
-it (`claude-code-stdout-keeps-stream`).
+the cause looks like a mystery. That is a separate issue that I can open, but don't want to flood you. :)
+
+## What I expected
+
+The harness records the event as a step, the agent sees the tool error in its `tool_result`
+and moves on, and the checkpoint completes. That's the behavior on 2.1.44. The CLI
+blocks the same command but reports it only inside the `tool_result` and in the result
+payload's `permission_denials` list.
+
+## What's going on?
+
+Claude Code 2.1.251 emits a `system` / `permission_denied` event whose `message` field is a
+string. `ClaudeCodeAgent._run()` assumes `message` is a dict and raises
+`AttributeError: 'str' object has no attribute 'get'`, which fails the whole problem. Claude
+Code 2.1.44, the version on the leaderboard, never emits this event, so the crash only shows
+up on current CLI versions.
 
 ## How to reproduce
 
-Four ways, from cheapest to most faithful. All were run on 2026-09-10 and 2026-09-11 against
+Four levels of  reproduction, from cheapest to most faithful. I ran all four yesterday, against
 main at `06b5c06`.
 
 ### 1. Unit test (no network)
 
-Branch `claude-2.1.2xx-compatibility` adds `TestStreamMessageShapes` to
+The linked PR adds `TestStreamMessageShapes` to
 `tests/agent_runner/agents/claude_code_agent_test.py`. The first case is the real event above.
 
 ```
@@ -81,8 +86,8 @@ uv run pytest tests/agent_runner/agents/claude_code_agent_test.py -k TestStreamM
 
 I captured one `claude -p` run per CLI version, each with the same prompt, and fed the
 `stdout.jsonl` through `_run()` with `stream_cli_command` stubbed to yield the file's lines.
-Captures attached: `2.1.251-bypass.stdout.jsonl`, `2.1.44-bypass.stdout.jsonl`,
-`2.1.44-default.stdout.jsonl`, plus the `replay_stream.py` stub.
+Captured like: [2.1.251-bypass.stdout.json](https://github.com/user-attachments/files/32125226/2.1.251-bypass.stdout.json) (it's really a `jsonl` file, but github won't let me upload that), `2.1.44-bypass.stdout.jsonl`,
+`2.1.44-default.stdout.jsonl`, plus the [replay_stream.py](https://github.com/user-attachments/files/32125173/replay_stream.py) stub.
 
 ```
 PYTHONPATH=<checkout>/src uv run python replay_stream.py <capture>
@@ -167,11 +172,10 @@ Every capture's `init` line confirms it came from the version and mode it claims
 
 ## The fix
 
-Branch `claude-2.1.2xx-compatibility`, two commits on top of `06b5c06`:
+PR with two commits on top of `06b5c06`:
 
 - `0b34d16` treats a non-dict `message` as empty and only looks for `"text"` in a dict
   `content`. Eight lines in `agent.py`.
-- `ff3cfcf` adds the six-case test above.
+- `ff3cfcf` adds the six-case test from Reproduction 1 above.
 
-I will open a PR from it. The `stdout.jsonl` overwrite that hid this for twelve days is on
-`claude-code-stdout-keeps-stream` and I will file that separately.
+I am about to open a PR.

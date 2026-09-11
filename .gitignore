@@ -1,5 +1,6 @@
 outputs/
 slop-code-bench/
+harness/
 __pycache__/
 .pytest_cache/
 problems

@@ -12,8 +12,8 @@ for scoring changes, such as a problem config that starts including prior tests.
 import json, os, pathlib, shutil, subprocess, sys, tempfile
 HERE = pathlib.Path(__file__).resolve().parent
 ROOT = HERE.parent
-sys.path.insert(0, str(ROOT / "slop-code-bench" / "src"))
-VENV_PYTHON = pathlib.Path(os.environ.get("UV_PROJECT_ENVIRONMENT", pathlib.Path.home() / ".venvs" / "slop-code-bench")) / "bin" / "python"
+sys.path.insert(0, str(ROOT / "harness" / "src"))
+VENV_PYTHON = pathlib.Path(os.environ.get("UV_PROJECT_ENVIRONMENT", pathlib.Path.home() / ".venvs" / "scbench-harness")) / "bin" / "python"
 
 
 def harness_available():
@@ -30,7 +30,7 @@ def reexec_in_venv():
     if VENV_PYTHON.exists() and pathlib.Path(sys.executable).resolve() != VENV_PYTHON.resolve():
         os.execv(str(VENV_PYTHON), [str(VENV_PYTHON), *sys.argv])
     sys.exit(f"the harness is not importable and no venv python at {VENV_PYTHON}")
-ENV = ROOT / "slop-code-bench" / "configs" / "environments" / "docker-python3.12-uv.yaml"
+ENV = ROOT / "harness" / "configs" / "environments" / "docker-python3.12-uv.yaml"
 
 
 def evaluate(run_dir, problem, checkpoint, out_dir):

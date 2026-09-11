@@ -79,8 +79,12 @@ Project skills (`.claude/skills/`, all user-invoked) tie those together:
     /prompt-ladder           smallest prompt that strict-solves a patched spec, and where
                              code quality drops off
 
-The benchmark clone in `slop-code-bench/` carries six source patches; after
-any pull, re-apply them in this order:
+Runs use the harness checkout at `harness/`: a clone of slop-code-bench pinned to
+`06b5c06` with six source patches applied, built with its venv by `python3 install.py`
+(idempotent; re-run it after a sandbox recreate). `slop-code-bench/` is the development
+clone for upstream work and carries no obligations; on 2026-09-11 a branch switch there
+dropped the patches under a running queue, which is why runs read a checkout of their own.
+The patches, in the order install.py applies them:
 
 - `patches/claude-code-stream-parser-string-message.patch`
 - `patches/stop-after-checkpoint.patch` — adds `--stop-after-checkpoint N` to

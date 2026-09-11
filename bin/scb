@@ -36,10 +36,12 @@ case "$CLAUDE_CODE_OAUTH_TOKEN" in
   *) echo "scb: token in $token_file does not look like a Claude OAuth token (sk-ant-oat01-...)" >&2; exit 2 ;;
 esac
 
-# Sandbox-local venv, outside the host-mounted tree. The project dir is mounted from
-# the host, and a `uv run` on the host rebuilds slop-code-bench/.venv for the host's
-# Python, which wiped it under a running sandbox worker on 2026-08-30.
-export UV_PROJECT_ENVIRONMENT="${UV_PROJECT_ENVIRONMENT:-$HOME/.venvs/slop-code-bench}"
+# Runs read the pinned, patched checkout at harness/ (built by install.py), not the
+# development clone at slop-code-bench/: a branch switch there dropped the source patches
+# under a running queue on 2026-09-11. The venv is sandbox-local, outside the host-mounted
+# tree: a `uv run` on the host rebuilds a mounted .venv for the host's Python, which wiped
+# one under a running sandbox worker on 2026-08-30.
+export UV_PROJECT_ENVIRONMENT="${UV_PROJECT_ENVIRONMENT:-$HOME/.venvs/scbench-harness}"
 
 # Container commands outside evaluation (notably the env's resume_commands) run as
 # get_actual_user(), which falls back to root when HUID/HGID are unset. A root-owned
@@ -48,4 +50,4 @@ export UV_PROJECT_ENVIRONMENT="${UV_PROJECT_ENVIRONMENT:-$HOME/.venvs/slop-code-
 # --resume). The agent itself already runs as 1000:1000; make everything match.
 export HUID="${HUID:-$(id -u)}"
 export HGID="${HGID:-$(id -g)}"
-exec uv run --project "$here/slop-code-bench" slop-code "$@"
+exec uv run --project "$here/harness" slop-code "$@"

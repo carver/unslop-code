@@ -20,6 +20,7 @@ The control is the dev6 sweep's just-solve run (`notes/dev6-opus5.md`).
 | min12-ABDJKMN on v5 (clone, halted) | `…min12-ABDJKMN-specv5/20260910T1126` | the v4 run forked after checkpoint 2 (bin/fork-run), checkpoints 3 and 4 re-run on spec v5 | 46/46, 86/86, 104/104, 146/147 | checkpoints 1-2 are the v4 run's; 3 strict on v5 (partition sentence exercised at 4: partition_by_map_value passed, one for one); halted after 4 on test_error_cases[errors/map_lookup_no_quotes]: `--key attrs[country]` (no quotes) must fail; the snapshot accepts an unquoted bracket key as a map lookup (registry T58 "uniform steps", Risk 25) and exits 0. v3 and v4 rejected it (exit 2 and 3; the harness checks only non-zero). $20 for the two checkpoints, 39 min |
 | min12-ABDJKMN on v6 (fork, strict) | `…min12-ABDJKMN-specv6/20260910T1126` | the v5 clone forked after checkpoint 3 (bin/fork-run), checkpoint 4 re-run on spec v6 | 46/46, 86/86, 104/104, 147/147 | checkpoints 1-2 are the v4 run's, 3 the v5 clone's, 4 on v6: map_lookup_no_quotes passed ("quotes are required" one for one) and nothing regressed. First 147/147 on file_merger, assembled from three spec versions; not yet one fresh run. $21 ladder total, 27 min for checkpoint 4 |
 | min12-ABDJKMN on v6, fresh (strict) | `…min12-ABDJKMN-specv6/20260910T1510` | min12-ABDJKMN on spec v6 under bin/scb-strict, a fresh run from checkpoint 1; first of two | 46/46, 86/86, 104/104, 147/147 | complete 2026-09-10, 0 misses: the first fresh full strict run on file_merger, on the eight-patch v6 spec. Every sentence of v1-v6 held in one run. $22, 73 min |
+| just-solve on v6 | `…just-solve-specv6/20260910T1709` | the bare benchmark prompt on the eight-patch spec v6; first of two (checkpoints 1-3 before the harness outage, 4 after it, on the harness checkout) | 45/46, 84/86, 102/104, 142/147 | complete 2026-09-11; 5 misses against the v0 control's 31: bool_nonstandard_strict (ckpt 1, `1`/`true` mixed column), tsv_whitespace_values (ckpt 2), and at checkpoint 4 correct_aliases case1 and case2 plus nested_type_alias_with_parquet. The control's 17 checkpoint-2 misses (parquet, TSV, mixed inference) are gone; only two checkpoint-4 misses are shared with it. $18, 73 min |
 
 ## Test failure summaries
 
@@ -188,3 +189,14 @@ preview (exit 5); job 146 never started a checkpoint (exit 4). The run dir stays
 Recovered 02:06Z 2026-09-11: runs now read a pinned, patched checkout at `harness/` built by
 `python3 install.py` (48dc994), so the development clone can move freely. Job 147 resumes the
 partial just-solve run at checkpoint 4; job 148 is the second just-solve run, queued behind it.
+
+## just-solve on v6 (2026-09-11)
+
+The spec's effect on the bare prompt. First run (job 145 for checkpoints 1-3, job 147 for
+checkpoint 4 after the harness outage): 45/46, 84/86, 102/104, 142/147, $18, 73 min, against the
+v0 control's 116/147. Five misses: bool_nonstandard_strict at checkpoint 1 (a column of `1` and
+`true` must infer bool; v2's casting-rule sentence did not settle it for this prompt),
+tsv_whitespace_values at checkpoint 2, and three alias cases at checkpoint 4 (correct_aliases
+case1 and case2, nested_type_alias_with_parquet). None of the control's seventeen checkpoint-2
+misses recur; two of its checkpoint-4 misses do. So the spec alone moves just-solve from 116 to
+142, and the min12 prompt on the same spec takes the last five.

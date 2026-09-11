@@ -21,6 +21,7 @@ The control is the dev6 sweep's just-solve run (`notes/dev6-opus5.md`).
 | min12-ABDJKMN on v6 (fork, strict) | `…min12-ABDJKMN-specv6/20260910T1126` | the v5 clone forked after checkpoint 3 (bin/fork-run), checkpoint 4 re-run on spec v6 | 46/46, 86/86, 104/104, 147/147 | checkpoints 1-2 are the v4 run's, 3 the v5 clone's, 4 on v6: map_lookup_no_quotes passed ("quotes are required" one for one) and nothing regressed. First 147/147 on file_merger, assembled from three spec versions; not yet one fresh run. $21 ladder total, 27 min for checkpoint 4 |
 | min12-ABDJKMN on v6, fresh (strict) | `…min12-ABDJKMN-specv6/20260910T1510` | min12-ABDJKMN on spec v6 under bin/scb-strict, a fresh run from checkpoint 1; first of two | 46/46, 86/86, 104/104, 147/147 | complete 2026-09-10, 0 misses: the first fresh full strict run on file_merger, on the eight-patch v6 spec. Every sentence of v1-v6 held in one run. $22, 73 min |
 | just-solve on v6 | `…just-solve-specv6/20260910T1709` | the bare benchmark prompt on the eight-patch spec v6; first of two (checkpoints 1-3 before the harness outage, 4 after it, on the harness checkout) | 45/46, 84/86, 102/104, 142/147 | complete 2026-09-11; 5 misses against the v0 control's 31: bool_nonstandard_strict (ckpt 1, `1`/`true` mixed column), tsv_whitespace_values (ckpt 2), and at checkpoint 4 correct_aliases case1 and case2 plus nested_type_alias_with_parquet. The control's 17 checkpoint-2 misses (parquet, TSV, mixed inference) are gone; only two checkpoint-4 misses are shared with it. $18, 73 min |
+| just-solve on v6, repeat | `…just-solve-specv6/20260910T1926` | same config, second of two | 46/46, 85/86, 103/104, 145/147 | complete 2026-09-11; 2 misses: tsv_whitespace_values (ckpt 2, both runs) and partition_by_map_value (ckpt 4): this snapshot percent-encodes the column name too, `attrs%5B%22region%22%5D=east`, the reading v5's "Values use percent-encoding" was written against. Pair: 142 and 145 against the control's 116. $14, 53 min |
 
 ## Test failure summaries
 
@@ -200,3 +201,10 @@ tsv_whitespace_values at checkpoint 2, and three alias cases at checkpoint 4 (co
 case1 and case2, nested_type_alias_with_parquet). None of the control's seventeen checkpoint-2
 misses recur; two of its checkpoint-4 misses do. So the spec alone moves just-solve from 116 to
 142, and the min12 prompt on the same spec takes the last five.
+Second run (job 148): 46/46, 85/86, 103/104, 145/147, $14, 53 min. Two misses:
+tsv_whitespace_values again (the one case both just-solve runs share; min12 passes it), and
+partition_by_map_value, where this snapshot percent-encodes the column name along with the
+value, `out/attrs%5B%22region%22%5D=east/`, the reading v5's sentence "Values use
+percent-encoding of UTF-8 bytes..." was written to exclude. min12-ABDJKMN read it as intended
+twice (the v5 clone and the fresh v6 run); the bare prompt read past it once in two. Pair:
+142 and 145 on v6 against the control's 116 on v0, $18 and $14. The queue is empty.

@@ -1,0 +1,58 @@
+#!/usr/bin/env python3
+"""One test's outcome in every run of a problem, oldest first: which runs failed it, which passed.
+    bin/test-history <problem> <substring-of-test-id> [--outputs DIR]
+Reads each run's <problem>/checkpoint_N/evaluation.json under outputs/; a run that never reached
+the test's checkpoint shows as "-". Made for the question every spec pitch asks: is this miss a
+coin (some runs pass, some fail) or a reading every run shares.
+"""
+import argparse, json, pathlib
+
+ROOT = pathlib.Path(__file__).resolve().parent.parent
+
+
+def outcomes(evaluation):
+    """{test id: 'pass'|'FAIL'} over every group of one checkpoint's evaluation."""
+    result = {}
+    for group in evaluation.get("tests", {}).values():
+        for name in group.get("passed", []):
+            result[name] = "pass"
+        for name in group.get("failed", []):
+            result[name] = "FAIL"
+    return result
+
+
+def history(problem, needle, outputs):
+    """[(run label, checkpoint, {test id: outcome})] for tests matching needle, runs by timestamp."""
+    rows = []
+    for run in sorted(outputs.glob(f"*/*/*/{problem}"), key=lambda p: p.parent.name):  # outputs/<group>/<family>/<stamp>/<problem>
+        hits = {}
+        checkpoint = None
+        for ev in sorted(run.glob("checkpoint_*/evaluation.json")):
+            for test, state in outcomes(json.loads(ev.read_text())).items():
+                if needle in test:
+                    hits[test] = state
+                    checkpoint = ev.parent.name
+        label = f"{run.parent.parent.name}/{run.parent.name}"
+        rows.append((label, checkpoint, hits))
+    return rows
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument("problem")
+    parser.add_argument("needle", help="substring of the pytest id, e.g. alias_cycle")
+    parser.add_argument("--outputs", type=pathlib.Path, default=ROOT / "outputs")
+    args = parser.parse_args(argv)
+    rows = history(args.problem, args.needle, args.outputs)
+    tests = sorted({t for _, _, hits in rows for t in hits})
+    if not tests:
+        raise SystemExit(f"test-history: no test matching {args.needle!r} in any run of {args.problem}")
+    for test in tests:
+        states = [hits.get(test, "-") for _, _, hits in rows]
+        print(f"{test}: {states.count('pass')} pass, {states.count('FAIL')} fail, {states.count('-')} not reached")
+        for (label, checkpoint, hits), state in zip(rows, states):
+            print(f"  {state:4} {label}")
+
+
+if __name__ == "__main__":
+    main()

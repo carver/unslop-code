@@ -47,6 +47,18 @@ copy of its rule).
 
 Pause and succinctly summarize the proposed changes for me to approve. We might discuss in several rounds. Then when I approve all patches, continue.
 
+## 2b. Pitch, then wait
+
+Before any patch: `bin/test-history <problem> <test>` for every miss, so the pitch says whether
+it is a coin (some runs pass) or a shared reading, and which runs registered it (`bin/registry-scores
+<run> --grep <word>` on each, with the entry id and Risk). The pitch carries the verbatim spec
+line, a registry-style entry (alternatives, the tests' reading with the fixture and the reference's
+code, why it is open), the runs' choices, and one or two candidate sentences with the
+over-correction to avoid (v1's "JSONL does not outrank CSV" was read as CSV outranking JSONL).
+Then stop. The user picks the wording, often shorter, and may skip the judges; draft the patch
+into `specs/drafts/` uncommitted when asked ("draft it, I'll edit"), and read it back with
+`refresh-mount` before building the folder, since they edit and commit it on the host.
+
 ## 3. Judge, edit, repeat
 
     SCBENCH_PROBLEMS_PATH=$PWD/specs/<problem>/vN/problems bin/judge-ambiguities run <run_dir> \
@@ -79,10 +91,12 @@ split means the wording still leans on the reader. The two v2 sentences went in 
 One checkpoint per scb invocation; halts on the first checkpoint with any failing test.
 Done when the driver prints DONE, or halted with the failing tests, which go back to step 1.
 A sentence whose checkpoint is late can be tried for a few dollars first:
-`bin/fork-run <last_run_dir> --spec vN --keep <k>` copies the run with checkpoints 1..k kept
-and pointed at vN (k is the last checkpoint whose spec vN leaves unchanged), then
-`bin/queue resume <copy> <k+1>` runs checkpoint k+1 alone; queue k+2 once it is strict
-(xjq v3 2026-09-09 by hand, file_merger v5 2026-09-10).
+`bin/fork-run <last_run_dir> --spec vN --keep <k> --queue` copies the run with checkpoints
+1..k kept and pointed at vN (k is the last checkpoint whose spec vN leaves unchanged) and
+queues `bin/queue resume-strict <copy>`, which runs the rest one at a time and halts at the
+first non-strict one (file_merger v5 and v6, 2026-09-10: a fork chain v4 -> v5 -> v6 reached
+147/147 for the cost of three checkpoints). A stitched 147 is not a fresh run: the twice bar
+still wants a full run from checkpoint 1 on the final version.
 
 ## Reference
 

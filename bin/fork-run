@@ -4,8 +4,8 @@
 Copies the run to a sibling directory named for spec vN (same timestamp), keeps checkpoints 1..k,
 removes the rest, and points the copy at vN: config.yaml paths, the catalog record
 (problem_catalog.json), the rows of checkpoint_results.jsonl and run_info.yaml's checkpoint
-summary. Prints the copy and the command that continues it, `bin/queue resume <copy> <k+1>`,
-which runs checkpoint k+1 alone so it can be checked for a strict solve before k+2 is queued;
+summary. Prints the copy and the command that continues it, `bin/queue resume-strict <copy>`, which
+runs the remaining checkpoints one at a time and halts at the first that is not strict;
 --queue runs that command. The kept checkpoints must be spec-identical under vN: keep only
 checkpoints whose spec files vN leaves unchanged. Refuses an existing destination and a k beyond
 the run's finished checkpoints. First done by hand for xjq v3 on 2026-09-09.
@@ -77,11 +77,11 @@ def main(argv=None):
     parser.add_argument("run_dir", type=pathlib.Path)
     parser.add_argument("--spec", required=True, help="spec version the copy runs on, such as v5")
     parser.add_argument("--keep", required=True, type=int, help="last checkpoint to keep")
-    parser.add_argument("--queue", action="store_true", help="enqueue bin/queue resume <copy> <keep+1>")
+    parser.add_argument("--queue", action="store_true", help="enqueue bin/queue resume-strict <copy>")
     args = parser.parse_args(argv)
     dst = fork(args.run_dir, args.spec, args.keep)
     print(dst)
-    command = [str(HERE / "queue"), "resume", str(dst), str(args.keep + 1)]
+    command = [str(HERE / "queue"), "resume-strict", str(dst)]
     if args.queue:
         subprocess.run(command, check=True)
     else:

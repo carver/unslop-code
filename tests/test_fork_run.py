@@ -85,4 +85,4 @@ def test_main_prints_the_copy_and_the_resume_command(tmp_path, capsys):
     mod.main([str(run), "--spec", "v5", "--keep", "2"])
     out = capsys.readouterr().out.splitlines()
     assert out[0].endswith("opus-5_high_min12-specv5/20260910T1126")
-    assert out[1] == f"continue with: {mod.HERE / 'queue'} resume {out[0]} 3"
+    assert out[1] == f"continue with: {mod.HERE / 'queue'} resume-strict {out[0]}"

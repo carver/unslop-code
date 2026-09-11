@@ -186,3 +186,11 @@ def test_resume_rejects_a_problem_the_run_does_not_have(tmp_path):
     run, _ = multi_problem_run(tmp_path)
     with pytest.raises(SystemExit, match="datagate is not in this run"):
         q.resume_job(run, problem="datagate")
+
+
+def test_resume_strict_job_drives_scb_strict_from_the_same_plan(tmp_path):
+    run, root = multi_problem_run(tmp_path)
+    label, argv, env = q.resume_strict_job(run, problem="xjq")
+    assert label.endswith("-xjq-resume-from-4-strict")
+    assert argv == [str(q.ROOT / "bin" / "scb-strict"), "--resume", str(run), "xjq", "5"]
+    assert env["SCBENCH_PROBLEMS_PATH"] == str(root)

@@ -15,6 +15,8 @@
     bin/queue add-strict <run-config.yaml> [n_checkpoints]  enqueue `scb-strict` for the config: one
                                                        checkpoint per scb call, halting at the first
                                                        that is not a strict solve
+    bin/queue resume-strict <run_dir> [n] [--problem NAME]  the same through bin/scb-strict: each later
+                                                       checkpoint runs only if the one before was strict
     bin/queue solo <id>                                run one queued job while everything else waits:
                                                        stashes the other queued jobs, starts the group,
                                                        pauses it again with --wait, re-queues the stash.
@@ -155,6 +157,12 @@ def resume_job(run_dir, n=None, problem=None):
     if provider:
         env["SCBENCH_PROBLEMS_PATH"] = str(root)
     return label, [str(ROOT / "bin" / "scb-extend"), str(run_dir), problem, str(n)], env
+
+
+def resume_strict_job(run_dir, n=None, problem=None):
+    """resume_job's plan, driven by bin/scb-strict so a non-strict checkpoint halts the rest."""
+    label, argv, env = resume_job(run_dir, n, problem)
+    return f"{label}-strict", [str(ROOT / "bin" / "scb-strict"), "--resume", *argv[1:]], env
 
 
 def next_priority(tasks):
@@ -311,14 +319,15 @@ def main():
         solo(int(args[1]))
     elif args[:1] == ["move"] and len(args) == 4 and args[2] == "before":
         move_job(int(args[1]), int(args[3]))
-    elif args[:1] == ["resume"]:
+    elif args[:1] in (["resume"], ["resume-strict"]):
         import argparse
-        parser = argparse.ArgumentParser(prog="queue resume")
+        parser = argparse.ArgumentParser(prog=f"queue {args[0]}")
         parser.add_argument("run_dir")
         parser.add_argument("n", nargs="?", type=int)
         parser.add_argument("--problem")
         options = parser.parse_args(args[1:])
-        add_task(*resume_job(options.run_dir, options.n, options.problem))
+        plan = resume_strict_job if args[0] == "resume-strict" else resume_job
+        add_task(*plan(options.run_dir, options.n, options.problem))
     elif args[:1] == ["kill"] and len(args) in (2, 3) and args[3:] == [] and (len(args) == 2 or args[2] == "--keep-paused"):
         kill_job(int(args[1]), keep_paused=len(args) == 3)
     elif not args:

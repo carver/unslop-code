@@ -45,7 +45,9 @@ and the sandbox-local venv):
                                              # the Choice and Differs text of matching entries
     python3 -m pytest                        # the bin tools' tests; GitHub Actions runs them on every PR
     bin/fork-run <run_dir> --spec vN --keep k  # copy a run keeping checkpoints 1..k, pointed at spec vN;
-                                             # then bin/queue resume <copy> k+1 re-runs only the later ones
+                                             # --queue continues it with bin/queue resume-strict <copy>
+    bin/queue resume-strict <run_dir>        # continue a run under bin/scb-strict: halt at the first non-strict checkpoint
+    bin/test-history <problem> <test>        # pass, fail or not reached, in every run of the problem, oldest first
     bin/queue-watch                          # event stream for a Monitor: checkpoint results, halts, DONE
                                              # lines and job status changes across the whole queue
     bin/ledger-row <run_dir>                 # after every run: the ledger row and failure summary to fill in

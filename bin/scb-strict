@@ -2,6 +2,9 @@
 # Run a config one checkpoint at a time; halt at the first checkpoint that is not a strict solve.
 #
 # Usage: bin/scb-strict <run-config.yaml> <problem> <n_checkpoints>
+#        bin/scb-strict --resume <run_dir> <problem> <n_checkpoints>   continue a run (a bin/fork-run copy,
+#                                                                       or one halted between checkpoints)
+#                                                                       from its first unevaluated checkpoint
 #
 # Each checkpoint is its own `scb run` (--stop-after-checkpoint N, then --resume with N+1),
 # so a halt lands between checkpoints and leaves no partial directory. A strict solve means
@@ -11,9 +14,15 @@
 # Progress lines start with STRICT-RUN: so a log watcher can filter on them.
 set -uo pipefail
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-config=$1; problem=$2; total=$3
-run_dir=""
-for n in $(seq 1 "$total"); do
+run_dir=""; first=1
+if [ "${1:-}" = "--resume" ]; then
+  run_dir=$2; problem=$3; total=$4
+  while [ -f "$run_dir/$problem/checkpoint_$first/evaluation.json" ] && [ "$first" -le "$total" ]; do first=$((first + 1)); done
+  echo "STRICT-RUN: resuming $run_dir from checkpoint_$first"
+else
+  config=$1; problem=$2; total=$3
+fi
+for n in $(seq "$first" "$total"); do
   echo "STRICT-RUN: starting checkpoint_$n $(date -u +%H:%M:%SZ)"
   if [ -z "$run_dir" ]; then
     first_log=$(mktemp)

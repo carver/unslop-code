@@ -66,7 +66,11 @@ transcript. Each is PR-shaped as it stands. Two have branches in `slop-code-benc
   check blocks a Bash command such as `cd /tmp/x && rm -rf *`, and that event's `message` is
   a string. Three saved lines show it: dev6-opus5 file_merger ckpt 4 and sith ckpt 4,
   dev6-fable51 file_merger ckpt 2. Replaying one through unpatched `_run()` gives the
-  2026-08-30 traceback. The 2.1.44 CLI has no such event.
+  2026-08-30 traceback. A live probe reproduces it on demand
+  (`notes/evidence/permission-denied-probe-2026-09-10/`). Under the harness launch, the
+  same prompt gets the event from 2.1.251, and unpatched `_run()` crashes on it. 2.1.44
+  streams no such event in bypassPermissions or default mode, and its `cli.js` has no
+  such event type.
 - A crashed checkpoint's `stdout.jsonl`. Branch `claude-code-stdout-keeps-stream`, off main.
   Upstream writes the file from `final_result`, which only a finished `_run()` sets and
   nothing clears, so a checkpoint whose `_run()` raises saves the previous checkpoint's

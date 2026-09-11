@@ -185,3 +185,6 @@ scb no longer knows the flag. Job 145 had run three checkpoints on the patched h
 checkpoint 1 and tsv_whitespace_values from checkpoint 2) and halted at the checkpoint-4
 preview (exit 5); job 146 never started a checkpoint (exit 4). The run dir stays for a
 `bin/queue resume` once the harness carries the patches again; 146 needs re-queueing.
+Recovered 02:06Z 2026-09-11: runs now read a pinned, patched checkout at `harness/` built by
+`python3 install.py` (48dc994), so the development clone can move freely. Job 147 resumes the
+partial just-solve run at checkpoint 4; job 148 is the second just-solve run, queued behind it.

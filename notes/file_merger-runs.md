@@ -177,3 +177,11 @@ its directory deleted: they count the v6 fork (147/147 across v4, v5, v6) and th
 (147/147) as the two, so v6 is strict twice by their call and file_merger closes as a spec
 question. Queued 00:09Z: the just-solve pair on v6 (jobs 145 and 146, `bin/queue add`, not
 strict), the control for the spec's effect on the bare prompt.
+Both just-solve jobs died 01:11Z 2026-09-11 on `No such option: --stop-after-checkpoint`: at
+01:00Z the harness clone in `slop-code-bench/` was reset on the host onto a new branch
+("fix: support Claude v2.1.2xx and higher"), which dropped the six applied source patches, so
+scb no longer knows the flag. Job 145 had run three checkpoints on the patched harness first
+(`…just-solve-specv6/20260910T1709`: 45/46, 84/86, 102/104, misses bool_nonstandard_strict from
+checkpoint 1 and tsv_whitespace_values from checkpoint 2) and halted at the checkpoint-4
+preview (exit 5); job 146 never started a checkpoint (exit 4). The run dir stays for a
+`bin/queue resume` once the harness carries the patches again; 146 needs re-queueing.

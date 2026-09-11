@@ -184,10 +184,10 @@ def launcher():
 
 def resume_command(run_dir, problem, n):
     """The scb invocation that runs checkpoint n of one problem of a run, and its environment.
-    SCB_RESUME_ONLY_PROBLEM narrows the resume to that problem (patches/resume-only-problem.patch);
-    upstream's own --problem merges into the run's list on resume, so without the variable a
-    multi-problem run would resume every problem."""
-    argv = [launcher(), "run", "--resume", str(run_dir), "--problem", problem, "--no-live-progress", "--stop-after-checkpoint", str(n)]
+    SCB_RESUME_ONLY_PROBLEM narrows the resume to that problem (patches/resume-only-problem.patch).
+    Upstream's own --problem is not used: on a resume it merges into the run's saved list, so
+    it cannot narrow a multi-problem run."""
+    argv = [launcher(), "run", "--resume", str(run_dir), "--no-live-progress", "--stop-after-checkpoint", str(n)]
     return argv, {**os.environ, "SCB_RESUME_ONLY_PROBLEM": problem}
 
 

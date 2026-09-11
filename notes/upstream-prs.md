@@ -61,8 +61,9 @@ checkpoint; agent death detection and prompt context variables; resume invalidat
 infra-failed checkpoints; container init and timeout kill; retry keeps every attempt's
 transcript. Each is PR-shaped as it stands. Two have branches in `slop-code-bench/`:
 
-- Stream-parser string message. Branch `claude-2.1.2xx-compatibility` has the fix and a
-  test. Claude Code 2.1.251 streams a `system` / `permission_denied` event when its safety
+- Stream-parser string message. Filed as issue #34 and draft PR #35 (2026-09-11, from the
+  fork `robo-carver/slop-code-bench`, remote `fork`; the token has no push to SprocketLab).
+  Branch `claude-2.1.2xx-compatibility` has the test first, then the fix. Claude Code 2.1.251 streams a `system` / `permission_denied` event when its safety
   check blocks a Bash command such as `cd /tmp/x && rm -rf *`, and that event's `message` is
   a string. Three saved lines show it: dev6-opus5 file_merger ckpt 4 and sith ckpt 4,
   dev6-fable51 file_merger ckpt 2. Replaying one through unpatched `_run()` gives the

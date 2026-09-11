@@ -172,3 +172,8 @@ $22, 73 min. The first fresh full strict run on file_merger; the stitched fork h
 across three spec versions, this is once in one run. v6 is strict once by the user's bar; queued
 23:30Z under the standing plan: a second fresh run of the same config under bin/scb-strict
 (job 144). Twice, and just-solve on v6 is next.
+The repeat (job 144) was killed at 00:05Z 2026-09-11 on checkpoint 2 at the user's request and
+its directory deleted: they count the v6 fork (147/147 across v4, v5, v6) and the fresh run
+(147/147) as the two, so v6 is strict twice by their call and file_merger closes as a spec
+question. Queued 00:09Z: the just-solve pair on v6 (jobs 145 and 146, `bin/queue add`, not
+strict), the control for the spec's effect on the bare prompt.

@@ -59,7 +59,23 @@ road for our runs. Two PRs' worth, both small.
 Listed in `README.md` with what each fixes: stream-parser string message; stop-after-
 checkpoint; agent death detection and prompt context variables; resume invalidates
 infra-failed checkpoints; container init and timeout kill; retry keeps every attempt's
-transcript. Each is PR-shaped as it stands. Two more findings without a patch yet:
+transcript. Each is PR-shaped as it stands. Two have branches in `slop-code-bench/`:
+
+- Stream-parser string message. Branch `claude-2.1.2xx-compatibility` has the fix and a
+  test. Claude Code 2.1.251 streams a `system` / `permission_denied` event when its safety
+  check blocks a Bash command such as `cd /tmp/x && rm -rf *`, and that event's `message` is
+  a string. Three saved lines show it: dev6-opus5 file_merger ckpt 4 and sith ckpt 4,
+  dev6-fable51 file_merger ckpt 2. Replaying one through unpatched `_run()` gives the
+  2026-08-30 traceback. The 2.1.44 CLI has no such event.
+- A crashed checkpoint's `stdout.jsonl`. Branch `claude-code-stdout-keeps-stream`, off main.
+  Upstream writes the file from `final_result`, which only a finished `_run()` sets and
+  nothing clears, so a checkpoint whose `_run()` raises saves the previous checkpoint's
+  stdout and stderr. That is how the string-message cause stayed hidden for 12 days. The
+  branch keeps each stdout line as `_run()` parses it, so a crash leaves its partial stream
+  and a retry appends to the attempt before it. It does the stdout half of the
+  retry-transcript patch; once it lands, that patch only needs to cover stderr.
+
+Findings without a patch yet:
 
 - `retry()` resets the usage tracker, so a checkpoint that timed out and continued
   under-reports its cost (v7 datagate ckpt 6 recorded $3 of roughly $15).

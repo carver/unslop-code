@@ -86,7 +86,10 @@ clone for upstream work and carries no obligations; on 2026-09-11 a branch switc
 dropped the patches under a running queue, which is why runs read a checkout of their own.
 The patches, in the order install.py applies them:
 
-- `patches/claude-code-stream-parser-string-message.patch`
+- `patches/claude-code-stream-parser-string-message.patch` — Claude Code 2.1.251
+  streams a `permission_denied` event whose `message` is a string when its
+  safety check blocks a Bash command; unpatched `_run()` crashes on it and fails
+  the checkpoint. Upstream candidate on branch `claude-2.1.2xx-compatibility`.
 - `patches/stop-after-checkpoint.patch` — adds `--stop-after-checkpoint N` to
   `scb run` (works with `--resume`), for advancing a run one checkpoint at a time
   in the same run dir.

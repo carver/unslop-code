@@ -175,11 +175,17 @@ erosion/verbosity. Worth adding to sandbox-setup so a recreate keeps it.
 The only edit to the benchmark source, applied for the Opus 5 / Fable 5 runs on
 current Claude Code: `patches/claude-code-stream-parser-string-message.patch`.
 `ClaudeCodeAgent._run()` assumed every stream-json payload's `message` is a
-dict; 2.1.251 emits payloads where it is a string, which raised
+dict. When 2.1.251's safety check blocks a Bash command (the models write
+`mkdir -p /tmp/x && cd /tmp/x && rm -rf *`), it streams a `system` /
+`permission_denied` event whose `message` is a string. `_run()` raised
 `AttributeError: 'str' object has no attribute 'get'` and failed the problem
 (file_merger checkpoint 2 in the first Opus 5 run). The guard treats a
-non-dict message as empty. The 2.1.44 leaderboard reproduction never hit
-this and was run on unpatched code. Re-apply after any `git pull` of the
+non-dict message as empty. The crashed checkpoint's own stream was lost (see
+the `final_result` note below), so the cause stayed a guess until 2026-09-10:
+the same event sits in file_merger checkpoint 4 of that run, and replaying it
+through the unpatched `_run()` gives the same traceback. The 2.1.44 CLI has
+no `permission_denied` event, which is why the leaderboard reproduction never
+hit this on unpatched code. Re-apply after any `git pull` of the
 benchmark: `git -C slop-code-bench apply ../patches/claude-code-stream-parser-string-message.patch`.
 
 Two harness behaviours worth knowing from the same incident:
@@ -191,6 +197,10 @@ Two harness behaviours worth knowing from the same incident:
 - When `_run()` raises mid-stream, `stdout.jsonl` for that checkpoint is a copy
   of the previous checkpoint's stream (`reset()` does not clear
   `final_result`). Do not trust the transcript of an errored checkpoint.
+  With `patches/retry-keeps-every-attempt-transcript.patch` the file is absent
+  instead, still without the crashed stream. Branch
+  `claude-code-stdout-keeps-stream` in `slop-code-bench/` (2026-09-10) keeps
+  the partial stream; see `notes/upstream-prs.md`.
 
 ## Host and sandbox must not share the benchmark venv (2026-08-30)
 

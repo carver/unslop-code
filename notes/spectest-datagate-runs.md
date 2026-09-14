@@ -918,3 +918,12 @@ Paused 2026-09-09 15:30Z at the user's request (weekly usage limit): the queue i
 `pueue pause --wait`, so job 105 (ABDJKMN on file_merger, at checkpoint 3) finishes and nothing
 after it starts. Queued and waiting: 106-108 and 109-114 (the rest of the ABDJKMN sweep and its
 second pass), 117-128 (the ABDEFJKMN sweep). `pueue start` resumes.
+Queued 2026-09-14 10:54Z at the user's request: the 2x2 uplift grid (just-solve vs
+min12-ABDJKMN, spec v0 vs the 100% spec) for datagate (v2), xjq (v3) and file_merger (v6),
+two complete runs per cell, opus-5 only. The F-clause runs (min12-ABDFJKMN) do not count.
+Already at two: just-solve at the 100% spec on all three, min12 v6 on file_merger (fork chain
+plus one fresh). Jobs 149-158, empty cells first so a budget stop still leaves one run per cell:
+149-150 min12 at datagate v2 and xjq v3 (strict, add-strict), 151-153 just-solve v0 on all
+three (per-problem runs; the first replicate is the six-problem dev6 control), 154-156 min12 v0
+second replicates, 157-158 the strict pair again. Plain `add` for the v0 runs so every one
+finishes all checkpoints. pueued was down after the sandbox restart; restarted with `pueued -d`.

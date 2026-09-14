@@ -60,6 +60,7 @@ tests passed / total at each checkpoint (regressions included), from each checkp
 | min11-ABDFJKMN on v0 | `…min11-ABDFJKMN/20260908T1911` | min11-ABDFJKMN (with the red/green line) on the unpatched spec, the comparison for the min12 v0 pair | 44/50, 113/122, 165/174, 218/233, 256/276, 333/353, 383/405 | complete 2026-09-09; 22 misses, the eleven the min12 repeat has (latin-1 autodetect, the rowid trio, spreadsheet query controls, the force cluster, yes-then-no enrich) plus eleven of its own: five from checkpoint 1 (explicit latin-1, the single-column CSV, two dataset-id tests, negative values as numbers; the same six-miss start as v3 on v0), five charset cases at checkpoint 4 (CSV charset honoured on convert and upload, spreadsheet invalid charset ignored on convert, export charset upload) and the mixed-numeric column type at 7. 0/7 strict, $20, 66 min (per checkpoint 9, 7, 7, 11, 9, 15, 8). 95 entries all scored, Risk 0-42 (single-column file at 30). Quality: erosion 0.088, verbosity 0.217, ast 0.094, cloned 0.118 |
 | min11-ABDFJKMN on v0, repeat | `…min11-ABDFJKMN/20260908T2330` | same config as the first run | 44/50, 113/122, 165/174, 216/233, 254/276, 331/353, 382/405 | complete 2026-09-09; 23 misses, 21 shared with the first min11 v0 run (the single-column cascade's six from checkpoint 1, the rowid trio, the charset family, the force cluster, query controls) plus the two spreadsheet-upload invalid-charset cases; the yes-then-no enrich case passed. 0/7 strict, $28, 90 min (per checkpoint 14, 8, 8, 14, 10, 22, 12). 115 entries all scored, Risk 0-45 (single-column file at 40). Quality: erosion 0.046, verbosity 0.170, ast 0.078, cloned 0.060 |
 | min12-ABDJKMN on v0 | `…min12-ABDJKMN/20260909T0313` | min12-ABDFJKMN minus F (the generator floor), 444 words, on the unpatched spec; first of two | 44/50, 113/122, 165/174, 216/233, 254/276, 331/353, 381/405 | complete 2026-09-09; 24 misses, the second min11 v0 run's 23 (the single-column cascade from checkpoint 1, rowid, charset, force, query controls) plus the yes-then-no enrich case; 0/7 strict, $19, 58 min (per checkpoint 10, 5, 6, 10, 8, 12, 7), the cheapest and fastest datagate run of the ladder. Neither this snapshot nor the ABDFJKMN one imports hypothesis, so F's generator floor had no generators to govern. 95 entries all scored, Risk 0-55 (query timeout 55). Quality: erosion 0.055, verbosity 0.233, ast 0.092, cloned 0.137 |
+| min12-ABDJKMN on v2 (strict) | `…min12-ABDJKMN-specv2/20260914T1054` | the 444-word no-F prompt on spec v2, strict, the min12 arm of the 2x2 uplift grid (jobs 149-158); first of two | 48/50 | halted 2026-09-14 after checkpoint 1; 2 misses, both whitespace preservation (test_preserves_whitespace, test_preserves_header_and_time_whitespace): `coerce` strips every cell and the header row is stripped before storage, so `"  space"` came back as `"space"` and `" name "` as `"name"`. Neither v2 sentence is about whitespace; the spec never mentions it. Same prompt at v0 passed both, so a coin for min12; just-solve misses the header/time one in 6 of 6 runs and the value one in 5 of 6. 0/1 strict, $2, 8 min |
 
 On hidden tests, v4 through v7 are flat within
 the latin-1 noise (ckpt 1: 50, 49, 50, 49 of 50; ckpt 2: 119, cut, 119, 118 of 122), and
@@ -149,6 +150,14 @@ handling and one lenient-parsing cluster that flips between runs. Erosion 0.535 
   - repeat (392): the same five, plus the six-test cache-flag trimming cluster at checkpoint 6
     (the plain prompt's known flip) and two new checkpoint-7 misses, the cache-upgrade pair:
     `enrich=yes` on an already cached dataset did not re-ingest it. Erosion 0.621.
+
+### min12-ABDJKMN on spec v2 (strict, halted)
+
+  - checkpoint 1 (48/50): the whitespace pair. `coerce` does `value.strip()` before the numeric
+    test and returns the stripped text for non-numbers; headers are `cell.strip()`. The reference
+    strips nothing: `" 42 "` fails its anchored regex and the column stays text, verbatim. The
+    registry has no whitespace entry in this run (the min10-ABDEJKMN run had it as T7, Risk 30,
+    and named "the author never strips" as the likely divergence, then stripped anyway).
 
 ### v8A (no libraries, no tester sub-agent; patched spec)
 

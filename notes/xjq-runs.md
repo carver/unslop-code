@@ -23,6 +23,7 @@ is the dev6 sweep's just-solve run (`notes/dev6-opus5.md`).
 | min12-ABDFJKMN on v3 | `…min12-ABDFJKMN-specv3/20260909T1123` | min12-ABDFJKMN on spec v3 from checkpoint 1 | 23/23, 51/51, 96/96, 122/122, 167/167 | complete 2026-09-09; 0 misses, 5/5 strict, $13 (per checkpoint 8, 18, 8, 16, 17 min), 67 min. The first strict xjq run from scratch; one of two. 60 registry entries, 56 scored, Risk 0-45 (top: non-node-set results 45; "scope of no self-closing tags" 32, the v2 sentence read as a question in its own right). Quality: erosion 0.020, verbosity 0.233, ast 0.031, cloned 0.191, the best xjq figures on record |
 | just-solve on v3 | `…just-solve-specv3/20260909T1249` | benchmark's own prompt on spec v3; first of two | 23/23, 51/51, 96/96, 122/122, 167/167 | complete 2026-09-09; 0 misses, 5/5 strict, $6 (per checkpoint 2, 8, 3, 3, 3 min), 20 min. The bare prompt clears every one of the control's seven v0 misses on v3. Quality: erosion 0.321, verbosity 0.209, ast 0.178, cloned 0.000, the control's shape |
 | just-solve on v3, repeat | `…just-solve-specv3/20260909T1314` | same config as the first run | 23/23, 51/51, 96/96, 122/122, 167/167 | complete 2026-09-09; 0 misses, 5/5 strict, $5 (per checkpoint 2, 6, 3, 3, 5 min), 19 min. just-solve is twice strict on xjq v3. Quality: erosion 0.498, verbosity 0.247, ast 0.213, cloned 0.000 |
+| min12-ABDJKMN on v3 (strict) | `…min12-ABDJKMN-specv3/20260914T1103` | the 444-word no-F prompt on spec v3, strict, the min12 arm of the 2x2 uplift grid (jobs 149-158); first of two | 23/23, 51/51, 96/96, 122/122, 167/167 | complete 2026-09-14; 0 misses, 5/5 strict, $11 (per checkpoint 6, 10, 7, 11, 11 min), 46 min. Against the same prompt on v0: the seven text_all/first misses gone, nothing new. The first ABDJKMN run strict on xjq. 51 registry entries, 51 scored, Risk 0-45 (top: boolean XPath result 45; numeric XPath result and "all descendant text nodes" 40). Quality: erosion 0.060, verbosity 0.544, ast 0.044, cloned 0.489, the cloned and verbosity figures the worst on xjq (ABDFJKMN on v3: 0.254 and 0.309); four test files of 12-17 KB against a 21 KB xjq.py |
 
 ## Test failure summaries
 
@@ -95,6 +96,13 @@ testing", 464 words). Compare with the min11 pair (160 and 160, $14 and $17).
 
   - first run (160): the seven v0 misses, $10 and 45 min, the cheapest and fastest xjq run.
     F had nothing to govern here either: no hypothesis in the snapshot. First of two.
+
+### min12-ABDJKMN on spec v3
+
+  - first run (167): strict, $11 and 46 min. The v3 sentences cleared the seven v0 misses for
+    the no-F prompt as they did for ABDFJKMN and just-solve. Quality is the odd part: cloned
+    0.489 and verbosity 0.544 against 0.254 and 0.309 for ABDFJKMN on the same spec; the test
+    files are the bulk of the snapshot. First of two; the repeat is job 158.
 
 ### just-solve on spec v3
 

@@ -967,5 +967,6 @@ deleted. Grid cell datagate x min12 x v2 runs non-strict: job 159 resumes the ha
 checkpoint 2, job 160 is a fresh run. Job 157 (strict repeat) was removed.
 Queued 2026-09-15 00:20Z at the user's request: min12-ABDJKMN at v0 on mvvault, rejector and
 sith, two each (jobs 161-166, one pass then the second), so the quality uplift of the prompt
-over just-solve reads across all six dev6 problems. Their just-solve v0 cell is still the single
-dev6 control run each.
+over just-solve reads across all six dev6 problems. Then just-solve at v0 on the same three
+(jobs 167-169), their second replicate after the dev6 control. The stale mvvault directory
+`…min12-ABDJKMN/20260909T0906` (checkpoint 1 only, no results, from the paused sweep) deleted.

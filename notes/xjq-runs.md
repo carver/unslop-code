@@ -26,6 +26,7 @@ is the dev6 sweep's just-solve run (`notes/dev6-opus5.md`).
 | just-solve on v3 | `…just-solve-specv3/20260909T1249` | benchmark's own prompt on spec v3; first of two | 23/23, 51/51, 96/96, 122/122, 167/167 | complete 2026-09-09; 0 misses, 5/5 strict, $6 (per checkpoint 2, 8, 3, 3, 3 min), 20 min. The bare prompt clears every one of the control's seven v0 misses on v3. Quality: erosion 0.321, verbosity 0.209, ast 0.178, cloned 0.000, the control's shape |
 | just-solve on v3, repeat | `…just-solve-specv3/20260909T1314` | same config as the first run | 23/23, 51/51, 96/96, 122/122, 167/167 | complete 2026-09-09; 0 misses, 5/5 strict, $5 (per checkpoint 2, 6, 3, 3, 5 min), 19 min. just-solve is twice strict on xjq v3. Quality: erosion 0.498, verbosity 0.247, ast 0.213, cloned 0.000 |
 | min12-ABDJKMN on v3 (strict) | `…min12-ABDJKMN-specv3/20260914T1103` | the 444-word no-F prompt on spec v3, strict, the min12 arm of the 2x2 uplift grid (jobs 149-158); first of two | 23/23, 51/51, 96/96, 122/122, 167/167 | complete 2026-09-14; 0 misses, 5/5 strict, $11 (per checkpoint 6, 10, 7, 11, 11 min), 46 min. Against the same prompt on v0: the seven text_all/first misses gone, nothing new. The first ABDJKMN run strict on xjq. 51 registry entries, 51 scored, Risk 0-45 (top: boolean XPath result 45; numeric XPath result and "all descendant text nodes" 40). Quality: erosion 0.060, verbosity 0.544, ast 0.044, cloned 0.489, the cloned and verbosity figures the worst on xjq (ABDFJKMN on v3: 0.254 and 0.309); four test files of 12-17 KB against a 21 KB xjq.py |
+| min12-ABDJKMN on v3 (strict), repeat | `…min12-ABDJKMN-specv3/20260914T1744` | same config as the first run | 23/23, 51/51, 96/96, 122/122, 167/167 | complete 2026-09-14; 0 misses, 5/5 strict, $11 (per checkpoint 1, 3, 2, 2, 3), 54 min. min12-ABDJKMN is twice strict on xjq v3, the grid's min12 x v3 cell complete. 54 entries, 49 scored, Risk 0-45 (top: blank lines from whitespace-only text nodes 45, "no added pretty-print formatting" 45). Quality: erosion 0.026, verbosity 0.326, ast 0.012, cloned 0.306; one 134 KB test_xjq.py against a 21 KB xjq.py |
 
 ## Test failure summaries
 
@@ -118,6 +119,10 @@ testing", 464 words). Compare with the min11 pair (160 and 160, $14 and $17).
     (whitespace-only element). $9 and 42 min. Second replicate of the grid's min12 x v0 cell:
     160 and 161 against just-solve's 160 and 160, so on xjq v0 the prompt buys no correctness;
     cloned 0.331 and 0.322, verbosity 0.364 and 0.372, both above just-solve's.
+
+  - repeat (167): strict again, $11 and 54 min. Twice strict; the no-F prompt closes xjq v3 as
+    ABDFJKMN and just-solve did. Cloned 0.306 this time (0.489 first), still the test-file bulk:
+    a single 134 KB test module.
 
 ### just-solve on spec v3
 

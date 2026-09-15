@@ -1,0 +1,119 @@
+#!/usr/bin/env python3
+"""The uplift grid: two prompts by two specs, per problem and averaged across problems.
+
+    bin/grid [--json] [--prompts A,B] [--model opus-5]
+
+Rows are problems; the four cells are (prompt, spec) with spec v0 (the cached benchmark
+spec) and "patched", the highest spec version that BOTH prompts have a complete run on, so
+the two prompts are always compared on the same words. Every figure is one where lower is
+better: fail% is the share of hidden tests failed at the last checkpoint (1 - score), the
+four quality means are as bin/results reports them, cost is cc_$ per run. A cell lists its
+runs and their mean; the bottom rows average the cell means over the problems that have the
+cell (n says how many). --json prints the same structure for a page to draw from.
+
+Prompts default to the benchmark's just-solve and min12-ABDJKMN, the pair the 2x2 uplift
+experiment compares (notes/uplift-grid.md). Runs are read the way bin/results reads them.
+"""
+import json
+import pathlib
+import sys
+import types
+
+HERE = pathlib.Path(__file__).resolve().parent
+results = types.ModuleType("results"); results.__file__ = str(HERE / "results")
+sys.modules["results"] = results
+exec(compile((HERE / "results").read_text(), str(HERE / "results"), "exec"), results.__dict__)
+
+METRICS = ("fail", "erosion", "verbosity", "ast", "cloned", "cost")
+DEFAULT_PROMPTS = ("just-solve", "min12-ABDJKMN")
+
+
+def run_figures(run):
+    """A run's row of the grid: fail% and the quality means, all lower-is-better."""
+    return {"fail": 1 - run["score"], "erosion": run["erosion"], "verbosity": run["verbosity"],
+            "ast": run["ast"], "cloned": run["cloned"], "cost": run["cost"]}
+
+
+def spec_number(spec):
+    return int(spec.removeprefix("v"))
+
+
+def patched_spec(cells, problem, prompts, model):
+    """The highest spec version every prompt has a complete run on, or None."""
+    versions = None
+    for prompt in prompts:
+        have = {spec for (p, pr, spec, m) in cells if p == problem and pr == prompt and m == model and spec != "v0"}
+        versions = have if versions is None else versions & have
+    return max(versions, key=spec_number) if versions else None
+
+
+def cell_means(runs):
+    return {k: results.mean([r[k] for r in runs]) for k in METRICS}
+
+
+def grid(cells, prompts=DEFAULT_PROMPTS, model="opus-5"):
+    """{"prompts": [...], "problems": {problem: {"patched": "vN" | None, "cells": {"prompt|v0": {...}, "prompt|patched": {...}}}},
+        "means": {"prompt|v0": {"n": k, **means}, ...}} with every cell {"spec": "vN", "runs": [...], "mean": {...}}."""
+    problems = sorted({p for (p, pr, spec, m) in cells if pr in prompts and m == model})
+    out = {"prompts": list(prompts), "problems": {}, "means": {}}
+    for problem in problems:
+        patched = patched_spec(cells, problem, prompts, model)
+        entry = {"patched": patched, "cells": {}}
+        for prompt in prompts:
+            for kind, spec in (("v0", "v0"), ("patched", patched)):
+                runs = cells.get((problem, prompt, spec, model), []) if spec else []
+                if runs:
+                    figures = [run_figures(r) for r in runs]
+                    entry["cells"][f"{prompt}|{kind}"] = {"spec": spec, "runs": figures, "mean": cell_means(figures)}
+        out["problems"][problem] = entry
+    for prompt in prompts:
+        for kind in ("v0", "patched"):
+            key = f"{prompt}|{kind}"
+            means = [e["cells"][key]["mean"] for e in out["problems"].values() if key in e["cells"]]
+            if means:
+                out["means"][key] = {"n": len(means), **cell_means(means)}
+    return out
+
+
+def pct(v):
+    return "-" if v is None else f"{100 * v:.1f}%"
+
+
+def cell_text(cell):
+    if cell is None:
+        return "-"
+    m = cell["mean"]
+    return f"{pct(m['fail'])} / {m['erosion']:.2f} / {m['ast']:.2f} ({len(cell['runs'])})"
+
+
+def table(g):
+    """Markdown: one row per problem, cells 'fail% / erosion / ast% (runs)', then the means."""
+    a, b = g["prompts"]
+    heads = [f"{a} v0", f"{b} v0", f"{b} patched", f"{a} patched"]
+    keys = [f"{a}|v0", f"{b}|v0", f"{b}|patched", f"{a}|patched"]
+    lines = ["| problem | patched | " + " | ".join(heads) + " |", "|---|---|" + "---|" * 4]
+    for problem, e in g["problems"].items():
+        lines.append(f"| {problem} | {e['patched'] or '-'} | " + " | ".join(cell_text(e["cells"].get(k)) for k in keys) + " |")
+    means = [g["means"].get(k) for k in keys]
+    ns = {m["n"] for m in means if m}
+    n = f"n={'/'.join(str(x) for x in sorted(ns))}"
+    lines.append(f"| mean | {n} | " + " | ".join("-" if m is None else f"{pct(m['fail'])} / {m['erosion']:.2f} / {m['ast']:.2f} ({m['n']})" for m in means) + " |")
+    return "\n".join(lines)
+
+
+def main():
+    args = sys.argv[1:]
+    as_json = "--json" in args
+    prompts = DEFAULT_PROMPTS
+    model = "opus-5"
+    if "--prompts" in args:
+        prompts = tuple(args[args.index("--prompts") + 1].split(","))
+    if "--model" in args:
+        model = args[args.index("--model") + 1]
+    cells, _ = results.collect(results.run_dirs())
+    g = grid(cells, prompts, model)
+    print(json.dumps(g, indent=1) if as_json else table(g))
+
+
+if __name__ == "__main__":
+    main()

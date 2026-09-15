@@ -965,3 +965,7 @@ test and kept text verbatim; only min11-ABDFJKMN v2 (20260906T2202) chose no str
 Trimming text the spec never mentions is Claude's swing, not a spec gap. The drafted sentence was
 deleted. Grid cell datagate x min12 x v2 runs non-strict: job 159 resumes the halted run from
 checkpoint 2, job 160 is a fresh run. Job 157 (strict repeat) was removed.
+Queued 2026-09-15 00:20Z at the user's request: min12-ABDJKMN at v0 on mvvault, rejector and
+sith, two each (jobs 161-166, one pass then the second), so the quality uplift of the prompt
+over just-solve reads across all six dev6 problems. Their just-solve v0 cell is still the single
+dev6 control run each.

@@ -16,6 +16,7 @@ existing snapshot with `bin/reeval`, and every later run scores it that way nati
 | just-solve control | `../dev6-opus5/opus-5_2.1.251_high_just-solve/20260830T0354` | benchmark's own prompt | 35/37, 64/67, 110/115, 149/155, 179/185, 221/227 | complete (dev6 sweep; checkpoint 6 re-scored 2026-09-08, upstream config gave 42/42); 6 misses, 0/6 strict, $12. Quality: erosion 0.472, verbosity 0.318, ast 0.243, cloned 0.044 |
 | min11-ABDFJKMN | `…min11-ABDFJKMN/20260907T1659` | the 468-word min11 subset (twice strict on datagate v2); first of two | 35/37, 65/67, 112/115, 150/155, 180/185, 222/227 | complete 2026-09-08; 5 misses, four shared with the control (the two checkpoint-1 sync rejections, missing tracked field and wrong field type; skip-downloaded candidate; serve on a custom address) and one its own (the missing-vault route error from checkpoint 4); the control's two sync-v1 misses passed. 0/6 strict, $36 (per checkpoint 4, 6, 6, 8, 5, 6), 152 min of agent time; checkpoint 4 hit the spurious infra flag (two collection passes failed in a network blip, evaluation complete at 150/155; flag cleared by hand, backup beside it) and the run resumed from 5 as job 89. 80 registry entries all scored, Risk 0-55 (top: digest output shape 55, a static field whose source value changes 45; a source response missing a category 35). Quality: erosion 0.059, verbosity 0.179, ast 0.067, cloned 0.083 |
 | min12-ABDJKMN | `…min12-ABDJKMN/20260914T2119` | the 444-word no-F prompt on v0, for the six-problem quality-uplift comparison; first of two | 35/37, 64/67, 111/115, 150/155, 180/185, 220/227 | complete 2026-09-15; 7 misses: five of the control's six (the two checkpoint-1 sync rejections, sync-v1 new entries in v3 shape, skip-downloaded candidate, serve on a custom address; the sync-v1 download URL passed) plus the test_migration_atomic pair at checkpoint 6, new (a 302 where the test expects 500 on a bad catalog). One below the control. 0/6 strict, $29 (per checkpoint 2, 4, 5, 7, 5, 5), 98 min. 80 entries, 78 scored, Risk 0-55 (digest layout 55, digest trailing line 50, media extension from Content-Type 45). Quality: erosion 0.046, verbosity 0.214, ast 0.080, cloned 0.111 |
+| min12-ABDJKMN, repeat | `…min12-ABDJKMN/20260915T0327` | same config as the first run | 35/37, 65/67, 112/115, 151/155, 181/185, 223/227 | complete 2026-09-15; 4 misses, all the control's (the two checkpoint-1 sync rejections, skip-downloaded candidate, serve on a custom address); the first run's v3-shape and migration-atomic misses passed. Two above the control, one above min11, the best mvvault score. 0/6 strict, $24 (per checkpoint 2, 3, 4, 7, 4, 4), 95 min. Quality: erosion 0.074, verbosity 0.172, ast 0.076, cloned 0.082 |
 
 ## Test failure summaries
 
@@ -31,6 +32,9 @@ existing snapshot with `bin/reeval`, and every later run scores it that way nati
   - first run (220): one below the control. Five of its six misses are the control's; the
     download-URL case passed; the two migration-atomic cases at checkpoint 6 are new, a 302
     redirect where the test wants a 500. Erosion 0.046 against the control's 0.472. First of two.
+  - repeat (223): the four misses every opus-5 run shares and nothing else; the first run's
+    three extras (v3-shape, the migration pair) passed. Pair: 220 and 223 against the control's
+    221; erosion 0.046 and 0.074 against 0.472. On mvvault the prompt is quality, not score.
 
 ### min11-ABDFJKMN
 

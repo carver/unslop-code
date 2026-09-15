@@ -194,3 +194,26 @@ def test_resume_strict_job_drives_scb_strict_from_the_same_plan(tmp_path):
     assert label.endswith("-xjq-resume-from-4-strict")
     assert argv == [str(q.ROOT / "bin" / "scb-strict"), "--resume", str(run), "xjq", "5"]
     assert env["SCBENCH_PROBLEMS_PATH"] == str(root)
+
+
+def test_job_result_keeps_the_driver_lines_and_names_the_run_dir():
+    log = ("[09/14/26 10:54:33] INFO 'datagate': progress update\n"
+           "STRICT-RUN: checkpoint_1 48/50 infra_fail=false run_dir=/o/spectest/x/20260914T1054\n"
+           "STRICT-RUN:   FAIL checkpoint_1-Functionality: TestFunctionality::test_preserves_whitespace\n"
+           "STRICT-RUN: HALT after checkpoint_1, not a strict solve\n")
+    lines, run_dir = q.job_result(log)
+    assert [l.split(":")[0] for l in lines] == ["STRICT-RUN"] * 3
+    assert run_dir == "/o/spectest/x/20260914T1054"
+
+
+def test_job_result_takes_the_last_run_dir_and_strips_the_closing_paren():
+    log = ("EXTEND: checkpoint_7 380/405 infra_fail=False agent_error=False window 14.0% -> 15.0% 19:48:07Z\n"
+           "EXTEND: DONE, 7 checkpoints present (run_dir=/o/spectest/just-solve/20260914T1154) 19:48:07Z\n"
+           "EXTEND: next: bin/ledger-row /o/spectest/just-solve/20260914T1154 -> notes/datagate-runs.md\n")
+    lines, run_dir = q.job_result(log)
+    assert len(lines) == 3
+    assert run_dir == "/o/spectest/just-solve/20260914T1154"
+
+
+def test_job_result_without_driver_lines_names_no_run_dir():
+    assert q.job_result("pueue: task 5 has no output\n") == ([], None)

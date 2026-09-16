@@ -14,6 +14,10 @@ cell (n says how many). --json prints the same structure for a page to draw from
 
 Prompts default to the benchmark's just-solve and min12-ABDJKMN, the pair the 2x2 uplift
 experiment compares (notes/uplift-grid.md). Runs are read the way bin/results reads them.
+
+The JSON also carries "trajectory": erosion per progress phase for each prompt's v0 runs, the
+paper's five-phase view of a run (Start, Early, Mid, Late, Final) so the page can lay the two
+prompts over Figure 5 of arXiv 2603.24755v2.
 """
 import json
 import pathlib
@@ -27,6 +31,7 @@ exec(compile((HERE / "results").read_text(), str(HERE / "results"), "exec"), res
 
 METRICS = ("fail", "erosion", "verbosity", "ast", "cloned", "cost", "minutes")
 DEFAULT_PROMPTS = ("just-solve", "min12-ABDJKMN")
+PHASES = ("Start", "Early", "Mid", "Late", "Final")
 
 
 def run_figures(run):
@@ -46,6 +51,40 @@ def patched_spec(cells, problem, prompts, model):
         have = {spec for (p, pr, spec, m) in cells if p == problem and pr == prompt and m == model and spec != "v0"}
         versions = have if versions is None else versions & have
     return max(versions, key=spec_number) if versions else None
+
+
+def phase_of(idx, count):
+    """Which of PHASES checkpoint idx (0-based) of a count-checkpoint run falls in.
+
+    The paper's rule (arXiv 2603.24755v2, section 3): the first checkpoint is Start, the last is
+    Final, and the interior ones split into Early, Mid and Late. It does not say how an interior
+    that is not a multiple of three splits; here each interior checkpoint goes by the third its
+    centre falls in, so two interior checkpoints are Early and Late, four are Early, Mid, Mid, Late."""
+    if idx == 0:
+        return 0
+    if idx == count - 1:
+        return len(PHASES) - 1
+    return 1 + int(3 * (idx - 0.5) / (count - 2))
+
+
+def trajectory(cells, prompts=DEFAULT_PROMPTS, model="opus-5", spec="v0"):
+    """{"spec": spec, "phases": [...], "prompts": {prompt: {"runs": k, "ckpts": [per phase], "erosion": [per phase]}}}:
+    each prompt's checkpoints at that spec, pooled over its runs on every problem, meaned by phase."""
+    out = {"spec": spec, "phases": list(PHASES), "prompts": {}}
+    for prompt in prompts:
+        pools = [[] for _ in PHASES]
+        runs = 0
+        for (p, pr, sp, m), summaries in cells.items():
+            if pr != prompt or sp != spec or m != model:
+                continue
+            for run in summaries:
+                runs += 1
+                by_ckpt = run["erosion_by_ckpt"]
+                for idx, erosion in enumerate(by_ckpt):
+                    if erosion is not None:
+                        pools[phase_of(idx, len(by_ckpt))].append(erosion)
+        out["prompts"][prompt] = {"runs": runs, "ckpts": [len(x) for x in pools], "erosion": [results.mean(x) for x in pools]}
+    return out
 
 
 def cell_means(runs):
@@ -73,6 +112,7 @@ def grid(cells, prompts=DEFAULT_PROMPTS, model="opus-5"):
             means = [e["cells"][key]["mean"] for e in out["problems"].values() if key in e["cells"]]
             if means:
                 out["means"][key] = {"n": len(means), **cell_means(means)}
+    out["trajectory"] = trajectory(cells, prompts, model)
     return out
 
 

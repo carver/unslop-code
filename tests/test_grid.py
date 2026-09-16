@@ -8,14 +8,14 @@ gr = types.ModuleType("grid"); gr.__file__ = str(SCRIPT); sys.modules["grid"] = 
 exec(compile(SCRIPT.read_text(), str(SCRIPT), "exec"), gr.__dict__)
 
 
-def run(score, erosion, cost=10.0, minutes=30.0):
+def run(score, erosion, cost=10.0, minutes=30.0, by_ckpt=None):
     return {"score": score, "passed": 0, "total": 0, "strict": 0, "ckpts": 1, "cost": cost, "minutes": minutes,
-            "erosion": erosion, "verbosity": 0.2, "ast": 0.1, "cloned": 0.05}
+            "erosion": erosion, "erosion_by_ckpt": by_ckpt or [erosion], "verbosity": 0.2, "ast": 0.1, "cloned": 0.05}
 
 
 CELLS = {
-    ("xjq", "just-solve", "v0", "opus-5"): [run(0.9, 0.4), run(0.8, 0.6)],
-    ("xjq", "min12-ABDJKMN", "v0", "opus-5"): [run(0.9, 0.1)],
+    ("xjq", "just-solve", "v0", "opus-5"): [run(0.9, 0.4, by_ckpt=[0.1, 0.3, 0.5, 0.7]), run(0.8, 0.6, by_ckpt=[0.3, 0.5, 0.7, 0.9, 1.1])],
+    ("xjq", "min12-ABDJKMN", "v0", "opus-5"): [run(0.9, 0.1, by_ckpt=[0.1, None, 0.1])],
     ("xjq", "min12-ABDJKMN", "v3", "opus-5"): [run(1.0, 0.05)],
     ("xjq", "just-solve", "v3", "opus-5"): [run(1.0, 0.5)],
     ("xjq", "just-solve", "v2", "opus-5"): [run(0.95, 0.5)],
@@ -57,3 +57,25 @@ def test_table_has_a_row_per_problem_and_a_mean_row():
     assert lines[2].startswith("| sith | - | 50.0% / 0.70 / 0.10 / $10 / 30m (1) | 30.0% / 0.30 / 0.10 / $10 / 30m (1) | - | - |")
     assert lines[3].startswith("| xjq | v3 | 15.0% / 0.50 / 0.10 / $10 / 30m (2) |")
     assert lines[-1].startswith("| mean | n=1/2 | 32.5% / 0.60 / 0.10 / $10 / 30m (2) |")
+
+
+def test_phases_pin_the_ends_and_split_the_interior_into_thirds_by_position():
+    names = lambda count: [gr.PHASES[gr.phase_of(i, count)] for i in range(count)]
+    assert names(3) == ["Start", "Mid", "Final"]
+    assert names(4) == ["Start", "Early", "Late", "Final"]
+    assert names(5) == ["Start", "Early", "Mid", "Late", "Final"]
+    assert names(7) == ["Start", "Early", "Early", "Mid", "Late", "Late", "Final"]
+    assert names(8) == ["Start", "Early", "Early", "Mid", "Mid", "Late", "Late", "Final"]
+
+
+def test_trajectory_pools_each_prompts_v0_checkpoints_by_phase():
+    t = gr.grid(CELLS)["trajectory"]
+    assert t["spec"] == "v0" and t["phases"] == ["Start", "Early", "Mid", "Late", "Final"]
+    js = t["prompts"]["just-solve"]
+    assert js["runs"] == 3  # xjq's two and sith's one
+    assert js["ckpts"] == [3, 2, 1, 2, 2]  # sith's single checkpoint is Start only
+    assert abs(js["erosion"][0] - (0.1 + 0.3 + 0.7) / 3) < 1e-9  # Start: xjq 0.1, xjq 0.3, sith 0.7
+    assert abs(js["erosion"][2] - 0.7) < 1e-9  # Mid: only the five-checkpoint run's middle
+    assert abs(js["erosion"][4] - (0.7 + 1.1) / 2) < 1e-9
+    m = t["prompts"]["min12-ABDJKMN"]
+    assert m["ckpts"] == [2, 0, 0, 0, 1] and m["erosion"][2] is None  # the None checkpoint is skipped, an empty phase is null

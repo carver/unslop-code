@@ -5,6 +5,25 @@ Working towards solving the excellent SlopCodeBench.
 Making a lot of progress (in Opus 5) with general prompt improvements.
 Also finding some specs in the benchmark that are legitimately ambiguous.
 
+## Findings so far (2026-09-15)
+
+Two levers, measured in both orders on the six dev problems with Opus 5, two runs per cell
+(`notes/uplift-grid.md`, `bin/grid` for the table, the published grid linked there):
+
+- **Correctness comes from the spec.** Rewriting the ambiguous sentences (datagate v2, xjq v3,
+  file_merger v6) takes hidden-test failures from 8% to under 2% for either prompt. The prompt
+  alone barely moves them at v0: 8.3% to 5.5% over six problems, most of that on sith.
+- **Code quality comes from the prompt.** The 444-word min12 prompt cuts the harness's erosion
+  score from 0.58 to 0.15 averaged over six problems, and ast-grep smells from 0.25 to 0.09;
+  the spec patch leaves both where they were.
+- **Order does not matter.** Prompt-then-spec and spec-then-prompt land on the same score; the
+  quality gap is the prompt's either way. Cost runs 1.5x to 2x the bare prompt on small
+  problems and below it on the large ones, where the bare prompt's long runs are the expense.
+- **One miss is Claude's, not the spec's.** datagate's remaining failures are five tests that
+  expect header and cell whitespace kept verbatim. The spec never mentions whitespace; the
+  agent trims it anyway, and when asked afterwards concedes the spec gives no licence. Left
+  in as a benchmark failure (datagate diary, 2026-09-14).
+
 Start here:
 
 - `baseline-report.md` — the Sonnet 4.6 reproduction vs the leaderboard, with manifest.
@@ -53,6 +72,10 @@ and the sandbox-local venv):
     bin/ledger-row <run_dir>                 # after every run: the ledger row and failure summary to fill in
     bin/reeval <run_dir> <problem> <ckpt> --tag T  # re-score one checkpoint under the current problem config; keeps the old evaluation as before-T
     bin/results [--write]                    # every complete run, one row per problem/prompt/spec -> notes/results.md
+    bin/grid [--json]                        # the 2x2 uplift grid (just-solve vs min12, v0 vs patched), per problem
+                                             # and averaged; fail%, quality, cost, all lower-is-better
+    bin/queue wait <id>                      # block until a job ends, print its STRICT-RUN/EXTEND lines and run_dir;
+                                             # run it in the background so the wake-up names the run directory
     bin/queue add configs/runs/<name>.yaml   # enqueue a run (one at a time); bin/queue = status
     bin/queue add-strict configs/runs/<name>.yaml  # enqueue it under bin/scb-strict: halts at the first non-strict checkpoint
     bin/queue solo <id>                      # run one queued job while the rest wait (stash, start, pause --wait, re-queue)

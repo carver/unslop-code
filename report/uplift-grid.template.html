@@ -114,9 +114,14 @@ const METRICS = [
   { key: "minutes", name: "Wall clock per run", unit: "min", fmt: v => v.toFixed(0) + " min", max: 170, ticks: [0, 40, 80, 120, 160], tick: v => v + "m" },
 ];
 const SQUARE_METRICS = METRICS;
-// arXiv 2603.24755v2 Table 2, HEAD commit of the Major tier (at least 10k stars, 115 of the
-// 473 Python repositories). The paper reports no ast-grep figure for human code.
-const HUMAN = { erosion: { v: 0.37, label: "human, 10k+ stars", tip: "Human repositories with at least 10k stars\nHEAD commit, n = 115, erosion 0.37 \u00b1 0.19\nSlopCodeBench paper, Table 2" } };
+// arXiv 2603.24755v1 Table 2, HEAD commit of the Major tier (over 10k stars, 28 of the 48
+// Python repositories). v2 grew the panel to 473 repos (Major erosion 0.37) but dropped the
+// ast-grep column, so v1 is the one source that covers both charts.
+const HUMAN_TIP = "Human repositories with over 10k stars\nHEAD commit, n = 28\nSlopCodeBench paper v1, Table 2";
+const HUMAN = {
+  erosion: { v: 0.31, label: "human, 10k+ stars", tip: `${HUMAN_TIP}\nerosion 0.31 \u00b1 0.12 (v2's 473-repo panel: 0.37)` },
+  ast: { v: 0.10, label: "human, 10k+ stars", tip: `${HUMAN_TIP}\nast-grep 0.10 \u00b1 0.04` },
+};
 const problems = Object.keys(G.problems);
 const patched = problems.filter(p => G.problems[p].patched);
 const cell = (p, prompt, kind) => G.problems[p].cells[`${prompt}|${kind}`];
@@ -266,7 +271,7 @@ document.getElementById("foot").innerHTML =
   `<b>Reading.</b> The spec moves correctness; the prompt moves quality; the order does not change where you end up. ` +
   `Patched specs: ${esc(specs)}. datagate's residual ${esc((100 * cell("datagate", MIN, "patched").mean.fail).toFixed(1))}% is the whitespace-preservation class, left as a benchmark failure. ` +
   `Erosion and ast-grep are the harness's quality scores, share of files flagged; cost is Claude Code's reported spend per run; wall clock is checkpoint end minus start, summed, and includes waits on the 5-hour window. ` +
-  `The human bar is the paper's Major tier (${esc(HUMAN.erosion.v.toFixed(2))} erosion at HEAD across 115 repositories with at least 10k stars, Table 2); the paper publishes no ast-grep figure for human code.`;
+  `The human bars are the paper's Major tier at HEAD, 28 repositories with over 10k stars, from Table 2 of v1 (v2 grew the panel to 473 repositories, erosion ${esc(HUMAN.erosion.v.toFixed(2))} to 0.37, and dropped the ast-grep column).`;
 
 const cols = [[JS, "v0"], [MIN, "v0"], [MIN, "patched"], [JS, "patched"]];
 const th = cols.map(([pr, k]) => `<th>${esc(pr === JS ? "just-solve" : "min12")} ${k}</th>`).join("");

@@ -54,9 +54,10 @@ erosion / ast% are the cell means of the quality scores (lower is better); $ is 
   the spec patch leaves just-solve's where it was (0.25 to 0.27).
 - **The page**: `report/uplift-grid.html`, built by `python3 report/uplift_grid.py` from
   `bin/grid --json`; three headline bars, five 2x2 squares averaged over the patched
-  problems, then per-problem dumbbells for every figure. The erosion headline carries a
-  human reference: the paper's Major tier (10k+ stars, 115 repos) at HEAD, erosion 0.37,
-  Table 2 of arXiv 2603.24755v2. Table 2 has no ast-grep column, so that chart has none.
+  problems, then per-problem dumbbells for every figure. The erosion and ast-grep headlines
+  carry a human reference: the paper's Major tier (over 10k stars, 28 repos) at HEAD, erosion
+  0.31 and ast-grep 0.10, Table 2 of arXiv 2603.24755v1. v2's Table 2 covers 473 repos (Major
+  erosion 0.37) but drops the ast-grep and clone columns, so v1 is the source for both bars.
 - **datagate's residual five** are the whitespace-preservation tests, left as a benchmark
   failure by decision (see the datagate diary, 2026-09-14): the spec never mentions
   whitespace, and two of the four v2 runs registered stripping as their choice anyway.

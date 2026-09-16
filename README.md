@@ -17,8 +17,11 @@ Two levers, measured in both orders on the six dev problems with Opus 5, two run
   score from 0.58 to 0.15 averaged over six problems, and ast-grep smells from 0.25 to 0.09;
   the spec patch leaves both where they were.
 - **Order does not matter.** Prompt-then-spec and spec-then-prompt land on the same score; the
-  quality gap is the prompt's either way. Cost runs 1.5x to 2x the bare prompt on small
-  problems and below it on the large ones, where the bare prompt's long runs are the expense.
+  quality gap is the prompt's either way.
+- **The price is time more than money.** Averaged over six problems at v0, min12 costs $24 a
+  run to just-solve's $23 and takes 87 minutes to its 80; on the patched specs 62 minutes to
+  47. Small problems pay 1.5x to 2x in both; the large ones pay less, where the bare prompt's
+  long runs are the expense. The page: `report/uplift-grid.html` (`python3 report/uplift_grid.py`).
 - **One miss is Claude's, not the spec's.** datagate's remaining failures are five tests that
   expect header and cell whitespace kept verbatim. The spec never mentions whitespace; the
   agent trims it anyway, and when asked afterwards concedes the spec gives no licence. Left

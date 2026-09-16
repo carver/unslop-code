@@ -45,9 +45,16 @@ erosion / ast% are the cell means of the quality scores (lower is better); $ is 
 - **Order does not matter for the endpoint.** min12 at the patched spec and just-solve at
   the patched spec reach the same score; only the quality differs, and that difference is
   the prompt's regardless of which step came first.
-- **Cost.** min12 costs about 1.5x to 2x just-solve on the small problems and less on the
-  large ones (rejector $28 against $35, sith $39 against $51), where the bare prompt's
-  longer runs (144 and 164 min) are the expensive part.
+- **Cost and time.** min12 costs about 1.5x to 2x just-solve on the small problems and less
+  on the large ones (rejector $28 against $35, sith $39 against $51), where the bare prompt's
+  longer runs (144 and 164 min) are the expensive part. Averaged over six problems at v0:
+  $24 against $23, 87 minutes against 80; on the patched specs $17 against $12 and 62 minutes
+  against 47. Wall clock is the larger downside, and it includes waits on the 5-hour window.
+- **ast-grep** follows erosion: 0.25 to 0.09 at v0 over six problems, 0.27 to 0.06 patched;
+  the spec patch leaves just-solve's where it was (0.25 to 0.27).
+- **The page**: `report/uplift-grid.html`, built by `python3 report/uplift_grid.py` from
+  `bin/grid --json`; five 2x2 squares averaged over the patched problems, then per-problem
+  dumbbells for every figure.
 - **datagate's residual five** are the whitespace-preservation tests, left as a benchmark
   failure by decision (see the datagate diary, 2026-09-14): the spec never mentions
   whitespace, and two of the four v2 runs registered stripping as their choice anyway.

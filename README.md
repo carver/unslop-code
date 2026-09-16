@@ -22,6 +22,10 @@ Two levers, measured in both orders on the six dev problems with Opus 5, two run
   run to just-solve's $23 and takes 87 minutes to its 80; on the patched specs 62 minutes to
   47. Small problems pay 1.5x to 2x in both; the large ones pay less, where the bare prompt's
   long runs are the expense. The page: `report/uplift-grid.html` (`python3 report/uplift_grid.py`).
+- **Erosion does not climb under min12.** The paper's Figure 5 has every prompt on every GPT
+  model eroding further from the first checkpoint to the last, and says quality prompts do
+  not slow that. On the same five phases Opus 5 just-solve goes 0.56 to 0.61 and min12 0.14 to
+  0.16, flat within noise; the page draws both over the paper's lines (`notes/uplift-grid.md`).
 - **One miss is Claude's, not the spec's.** datagate's remaining failures are five tests that
   expect header and cell whitespace kept verbatim. The spec never mentions whitespace; the
   agent trims it anyway, and when asked afterwards concedes the spec gives no licence. Left

@@ -53,11 +53,25 @@ erosion / ast% are the cell means of the quality scores (lower is better); $ is 
 - **ast-grep** follows erosion: 0.25 to 0.09 at v0 over six problems, 0.27 to 0.06 patched;
   the spec patch leaves just-solve's where it was (0.25 to 0.27).
 - **The page**: `report/uplift-grid.html`, built by `python3 report/uplift_grid.py` from
-  `bin/grid --json`; three headline bars, five 2x2 squares averaged over the patched
-  problems, then per-problem dumbbells for every figure. The erosion and ast-grep headlines
+  `bin/grid --json`; three headline bars, the Figure 5 overlay, five 2x2 squares averaged over
+  the patched problems, then per-problem dumbbells for every figure. The erosion and ast-grep headlines
   carry a human reference: the paper's Major tier (over 10k stars, 28 repos) at HEAD, erosion
   0.31 and ast-grep 0.10, Table 2 of arXiv 2603.24755v1. v2's Table 2 covers 473 repos (Major
   erosion 0.37) but drops the ast-grep and clone columns, so v1 is the source for both bars.
+- **Erosion along the run, against the paper's Figure 5.** The v2 paper (arXiv 2603.24755v2)
+  says erosion rises in 77% of agent trajectories, 0.026 per checkpoint, and that quality
+  prompts lower the starting point "but do not slow the degradation" (its Figure 5, top row:
+  every prompt on every GPT model climbs from Start to Final). Its five progress phases are
+  Start (first checkpoint), Final (last) and the interior split into Early, Mid, Late; bin/grid
+  applies the same phases to our v0 runs and pools each prompt's checkpoints per phase (twelve
+  runs, six problems). Opus 5 just-solve: 0.56, 0.58, 0.55, 0.58, 0.61. min12: 0.14, 0.13,
+  0.16, 0.13, 0.16. So just-solve climbs less than any paper model's Baseline (GPT 5.5 goes
+  0.40 to 0.55) and min12 does not climb at all, which is the opposite of the paper's prompt
+  finding. Per-run slopes agree: mean +0.006 per checkpoint for just-solve, +0.002 for min12,
+  against the paper's 0.026. Caveats: two runs per problem, four to seven checkpoints, and the
+  one problem with a clear min12 climb is rejector (0.09 to 0.22). The page draws the paper's
+  nine lines from the figure's vector paths (`report/paper_figure5.py`) with our two on top,
+  on one y axis; the paper's panels each have their own.
 - **datagate's residual five** are the whitespace-preservation tests, left as a benchmark
   failure by decision (see the datagate diary, 2026-09-14): the spec never mentions
   whitespace, and two of the four v2 runs registered stripping as their choice anyway.

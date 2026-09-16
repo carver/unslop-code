@@ -32,6 +32,7 @@ h2 { font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: 
 .legend span { display: inline-flex; align-items: center; gap: 7px; }
 .sw { width: 12px; height: 12px; border-radius: 50%; border: 2.5px solid var(--c); background: var(--panel); flex: none; }
 .sw.fill { background: var(--c); }
+.sw.soft { opacity: 0.45; }
 .squares { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; }
 .card { background: var(--panel); border: 1px solid var(--rule); border-radius: 6px; padding: 14px 16px 12px; }
 .card h3 { margin: 0 0 2px; font-size: 15px; font-weight: 600; }
@@ -81,6 +82,19 @@ svg .hit { fill: transparent; }
   <section>
     <h2>The headline</h2>
     <div class="squares" id="headline"></div>
+  </section>
+
+  <section>
+    <h2>Erosion along the run, over the paper's Figure 5</h2>
+    <div class="legend" style="margin-bottom:12px">
+      <span><i class="sw fill" style="--c:var(--js)"></i>just-solve, this repo</span>
+      <span><i class="sw fill" style="--c:var(--min)"></i>min12, this repo</span>
+      <span><i class="sw fill soft" style="--c:var(--js)"></i>paper Baseline</span>
+      <span><i class="sw fill soft" style="--c:var(--min)"></i>paper Anti-Slop</span>
+      <span><i class="sw fill soft" style="--c:var(--ink-3)"></i>paper Plan-First</span>
+    </div>
+    <div class="squares" id="trajectory"></div>
+    <p class="note" id="trajectory-note"></p>
   </section>
 
   <section>
@@ -757,6 +771,52 @@ const G = {
    "cost": 17.220003166666668,
    "minutes": 61.954179519444445
   }
+ },
+ "trajectory": {
+  "spec": "v0",
+  "phases": [
+   "Start",
+   "Early",
+   "Mid",
+   "Late",
+   "Final"
+  ],
+  "prompts": {
+   "just-solve": {
+    "runs": 12,
+    "ckpts": [
+     12,
+     14,
+     14,
+     14,
+     12
+    ],
+    "erosion": [
+     0.5577868283318558,
+     0.5823152896086393,
+     0.5482069322213929,
+     0.5822511444327227,
+     0.6104672852298884
+    ]
+   },
+   "min12-ABDJKMN": {
+    "runs": 12,
+    "ckpts": [
+     12,
+     14,
+     14,
+     14,
+     12
+    ],
+    "erosion": [
+     0.13639153285734337,
+     0.12906973396235472,
+     0.16267903262796576,
+     0.1247513252316353,
+     0.1577197647642794
+    ]
+   }
+  }
  }
 };
 const [JS, MIN] = G.prompts;
@@ -776,6 +836,17 @@ const HUMAN_TIP = "Human repositories with over 10k stars\nHEAD commit, n = 28\n
 const HUMAN = {
   erosion: { v: 0.31, label: "human, 10k+ stars", tip: `${HUMAN_TIP}\nerosion 0.31 \u00b1 0.12 (v2's 473-repo panel: 0.37)` },
   ast: { v: 0.10, label: "human, 10k+ stars", tip: `${HUMAN_TIP}\nast-grep 0.10 \u00b1 0.04` },
+};
+// arXiv 2603.24755v2 Figure 5, top row: mean structural erosion per progress phase for three
+// prompts on three models. Read off the figure's vector paths by report/paper_figure5.py, the
+// axis gridlines anchoring the scale, so each value is good to about 0.003.
+const PAPER = {
+  models: {
+    "GPT 5.3 Codex": { "Baseline": [0.569, 0.63, 0.648, 0.665, 0.699], "Anti-Slop": [0.353, 0.413, 0.443, 0.425, 0.48], "Plan-First": [0.43, 0.508, 0.582, 0.58, 0.627] },
+    "GPT 5.4": { "Baseline": [0.449, 0.489, 0.513, 0.52, 0.554], "Anti-Slop": [0.244, 0.249, 0.285, 0.274, 0.316], "Plan-First": [0.358, 0.374, 0.397, 0.409, 0.44] },
+    "GPT 5.5": { "Baseline": [0.398, 0.47, 0.522, 0.524, 0.554], "Anti-Slop": [0.15, 0.198, 0.21, 0.227, 0.259], "Plan-First": [0.199, 0.276, 0.311, 0.288, 0.345] },
+  },
+  color: { "Baseline": "var(--js)", "Anti-Slop": "var(--min)", "Plan-First": "var(--ink-3)" },
 };
 const problems = Object.keys(G.problems);
 const patched = problems.filter(p => G.problems[p].patched);
@@ -870,6 +941,53 @@ function panel(m) {
   </div>`;
 }
 
+function spreadLabels(items, gap, lo, hi) {
+  // Nudge end labels apart so none overlap; items carry y and get a ly to draw at.
+  const sorted = items.slice().sort((a, b) => a.y - b.y);
+  let y = lo;
+  for (const it of sorted) { it.ly = Math.max(it.y, y); y = it.ly + gap; }
+  const over = sorted.length ? sorted[sorted.length - 1].ly - hi : 0;
+  if (over > 0) for (const it of sorted) it.ly -= over;
+  return items;
+}
+
+function trajectoryPanel(model) {
+  const T = G.trajectory, phases = T.phases, m = METRICS[1];
+  const W = 340, left = 40, right = 78, top = 12, bottom = 30, H = 210, ymax = 0.8;
+  const x = i => left + (i / (phases.length - 1)) * (W - left - right);
+  const y = v => top + (1 - v / ymax) * (H - top - bottom);
+  const series = [];
+  for (const [name, vals] of Object.entries(PAPER.models[model]))
+    series.push({ label: name, vals, color: PAPER.color[name], soft: true, tip: i => `paper, ${model}, ${name} prompt\n${phases[i]}: erosion ${m.fmt(vals[i])}` });
+  for (const [prompt, color, tag] of [[JS, "var(--js)", "js"], [MIN, "var(--min)", "min"]]) {
+    const t = T.prompts[prompt];
+    series.push({ label: P[tag], vals: t.erosion, color, soft: false, tip: i => `${P[tag]} at ${T.spec}, ${t.runs} runs, six problems\n${phases[i]}: erosion ${m.fmt(t.erosion[i])} over ${t.ckpts[i]} checkpoints` });
+  }
+  const labels = spreadLabels(series.map(s => ({ s, y: y(s.vals[phases.length - 1]) })), 13, top + 4, H - bottom);
+  const grid = [0, 0.2, 0.4, 0.6, 0.8].map(t => `<line class="gridline" x1="${left}" y1="${y(t)}" x2="${W - right}" y2="${y(t)}"></line><text class="num" x="${left - 6}" y="${y(t) + 4}" text-anchor="end" style="fill:var(--ink-2);font-size:11px">${t.toFixed(1)}</text>`).join("");
+  const xlab = phases.map((ph, i) => `<text x="${x(i)}" y="${H - bottom + 16}" text-anchor="middle">${esc(ph)}</text>`).join("");
+  const lines = series.map(s => {
+    const pts = s.vals.map((v, i) => v == null ? null : [x(i), y(v)]).filter(Boolean);
+    const path = `<polyline points="${pts.map(p => p.join(",")).join(" ")}" fill="none" stroke="${s.color}" stroke-width="${s.soft ? 1.5 : 2.5}" stroke-linejoin="round" stroke-linecap="round" ${s.soft ? 'opacity="0.45"' : ""}></polyline>`;
+    const marks = s.vals.map((v, i) => v == null ? "" :
+      `<circle class="hit" cx="${x(i)}" cy="${y(v)}" r="10" data-tip="${esc(s.tip(i))}"></circle>` +
+      `<circle class="mark${s.soft ? "" : " fill"}" cx="${x(i)}" cy="${y(v)}" r="${s.soft ? 2.5 : 4}" style="--c:${s.color};stroke:${s.color}${s.soft ? ";opacity:0.45;fill:" + s.color : ""}" tabindex="0" data-tip="${esc(s.tip(i))}" aria-label="${esc(s.tip(i))}"></circle>`).join("");
+    return path + marks;
+  }).join("");
+  const ends = labels.map(({ s, ly }) => `<text x="${W - right + 8}" y="${ly + 4}" style="font-size:11.5px;${s.soft ? "fill:var(--ink-3)" : "fill:var(--ink);font-weight:500"}">${esc(s.label)}</text>`).join("");
+  const summary = series.map(s => `${s.label} ${s.vals.map(v => v == null ? "–" : m.fmt(v)).join(" ")}`).join("; ");
+  return `
+  <div class="card">
+    <h3>${esc(model)}</h3>
+    <p class="sub">the paper's three prompts faint, this repo's two bold</p>
+    <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Erosion by phase Start to Final. ${esc(summary)}">
+      ${grid}${xlab}
+      <line class="axis" x1="${left}" y1="${top}" x2="${left}" y2="${H - bottom}"></line>
+      ${lines}${ends}
+    </svg>
+  </div>`;
+}
+
 function bars(title, sub, m, items) {
   const W = 320, left = 132, right = 58, top = 8, rowH = 34, H = top + rowH * items.length + 4;
   const maxV = Math.max(...items.map(i => i.v));
@@ -918,6 +1036,16 @@ function caseBars() {
 }
 
 document.getElementById("headline").innerHTML = [promptBars(METRICS[1]), promptBars(METRICS[2]), caseBars()].join("");
+document.getElementById("trajectory").innerHTML = Object.keys(PAPER.models).map(trajectoryPanel).join("");
+{
+  const T = G.trajectory, f = v => v.toFixed(2);
+  const js = T.prompts[JS].erosion, mn = T.prompts[MIN].erosion;
+  document.getElementById("trajectory-note").innerHTML =
+    `<b>Reading.</b> The paper's Figure 5 (top row) is redrawn from its vector paths, one y axis for all three models instead of a range per panel. ` +
+    `Its Baseline prompt is just-solve; Anti-Slop is its quality prompt. Every paper line climbs from Start to Final, and the paper reads that as prompting not slowing the decay. ` +
+    `Our two lines are the same twelve v0 runs per prompt from the headline, each checkpoint placed in the paper's phase (first is Start, last is Final, the rest split into thirds) and pooled: ` +
+    `just-solve ${esc(f(js[0]))} to ${esc(f(js[4]))}, min12 ${esc(f(mn[0]))} to ${esc(f(mn[4]))}. Opus 5's climb is shallower than any paper model's, and under min12 there is none to see; two runs per problem and four to seven checkpoints, so read the wiggles as noise.`;
+}
 document.getElementById("squares").innerHTML = SQUARE_METRICS.map(square).join("");
 document.getElementById("panels").innerHTML = METRICS.map(panel).join("");
 

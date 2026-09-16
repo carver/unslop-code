@@ -75,6 +75,7 @@ svg .hit { fill: transparent; }
     <span><i class="sw fill" style="--c:var(--js)"></i>just-solve, patched spec</span>
     <span><i class="sw" style="--c:var(--min)"></i>min12, spec v0</span>
     <span><i class="sw fill" style="--c:var(--min)"></i>min12, patched spec</span>
+    <span><i class="sw fill" style="--c:var(--ink-3)"></i>human repos, paper Table 2</span>
   </div>
 
   <section>
@@ -768,6 +769,9 @@ const METRICS = [
   { key: "minutes", name: "Wall clock per run", unit: "min", fmt: v => v.toFixed(0) + " min", max: 170, ticks: [0, 40, 80, 120, 160], tick: v => v + "m" },
 ];
 const SQUARE_METRICS = METRICS;
+// arXiv 2603.24755v2 Table 2, HEAD commit of the Major tier (at least 10k stars, 115 of the
+// 473 Python repositories). The paper reports no ast-grep figure for human code.
+const HUMAN = { erosion: { v: 0.37, label: "human, 10k+ stars", tip: "Human repositories with at least 10k stars\nHEAD commit, n = 115, erosion 0.37 \u00b1 0.19\nSlopCodeBench paper, Table 2" } };
 const problems = Object.keys(G.problems);
 const patched = problems.filter(p => G.problems[p].patched);
 const cell = (p, prompt, kind) => G.problems[p].cells[`${prompt}|${kind}`];
@@ -888,9 +892,11 @@ function bars(title, sub, m, items) {
 function promptBars(m) {
   const a = avg(problems, JS, "v0", m.key), b = avg(problems, MIN, "v0", m.key);
   const per = prompt => problems.map(p => `${p} ${m.fmt(cell(p, prompt, "v0").mean[m.key])}`).join(", ");
+  const human = HUMAN[m.key];
   return bars(`${m.name}, by prompt`, `spec v0, mean of all six problems`, m, [
     { label: "just-solve", v: a, color: "var(--js)", soft: true, tip: `just-solve at v0\n${per(JS)}` },
     { label: "min12", v: b, color: "var(--min)", soft: true, tip: `min12 at v0\n${per(MIN)}` },
+    ...(human ? [{ label: human.label, v: human.v, color: "var(--ink-3)", soft: false, tip: human.tip }] : []),
   ]);
 }
 
@@ -914,7 +920,8 @@ const specs = patched.map(p => `${p} ${G.problems[p].patched}`).join(", ");
 document.getElementById("foot").innerHTML =
   `<b>Reading.</b> The spec moves correctness; the prompt moves quality; the order does not change where you end up. ` +
   `Patched specs: ${esc(specs)}. datagate's residual ${esc((100 * cell("datagate", MIN, "patched").mean.fail).toFixed(1))}% is the whitespace-preservation class, left as a benchmark failure. ` +
-  `Erosion and ast-grep are the harness's quality scores, share of files flagged; cost is Claude Code's reported spend per run; wall clock is checkpoint end minus start, summed, and includes waits on the 5-hour window.`;
+  `Erosion and ast-grep are the harness's quality scores, share of files flagged; cost is Claude Code's reported spend per run; wall clock is checkpoint end minus start, summed, and includes waits on the 5-hour window. ` +
+  `The human bar is the paper's Major tier (${esc(HUMAN.erosion.v.toFixed(2))} erosion at HEAD across 115 repositories with at least 10k stars, Table 2); the paper publishes no ast-grep figure for human code.`;
 
 const cols = [[JS, "v0"], [MIN, "v0"], [MIN, "patched"], [JS, "patched"]];
 const th = cols.map(([pr, k]) => `<th>${esc(pr === JS ? "just-solve" : "min12")} ${k}</th>`).join("");

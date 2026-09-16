@@ -78,6 +78,11 @@ svg .hit { fill: transparent; }
   </div>
 
   <section>
+    <h2>The headline</h2>
+    <div class="squares" id="headline"></div>
+  </section>
+
+  <section>
     <h2>Averaged over the three problems with a patched spec</h2>
     <div class="squares" id="squares"></div>
   </section>
@@ -856,6 +861,52 @@ function panel(m) {
   </div>`;
 }
 
+function bars(title, sub, m, items) {
+  const W = 320, left = 132, right = 58, top = 8, rowH = 34, H = top + rowH * items.length + 4;
+  const maxV = Math.max(...items.map(i => i.v));
+  const x = v => left + (v / maxV) * (W - left - right);
+  const first = items[0].v;
+  const rows = items.map((it, i) => {
+    const y = top + rowH * i + 6, h = rowH - 12;
+    const drop = i === 0 ? "" : ` (${esc(signed(m, it.v - first))})`;
+    return `
+      <text class="lab" x="${left - 10}" y="${y + h / 2 + 4}" text-anchor="end" style="font-size:12.5px">${esc(it.label)}</text>
+      <rect x="${left}" y="${y}" width="${Math.max(2, x(it.v) - left)}" height="${h}" rx="3" style="fill:${it.color};${it.soft ? "opacity:0.45" : ""}" data-tip="${esc(it.tip)}"></rect>
+      <text class="num" x="${x(it.v) + 6}" y="${y + h / 2 + 4}" style="font-size:12.5px">${esc(m.fmt(it.v))}<tspan style="fill:var(--ink-3)">${drop}</tspan></text>`;
+  });
+  return `
+  <div class="card">
+    <h3>${esc(title)}</h3>
+    <p class="sub">${esc(sub)}</p>
+    <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(title)}: ${esc(items.map(i => `${i.label} ${m.fmt(i.v)}`).join(", "))}">
+      <line class="axis" x1="${left}" y1="${top}" x2="${left}" y2="${H - 4}"></line>
+      ${rows.join("")}
+    </svg>
+  </div>`;
+}
+
+function promptBars(m) {
+  const a = avg(problems, JS, "v0", m.key), b = avg(problems, MIN, "v0", m.key);
+  const per = prompt => problems.map(p => `${p} ${m.fmt(cell(p, prompt, "v0").mean[m.key])}`).join(", ");
+  return bars(`${m.name}, by prompt`, `spec v0, mean of all six problems`, m, [
+    { label: "just-solve", v: a, color: "var(--js)", soft: true, tip: `just-solve at v0\n${per(JS)}` },
+    { label: "min12", v: b, color: "var(--min)", soft: true, tip: `min12 at v0\n${per(MIN)}` },
+  ]);
+}
+
+function caseBars() {
+  const m = METRICS[0];
+  const per = (prompt, kind) => patched.map(p => `${p} ${m.fmt(cell(p, prompt, kind).mean[m.key])}`).join(", ");
+  const it = (label, prompt, kind, color, soft) => ({ label, v: avg(patched, prompt, kind, m.key), color, soft, tip: `${label}\n${per(prompt, kind)}` });
+  return bars("Hidden tests failed, four cases", `mean of ${patched.join(", ")}`, m, [
+    it("just-solve, v0", JS, "v0", "var(--js)", true),
+    it("min12, v0", MIN, "v0", "var(--min)", true),
+    it("just-solve, patched", JS, "patched", "var(--js)", false),
+    it("min12, patched", MIN, "patched", "var(--min)", false),
+  ]);
+}
+
+document.getElementById("headline").innerHTML = [promptBars(METRICS[1]), promptBars(METRICS[2]), caseBars()].join("");
 document.getElementById("squares").innerHTML = SQUARE_METRICS.map(square).join("");
 document.getElementById("panels").innerHTML = METRICS.map(panel).join("");
 

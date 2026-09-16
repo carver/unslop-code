@@ -65,6 +65,17 @@ def test_collect_uses_the_catalog_record_and_requires_each_checkpoint(tmp_path, 
     assert partial[0][4:6] == (2, 3)
 
 
+def test_collect_keeps_each_checkpoint_erosion_in_order(tmp_path):
+    run = tmp_path / "spectest" / "opus-5_2.1.251_high_test" / "20260909T0000"; run.mkdir(parents=True)
+    rows = [{"problem": "xjq", "checkpoint": f"checkpoint_{i}", "idx": i, "passed_tests": 1, "total_tests": 1, "erosion": e}
+            for i, e in ((3, 0.5), (1, 0.1), (2, 0.3))]
+    (run / "checkpoint_results.jsonl").write_text("\n".join(json.dumps(r) for r in rows) + "\n")
+    cells, _ = rs.collect([run], checkpoints=lambda problem, run: {"checkpoint_1", "checkpoint_2", "checkpoint_3"})
+    (summary,) = cells[("xjq", "test", "v0", "opus-5")]
+    assert summary["erosion_by_ckpt"] == [0.1, 0.3, 0.5]
+    assert abs(summary["erosion"] - 0.3) < 1e-9
+
+
 def test_collect_keeps_one_row_per_checkpoint_the_last_written(tmp_path):
     run = tmp_path / "spectest" / "opus-5_2.1.251_high_test" / "20260909T0000"; run.mkdir(parents=True)
     rows = [{"problem": "datagate", "checkpoint": "checkpoint_1", "idx": 1, "passed_tests": 10, "total_tests": 10, "strict_pass_rate": 1.0, "cost": 1.0},

@@ -106,7 +106,7 @@ def collect(dirs, checkpoints=checkpoint_names):
                 "score": last["passed_tests"] / last["total_tests"], "passed": last["passed_tests"], "total": last["total_tests"],
                 "strict": sum(r.get("strict_pass_rate", r.get("pass_rate")) == 1.0 for r in rows), "ckpts": len(rows),
                 "cost": sum(r.get("cost") or 0 for r in rows), "minutes": sum(summarize.elapsed(r) for r in rows) / 60,
-                "erosion": mean(r.get("erosion") for r in rows),
+                "erosion": mean(r.get("erosion") for r in rows), "erosion_by_ckpt": [r.get("erosion") for r in rows],
                 "verbosity": mean(r.get("verbosity") for r in rows), "ast": mean(r.get("ast_grep_pct") for r in rows),
                 "cloned": mean(r.get("cloned_pct") for r in rows)})
     return cells, partial

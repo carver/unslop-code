@@ -7,7 +7,8 @@ Rows are problems; the four cells are (prompt, spec) with spec v0 (the cached be
 spec) and "patched", the highest spec version that BOTH prompts have a complete run on, so
 the two prompts are always compared on the same words. Every figure is one where lower is
 better: fail% is the share of hidden tests failed at the last checkpoint (1 - score), the
-four quality means are as bin/results reports them, cost is cc_$ per run. A cell lists its
+four quality means are as bin/results reports them, cost is cc_$ per run, minutes the run's
+wall clock (checkpoint end minus start, summed). A cell lists its
 runs and their mean; the bottom rows average the cell means over the problems that have the
 cell (n says how many). --json prints the same structure for a page to draw from.
 
@@ -24,14 +25,14 @@ results = types.ModuleType("results"); results.__file__ = str(HERE / "results")
 sys.modules["results"] = results
 exec(compile((HERE / "results").read_text(), str(HERE / "results"), "exec"), results.__dict__)
 
-METRICS = ("fail", "erosion", "verbosity", "ast", "cloned", "cost")
+METRICS = ("fail", "erosion", "verbosity", "ast", "cloned", "cost", "minutes")
 DEFAULT_PROMPTS = ("just-solve", "min12-ABDJKMN")
 
 
 def run_figures(run):
     """A run's row of the grid: fail% and the quality means, all lower-is-better."""
     return {"fail": 1 - run["score"], "erosion": run["erosion"], "verbosity": run["verbosity"],
-            "ast": run["ast"], "cloned": run["cloned"], "cost": run["cost"]}
+            "ast": run["ast"], "cloned": run["cloned"], "cost": run["cost"], "minutes": run["minutes"]}
 
 
 def spec_number(spec):
@@ -83,11 +84,11 @@ def cell_text(cell):
     if cell is None:
         return "-"
     m = cell["mean"]
-    return f"{pct(m['fail'])} / {m['erosion']:.2f} / {m['ast']:.2f} ({len(cell['runs'])})"
+    return f"{pct(m['fail'])} / {m['erosion']:.2f} / {m['ast']:.2f} / ${m['cost']:.0f} / {m['minutes']:.0f}m ({len(cell['runs'])})"
 
 
 def table(g):
-    """Markdown: one row per problem, cells 'fail% / erosion / ast% (runs)', then the means."""
+    """Markdown: one row per problem, cells 'fail% / erosion / ast% / $ / minutes (runs)', then the means."""
     a, b = g["prompts"]
     heads = [f"{a} v0", f"{b} v0", f"{b} patched", f"{a} patched"]
     keys = [f"{a}|v0", f"{b}|v0", f"{b}|patched", f"{a}|patched"]
@@ -97,7 +98,7 @@ def table(g):
     means = [g["means"].get(k) for k in keys]
     ns = {m["n"] for m in means if m}
     n = f"n={'/'.join(str(x) for x in sorted(ns))}"
-    lines.append(f"| mean | {n} | " + " | ".join("-" if m is None else f"{pct(m['fail'])} / {m['erosion']:.2f} / {m['ast']:.2f} ({m['n']})" for m in means) + " |")
+    lines.append(f"| mean | {n} | " + " | ".join("-" if m is None else f"{pct(m['fail'])} / {m['erosion']:.2f} / {m['ast']:.2f} / ${m['cost']:.0f} / {m['minutes']:.0f}m ({m['n']})" for m in means) + " |")
     return "\n".join(lines)
 
 

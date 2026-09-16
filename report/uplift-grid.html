@@ -1,0 +1,893 @@
+<title>SCBench Uplift Grid</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root {
+  color-scheme: light;
+  --bg: #f4f5f7; --panel: #fbfbfc; --ink: #181b1f; --ink-2: #5b6170; --ink-3: #8a909c;
+  --rule: #d7dae0; --grid: #e6e8ec;
+  --js: #2a78d6; --min: #eb6834; --js-soft: #cfdff5; --min-soft: #f9d9cb;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #15171a; --panel: #1c1f23; --ink: #eceef1; --ink-2: #a6acb6; --ink-3: #737a86;
+    --rule: #2e333a; --grid: #262a30;
+    --js: #3987e5; --min: #d95926; --js-soft: #23395a; --min-soft: #55301f;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #15171a; --panel: #1c1f23; --ink: #eceef1; --ink-2: #a6acb6; --ink-3: #737a86;
+  --rule: #2e333a; --grid: #262a30;
+  --js: #3987e5; --min: #d95926; --js-soft: #23395a; --min-soft: #55301f;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: "Familjen Grotesk", "Helvetica Neue", Arial, sans-serif; font-size: 15px; line-height: 1.45; padding-block: 32px 48px; padding-inline: 20px; }
+.wrap { max-width: 1080px; margin: 0 auto; display: grid; gap: 28px; }
+h1 { font-size: 30px; font-weight: 600; letter-spacing: -0.01em; margin: 0 0 6px; text-wrap: balance; }
+h2 { font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2); margin: 0 0 12px; }
+.lede { color: var(--ink-2); max-width: 62ch; margin: 0; }
+.mono, .num { font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; font-variant-numeric: tabular-nums; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 22px; align-items: center; color: var(--ink-2); font-size: 13px; }
+.legend span { display: inline-flex; align-items: center; gap: 7px; }
+.sw { width: 12px; height: 12px; border-radius: 50%; border: 2.5px solid var(--c); background: var(--panel); flex: none; }
+.sw.fill { background: var(--c); }
+.squares { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; }
+.card { background: var(--panel); border: 1px solid var(--rule); border-radius: 6px; padding: 14px 16px 12px; }
+.card h3 { margin: 0 0 2px; font-size: 15px; font-weight: 600; }
+.card .sub { margin: 0 0 8px; font-size: 12.5px; color: var(--ink-3); }
+.card svg { width: 100%; height: auto; display: block; }
+.panels { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+.note { color: var(--ink-2); font-size: 13.5px; max-width: 70ch; margin: 0; }
+.note b { color: var(--ink); font-weight: 600; }
+details { color: var(--ink-2); font-size: 13.5px; }
+summary { cursor: pointer; color: var(--ink); font-weight: 500; }
+summary:focus-visible, .mark:focus-visible { outline: 2px solid var(--js); outline-offset: 2px; }
+.tablewrap { overflow-x: auto; margin-top: 10px; }
+table { border-collapse: collapse; font-size: 13px; white-space: nowrap; }
+th, td { text-align: left; padding: 5px 12px 5px 0; border-bottom: 1px solid var(--rule); }
+th { color: var(--ink-2); font-weight: 500; }
+#tip { position: fixed; pointer-events: none; background: var(--ink); color: var(--bg); padding: 6px 9px; border-radius: 4px; font-size: 12.5px; line-height: 1.35; max-width: 260px; opacity: 0; transition: opacity 120ms; z-index: 5; }
+#tip.on { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { #tip { transition: none; } }
+svg text { font-family: "Familjen Grotesk", "Helvetica Neue", Arial, sans-serif; fill: var(--ink-2); font-size: 12px; }
+svg text.num { font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; fill: var(--ink); }
+svg text.lab { fill: var(--ink); font-weight: 500; }
+svg text.delta { fill: var(--ink-2); font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; font-size: 11.5px; }
+svg .node { fill: var(--panel); stroke-width: 2; }
+svg .edge { stroke: var(--rule); stroke-width: 1.5; fill: none; }
+svg .gridline { stroke: var(--grid); stroke-width: 1; }
+svg .axis { stroke: var(--rule); stroke-width: 1; }
+svg .link { stroke-width: 2; stroke-linecap: round; }
+svg .mark { stroke-width: 2.5; fill: var(--panel); cursor: default; }
+svg .mark.fill { fill: var(--c); }
+svg .hit { fill: transparent; }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>SCBench Uplift Grid</h1>
+    <p class="lede">Two levers on the six dev problems, Claude Opus 5 as the agent: rewriting the spec where it is ambiguous, and swapping the benchmark's bare prompt for the 444-word min12 prompt. Every figure is lower-is-better. Two runs per cell.</p>
+  </header>
+
+  <div class="legend">
+    <span><i class="sw" style="--c:var(--js)"></i>just-solve, spec v0</span>
+    <span><i class="sw fill" style="--c:var(--js)"></i>just-solve, patched spec</span>
+    <span><i class="sw" style="--c:var(--min)"></i>min12, spec v0</span>
+    <span><i class="sw fill" style="--c:var(--min)"></i>min12, patched spec</span>
+  </div>
+
+  <section>
+    <h2>Averaged over the three problems with a patched spec</h2>
+    <div class="squares" id="squares"></div>
+  </section>
+
+  <section>
+    <h2>Per problem</h2>
+    <div class="panels" id="panels"></div>
+  </section>
+
+  <p class="note" id="foot"></p>
+
+  <details>
+    <summary>The numbers as a table</summary>
+    <div class="tablewrap"><table id="tbl"></table></div>
+  </details>
+</div>
+<div id="tip" role="status" aria-live="polite"></div>
+
+<script>
+const G = {
+ "prompts": [
+  "just-solve",
+  "min12-ABDJKMN"
+ ],
+ "problems": {
+  "datagate": {
+   "patched": "v2",
+   "cells": {
+    "just-solve|v0": {
+     "spec": "v0",
+     "runs": [
+      {
+       "fail": 0.06913580246913575,
+       "erosion": 0.7445581627233138,
+       "verbosity": 0.3760756516462401,
+       "ast": 0.3538074883515144,
+       "cloned": 0.022133851624195656,
+       "cost": 14.4809935,
+       "minutes": 44.620092633333336
+      },
+      {
+       "fail": 0.06172839506172845,
+       "erosion": 0.44957982166910704,
+       "verbosity": 0.3413807623778878,
+       "ast": 0.29220735914591917,
+       "cloned": 0.06145151628497942,
+       "cost": 10.44691,
+       "minutes": 33.71309005
+      }
+     ],
+     "mean": {
+      "fail": 0.0654320987654321,
+      "erosion": 0.5970689921962105,
+      "verbosity": 0.3587282070120639,
+      "ast": 0.32300742374871677,
+      "cloned": 0.04179268395458754,
+      "cost": 12.46395175,
+      "minutes": 39.16659134166667
+     }
+    },
+    "just-solve|patched": {
+     "spec": "v2",
+     "runs": [
+      {
+       "fail": 0.012345679012345734,
+       "erosion": 0.6659497459783106,
+       "verbosity": 0.5598494230198406,
+       "ast": 0.49948115455765496,
+       "cloned": 0.10426197165512471,
+       "cost": 14.735848500000001,
+       "minutes": 72.01164566666667
+      },
+      {
+       "fail": 0.032098765432098775,
+       "erosion": 0.6208627414029285,
+       "verbosity": 0.5059762459442118,
+       "ast": 0.45495059534458615,
+       "cloned": 0.07683183595799117,
+       "cost": 12.195454000000002,
+       "minutes": 47.12074501666667
+      }
+     ],
+     "mean": {
+      "fail": 0.022222222222222254,
+      "erosion": 0.6434062436906196,
+      "verbosity": 0.5329128344820262,
+      "ast": 0.47721587495112056,
+      "cloned": 0.09054690380655794,
+      "cost": 13.46565125,
+      "minutes": 59.56619534166667
+     }
+    },
+    "min12-ABDJKMN|v0": {
+     "spec": "v0",
+     "runs": [
+      {
+       "fail": 0.059259259259259234,
+       "erosion": 0.05450382176839571,
+       "verbosity": 0.23314863079245812,
+       "ast": 0.09233387625732083,
+       "cloned": 0.13714227491441153,
+       "cost": 18.6110605,
+       "minutes": 57.960049733333335
+      },
+      {
+       "fail": 0.07160493827160497,
+       "erosion": 0.018975132503433488,
+       "verbosity": 0.2144860095265823,
+       "ast": 0.08092489978300943,
+       "cloned": 0.1298949023094254,
+       "cost": 20.621907,
+       "minutes": 69.32313909999999
+      }
+     ],
+     "mean": {
+      "fail": 0.0654320987654321,
+      "erosion": 0.0367394771359146,
+      "verbosity": 0.22381732015952022,
+      "ast": 0.08662938802016512,
+      "cloned": 0.13351858861191845,
+      "cost": 19.61648375,
+      "minutes": 63.64159441666666
+     }
+    },
+    "min12-ABDJKMN|patched": {
+     "spec": "v2",
+     "runs": [
+      {
+       "fail": 0.012345679012345734,
+       "erosion": 0.13867570760258124,
+       "verbosity": 0.25572145168316907,
+       "ast": 0.06620725269445803,
+       "cloned": 0.1912316558922909,
+       "cost": 19.6985145,
+       "minutes": 63.662107633333335
+      },
+      {
+       "fail": 0.012345679012345734,
+       "erosion": 0.10900021870609623,
+       "verbosity": 0.22640762241563214,
+       "ast": 0.11261183433247987,
+       "cloned": 0.10256572009227123,
+       "cost": 18.231073000000002,
+       "minutes": 61.11643696666667
+      }
+     ],
+     "mean": {
+      "fail": 0.012345679012345734,
+      "erosion": 0.12383796315433873,
+      "verbosity": 0.24106453704940062,
+      "ast": 0.08940954351346894,
+      "cloned": 0.14689868799228106,
+      "cost": 18.964793750000002,
+      "minutes": 62.3892723
+     }
+    }
+   }
+  },
+  "file_merger": {
+   "patched": "v6",
+   "cells": {
+    "just-solve|v0": {
+     "spec": "v0",
+     "runs": [
+      {
+       "fail": 0.2108843537414966,
+       "erosion": 0.6841185525987222,
+       "verbosity": 0.1962252531028511,
+       "ast": 0.1687248350847875,
+       "cloned": 0.02538898910202484,
+       "cost": 25.818603000000003,
+       "minutes": 75.11696963333334
+      },
+      {
+       "fail": 0.061224489795918324,
+       "erosion": 0.7520995199341676,
+       "verbosity": 0.29016599705085094,
+       "ast": 0.27242434502441376,
+       "cloned": 0.03186399691294954,
+       "cost": 12.7773715,
+       "minutes": 45.02711231666667
+      }
+     ],
+     "mean": {
+      "fail": 0.13605442176870747,
+      "erosion": 0.7181090362664448,
+      "verbosity": 0.24319562507685102,
+      "ast": 0.22057459005460062,
+      "cloned": 0.02862649300748719,
+      "cost": 19.297987250000002,
+      "minutes": 60.07204097500001
+     }
+    },
+    "just-solve|patched": {
+     "spec": "v6",
+     "runs": [
+      {
+       "fail": 0.03401360544217691,
+       "erosion": 0.609176520238915,
+       "verbosity": 0.314639803430432,
+       "ast": 0.15230040308223744,
+       "cloned": 0.16761031174038746,
+       "cost": 18.1518415,
+       "minutes": 72.69540106666666
+      },
+      {
+       "fail": 0.013605442176870763,
+       "erosion": 0.7948657027294586,
+       "verbosity": 0.15877843200463468,
+       "ast": 0.12675222727295887,
+       "cloned": 0.0388796845392701,
+       "cost": 13.968291999999998,
+       "minutes": 53.0798733
+      }
+     ],
+     "mean": {
+      "fail": 0.023809523809523836,
+      "erosion": 0.7020211114841868,
+      "verbosity": 0.23670911771753333,
+      "ast": 0.13952631517759817,
+      "cloned": 0.10324499813982878,
+      "cost": 16.060066749999997,
+      "minutes": 62.88763718333333
+     }
+    },
+    "min12-ABDJKMN|v0": {
+     "spec": "v0",
+     "runs": [
+      {
+       "fail": 0.05442176870748294,
+       "erosion": 0.1889226005959549,
+       "verbosity": 0.2700023281052412,
+       "ast": 0.1153524546957278,
+       "cloned": 0.1476482267817684,
+       "cost": 22.984341,
+       "minutes": 75.32359293333334
+      },
+      {
+       "fail": 0.05442176870748294,
+       "erosion": 0.2098223135741843,
+       "verbosity": 0.24936958382397134,
+       "ast": 0.08521120678108379,
+       "cloned": 0.1607157383330372,
+       "cost": 20.170706999999997,
+       "minutes": 83.97730320000001
+      }
+     ],
+     "mean": {
+      "fail": 0.05442176870748294,
+      "erosion": 0.1993724570850696,
+      "verbosity": 0.2596859559646063,
+      "ast": 0.1002818307384058,
+      "cloned": 0.15418198255740279,
+      "cost": 21.577523999999997,
+      "minutes": 79.65044806666668
+     }
+    },
+    "min12-ABDJKMN|patched": {
+     "spec": "v6",
+     "runs": [
+      {
+       "fail": 0.0,
+       "erosion": 0.21318725523129933,
+       "verbosity": 0.20717375554524414,
+       "ast": 0.06221647348926839,
+       "cloned": 0.1413160495982016,
+       "cost": 21.1509635,
+       "minutes": 73.53623541666667
+      },
+      {
+       "fail": 0.0,
+       "erosion": 0.30302348074297913,
+       "verbosity": 0.26055635900066615,
+       "ast": 0.07564239815280635,
+       "cloned": 0.17426088356028394,
+       "cost": 21.953903999999998,
+       "minutes": 73.2372197
+      }
+     ],
+     "mean": {
+      "fail": 0.0,
+      "erosion": 0.25810536798713923,
+      "verbosity": 0.23386505727295515,
+      "ast": 0.06892943582103737,
+      "cloned": 0.15778846657924278,
+      "cost": 21.55243375,
+      "minutes": 73.38672755833333
+     }
+    }
+   }
+  },
+  "mvvault": {
+   "patched": null,
+   "cells": {
+    "just-solve|v0": {
+     "spec": "v0",
+     "runs": [
+      {
+       "fail": 0.026431718061673992,
+       "erosion": 0.47206803990423757,
+       "verbosity": 0.31755477585716113,
+       "ast": 0.24292477375182797,
+       "cloned": 0.04420568976869214,
+       "cost": 11.818909,
+       "minutes": 48.49262506666666
+      },
+      {
+       "fail": 0.05726872246696035,
+       "erosion": 0.5686784923003971,
+       "verbosity": 0.33179255261084734,
+       "ast": 0.28733732447815913,
+       "cloned": 0.04517228978513461,
+       "cost": 15.187069499999998,
+       "minutes": 52.10117458333333
+      }
+     ],
+     "mean": {
+      "fail": 0.04185022026431717,
+      "erosion": 0.5203732661023174,
+      "verbosity": 0.32467366423400423,
+      "ast": 0.2651310491149935,
+      "cloned": 0.04468898977691337,
+      "cost": 13.502989249999999,
+      "minutes": 50.296899825
+     }
+    },
+    "min12-ABDJKMN|v0": {
+     "spec": "v0",
+     "runs": [
+      {
+       "fail": 0.03083700440528636,
+       "erosion": 0.046120947135289574,
+       "verbosity": 0.21439227992896703,
+       "ast": 0.08036393011982902,
+       "cloned": 0.11130473506414579,
+       "cost": 28.877505999999997,
+       "minutes": 97.60145098333334
+      },
+      {
+       "fail": 0.017621145374449365,
+       "erosion": 0.07378163282831525,
+       "verbosity": 0.17170853542244,
+       "ast": 0.07590742563585538,
+       "cloned": 0.08183880108195707,
+       "cost": 24.288135999999998,
+       "minutes": 94.68607723333334
+      }
+     ],
+     "mean": {
+      "fail": 0.024229074889867863,
+      "erosion": 0.05995128998180241,
+      "verbosity": 0.19305040767570353,
+      "ast": 0.0781356778778422,
+      "cloned": 0.09657176807305143,
+      "cost": 26.582820999999996,
+      "minutes": 96.14376410833333
+     }
+    }
+   }
+  },
+  "rejector": {
+   "patched": null,
+   "cells": {
+    "just-solve|v0": {
+     "spec": "v0",
+     "runs": [
+      {
+       "fail": 0.07594936708860756,
+       "erosion": 0.5585692459894899,
+       "verbosity": 0.22049494545957898,
+       "ast": 0.1853897501507229,
+       "cloned": 0.0366458580280381,
+       "cost": 35.545117999999995,
+       "minutes": 155.13944436666668
+      },
+      {
+       "fail": 0.03797468354430378,
+       "erosion": 0.7161485622315129,
+       "verbosity": 0.276177860216141,
+       "ast": 0.24173196972827413,
+       "cloned": 0.04430581210718441,
+       "cost": 34.3259075,
+       "minutes": 144.35425796666667
+      }
+     ],
+     "mean": {
+      "fail": 0.05696202531645567,
+      "erosion": 0.6373589041105014,
+      "verbosity": 0.24833640283786,
+      "ast": 0.21356085993949853,
+      "cloned": 0.04047583506761125,
+      "cost": 34.93551275,
+      "minutes": 149.74685116666666
+     }
+    },
+    "min12-ABDJKMN|v0": {
+     "spec": "v0",
+     "runs": [
+      {
+       "fail": 0.05063291139240511,
+       "erosion": 0.19239852221335274,
+       "verbosity": 0.23936451500842743,
+       "ast": 0.11445036472167788,
+       "cloned": 0.1184469294931231,
+       "cost": 28.186318500000002,
+       "minutes": 92.40152996666666
+      },
+      {
+       "fail": 0.03797468354430378,
+       "erosion": 0.15144528835671653,
+       "verbosity": 0.26450714051074614,
+       "ast": 0.1135553302597658,
+       "cloned": 0.14919321577518718,
+       "cost": 27.818013500000003,
+       "minutes": 113.1764805
+      }
+     ],
+     "mean": {
+      "fail": 0.044303797468354444,
+      "erosion": 0.17192190528503465,
+      "verbosity": 0.2519358277595868,
+      "ast": 0.11400284749072184,
+      "cloned": 0.13382007263415513,
+      "cost": 28.002166000000003,
+      "minutes": 102.78900523333333
+     }
+    }
+   }
+  },
+  "sith": {
+   "patched": null,
+   "cells": {
+    "just-solve|v0": {
+     "spec": "v0",
+     "runs": [
+      {
+       "fail": 0.16228070175438591,
+       "erosion": 0.6732150475799874,
+       "verbosity": 0.3991865494070215,
+       "ast": 0.3664354748287368,
+       "cloned": 0.04514822834225451,
+       "cost": 51.765569000000006,
+       "minutes": 163.25350745000003
+      },
+      {
+       "fail": 0.14912280701754388,
+       "erosion": 0.5791387877224378,
+       "verbosity": 0.23988317423217156,
+       "ast": 0.18060055097395125,
+       "cloned": 0.05651463758960735,
+       "cost": 49.490334,
+       "minutes": 164.10537136666665
+      }
+     ],
+     "mean": {
+      "fail": 0.1557017543859649,
+      "erosion": 0.6261769176512126,
+      "verbosity": 0.3195348618195965,
+      "ast": 0.27351801290134403,
+      "cloned": 0.05083143296593093,
+      "cost": 50.6279515,
+      "minutes": 163.67943940833334
+     }
+    },
+    "min12-ABDJKMN|v0": {
+     "spec": "v0",
+     "runs": [
+      {
+       "fail": 0.10087719298245612,
+       "erosion": 0.3883046388362177,
+       "verbosity": 0.3076113818149318,
+       "ast": 0.12046012840040432,
+       "cloned": 0.18080216584399667,
+       "cost": 40.419827,
+       "minutes": 138.88243778333333
+      },
+      {
+       "fail": 0.10526315789473684,
+       "erosion": 0.36140492125870183,
+       "verbosity": 0.36345286906538093,
+       "ast": 0.15168234402533964,
+       "cloned": 0.1958367130808848,
+       "cost": 37.05333250000001,
+       "minutes": 132.61183631666665
+      }
+     ],
+     "mean": {
+      "fail": 0.10307017543859648,
+      "erosion": 0.37485478004745976,
+      "verbosity": 0.33553212544015637,
+      "ast": 0.13607123621287198,
+      "cloned": 0.18831943946244073,
+      "cost": 38.736579750000004,
+      "minutes": 135.74713705
+     }
+    }
+   }
+  },
+  "xjq": {
+   "patched": "v3",
+   "cells": {
+    "just-solve|v0": {
+     "spec": "v0",
+     "runs": [
+      {
+       "fail": 0.041916167664670656,
+       "erosion": 0.3660106598891904,
+       "verbosity": 0.2534113956584357,
+       "ast": 0.2378393447626817,
+       "cloned": 0.0,
+       "cost": 6.132761500000001,
+       "minutes": 21.812307816666664
+      },
+      {
+       "fail": 0.041916167664670656,
+       "erosion": 0.3863587527895337,
+       "verbosity": 0.16980863711389307,
+       "ast": 0.13018740960090253,
+       "cloned": 0.01988488500088847,
+       "cost": 4.289557,
+       "minutes": 15.126947716666667
+      }
+     ],
+     "mean": {
+      "fail": 0.041916167664670656,
+      "erosion": 0.3761847063393621,
+      "verbosity": 0.2116100163861644,
+      "ast": 0.18401337718179211,
+      "cloned": 0.009942442500444236,
+      "cost": 5.211159250000001,
+      "minutes": 18.469627766666665
+     }
+    },
+    "just-solve|patched": {
+     "spec": "v3",
+     "runs": [
+      {
+       "fail": 0.0,
+       "erosion": 0.32132969033382264,
+       "verbosity": 0.20887447681262722,
+       "ast": 0.17790834815351247,
+       "cloned": 0.0,
+       "cost": 5.9128565,
+       "minutes": 19.661557116666664
+      },
+      {
+       "fail": 0.0,
+       "erosion": 0.4984945428396056,
+       "verbosity": 0.24687260532831665,
+       "ast": 0.21334024152949,
+       "cloned": 0.0,
+       "cost": 5.3367755,
+       "minutes": 18.963572399999997
+      }
+     ],
+     "mean": {
+      "fail": 0.0,
+      "erosion": 0.4099121165867141,
+      "verbosity": 0.22787354107047192,
+      "ast": 0.19562429484150123,
+      "cloned": 0.0,
+      "cost": 5.624816,
+      "minutes": 19.31256475833333
+     }
+    },
+    "min12-ABDJKMN|v0": {
+     "spec": "v0",
+     "runs": [
+      {
+       "fail": 0.041916167664670656,
+       "erosion": 0.04243984040742215,
+       "verbosity": 0.3724015004367026,
+       "ast": 0.04556418646904556,
+       "cloned": 0.3221310891750588,
+       "cost": 10.159905,
+       "minutes": 44.550469066666665
+      },
+      {
+       "fail": 0.0359281437125748,
+       "erosion": 0.02038268502897797,
+       "verbosity": 0.3643936619496176,
+       "ast": 0.019422155395364436,
+       "cloned": 0.3306112677253913,
+       "cost": 9.3693705,
+       "minutes": 41.50807388333333
+      }
+     ],
+     "mean": {
+      "fail": 0.03892215568862273,
+      "erosion": 0.031411262718200064,
+      "verbosity": 0.36839758119316013,
+      "ast": 0.032493170932204996,
+      "cloned": 0.326371178450225,
+      "cost": 9.76463775,
+      "minutes": 43.029271475
+     }
+    },
+    "min12-ABDJKMN|patched": {
+     "spec": "v3",
+     "runs": [
+      {
+       "fail": 0.0,
+       "erosion": 0.06001525306465173,
+       "verbosity": 0.5437900375698764,
+       "ast": 0.04376205929880825,
+       "cloned": 0.48903353103764713,
+       "cost": 10.8471985,
+       "minutes": 45.7042979
+      },
+      {
+       "fail": 0.0,
+       "erosion": 0.02552699866252104,
+       "verbosity": 0.3256909658887898,
+       "ast": 0.012396229498373464,
+       "cloned": 0.3064079440751336,
+       "cost": 11.4383655,
+       "minutes": 54.4687795
+      }
+     ],
+     "mean": {
+      "fail": 0.0,
+      "erosion": 0.04277112586358639,
+      "verbosity": 0.4347405017293331,
+      "ast": 0.028079144398590855,
+      "cloned": 0.39772073755639037,
+      "cost": 11.142782,
+      "minutes": 50.0865387
+     }
+    }
+   }
+  }
+ },
+ "means": {
+  "just-solve|v0": {
+   "n": 6,
+   "fail": 0.082986114694258,
+   "erosion": 0.5792119704443415,
+   "verbosity": 0.28434646289442334,
+   "ast": 0.24663421882349093,
+   "cloned": 0.03605964621216242,
+   "cost": 22.673258625000003,
+   "minutes": 80.23857508055555
+  },
+  "just-solve|patched": {
+   "n": 3,
+   "fail": 0.015343915343915363,
+   "erosion": 0.5851131572538402,
+   "verbosity": 0.33249849775667717,
+   "ast": 0.2707888283234066,
+   "cloned": 0.06459730064879558,
+   "cost": 11.716844666666667,
+   "minutes": 47.25546576111111
+  },
+  "min12-ABDJKMN|v0": {
+   "n": 6,
+   "fail": 0.055063178493059424,
+   "erosion": 0.14570852870891352,
+   "verbosity": 0.2720698696987889,
+   "ast": 0.09126902521203532,
+   "cloned": 0.1721305049648656,
+   "cost": 24.046702041666666,
+   "minutes": 86.833536725
+  },
+  "min12-ABDJKMN|patched": {
+   "n": 3,
+   "fail": 0.004115226337448578,
+   "erosion": 0.14157148566835479,
+   "verbosity": 0.30322336535056293,
+   "ast": 0.06213937457769906,
+   "cloned": 0.23413596404263806,
+   "cost": 17.220003166666668,
+   "minutes": 61.954179519444445
+  }
+ }
+};
+const [JS, MIN] = G.prompts;
+const P = { js: "just-solve", min: "min12" };
+const METRICS = [
+  { key: "fail", name: "Hidden tests failed", unit: "%", fmt: v => (100 * v).toFixed(1) + "%", max: 0.17, ticks: [0, 0.05, 0.10, 0.15], tick: v => (100 * v).toFixed(0) + "%" },
+  { key: "erosion", name: "Erosion", unit: "", fmt: v => v.toFixed(2), max: 0.8, ticks: [0, 0.2, 0.4, 0.6, 0.8], tick: v => v.toFixed(1) },
+  { key: "ast", name: "ast-grep smells", unit: "", fmt: v => v.toFixed(2), max: 0.5, ticks: [0, 0.1, 0.2, 0.3, 0.4, 0.5], tick: v => v.toFixed(1) },
+  { key: "cost", name: "Cost per run", unit: "$", fmt: v => "$" + v.toFixed(0), max: 55, ticks: [0, 10, 20, 30, 40, 50], tick: v => "$" + v },
+  { key: "minutes", name: "Wall clock per run", unit: "min", fmt: v => v.toFixed(0) + " min", max: 170, ticks: [0, 40, 80, 120, 160], tick: v => v + "m" },
+];
+const SQUARE_METRICS = METRICS;
+const problems = Object.keys(G.problems);
+const patched = problems.filter(p => G.problems[p].patched);
+const cell = (p, prompt, kind) => G.problems[p].cells[`${prompt}|${kind}`];
+const mean = xs => xs.reduce((a, b) => a + b, 0) / xs.length;
+const avg = (set, prompt, kind, key) => mean(set.map(p => cell(p, prompt, kind).mean[key]));
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+function signed(m, d) {
+  const s = d < 0 ? "−" : "+";
+  const v = Math.abs(d);
+  if (m.key === "fail") return s + (100 * v).toFixed(1) + " pt";
+  if (m.key === "cost") return s + "$" + v.toFixed(0);
+  if (m.key === "minutes") return s + v.toFixed(0) + " min";
+  return s + v.toFixed(2);
+}
+
+function square(m) {
+  const set = patched;
+  const v = {
+    a: avg(set, JS, "v0", m.key), b: avg(set, MIN, "v0", m.key),
+    c: avg(set, JS, "patched", m.key), d: avg(set, MIN, "patched", m.key),
+  };
+  const six = { a: avg(problems, JS, "v0", m.key), b: avg(problems, MIN, "v0", m.key) };
+  const W = 300, H = 178, x1 = 74, x2 = 226, y1 = 40, y2 = 122, nw = 78, nh = 28;
+  const node = (x, y, val, color, fill) => `
+    <rect class="node" x="${x - nw / 2}" y="${y - nh / 2}" width="${nw}" height="${nh}" rx="14" style="stroke:${color};${fill ? `fill:${color}` : ""}"></rect>
+    <text class="num" x="${x}" y="${y + 4.5}" text-anchor="middle" style="${fill ? "fill:var(--panel)" : ""};font-size:13px">${esc(m.fmt(val))}</text>`;
+  return `
+  <div class="card">
+    <h3>${esc(m.name)}</h3>
+    <p class="sub">columns: prompt · rows: spec</p>
+    <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(m.name)}, mean of ${set.join(", ")}: just-solve v0 ${esc(m.fmt(v.a))}, min12 v0 ${esc(m.fmt(v.b))}, just-solve patched ${esc(m.fmt(v.c))}, min12 patched ${esc(m.fmt(v.d))}">
+      <text class="lab" x="${x1}" y="16" text-anchor="middle">just-solve</text>
+      <text class="lab" x="${x2}" y="16" text-anchor="middle">min12</text>
+      <text x="8" y="${y1 + 4}" text-anchor="start">v0</text>
+      <text x="8" y="${y2 + 4}" text-anchor="start">patched</text>
+      <line class="edge" x1="${x1 + nw / 2}" y1="${y1}" x2="${x2 - nw / 2}" y2="${y1}"></line>
+      <line class="edge" x1="${x1 + nw / 2}" y1="${y2}" x2="${x2 - nw / 2}" y2="${y2}"></line>
+      <line class="edge" x1="${x1}" y1="${y1 + nh / 2}" x2="${x1}" y2="${y2 - nh / 2}"></line>
+      <line class="edge" x1="${x2}" y1="${y1 + nh / 2}" x2="${x2}" y2="${y2 - nh / 2}"></line>
+      <text class="delta" x="${(x1 + x2) / 2}" y="${y1 - 6}" text-anchor="middle">${esc(signed(m, v.b - v.a))}</text>
+      <text class="delta" x="${(x1 + x2) / 2}" y="${y2 + 15}" text-anchor="middle">${esc(signed(m, v.d - v.c))}</text>
+      <text class="delta" x="${x1 - nw / 2 - 4}" y="${(y1 + y2) / 2 + 4}" text-anchor="end">${esc(signed(m, v.c - v.a))}</text>
+      <text class="delta" x="${x2 + nw / 2 + 4}" y="${(y1 + y2) / 2 + 4}" text-anchor="start">${esc(signed(m, v.d - v.b))}</text>
+      ${node(x1, y1, v.a, "var(--js)", false)}
+      ${node(x2, y1, v.b, "var(--min)", false)}
+      ${node(x1, y2, v.c, "var(--js)", true)}
+      ${node(x2, y2, v.d, "var(--min)", true)}
+      <text x="${W / 2}" y="${H - 8}" text-anchor="middle" style="fill:var(--ink-3)">all six at v0: ${esc(m.fmt(six.a))} → ${esc(m.fmt(six.b))} (${esc(signed(m, six.b - six.a))})</text>
+    </svg>
+  </div>`;
+}
+
+function panel(m) {
+  const W = 340, left = 88, right = 14, top = 10, rowH = 30, H = top + rowH * problems.length + 34;
+  const x = v => left + (Math.min(v, m.max) / m.max) * (W - left - right);
+  const marks = [];
+  const rows = problems.map((p, i) => {
+    const y = top + rowH * i + rowH / 2;
+    const pts = [];
+    for (const [prompt, color, tag] of [[JS, "var(--js)", "js"], [MIN, "var(--min)", "min"]]) {
+      for (const kind of ["v0", "patched"]) {
+        const c = cell(p, prompt, kind);
+        if (c) pts.push({ v: c.mean[m.key], color, fill: kind === "patched", prompt: P[tag], kind, runs: c.runs.map(r => r[m.key]), spec: c.spec });
+      }
+    }
+    const v0 = pts.filter(q => !q.fill).map(q => q.v);
+    const pa = pts.filter(q => q.fill).map(q => q.v);
+    let s = `<line class="gridline" x1="${left}" y1="${y}" x2="${W - right}" y2="${y}"></line>`;
+    s += `<text x="${left - 8}" y="${y + 4}" text-anchor="end">${esc(p)}</text>`;
+    s += `<line class="link" x1="${x(Math.min(...v0))}" y1="${y}" x2="${x(Math.max(...v0))}" y2="${y}" style="stroke:var(--rule)"></line>`;
+    if (pa.length) s += `<line class="link" x1="${x(Math.min(...pa))}" y1="${y}" x2="${x(Math.max(...pa))}" y2="${y}" style="stroke:var(--ink-3)"></line>`;
+    for (const q of pts.sort((a, b) => b.v - a.v)) {
+      const tip = `${p} · ${q.prompt}, spec ${q.spec}\n${m.name}: ${m.fmt(q.v)} (runs ${q.runs.map(m.fmt).join(", ")})`;
+      s += `<circle class="hit" cx="${x(q.v)}" cy="${y}" r="11" data-tip="${esc(tip)}"></circle>`;
+      s += `<circle class="mark${q.fill ? " fill" : ""}" cx="${x(q.v)}" cy="${y}" r="5" style="--c:${q.color};stroke:${q.color}" tabindex="0" data-tip="${esc(tip)}" aria-label="${esc(tip)}"></circle>`;
+    }
+    return s;
+  });
+  const ax = top + rowH * problems.length + 6;
+  const ticks = m.ticks.map(t => `<line class="axis" x1="${x(t)}" y1="${ax}" x2="${x(t)}" y2="${ax + 4}"></line><text class="num" x="${x(t)}" y="${ax + 17}" text-anchor="middle" style="fill:var(--ink-2);font-size:11px">${esc(m.tick(t))}</text>`).join("");
+  return `
+  <div class="card">
+    <h3>${esc(m.name)}</h3>
+    <p class="sub">cell means; hover a mark for its two runs</p>
+    <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(m.name)} per problem">
+      ${rows.join("")}
+      <line class="axis" x1="${left}" y1="${ax}" x2="${W - right}" y2="${ax}"></line>
+      ${ticks}
+    </svg>
+  </div>`;
+}
+
+document.getElementById("squares").innerHTML = SQUARE_METRICS.map(square).join("");
+document.getElementById("panels").innerHTML = METRICS.map(panel).join("");
+
+const specs = patched.map(p => `${p} ${G.problems[p].patched}`).join(", ");
+document.getElementById("foot").innerHTML =
+  `<b>Reading.</b> The spec moves correctness; the prompt moves quality; the order does not change where you end up. ` +
+  `Patched specs: ${esc(specs)}. datagate's residual ${esc((100 * cell("datagate", MIN, "patched").mean.fail).toFixed(1))}% is the whitespace-preservation class, left as a benchmark failure. ` +
+  `Erosion and ast-grep are the harness's quality scores, share of files flagged; cost is Claude Code's reported spend per run; wall clock is checkpoint end minus start, summed, and includes waits on the 5-hour window.`;
+
+const cols = [[JS, "v0"], [MIN, "v0"], [MIN, "patched"], [JS, "patched"]];
+const th = cols.map(([pr, k]) => `<th>${esc(pr === JS ? "just-solve" : "min12")} ${k}</th>`).join("");
+const rows = problems.map(p => `<tr><td>${esc(p)}</td>` + cols.map(([pr, k]) => {
+  const c = cell(p, pr, k);
+  return `<td class="num">${c ? esc(`${(100 * c.mean.fail).toFixed(1)}% · ${c.mean.erosion.toFixed(2)} · ${c.mean.ast.toFixed(2)} · $${c.mean.cost.toFixed(0)} · ${c.mean.minutes.toFixed(0)}m`) : "–"}</td>`;
+}).join("") + "</tr>").join("");
+document.getElementById("tbl").innerHTML = `<thead><tr><th>problem</th>${th}</tr></thead><tbody>${rows}</tbody>` +
+  `<tfoot><tr><td colspan="5" style="color:var(--ink-3)">failed% · erosion · ast-grep · $ · minutes per run, means of two runs</td></tr></tfoot>`;
+
+const tip = document.getElementById("tip");
+function showTip(el, ev) {
+  tip.textContent = el.dataset.tip;
+  tip.classList.add("on");
+  const r = el.getBoundingClientRect();
+  const x = ev && ev.clientX != null ? ev.clientX : r.left + r.width / 2;
+  const y = ev && ev.clientY != null ? ev.clientY : r.top;
+  tip.style.left = Math.min(x + 12, window.innerWidth - tip.offsetWidth - 8) + "px";
+  tip.style.top = Math.max(8, y - tip.offsetHeight - 12) + "px";
+}
+document.addEventListener("mousemove", ev => {
+  const el = ev.target.closest && ev.target.closest("[data-tip]");
+  if (el) showTip(el, ev); else tip.classList.remove("on");
+});
+document.addEventListener("focusin", ev => { const el = ev.target.closest && ev.target.closest("[data-tip]"); if (el) showTip(el); });
+document.addEventListener("focusout", () => tip.classList.remove("on"));
+</script>

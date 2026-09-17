@@ -1,2 +1,0 @@
-Objections:
-- datagate: "Delimiter must be inferred from input" in prompt 1. It will not be inferred if there is only one column. That's a little messy in the spec.

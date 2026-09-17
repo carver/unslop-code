@@ -1,0 +1,211 @@
+<title>Patch: MUST infer delimiter</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root {
+  color-scheme: light;
+  --bg: #eef0f3; --paper: #fafbfc; --ink: #1b1f27; --ink-2: #565c6b; --ink-3: #8a90a0; --rule: #d6dae1;
+  --accept: #1e6b4f; --accept-soft: #dcefe4; --reject: #a2452f; --reject-soft: #f7e2dc;
+  --del-soft: #f7e2dc; --add-soft: #dcefe4;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #15171b; --paper: #1c1f25; --ink: #e8eaef; --ink-2: #a3a9b6; --ink-3: #6f7583; --rule: #2e323a;
+    --accept: #7ccf9c; --accept-soft: #1e3d2b; --reject: #f0a08f; --reject-soft: #4a2622;
+    --del-soft: #4a2622; --add-soft: #1e3d2b;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #15171b; --paper: #1c1f25; --ink: #e8eaef; --ink-2: #a3a9b6; --ink-3: #6f7583; --rule: #2e323a;
+  --accept: #7ccf9c; --accept-soft: #1e3d2b; --reject: #f0a08f; --reject-soft: #4a2622;
+  --del-soft: #4a2622; --add-soft: #1e3d2b;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: "Familjen Grotesk", "Helvetica Neue", Arial, sans-serif; font-size: 16px; line-height: 1.5; padding-block: 40px 72px; padding-inline: 20px; }
+.wrap { max-width: 760px; margin: 0 auto; }
+.mono { font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; }
+.eyebrow { font-size: 12.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); margin: 0 0 10px; }
+h1 { font-size: 40px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.05; margin: 0 0 14px; text-wrap: balance; }
+.lede { font-size: 18px; color: var(--ink-2); max-width: 60ch; margin: 0 0 44px; text-wrap: pretty; }
+h2 { font-size: 22px; font-weight: 600; letter-spacing: -0.01em; margin: 48px 0 12px; padding-top: 16px; border-top: 2px solid var(--ink); text-wrap: balance; }
+p { margin: 0 0 14px; max-width: 66ch; }
+p.wide { max-width: none; }
+code { font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; font-size: 0.88em; }
+.spec { background: var(--paper); border: 1px solid var(--rule); padding: 14px 18px; margin: 0 0 16px; font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; font-size: 13.5px; line-height: 1.6; overflow-x: auto; white-space: pre; }
+.spec .hi { background: var(--reject-soft); box-shadow: 0 0 0 2px var(--reject-soft); }
+.spec .dim { color: var(--ink-3); }
+.readings { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin: 0 0 18px; }
+.reading { background: var(--paper); border: 1px solid var(--rule); border-top: 3px solid var(--c); padding: 14px 16px 12px; }
+.reading h3 { margin: 0 0 6px; font-size: 15px; font-weight: 600; color: var(--c); }
+.reading p { margin: 0 0 8px; font-size: 14.5px; color: var(--ink-2); }
+.reading p:last-child { margin: 0; }
+.reading .ex { font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; font-size: 12.5px; color: var(--ink); white-space: pre; overflow-x: auto; background: var(--bg); padding: 8px 10px; margin: 8px 0 0; }
+.entry { background: var(--paper); border: 1px solid var(--rule); margin: 0 0 18px; }
+.entry .head { display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: baseline; padding: 10px 18px; border-bottom: 1px solid var(--rule); font-size: 12.5px; color: var(--ink-3); }
+.entry .head b { color: var(--ink); font-weight: 600; font-size: 14px; }
+.entry .body { padding: 14px 18px 6px; font-size: 14.5px; }
+.entry h4 { margin: 12px 0 4px; font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); font-weight: 600; }
+.entry h4:first-child { margin-top: 0; }
+.entry blockquote { margin: 0 0 6px; padding: 6px 12px; border-left: 3px solid var(--rule); font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; font-size: 12.5px; line-height: 1.55; color: var(--ink-2); white-space: pre-wrap; }
+.entry ol { margin: 0 0 6px; padding-left: 22px; }
+.entry li { margin: 0 0 6px; }
+.entry p { margin: 0 0 8px; max-width: none; }
+.entry .pick { font-weight: 600; }
+.entry .risk { display: inline-block; font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; font-size: 12.5px; padding: 1px 8px; border: 1px solid var(--rule); border-radius: 12px; margin-right: 8px; }
+.entry.chose-400 .head b::after { content: " · chose the 400"; color: var(--reject); font-weight: 500; }
+.entry.chose-accept .head b::after { content: " · chose the one-column table"; color: var(--accept); font-weight: 500; }
+.resp { font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; font-size: 13px; background: var(--paper); border: 1px solid var(--rule); padding: 12px 16px; margin: 0 0 14px; white-space: pre-wrap; overflow-x: auto; }
+.resp .k { color: var(--ink-3); }
+.cascade { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0 24px; margin: 0 0 16px; font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; font-size: 12.5px; }
+.cascade div { padding: 4px 0; border-bottom: 1px solid var(--rule); color: var(--ink-2); }
+.cascade div b { color: var(--ink); font-weight: 500; }
+table { border-collapse: collapse; width: 100%; margin: 0 0 8px; font-size: 14px; }
+th, td { text-align: left; padding: 8px 10px 8px 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3); font-weight: 600; }
+td.num, th.num { text-align: right; font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; font-variant-numeric: tabular-nums; padding-right: 18px; }
+td .bad { color: var(--reject); font-weight: 600; } td .good { color: var(--accept); font-weight: 600; }
+.tablewrap { overflow-x: auto; margin: 0 0 12px; }
+.judge { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin: 0 0 16px; }
+.judge div { background: var(--paper); border: 1px solid var(--rule); padding: 14px 16px; }
+.judge .big { font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; font-size: 26px; font-weight: 500; letter-spacing: -0.02em; line-height: 1; margin: 0 0 6px; color: var(--accept); }
+.judge p { font-size: 13.5px; color: var(--ink-2); margin: 0; }
+.diff { background: var(--paper); border: 1px solid var(--rule); padding: 10px 16px 12px; margin: 0 0 16px; font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; font-size: 13px; line-height: 1.6; overflow-x: auto; }
+.diff .where { font-size: 11.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3); margin: 0 0 6px; }
+.diff .line { display: grid; grid-template-columns: 18px 1fr; gap: 6px; white-space: pre-wrap; }
+.diff .del .sign { color: var(--reject); } .diff .add .sign { color: var(--accept); }
+.diff mark { color: inherit; border-radius: 2px; padding: 0 2px; }
+.diff .add mark { background: var(--add-soft); font-weight: 500; }
+.foot { margin-top: 44px; padding-top: 14px; border-top: 1px solid var(--rule); font-size: 13px; color: var(--ink-3); max-width: none; }
+.foot code { color: var(--ink-2); }
+@media (max-width: 480px) { h1 { font-size: 32px; } }
+</style>
+<div class="wrap">
+  <p class="eyebrow">SCBench · datagate · spec patch 03</p>
+  <h1>Patch: MUST infer delimiter</h1>
+  <p class="lede">Two words added to one sentence of a benchmark spec, and the evidence that they belong there. A hidden test, a cascade of eleven failures, forty blind judges, and the registry entry where an agent argued itself into the wrong answer.</p>
+
+  <h2>The sentence</h2>
+  <p>datagate is an HTTP service that fetches a remote CSV and serves it back as JSON. Checkpoint 1 of its spec describes parsing in three bullets. The middle one is the subject of this page. Two other lines in the same document bear on how it reads: the error table's row for non-tabular content, and the validity rule that follows it.</p>
+  <div class="spec">Errors:
+
+| Condition                          | Status |
+| ---------------------------------- | ------ |
+| Missing `source`                   | 400    |
+| Invalid URL                        | 400    |
+| Unsupported or malformed `charset` | 400    |
+<span class="dim">…</span>
+| Non-tabular content                | 400    |
+
+### CSV Parsing
+
+- If `/convert` receives `charset`, use it to decode bytes. Otherwise detect encoding.
+- <span class="hi">Delimiter must be inferred from input; minimum supported delimiters are `,`, `;`, and `\t`.</span>
+- A valid file requires at least one header row and one data row.</div>
+  <p>Nothing in the spec says what happens when the input contains none of those three characters. A file like <code>name↵alice↵bob</code> has a header row and a data row, so it satisfies the validity rule. It also has no delimiter to infer. The sentence says the delimiter <em>must</em> be inferred.</p>
+
+  <h2>Two readings</h2>
+  <div class="readings">
+    <div class="reading" style="--c: var(--accept)">
+      <h3>A one-column table</h3>
+      <p>The validity rule speaks of rows, never columns. The delimiter sentence lists which separators must be supported, not that one must occur. A file with none is a table with one column.</p>
+      <div class="ex">GET /convert?source=…/names.csv
+200 {"columns": ["name"], "rows": [["alice"], ["bob"]]}</div>
+    </div>
+    <div class="reading" style="--c: var(--reject)">
+      <h3>Not tabular, 400</h3>
+      <p>Inference is mandatory and here it cannot succeed. Python's <code>csv.Sniffer</code>, the obvious tool, raises on such input. And the error table needs "non-tabular content" to catch something: under the other reading, two lines of prose parse as a dataset.</p>
+      <div class="ex">GET /convert?source=…/names.csv
+400 {"ok": false, "error": "Non-tabular content"}</div>
+    </div>
+  </div>
+  <p>The hidden tests want the first. The reference implementation the tests were written against treats a delimiter-free file as one column. The second reading is the one an agent arrives at by taking the spec's verbs seriously.</p>
+
+  <h2>A run that chose the 400</h2>
+  <p>Every run of the min11 and min12 prompts writes an ambiguity registry before implementing: each unclear passage gets an entry with the spec text, the alternatives, a choice with reasons, and a self-rated Risk that the spec's author reads it the other way. This is entry T2 from the second min11 run on the unpatched spec, verbatim.</p>
+  <div class="entry chose-400">
+    <div class="head"><b>T2. Is a single-column file "tabular"?</b><span class="mono">min11-ABDFJKMN · spec v0 · 2026-09-08</span></div>
+    <div class="body">
+      <h4>Spec Text</h4>
+      <blockquote>| Non-tabular content | 400 |
+
+- Delimiter must be inferred from input; minimum supported delimiters are `,`, `;`, and `\t`.
+- A valid file requires at least one header row and one data row.</blockquote>
+      <h4>Alternatives</h4>
+      <ol>
+        <li>A file with no delimiter at all is still a one-column table: header line + data lines, <code>columns</code> has length 1.</li>
+        <li>A delimiter must actually be <em>found</em> for the input to be tabular; input with no <code>,</code>/<code>;</code>/<code>\t</code> producing more than one field is "non-tabular" → 400.</li>
+      </ol>
+      <h4>Choice</h4>
+      <p><span class="pick">Reading 2:</span> at least two columns are required, otherwise 400 "non-tabular". The spec makes delimiter inference a hard requirement ("Delimiter <em>must</em> be inferred"), and the natural implementation of that is <code>csv.Sniffer().sniff(sample, delimiters=",;\t")</code>, which raises <code>Could not determine delimiter</code> on single-column input. It also gives "non-tabular content" something to catch: prose or a stray text file has no consistent delimiter, and under reading 1 two lines of prose would be accepted as a one-column dataset.</p>
+      <h4>Risk</h4>
+      <p><span class="risk">40</span>Most likely divergence: the author accepts a one-column CSV as valid (200 with <code>columns</code> of length 1) and reserves 400 for HTML/JSON/binary payloads only.</p>
+    </div>
+  </div>
+  <p>Read the Risk line again. The agent named the author's actual reading, word for word, rated it a 40, and built the other one. I do not think the argument is careless. "Must be inferred" is a strong verb, the standard library really does raise, and the error table really does need a fixture. Each step is sound. The conclusion is what the tests reject.</p>
+
+  <h2>What the test saw</h2>
+  <p>The hidden test <code>TestCore::test_single_column_csv</code> converts a one-column file and expects a 200. The run above answered:</p>
+  <div class="resp"><span class="k">AssertionError:</span> {"ok": false, "error": "Non-tabular content: no delimiter (',', ';' or tab) could be inferred from the source."}</div>
+  <p>That is one test. The choice cost eleven. Five other checkpoint-1 fixtures happen to be single-column files too, so the same 400 came back for the latin-1 pair, the two dataset-id tests and the negative-numbers test. At checkpoint 4 the three CSV charset tests joined them. Every one of these failures carries the identical error string.</p>
+  <div class="cascade">
+    <div><b>checkpoint 1</b></div><div><b>checkpoint 4</b>, in addition</div>
+    <div>test_single_column_csv</div><div>test_convert_csv_charset_honored</div>
+    <div>test_charset_latin1</div><div>test_upload_csv_charset_honored</div>
+    <div>test_autodetect_latin1</div><div>test_export_charset_upload</div>
+    <div>test_negative_values_as_numbers</div><div></div>
+    <div>test_different_urls_different_ids</div><div></div>
+    <div>test_id_from_url_not_charset</div><div></div>
+  </div>
+  <p>The cascade is why two words were worth a patch. A run that chose the 400 could not be strict at any checkpoint, however well it did everything else. The min4-ABCFGHJK run on spec v1 lost eleven tests over the whole benchmark, all of them to this one choice.</p>
+
+  <h2>What the judges read</h2>
+  <p>Before patching, the sentence was put to a blind judge: fresh model calls shown the spec passage and the competing readings, with no implementation and no test in sight, asked which reading the author most likely meant.</p>
+  <div class="judge">
+    <div><p class="big">35 of 40</p><p>read the original sentence as allowing a one-column table. Five took the 400. The same model, given only the spec, mostly lands on the right side. The runs that did not were the ones that reasoned hardest about it.</p></div>
+    <div><p class="big">6 of 6</p><p>read the patched wording as a one-column table and still kept a one-line JSON body at 400. All six would also accept delimiter-free prose, which no test checks.</p></div>
+  </div>
+
+  <h2>Every run, before and after</h2>
+  <p>The test outcome across all datagate runs at checkpoint 1, by the spec version each run read. v1 is the five-sentence patch of 2026-09-02; v2 adds this patch and one other.</p>
+  <div class="tablewrap"><table>
+    <tr><th>spec</th><th class="num">runs</th><th class="num">failed the test</th><th>registries with an entry on this question</th><th class="num">chose the 400</th></tr>
+    <tr><td>v0, unpatched</td><td class="num">14</td><td class="num"><span class="bad">8</span></td><td>7 of 9</td><td class="num">4</td></tr>
+    <tr><td>v1, five sentences</td><td class="num">21</td><td class="num"><span class="bad">3</span></td><td>10 of 13</td><td class="num">2</td></tr>
+    <tr><td>v2, with "if present"</td><td class="num">21</td><td class="num"><span class="good">0</span></td><td>20 of 20</td><td class="num">0</td></tr>
+  </table></div>
+  <p>Two things stand out. Every run whose registry chose the 400 failed the test, and the other failures are early prompt variants that kept no registry. And the fix did not remove the question. Every one of the twenty v2 registries still has an entry on the delimiter-free file. What changed is the answer.</p>
+
+  <h2>The patch</h2>
+  <div class="diff">
+    <div class="where">datagate · checkpoint 1 · entered spec v2 · 2026-09-05</div>
+    <div class="line del"><span class="sign">−</span><span>- Delimiter must be inferred from input; minimum supported delimiters are `,`, `;`, and `\t`.</span></div>
+    <div class="line add"><span class="sign">+</span><span>- Delimiter must be inferred from input<mark>, if present</mark>; minimum supported delimiters are `,`, `;`, and `\t`.</span></div>
+  </div>
+  <p>Two words. They do not say what a delimiter-free file is. They concede that one can exist, which is the premise the 400 reading denied. The rest of the argument, the row-only validity rule, then carries the reader to one column on its own.</p>
+
+  <h2>The same question, after</h2>
+  <p>This is the corresponding entry from the same prompt family on spec v2, two days earlier by the calendar but on the patched text. The agent still sees the question. It even keeps the Sniffer argument. It just reads "if present" as the decisive clause.</p>
+  <div class="entry chose-accept">
+    <div class="head"><b>T4. Whether a single-column file (no delimiter) is tabular</b><span class="mono">min11-ABDFJKMN · spec v2 · 2026-09-06</span></div>
+    <div class="body">
+      <h4>Spec Text</h4>
+      <blockquote>Delimiter must be inferred from input, if present; minimum supported delimiters are `,`, `;`, and `\t`.</blockquote>
+      <h4>Alternatives</h4>
+      <ol>
+        <li>"if present" means the delimiter may legitimately be absent: a one-column file (<code>name\nalice\nbob</code>) is a valid dataset with <code>columns == ["name"]</code>.</li>
+        <li>A delimiter is mandatory: if none is inferable the content is non-tabular (400). This is what <code>csv.Sniffer</code> does natively -- it raises <code>Could not determine delimiter</code>.</li>
+      </ol>
+      <h4>Choice</h4>
+      <p><span class="pick">(1), with a guard.</span> "if present" is a deliberate qualifier and reads as an allowance for delimiter-less input, so a one-column CSV is accepted. To keep that from swallowing the "non-tabular" case, a delimiter-less payload is only accepted when every line looks like a single value rather than a sentence (&lt;= 3 whitespace-separated tokens per line and no sentence-ending punctuation); otherwise it is non-tabular. So <code>name\nalice\nbob</code> -&gt; 200 while <code>Hello world\nThis is not a CSV file.</code> -&gt; 400.</p>
+      <h4>Risk</h4>
+      <p><span class="risk">35</span>The heuristic boundary is mine, not the spec's. Author's most likely different reading: <code>csv.Sniffer</code> failure =&gt; 400 for every delimiter-less file, which would also 400 my accepted one-column case.</p>
+    </div>
+  </div>
+  <p>The guard it adds, rejecting lines that look like sentences, is the agent's own invention and the spec never asks for it. No test exercises it either way, which is the same gap the six judges noticed. Across the twenty v2 registries the Risk on this entry runs from 12 to 45. The patch settled the tests. It did not settle the agent's doubt, and on the evidence the doubt is well placed: the spec still does not say what prose is.</p>
+
+  <h2>Reading</h2>
+  <p>A Risk of 40 next to a correctly named alternative is as good as a registry entry gets. It still did not save the run. The number ranks questions for a reviewer; it does not pick a side. What picked the side here was a blind panel and a reference implementation, and the patch was written to match them rather than to make the sentence more precise. "If present" is not a definition. It is a hint about which way the author leans, placed where the agent will read it before it reasons.</p>
+
+  <p class="foot">Sources in unslop-code-bench: <code>specs/datagate/v2/03-datagate-delimiter-if-present.patch</code>; registries at <code>outputs/spectest/opus-5_2.1.251_high_min11-ABDFJKMN/20260908T2330</code> and <code>…min11-ABDFJKMN-specv2/20260906T2012</code>, <code>datagate/checkpoint_1/snapshot/AMBIGUITIES.md</code>; test outcomes from each run's <code>checkpoint_1/evaluation/report.json</code>; the 40-judge panel in <code>outputs/judge/v7/judgments.jsonl</code> (entry T15); the six-judge reading and the eleven-test cascade in <code>notes/spectest-datagate-runs.md</code>. Run counts exclude one v2 run whose evaluation never started.</p>
+</div>

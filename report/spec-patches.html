@@ -1,0 +1,195 @@
+<title>SCBench Spec Patches</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root {
+  color-scheme: light;
+  --bg: #f3f4f6; --paper: #fcfcfd; --ink: #1a1d24; --ink-2: #5a6070; --ink-3: #8b91a0; --rule: #d8dbe2;
+  --accent: #3b4b9a; --del: #a83a32; --del-soft: #f9e1de; --add: #23704a; --add-soft: #d9efe1;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #15171b; --paper: #1c1f25; --ink: #e8eaef; --ink-2: #a3a9b6; --ink-3: #6f7583; --rule: #2e323a;
+    --accent: #8f9de6; --del: #f09a91; --del-soft: #4a2622; --add: #7ccf9c; --add-soft: #1e3d2b;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #15171b; --paper: #1c1f25; --ink: #e8eaef; --ink-2: #a3a9b6; --ink-3: #6f7583; --rule: #2e323a;
+  --accent: #8f9de6; --del: #f09a91; --del-soft: #4a2622; --add: #7ccf9c; --add-soft: #1e3d2b;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: "Familjen Grotesk", "Helvetica Neue", Arial, sans-serif; font-size: 15.5px; line-height: 1.5; padding-block: 32px 64px; padding-inline: 20px; }
+.wrap { max-width: 880px; margin: 0 auto; }
+.mono { font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; }
+h1 { font-size: 30px; font-weight: 600; letter-spacing: -0.01em; margin: 0 0 8px; text-wrap: balance; }
+.lede { color: var(--ink-2); max-width: 66ch; margin: 0 0 20px; }
+.toc { display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 40px; }
+.toc a { display: flex; gap: 12px; align-items: baseline; padding: 10px 14px; background: var(--paper); border: 1px solid var(--rule); color: var(--ink); text-decoration: none; font-weight: 500; }
+.toc a:hover, .toc a:focus-visible { border-color: var(--accent); outline: none; }
+.toc .count { color: var(--ink-3); font-weight: 400; font-size: 13px; }
+section { margin: 0 0 48px; }
+h2 { font-size: 22px; font-weight: 600; margin: 0 0 6px; padding-top: 18px; border-top: 2px solid var(--ink); display: flex; gap: 10px; align-items: baseline; }
+h2 .ver { font-size: 13px; color: var(--accent); font-weight: 500; letter-spacing: 0.04em; }
+.blurb { color: var(--ink-2); max-width: 66ch; margin: 0 0 22px; }
+.patch { display: grid; grid-template-columns: 34px 1fr; gap: 12px; padding: 18px 0; border-top: 1px solid var(--rule); }
+.patch .num { color: var(--ink-3); font-size: 13px; padding-top: 5px; }
+.patch h3 { font-size: 17px; font-weight: 600; margin: 0 0 4px; text-wrap: balance; }
+.meta { margin: 0 0 12px; font-size: 12.5px; color: var(--ink-3); }
+.hunk { background: var(--paper); border: 1px solid var(--rule); margin: 0 0 10px; overflow-x: auto; }
+.where { font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; font-size: 11.5px; color: var(--ink-3); padding: 6px 12px 2px; letter-spacing: 0.04em; text-transform: uppercase; }
+.line { display: grid; grid-template-columns: 18px 1fr; gap: 6px; padding: 4px 12px; font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; font-size: 13px; line-height: 1.5; white-space: pre-wrap; }
+.line:last-child { padding-bottom: 10px; }
+.line.del .sign { color: var(--del); } .line.add .sign { color: var(--add); }
+mark { border-radius: 2px; padding: 0 2px; color: inherit; }
+mark.del { background: var(--del-soft); text-decoration: line-through; text-decoration-color: var(--del); }
+mark.add { background: var(--add-soft); font-weight: 500; }
+.note { max-width: 70ch; color: var(--ink-2); font-size: 14.5px; }
+.note p { margin: 0 0 8px; }
+.note pre { font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; font-size: 12.5px; color: var(--ink); background: var(--paper); border: 1px solid var(--rule); padding: 8px 12px; overflow-x: auto; margin: 0 0 10px; }
+.note code { font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; font-size: 0.9em; color: var(--ink); }
+.foot { color: var(--ink-3); font-size: 13px; max-width: 70ch; border-top: 1px solid var(--rule); padding-top: 14px; }
+@media (max-width: 480px) { .patch { grid-template-columns: 1fr; gap: 4px; } }
+</style>
+<div class="wrap">
+  <h1>SCBench Spec Patches</h1>
+  <p class="lede">Every change made to a benchmark spec so far: 15 patches across three of the six dev problems, each a unified diff against the spec the benchmark ships (v0). Each entry shows the changed line before and after.</p>
+  <nav class="toc"><a href="#datagate"><span class="mono">datagate</span><span class="count">3 patches · v2</span></a><a href="#file_merger"><span class="mono">file_merger</span><span class="count">8 patches · v6</span></a><a href="#xjq"><span class="mono">xjq</span><span class="count">4 patches · v3</span></a></nav>
+  
+    <section id="datagate">
+      <h2><span class="mono">datagate</span> <span class="ver">v2</span></h2>
+      <p class="blurb">An HTTP service that ingests remote CSV files and serves them back as JSON. Seven checkpoints.</p>
+      
+      <article class="patch" id="datagate-01">
+        <div class="num mono">01</div>
+        <div class="body">
+          <h3>Encoding fallback, rowid origin, upload charset, spreadsheet charset, force value</h3>
+          <p class="meta">entered v1 · 2026-09-02 · checkpoints 1, 2, 4, 5 · <span class="mono">01-datagate-clarified.patch</span></p>
+          <div class="hunk"><div class="where">checkpoint 1</div><div class="line del"><span class="sign">−</span><span>| `charset` | no       | Character encoding for decoding CSV bytes. If omitted, detect encoding from content. |</span></div><div class="line add"><span class="sign">+</span><span>| `charset` | no       | Character encoding for decoding CSV bytes. If omitted, detect <mark class="add">unambiguous </mark>encoding from content<mark class="add">, else latin-1</mark>. |</span></div></div><div class="hunk"><div class="where">checkpoint 2</div><div class="line del"><span class="sign">−</span><span>`_shape=objects`: `rows` is objects and includes `rowid` (1-based source-file row number). `rowid` is not in `columns`.</span></div><div class="line add"><span class="sign">+</span><span>`_shape=objects`: `rows` is objects and includes `rowid` (1-based source-file row number<mark class="add">, starting at the header</mark>). `rowid` is not in `columns`.</span></div></div><div class="hunk"><div class="where">checkpoint 4</div><div class="line del"><span class="sign">−</span><span>`POST /upload` accepts multipart form with field `file` or `attachment`.</span></div><div class="line add"><span class="sign">+</span><span>`POST /upload` accepts multipart form with field `file` or `attachment`<mark class="add">, and `charset` query parameter</mark>.</span></div></div><div class="hunk"><div class="where">checkpoint 4</div><div class="line del"><span class="sign">−</span><span>`charset` applies only <mark class="del">to</mark> text CSV sources.</span></div><div class="line add"><span class="sign">+</span><span>`charset` applies <mark class="add">and validates </mark>only <mark class="add">for</mark> text CSV sources.</span></div></div><div class="hunk"><div class="where">checkpoint 5</div><div class="line del"><span class="sign">−</span><span>Any<mark class="del"> additional</mark> `force` value is `HTTP 400`.</span></div><div class="line add"><span class="sign">+</span><span>Any `force` value is `HTTP 400`.</span></div></div>
+        </div>
+      </article>
+      <article class="patch" id="datagate-02">
+        <div class="num mono">02</div>
+        <div class="body">
+          <h3>Enrichment needs exactly one enrich=yes</h3>
+          <p class="meta">entered v2 · 2026-09-05 · checkpoint 7 · <span class="mono">02-datagate-enrich-single.patch</span></p>
+          <div class="hunk"><div class="where">checkpoint 7</div><div class="line del"><span class="sign">−</span><span>Only exact `enrich=yes` enables enrichment.</span></div><div class="line add"><span class="sign">+</span><span>Only<mark class="add"> a single,</mark> exact `enrich=yes` enables enrichment.</span></div></div>
+        </div>
+      </article>
+      <article class="patch" id="datagate-03">
+        <div class="num mono">03</div>
+        <div class="body">
+          <h3>Delimiter inference only when a delimiter is present</h3>
+          <p class="meta">entered v2 · 2026-09-05 · checkpoint 1 · <span class="mono">03-datagate-delimiter-if-present.patch</span></p>
+          <div class="hunk"><div class="where">checkpoint 1</div><div class="line del"><span class="sign">−</span><span>- Delimiter must be inferred from input; minimum supported delimiters are `,`, `;`, and `\t`.</span></div><div class="line add"><span class="sign">+</span><span>- Delimiter must be inferred from input<mark class="add">, if present</mark>; minimum supported delimiters are `,`, `;`, and `\t`.</span></div></div>
+        </div>
+      </article>
+    </section>
+    <section id="file_merger">
+      <h2><span class="mono">file_merger</span> <span class="ver">v6</span></h2>
+      <p class="blurb">A command-line tool that merges CSV, TSV, JSONL and Parquet inputs into one schema-resolved CSV. Four checkpoints.</p>
+      
+      <article class="patch" id="file_merger-01">
+        <div class="num mono">01</div>
+        <div class="body">
+          <h3>TSV lines may end in CRLF</h3>
+          <p class="meta">entered v1 · 2026-09-09 · checkpoint 2 · <span class="mono">01-tsv-crlf.patch</span></p>
+          <div class="hunk"><div class="where">checkpoint 2</div><div class="line del"><span class="sign">−</span><span>- **TSV**: delimiter is tab (`\t`), no quoting, header row required, `\n` line endings; literal tabs inside field not allowed (error 5)</span></div><div class="line add"><span class="sign">+</span><span>- **TSV**: delimiter is tab (`\t`), no quoting, header row required, `\n` <mark class="add">or `\r\n` </mark>line endings; literal tabs inside field not allowed (error 5)</span></div></div>
+        </div>
+      </article>
+      <article class="patch" id="file_merger-02">
+        <div class="num mono">02</div>
+        <div class="body">
+          <h3>JSONL ranks equal to CSV under the authoritative strategy</h3>
+          <p class="meta">entered v1, reworded in v3 · 2026-09-10 · checkpoint 2 · <span class="mono">02-authoritative-typed-sources.patch</span></p>
+          <div class="hunk"><div class="where">checkpoint 2</div><div class="line del"><span class="sign">−</span><span>- `--schema-strategy=authoritative` (default): prefer typed sources in precedence order</span></div><div class="line add"><span class="sign">+</span><span>- `--schema-strategy=authoritative` (default): prefer typed sources in precedence order<mark class="add">; JSONL ranks equal to CSV.</mark></span></div></div>
+        </div>
+      </article>
+      <article class="patch" id="file_merger-03">
+        <div class="num mono">03</div>
+        <div class="body">
+          <h3>CSV accepts backslash-escaped quotes</h3>
+          <p class="meta">entered v1 · 2026-09-09 · checkpoint 1 · <span class="mono">03-csv-backslash-quote.patch</span></p>
+          <div class="hunk"><div class="where">checkpoint 1</div><div class="line del"><span class="sign">−</span><span>- Quote character defaults to `&quot;`; escape character defaults to doubling the quote (`&quot;&quot;`), overrideable via flags</span></div><div class="line add"><span class="sign">+</span><span>- Quote character defaults to `&quot;`; escape character defaults to doubling the quote (`&quot;&quot;`)<mark class="add"> and accepts backslash-escapes (`\&quot;`)</mark>, overrideable via flags</span></div></div>
+        </div>
+      </article>
+      <article class="patch" id="file_merger-04">
+        <div class="num mono">04</div>
+        <div class="body">
+          <h3>Map keys in field paths are double-quoted</h3>
+          <p class="meta">entered v1 · 2026-09-09 · checkpoint 4 · <span class="mono">04-map-key-quoted.patch</span></p>
+          <div class="hunk"><div class="where">checkpoint 4</div><div class="line del"><span class="sign">−</span><span>* Field paths traverse structs, use numeric indices into arrays, and map lookups with bracketed string keys</span></div><div class="line add"><span class="sign">+</span><span>* Field paths traverse structs, use numeric indices into arrays, and map lookups with bracketed<mark class="add">, double-quoted</mark> string keys</span></div></div>
+        </div>
+      </article>
+      <article class="patch" id="file_merger-05">
+        <div class="num mono">05</div>
+        <div class="body">
+          <h3>Inference uses the casting rules</h3>
+          <p class="meta">entered v2 · 2026-09-09 · checkpoint 1 · <span class="mono">05-infer-by-cast-rules.patch</span></p>
+          <div class="hunk"><div class="where">checkpoint 1</div><div class="line add"><span class="sign">+</span><span><mark class="add">- Inference recognises values by the casting rules below</mark></span></div></div>
+        </div>
+      </article>
+      <article class="patch" id="file_merger-06">
+        <div class="num mono">06</div>
+        <div class="body">
+          <h3>Alias cycles are detected when the alias file loads</h3>
+          <p class="meta">entered v4 · 2026-09-10 · checkpoint 4 · <span class="mono">06-alias-cycle-at-load.patch</span></p>
+          <div class="hunk"><div class="where">checkpoint 4</div><div class="line del"><span class="sign">−</span><span>* May refer to built-ins or other aliases (resolve transitively; detect cycles → error 2)</span></div><div class="line add"><span class="sign">+</span><span>* May refer to built-ins or other aliases (resolve transitively; detect cycles <mark class="add">proactively </mark>→ error 2)</span></div></div>
+        </div>
+      </article>
+      <article class="patch" id="file_merger-07">
+        <div class="num mono">07</div>
+        <div class="body">
+          <h3>Percent-encoding applies to the partition value only</h3>
+          <p class="meta">entered v5 · 2026-09-10 · checkpoint 3 · <span class="mono">07-partition-encode-value-only.patch</span></p>
+          <div class="hunk"><div class="where">checkpoint 3</div><div class="line del"><span class="sign">−</span><span>- <mark class="del">Apply</mark> percent-encoding of UTF-8 bytes for characters outside `[A-Za-z0-9._-]`; space → `%20`; `/` encoded as `%2F`</span></div><div class="line add"><span class="sign">+</span><span>- <mark class="add">Values use</mark> percent-encoding of UTF-8 bytes for characters outside `[A-Za-z0-9._-]`; space → `%20`; `/` encoded as `%2F`</span></div></div>
+        </div>
+      </article>
+      <article class="patch" id="file_merger-08">
+        <div class="num mono">08</div>
+        <div class="body">
+          <h3>An unquoted map key is a syntax error</h3>
+          <p class="meta">entered v6 · 2026-09-10 · checkpoint 4 · <span class="mono">08-map-key-unquoted-is-error.patch</span></p>
+          <div class="hunk"><div class="where">checkpoint 4</div><div class="line del"><span class="sign">−</span><span>* Map lookups with `[&quot;key&quot;]` read value by exact key</span></div><div class="line add"><span class="sign">+</span><span>* Map lookups with `[&quot;key&quot;]` read value by exact key<mark class="add">; quotes are required</mark></span></div></div>
+        </div>
+      </article>
+    </section>
+    <section id="xjq">
+      <h2><span class="mono">xjq</span> <span class="ver">v3</span></h2>
+      <p class="blurb">A command-line XPath and CSS query tool for XML and HTML, with JSON conversion. Five checkpoints.</p>
+      
+      <article class="patch" id="xjq-01">
+        <div class="num mono">01</div>
+        <div class="body">
+          <h3>Text flags yield one result per matched element</h3>
+          <p class="meta">entered v1 · 2026-09-09 · checkpoint 2 · <span class="mono">01-text-flags-per-element.patch</span></p>
+          <div class="hunk"><div class="where">checkpoint 2</div><div class="line del"><span class="sign">−</span><span>- `-t`, `--text`: direct text extraction from matched elements.</span></div><div class="line add"><span class="sign">+</span><span>- `-t`, `--text`: direct text extraction from matched elements<mark class="add">, one per element</mark>.</span></div><div class="line del"><span class="sign">−</span><span>- `--text-all`: descendant text extraction from matched elements.</span></div><div class="line add"><span class="sign">+</span><span>- `--text-all`: descendant text extraction from matched elements<mark class="add">, one per element</mark>.</span></div></div>
+        </div>
+      </article>
+      <article class="patch" id="xjq-02">
+        <div class="num mono">02</div>
+        <div class="body">
+          <h3>No trailing newline after the last text result</h3>
+          <p class="meta">entered v1 · 2026-09-09 · checkpoint 1 · <span class="mono">02-no-trailing-newline.patch</span></p>
+          <div class="hunk"><div class="where">checkpoint 1</div><div class="line del"><span class="sign">−</span><span>- Text/attribute results: strip each result, collapse internal whitespace runs to single spaces, then join results with each on a newline.</span></div><div class="line add"><span class="sign">+</span><span>- Text/attribute results: strip each result, collapse internal whitespace runs to single spaces, then join results with each on a newline.<mark class="add"> No trailing newline.</mark></span></div></div>
+        </div>
+      </article>
+      <article class="patch" id="xjq-03">
+        <div class="num mono">03</div>
+        <div class="body">
+          <h3>The empty string keeps an empty text node</h3>
+          <p class="meta">entered v2 · 2026-09-09 · checkpoint 3 · <span class="mono">03-empty-string-text.patch</span></p>
+          <div class="hunk"><div class="where">checkpoint 3</div><div class="line del"><span class="sign">−</span><span>booleans as `true`/`false`, numbers as minimal string form, null as empty.</span></div><div class="line add"><span class="sign">+</span><span>booleans as `true`/`false`, numbers as minimal string form, null as empty<mark class="add"> (no self-closing tags)</mark>.</span></div></div>
+        </div>
+      </article>
+      <article class="patch" id="xjq-04">
+        <div class="num mono">04</div>
+        <div class="body">
+          <h3>A union with mixed result types is written as text</h3>
+          <p class="meta">entered v3 · 2026-09-09 · checkpoint 5 · <span class="mono">04-union-mixed-results-as-text.patch</span></p>
+          <div class="hunk"><div class="where">checkpoint 5</div><div class="line add"><span class="sign">+</span><span><mark class="add">- A union with mixed result types is written as text results.</mark></span></div></div>
+        </div>
+      </article>
+    </section>
+  <p class="foot">Source: <span class="mono">specs/&lt;problem&gt;/&lt;vN&gt;/NN-slug.patch</span> in unslop-code-bench, latest version of each problem. A version folder carries every earlier patch, so this is the full set. mvvault, rejector and sith have no patches.</p>
+</div>

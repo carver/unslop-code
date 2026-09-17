@@ -42,6 +42,11 @@ Start here:
 - `baseline-report.md` — the Sonnet 4.6 reproduction vs the leaderboard, with manifest.
   Published page: https://claude.ai/code/artifact/d4db605f-59b1-4a23-aa50-6ae72dc36dc1
   (regenerate with `python3 report/build.py`, then republish).
+- `report/` — every published page as plain HTML, so nothing depends on the claude.ai links:
+  the baseline (`scbench-baseline.html`), the five datagate sentences (`five-sentences.html`),
+  the uplift grid (`uplift-grid.html`), the spec patches per problem (`spec-patches.html`),
+  the delimiter patch (`patch-infer-delimiter.html`) and the min12 prompt rendered
+  (`min12-prompt.html`). The build scripts sit beside the pages they generate.
 - `notes/` — credential plumbing and incident log (`credential-setup.md`), control
   isolation audit, spec-delivery mechanism, per-run comparisons
   (`dev6-opus5.md`, `dev6-fable5.md`), leaderboard/paper reference, compiled results.

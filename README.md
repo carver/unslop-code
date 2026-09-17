@@ -1,9 +1,15 @@
 # unslop-code-bench
 
-Working towards solving the excellent SlopCodeBench.
+Improving Code Quality against the excellent SlopCodeBench.
 
-Making a lot of progress (in Opus 5) with general prompt improvements.
-Also finding some specs in the benchmark that are legitimately ambiguous.
+Using Opus 5 and a custom prompt, it's tempting to say that I have solved the quality issues.
+I only had the credits to run against 6 of the problems so far, but will keep expanding whenever I have spare credits at the end of the week.
+
+Interestingly, the correctness scores (Core, Isolated, Strict) didn't improve much at all.
+
+I separately analyzed the specs of three problems, and came to the conclusion that the specs are legitimately ambiguous.
+The prompts now how help identify these ambiguities, and I have applied minimal patches to get (almost) perfect strict solves.
+Occasionally, Opus makes what I think is just a wrong call (actually only once so far).
 
 ## Findings so far (2026-09-15)
 

@@ -170,3 +170,8 @@ Every upstream PR idea, with evidence and blockers, is in `notes/upstream-prs.md
 
 `outputs/` holds the three dev6 baseline runs. The setup-token lives at
 `~/.config/scbench/claude-oauth-token` (mint a new one with `bin/setup-token-wizard`).
+
+## License
+
+GPL-3.0-or-later; the text is in `LICENSE`. Copyright 2026 Jason Carver.
+The benchmark itself (slop-code-bench, its problems and harness) keeps its own license.

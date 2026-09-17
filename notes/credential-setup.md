@@ -33,9 +33,12 @@ Status: verified 2026-08-29 (see "Verification" at the bottom).
 6. Logging: `mask_sensitive_values()` redacts any env key containing
    `token`, `key`, `secret`, `password`, `credential`
    (`src/slop_code/common/common.py:3-28`), so
-   `CLAUDE_CODE_OAUTH_TOKEN` is `***redacted***` in run logs. The value does
-   appear on the `docker exec` command line on the host (visible in `ps`
-   while a checkpoint runs) and in `docker inspect` of the container.
+   `CLAUDE_CODE_OAUTH_TOKEN` is `***redacted***` in run logs, except for one
+   line: "Built docker exec command" logs the raw argv, token included, into
+   every checkpoint's `infer.log` (found 2026-09-17; `notes/upstream-prs.md`).
+   The value also appears on the `docker exec` command line on the host
+   (visible in `ps` while a checkpoint runs) and in `docker inspect` of the
+   container.
 
 Both injection paths are env-var only; nothing in the repo injects
 `ANTHROPIC_API_KEY` unless the chosen provider is `anthropic`.

@@ -82,6 +82,20 @@ transcript. Each is PR-shaped as it stands. Two have branches in `slop-code-benc
 
 Findings without a patch yet:
 
+- The OAuth token lands in every `infer.log`. `_build_exec_command()`
+  (`execution/docker_runtime/streaming.py`) logs "Built docker exec command" with the raw
+  `args` list, and that list carries `--env CLAUDE_CODE_OAUTH_TOKEN=<token>` (and the same
+  for any `type: env_var` provider). `mask_sensitive_values()` never sees it because the
+  masking runs over env dicts, not argv. Verified 2026-09-17: 136 log files under
+  `outputs/` hold the live token, one per checkpoint start, both on the container create
+  path and on every exec. Nothing in git, since `outputs/` is ignored, but a shared run
+  directory or a tarball ships the credential. File as an issue first, with the fix
+  proposed: build a redacted copy of `args` for the log line, masking the value of any
+  `--env KEY=VALUE` whose key `mask_sensitive_values` would mask (the same keyword list:
+  token, key, secret, password, credential), and drop `verbose=True` on that line. The
+  `containers.create(environment=...)` path has no log line of its own, so only the exec
+  builder needs the copy. A test: build one exec command with a token in the env and
+  assert the captured log record has no token in it.
 - `retry()` resets the usage tracker, so a checkpoint that timed out and continued
   under-reports its cost (v7 datagate ckpt 6 recorded $3 of roughly $15).
 - A collection pass that fails (uv exit 2 during a network blip) marks the checkpoint

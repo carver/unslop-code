@@ -1,5 +1,5 @@
 # Step 5 smoke run: one easy problem, leaderboard configuration, subscription auth.
-agent: /home/carver/code/claudedev/unslop-code-bench/configs/agents/claude_code-2.1.44.yaml
+agent: configs/agents/claude_code-2.1.44.yaml
 environment: docker-python3.12-uv
 prompt: just-solve
 model:
@@ -8,5 +8,5 @@ model:
 thinking: high
 problems:
   - file_backup
-save_dir: /home/carver/code/claudedev/unslop-code-bench/outputs
+save_dir: outputs
 save_template: smoke/${model.name}_${agent.version}_${thinking}_${prompt}/${now:%Y%m%dT%H%M}

@@ -154,6 +154,7 @@ def test_finished_dir_needs_evaluation_result_and_snapshot(tmp_path):
 
 def test_output_dir_parsed_through_ansi_colour():
     assert ext.output_dir_from("\x1b[32m\x1b[1mOutput directory: /runs/x/20260902T2100\x1b[0m\n") == Path("/runs/x/20260902T2100")
+    assert ext.output_dir_from("Output directory: outputs/x/20260902T2100\n") == ext.ROOT / "outputs/x/20260902T2100"
     assert ext.output_dir_from("Starting run...\n") is None
 
 

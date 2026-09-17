@@ -1,6 +1,6 @@
 # Fable 5.1 just-solve baseline on one dev problem, unpatched spec (catalog copy).
 # Launch: bin/queue add configs/runs/dev6-fable51-sith.yaml
-agent: /home/carver/code/claudedev/unslop-code-bench/configs/agents/claude_code-2.1.251-fable.yaml
+agent: configs/agents/claude_code-2.1.251-fable.yaml
 environment: docker-python3.12-uv
 prompt: just-solve
 model:
@@ -9,5 +9,5 @@ model:
 thinking: high
 problems:
   - sith
-save_dir: /home/carver/code/claudedev/unslop-code-bench/outputs
+save_dir: outputs
 save_template: dev6-fable51/${model.name}_${agent.version}_${thinking}_${prompt}/${now:%Y%m%dT%H%M}

@@ -25,14 +25,21 @@ def problems_root(problem, spec):
     return CACHE if spec == "v0" else ROOT / "specs" / problem / spec / "problems"
 
 
+def repo_relative(path):
+    """`path` as the config writes it: relative to the repo root, which every launcher runs from;
+    absolute only when it lies outside the repo."""
+    path = pathlib.Path(path).resolve()
+    return str(path.relative_to(ROOT)) if path.is_relative_to(ROOT) else str(path)
+
+
 def resolve_prompt(prompt):
     """The prompt line for the config: a path under configs/prompts, or a benchmark prompt name."""
     p = pathlib.Path(prompt)
     if p.suffix == ".jinja" and p.exists():
-        return str(p.resolve())
+        return repo_relative(p)
     local = ROOT / "configs" / "prompts" / (prompt if prompt.endswith(".jinja") else prompt + ".jinja")
     if local.exists():
-        return str(local)
+        return repo_relative(local)
     if "/" in prompt or prompt.endswith(".jinja"):
         raise SystemExit(f"run-config: no template at {prompt}")
     return prompt
@@ -51,10 +58,11 @@ def checkpoint_count(problem):
 def config_text(prompt_line, problem, name, spec, launch):
     where = "the cached spec (v0)" if spec == "v0" else f"spec {spec}, specs/{problem}/{spec}/ built by bin/spec-patch"
     return f"""# {name} on {problem}, against {where}. Written by bin/run-config.
-# Same agent, model and thinking as every spectest run.
+# Same agent, model and thinking as every spectest run. Paths are relative to the repo
+# root, which bin/queue and bin/scb-extend run from.
 #
 #   {launch}
-agent: {ROOT}/configs/agents/claude_code-2.1.251.yaml
+agent: configs/agents/claude_code-2.1.251.yaml
 environment: docker-python3.12-uv
 prompt: {prompt_line}
 model:
@@ -63,7 +71,7 @@ model:
 thinking: high
 problems:
   - {problem}
-save_dir: {ROOT}/outputs
+save_dir: outputs
 save_template: spectest/${{model.name}}_${{agent.version}}_${{thinking}}_{name}/${{now:%Y%m%dT%H%M}}
 """
 

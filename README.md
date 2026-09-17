@@ -54,7 +54,8 @@ Start here:
   specs or re-run file_backup outside the holdout eval.
 
 Running things (always through the wrapper; it enforces subscription-only auth
-and the sandbox-local venv):
+and the sandbox-local venv). Launch from the repo root: run configs name their agent,
+prompt and `save_dir` relative to it, which is where `bin/queue` and `bin/scb-extend` run.
 
     bin/scb sync v1.0                        # install the problem catalog (scb-problems release v1.0, commit
                                              # 4d38d30) into ~/.cache/scbench/problems; a bare `run` fetches

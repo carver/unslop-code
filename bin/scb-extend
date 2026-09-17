@@ -43,6 +43,7 @@ import datetime, json, pathlib, re, shutil, subprocess, sys, time
 import yaml
 
 HERE = pathlib.Path(__file__).resolve().parent
+ROOT = HERE.parent  # run configs name their paths relative to it, so scb runs from it
 DEFAULT_RESERVE = 30.0
 RESET_SLACK_S = 90
 OVERLOAD_WAIT_S = 15 * 60
@@ -174,8 +175,9 @@ def backup_finished(run_dir, problem, total):
 
 
 def output_dir_from(text):
+    """The run directory scb announced, absolute: a relative save_dir is relative to the repo root."""
     m = re.search(r"Output directory: (\S+)", re.sub(r"\x1b\[[0-9;]*m", "", text))
-    return pathlib.Path(m.group(1)) if m else None
+    return ROOT / m.group(1) if m else None
 
 
 def launcher():
@@ -194,7 +196,7 @@ def resume_command(run_dir, problem, n):
 def start_run(config):
     """Run checkpoint 1 of a fresh run from a config; stream scb's output and return (run_dir, returncode)."""
     proc = subprocess.Popen([launcher(), "run", "--config", str(config), "--no-live-progress", "--stop-after-checkpoint", "1"],
-                            stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+                            cwd=ROOT, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
     run_dir = None
     for line in proc.stdout:
         print(line, end="", flush=True)

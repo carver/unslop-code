@@ -2,14 +2,14 @@
 # Same agent, model and thinking as every spectest run.
 #
 #   SCBENCH_PROBLEMS_PATH=$PWD/problems bin/scb-extend --new configs/runs/min4-ACHJK-disambiguated-datagate-opus5.yaml datagate 7
-agent: /home/carver/code/claudedev/unslop-code-bench/configs/agents/claude_code-2.1.251.yaml
+agent: configs/agents/claude_code-2.1.251.yaml
 environment: docker-python3.12-uv
-prompt: /home/carver/code/claudedev/unslop-code-bench/configs/prompts/min4-ACHJK.jinja
+prompt: configs/prompts/min4-ACHJK.jinja
 model:
   provider: claude_code_oauth
   name: opus-5
 thinking: high
 problems:
   - datagate
-save_dir: /home/carver/code/claudedev/unslop-code-bench/outputs
+save_dir: outputs
 save_template: spectest/${model.name}_${agent.version}_${thinking}_min4-ACHJK-disambiguated/${now:%Y%m%dT%H%M}

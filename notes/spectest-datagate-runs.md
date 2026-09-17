@@ -702,7 +702,7 @@ checkpoint). Its registry has 109 entries, the most yet; the enrich entry sits a
 (the spec's v2 sentence closes it) and the top score is the query-timeout mechanism at 55.
 Quality stays in the usual band (erosion 0.117 between the lean rung's 0.133 and 0.049).
 This run also wrote its scores as `**Differs** N` with no dash, which `bin/registry-scores`
-did not parse until c3e52c0. Its repeat (job 34) is running; if both are strict, ABDEFJKMNO
+did not parse until 38784b6. Its repeat (job 34) is running; if both are strict, ABDEFJKMNO
 (minus keep-spec-tests, 483 words) runs twice, then on xjq. Behind those, at the user's
 request, just-solve on v2 twice (jobs 38-39), unconditional.
 
@@ -752,7 +752,7 @@ again about 21:35-22:20Z. All three min10 runs ended in an infrastructure failur
 evaluation's pip install lost DNS, 0/0 tests, the agent's work intact): ABDFJKMN at checkpoint
 2 with checkpoint 1 kept (strict), ABDEJKMN and ABDJKMN at checkpoint 1. Their resumes are jobs
 63-65; a first attempt (jobs 39-40) halted with exit 5 because scb-extend counted the
-infra-failed checkpoint as finished, fixed in 00e1caa, and the previews now delete only that
+infra-failed checkpoint as finished, fixed in 1ab55c5, and the previews now delete only that
 checkpoint. The v10 first runs on xjq, file_merger, mvvault, rejector and sith and the first
 just-solve v2 run were killed minutes after starting into the second outage; they left only a
 checkpoint-1 prompt and infer log under outputs/spectest (no checkpoint_results.jsonl, so
@@ -789,7 +789,7 @@ that line in v4 and the change never reached v9 or v10, so the min9/min10 chunks
 templates need it before more runs. The just-solve v2 pair (67-68) is all that remains queued.
 Queued 2026-09-07 02:25Z at the user's request, ahead of the second just-solve run: two runs of
 min11-ABDFJKMN on datagate v2 (jobs 80 then 79; 468 words). v11 (`spectest-v11.jinja`, the
-user's 3731a1b) is v10 minus "without questions" in the task line and with the generator floor
+user's 99e690d) is v10 minus "without questions" in the task line and with the generator floor
 ending "empty, one element, etc." as min4's chunk C always did; `min11-chunks/` mirrors min10
 letter for letter, F and the skeleton's task line being the only edits (tests pin both). Compare
 each against the min10-ABDFJKMN run (405 strict) and the two ABDEFJKMNOP runs.
@@ -852,7 +852,7 @@ first run to 94). mvvault's checkpoint 6 now includes the prior tests in our cac
 
 Queued 2026-09-08 14:35Z at the user's request, behind the sith repeat: min12-ABDFJKMN on
 datagate, twice on spec v2 (jobs 95-96) and twice on spec v0 (97-98). v12
-(`spectest-v12.jinja`, the user's 3cc37fd) is v11 with "Implement" in place of "Implement
+(`spectest-v12.jinja`, the user's 5bcaa5c) is v11 with "Implement" in place of "Implement
 with Red Green testing" in the intro's approach list; `min12-chunks/` mirrors min11 with only
 the skeleton changed (tests pin it), so min12-ABDFJKMN is min11-ABDFJKMN minus those four
 words, 464 words. The v0 pair is the first ABDFJKMN-shaped prompt on the unpatched spec;

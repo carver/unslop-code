@@ -70,7 +70,7 @@ The control is the dev6 sweep's just-solve run (`notes/dev6-opus5.md`).
 ## Spec v1 (2026-09-09)
 
 `notes/file_merger-misses.md` puts the min11-ABDFJKMN repeat's sixteen misses under four
-sentences; the user's wording of each is in `specs/file_merger/v1/` (0b22ff3): TSV lines may
+sentences; the user's wording of each is in `specs/file_merger/v1/` (781b0e4): TSV lines may
 end in `\r\n`; "JSONL does not outrank CSV" under the authoritative strategy; backslash-escaped
 quotes are accepted in CSV; map keys in field paths are double-quoted. Started 20:55Z at the
 user's request, alone with the 21 backfill jobs stashed: min12-ABDJKMN on v1 under
@@ -108,7 +108,7 @@ that sentence. The queue is empty; the authoritative wording waits on the user.
 
 ## Spec v3 (2026-09-10)
 
-v2 with patch 02 reworded to the user's draft, "JSONL ranks equal to CSV" (8aba62e).
+v2 with patch 02 reworded to the user's draft, "JSONL ranks equal to CSV" (70d4e88).
 Queued 16:34Z: min12-ABDJKMN on v3 under bin/scb-strict (job 137), alone, the queue
 otherwise empty; the same plan, halt at the first non-strict checkpoint.
 Halted 17:56Z after checkpoint 4: 46/46, 86/86, 104/104, 146/147. Checkpoints 1 to 3 strict
@@ -160,7 +160,7 @@ and 2 and deleted nothing. Checkpoint 3 is v5's changed spec, so the clone stops
 (`bin/queue resume <dir> 3`, job 140); checkpoint 4 is queued only if 3 is strict. Checkpoints 1
 and 2 of this run are the v4 run's, spec-identical under v5.
 Checkpoint 3 on v5, 21:04Z: 104/104, strict (job 140, 15 min). Checkpoint 4 queued on the same
-clone (job 141). `bin/fork-run` (a5f6c8b) now does the clone.
+clone (job 141). `bin/fork-run` (d44b6a3) now does the clone.
 Checkpoint 4 on v5, 21:28Z: 146/147. partition_by_map_value passed, so the value-only sentence is
 one for one; alias_cycle and the authoritative tests held. The miss is errors/map_lookup_no_quotes:
 `--key attrs[country]`, a bracket key without double quotes, must fail (the fixture says exit 2,
@@ -176,7 +176,7 @@ sentence waits on the user.
 ## Spec v6 (2026-09-10)
 
 v5 plus `08-map-key-unquoted-is-error.patch`: the map-lookup bullet at checkpoint 4 ends
-"; quotes are required", the user's wording (8ac4cb5), no judge run. Only checkpoint 4 changes,
+"; quotes are required", the user's wording (38eaf9b), no judge run. Only checkpoint 4 changes,
 so the v5 clone is forked after checkpoint 3 with `bin/fork-run … --spec v6 --keep 3 --queue`:
 checkpoints 1-2 are the v4 run's, 3 the v5 clone's, 4 re-run on v6.
 Checkpoint 4 on v6, 22:10Z: 147/147 (job 142, 27 min). map_lookup_no_quotes passed, so the
@@ -204,7 +204,7 @@ checkpoint 1 and tsv_whitespace_values from checkpoint 2) and halted at the chec
 preview (exit 5); job 146 never started a checkpoint (exit 4). The run dir stays for a
 `bin/queue resume` once the harness carries the patches again; 146 needs re-queueing.
 Recovered 02:06Z 2026-09-11: runs now read a pinned, patched checkout at `harness/` built by
-`python3 install.py` (48dc994), so the development clone can move freely. Job 147 resumes the
+`python3 install.py` (50dd146), so the development clone can move freely. Job 147 resumes the
 partial just-solve run at checkpoint 4; job 148 is the second just-solve run, queued behind it.
 
 ## just-solve on v6 (2026-09-11)

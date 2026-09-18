@@ -51,7 +51,7 @@ def quality_report(ckpt):
 
 def load_rows(run):
     """Checkpoint rows of a run, sorted, with the four quality scores from each checkpoint's scb-check report."""
-    rows = [json.loads(l) for l in (run / "checkpoint_results.jsonl").read_text().splitlines() if l.strip()]
+    rows = [json.loads(line) for line in (run / "checkpoint_results.jsonl").read_text().splitlines() if line.strip()]
     for r in rows:
         d = quality_report(run / r["problem"] / r["checkpoint"])
         if d is not None:

@@ -38,7 +38,7 @@ def test_install_backs_up_and_rewrites_only_that_row(tmp_path):
     assert json.loads((ck / "evaluation.json.before-prior-tests").read_text())["total_counts"] == {"Core": 5}
     assert (ck / "evaluation" / "report.json").read_text() == "new"
     assert (ck / "evaluation.before-prior-tests" / "report.json").read_text() == "old"
-    rows = [json.loads(l) for l in (run / "checkpoint_results.jsonl").read_text().splitlines()]
+    rows = [json.loads(line) for line in (run / "checkpoint_results.jsonl").read_text().splitlines()]
     assert rows[0]["strict_pass_rate"] == 0.9 and rows[2]["strict_pass_rate"] == 1.0
     six = rows[1]
     assert six["total_tests"] == 190 and six["passed_tests"] == 184 and six["regression_total"] == 185

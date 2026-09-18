@@ -202,7 +202,7 @@ def test_job_result_keeps_the_driver_lines_and_names_the_run_dir():
            "STRICT-RUN:   FAIL checkpoint_1-Functionality: TestFunctionality::test_preserves_whitespace\n"
            "STRICT-RUN: HALT after checkpoint_1, not a strict solve\n")
     lines, run_dir = q.job_result(log)
-    assert [l.split(":")[0] for l in lines] == ["STRICT-RUN"] * 3
+    assert [line.split(":")[0] for line in lines] == ["STRICT-RUN"] * 3
     assert run_dir == "/o/spectest/x/20260914T1054"
 
 

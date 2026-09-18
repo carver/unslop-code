@@ -260,7 +260,7 @@ RUN_DIR = re.compile(r"run_dir=([^\s)]+)")
 
 def job_result(log_text):
     """(the driver's STRICT-RUN/EXTEND lines from a job's log, the run dir they name or None)."""
-    lines = [l for l in log_text.splitlines() if RESULT_LINE.match(l)]
+    lines = [line for line in log_text.splitlines() if RESULT_LINE.match(line)]
     dirs = RUN_DIR.findall("\n".join(lines))
     return lines, (dirs[-1] if dirs else None)
 

@@ -46,7 +46,7 @@ def rewrite_row(run_dir, problem, checkpoint):
     from slop_code.metrics.checkpoint.extractors import get_evaluation_metrics
     fields = get_evaluation_metrics(run_dir / problem / checkpoint)
     rows_path = run_dir / "checkpoint_results.jsonl"
-    rows = [json.loads(l) for l in rows_path.read_text().splitlines() if l.strip()]
+    rows = [json.loads(line) for line in rows_path.read_text().splitlines() if line.strip()]
     hit = [r for r in rows if r.get("problem") == problem and r.get("checkpoint") == checkpoint]
     if len(hit) != 1:
         sys.exit(f"{rows_path}: expected one row for {problem} {checkpoint}, found {len(hit)}")

@@ -41,15 +41,15 @@ def build(letters, chunks_dir=CHUNKS):
     """(name, text) for a chunk set; unknown or repeated letters are an error."""
     idx = index(chunks_dir)
     chosen = sorted(set(letters.upper()))
-    unknown = [l for l in chosen if l not in idx]
+    unknown = [letter for letter in chosen if letter not in idx]
     if unknown or len(chosen) != len(letters):
         raise SystemExit(f"build-prompt: chunks are {''.join(idx)}; got {letters!r}")
     name = chunks_dir.name.removesuffix("-chunks") + "-" + "".join(chosen)
     skeleton = chunks_dir / "SKELETON.jinja"
     if skeleton.exists():
-        return name, fill_skeleton(skeleton.read_text(), [idx[l] for l in chosen])
+        return name, fill_skeleton(skeleton.read_text(), [idx[letter] for letter in chosen])
     parts = [(chunks_dir / "HEAD.jinja").read_text().rstrip("\n")]
-    parts += [idx[l].read_text().rstrip("\n") for l in chosen]
+    parts += [idx[letter].read_text().rstrip("\n") for letter in chosen]
     parts.append((chunks_dir / "TAIL.jinja").read_text().rstrip("\n"))
     return name, "\n\n".join(parts) + "\n"
 
@@ -70,8 +70,8 @@ def main():
     if len(args) != 1:
         raise SystemExit(__doc__)
     if args[0] == "--list":
-        for l, p in index(chunks_dir).items():
-            print(f"{l}  {p.stem[2:]:<34} {p.read_text().splitlines()[0][:80]}")
+        for letter, p in index(chunks_dir).items():
+            print(f"{letter}  {p.stem[2:]:<34} {p.read_text().splitlines()[0][:80]}")
         return
     name, text = build(args[0], chunks_dir)
     out = PROMPTS / f"{name}.jinja"

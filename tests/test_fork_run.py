@@ -44,7 +44,7 @@ def test_fork_keeps_early_checkpoints_and_points_everything_at_the_new_spec(tmp_
     assert "specv4" not in config
     assert json.loads((dst / "problem_catalog.json").read_text()) == {
         "version": "env-override", "commit": str(tmp_path / "specs" / "file_merger" / "v5" / "problems")}
-    rows = [json.loads(l) for l in (dst / "checkpoint_results.jsonl").read_text().splitlines()]
+    rows = [json.loads(line) for line in (dst / "checkpoint_results.jsonl").read_text().splitlines()]
     assert [r["checkpoint"] for r in rows] == ["checkpoint_1", "checkpoint_2"]
     assert all(r["path"].startswith(str(dst)) for r in rows)
     info = yaml.safe_load((dst / "file_merger" / "run_info.yaml").read_text())

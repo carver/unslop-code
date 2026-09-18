@@ -12,7 +12,7 @@ exec(compile(SCRIPT.read_text(), str(SCRIPT), "exec"), bp.__dict__)
 
 
 def nonblank(text):
-    return [l for l in text.splitlines() if l.strip()]
+    return [line for line in text.splitlines() if line.strip()]
 
 
 def test_all_chunks_rebuild_min4_line_for_line():

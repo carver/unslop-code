@@ -89,8 +89,8 @@ def main():
     for origin, t in every:
         print(sep.join([str(origin), t] + ["x" if (origin, t) in per_run[r] else "." for r in runs]))
     print()
-    for i, l in enumerate(labels):
-        print(f"{i + 1}: {l}")
+    for i, label in enumerate(labels):
+        print(f"{i + 1}: {label}")
 
 
 if __name__ == "__main__":

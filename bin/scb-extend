@@ -256,7 +256,7 @@ def prior_costs(problem, outputs=None, runs=3):
     logs = sorted(outputs.glob(f"*/*/*/{problem}/window_usage.jsonl"), key=lambda p: p.stat().st_mtime)
     costs = []
     for log in logs[-runs:]:
-        records = [json.loads(l) for l in log.read_text().splitlines() if l.strip()]
+        records = [json.loads(line) for line in log.read_text().splitlines() if line.strip()]
         costs += window_costs(records)
     return costs
 
@@ -345,7 +345,7 @@ def main():
     problem_dir = run_dir / problem
     log = problem_dir / "window_usage.jsonl"
     if log.exists():
-        records = [json.loads(l) for l in log.read_text().splitlines() if l.strip()] + records
+        records = [json.loads(line) for line in log.read_text().splitlines() if line.strip()] + records
     if fresh:
         with log.open("a") as f:
             for r in records:

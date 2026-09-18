@@ -488,7 +488,7 @@ def select_entries(entries: list[Entry], spec: str | None) -> list[Entry]:
 
 def cmd_summarize(args) -> None:
     out = Path(args.out)
-    recs = [json.loads(l) for l in (out / "judgments.jsonl").read_text().splitlines() if l.strip()]
+    recs = [json.loads(line) for line in (out / "judgments.jsonl").read_text().splitlines() if line.strip()]
     recs = [r for r in recs if "error" not in r]
     by = collections.defaultdict(list)
     for r in recs:

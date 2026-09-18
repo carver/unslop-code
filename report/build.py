@@ -1,7 +1,7 @@
 import json, pathlib, collections, datetime
 R = sorted(p.parent for p in pathlib.Path('outputs/dev6').glob('*/*/checkpoint_results.jsonl'))[-1]
-rows = [json.loads(l) for l in (R/'checkpoint_results.jsonl').read_text().splitlines()]
-diff = {l.split(',')[0]: l.split(',')[1] for l in pathlib.Path('problems.csv').read_text().splitlines()[1:]}
+rows = [json.loads(line) for line in (R/'checkpoint_results.jsonl').read_text().splitlines()]
+diff = {line.split(',')[0]: line.split(',')[1] for line in pathlib.Path('problems.csv').read_text().splitlines()[1:]}
 for r in rows:
     scb = R/r['problem']/r['checkpoint']/'quality_analysis'/'scb_check.json'
     d = json.loads(scb.read_text()); t = d.get('total_loc') or 0
@@ -38,7 +38,7 @@ mean = lambda k: sum(r[k] for r in rows if r[k] is not None)/sum(1 for r in rows
 stats = dict(strict=100*tot['s']/n, iso=100*tot['i']/n, core=100*tot['c']/n, cpc=tot['cost']/n, erosion=mean('erosion'), verbosity=mean('verbosity'), ast=mean('ast'), cloned=mean('cloned'))
 
 def run_stats(R):
-    rows2=[json.loads(l) for l in (R/'checkpoint_results.jsonl').read_text().splitlines()]
+    rows2=[json.loads(line) for line in (R/'checkpoint_results.jsonl').read_text().splitlines()]
     for r in rows2:
         scb=R/r['problem']/r['checkpoint']/'quality_analysis'/'scb_check.json'
         if scb.exists():
@@ -91,6 +91,6 @@ for k, v in dict(PROB_TABLE=prob_table, CK_TABLE=ck_table, BARS=bars,
                  N_STRICT=str(tot['s']), N_ISO=str(tot['i']), N_CORE=str(tot['c']), COST=f"{tot['cost']:.2f}", WALL=f"{tot['el']/3600:.1f}", RUNDIR=str(R),
                  PROBE_HEAD=PROBE_HEAD, PROBE_PROB=PROBE_PROB, PROBE_COLS=PROBE_COLS).items():
     page = page.replace('{{'+k+'}}', v)
-assert '{{' not in page, [l for l in page.splitlines() if '{{' in l][:3]
+assert '{{' not in page, [line for line in page.splitlines() if '{{' in line][:3]
 out = pathlib.Path('report/scbench-baseline.html')
 out.write_text(page); print(out, len(page))

@@ -17,7 +17,6 @@ ignore = [
   "E701",  # `if x: return` on one line
   "E702",  # two statements on one line, joined by `;`
   "E731",  # a lambda bound to a name
-  "E741",  # single-letter names such as `l`
 ]
 
 [lint.per-file-ignores]

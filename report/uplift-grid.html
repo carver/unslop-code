@@ -817,6 +817,48 @@ const G = {
     ]
    }
   }
+ },
+ "relative": {
+  "spec": "v0",
+  "baseline": "just-solve",
+  "metrics": {
+   "erosion": {
+    "n": 6,
+    "prompt": {
+     "mean": 0.23437628540704988,
+     "best": {
+      "problem": "datagate",
+      "share": 0.06153305165082358
+     },
+     "worst": {
+      "problem": "sith",
+      "share": 0.5986403674117192
+     }
+    },
+    "human": {
+     "value": 0.31,
+     "mean": 0.558688617508114
+    }
+   },
+   "ast": {
+    "n": 6,
+    "prompt": {
+     "mean": 0.3709043670056263,
+     "best": {
+      "problem": "xjq",
+      "share": 0.17658048251624694
+     },
+     "worst": {
+      "problem": "rejector",
+      "share": 0.5338190131048296
+     }
+    },
+    "human": {
+     "value": 0.1,
+     "mean": 0.41956995611535747
+    }
+   }
+  }
  }
 };
 const [JS, MIN] = G.prompts;
@@ -989,13 +1031,17 @@ function trajectoryPanel(model) {
 }
 
 function bars(title, sub, m, items) {
-  const W = 320, left = 132, right = 58, top = 8, rowH = 34, H = top + rowH * items.length + 4;
+  const W = 320, left = 132, top = 8, rowH = 34, H = top + rowH * items.length + 4;
   const maxV = Math.max(...items.map(i => i.v));
-  const x = v => left + (v / maxV) * (W - left - right);
   const first = items[0].v;
+  const drops = items.map((it, i) => i === 0 ? "" : ` (${signed(m, it.v - first)})`);
+  // The plot is as wide as lets every value label fit between its bar's end and the card
+  // edge; 7.6 is the mono character advance at 12.5px.
+  const plot = Math.min(...items.map((it, i) => (W - left - 10 - 7.6 * (m.fmt(it.v) + drops[i]).length) / (it.v / maxV)));
+  const x = v => left + (v / maxV) * plot;
   const rows = items.map((it, i) => {
     const y = top + rowH * i + 6, h = rowH - 12;
-    const drop = i === 0 ? "" : ` (${esc(signed(m, it.v - first))})`;
+    const drop = esc(drops[i]);
     return `
       <text class="lab" x="${left - 10}" y="${y + h / 2 + 4}" text-anchor="end" style="font-size:12.5px">${esc(it.label)}</text>
       <rect x="${left}" y="${y}" width="${Math.max(2, x(it.v) - left)}" height="${h}" rx="3" style="fill:${it.color};${it.soft ? "opacity:0.45" : ""}" data-tip="${esc(it.tip)}"></rect>

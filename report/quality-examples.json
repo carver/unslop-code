@@ -1,0 +1,151 @@
+{
+ "runs": {
+  "mvvault.just-solve.20260830T0354": "outputs/dev6-opus5/opus-5_2.1.251_high_just-solve/20260830T0354/mvvault/checkpoint_6/snapshot",
+  "mvvault.just-solve.20260915T0940": "outputs/spectest/opus-5_2.1.251_high_just-solve/20260915T0940/mvvault/checkpoint_6/snapshot",
+  "mvvault.min12.20260914T2119": "outputs/spectest/opus-5_2.1.251_high_min12-ABDJKMN/20260914T2119/mvvault/checkpoint_6/snapshot",
+  "mvvault.min12.20260915T0327": "outputs/spectest/opus-5_2.1.251_high_min12-ABDJKMN/20260915T0327/mvvault/checkpoint_6/snapshot",
+  "xjq.just-solve.20260830T0354": "outputs/dev6-opus5/opus-5_2.1.251_high_just-solve/20260830T0354/xjq/checkpoint_5/snapshot",
+  "xjq.min12.20260909T0650": "outputs/spectest/opus-5_2.1.251_high_min12-ABDJKMN/20260909T0650/xjq/checkpoint_5/snapshot",
+  "xjq.min12.20260914T1526": "outputs/spectest/opus-5_2.1.251_high_min12-ABDJKMN/20260914T1526/xjq/checkpoint_5/snapshot"
+ },
+ "examples": [
+  {
+   "id": "ast-pair",
+   "category": "ast",
+   "problem": "xjq",
+   "title": "Swapping matched elements for their text",
+   "what_is_wrong": "The loop wraps item.xpath() in a try/except marked 'pragma: no cover - defensive' that skips the item without a word, right after an isinstance early return.",
+   "what_changed": "Same loop, with the text step looked up in a dict and no defensive try/except.",
+   "before": {
+    "run": "xjq.just-solve.20260830T0354",
+    "segments": [
+     {
+      "file": "xjq.py",
+      "start": 491,
+      "end": 505,
+      "label": "extract_text"
+     }
+    ]
+   },
+   "after": {
+    "run": "xjq.min12.20260909T0650",
+    "segments": [
+     {
+      "file": "xjq.py",
+      "start": 161,
+      "end": 177,
+      "label": "extract_text"
+     }
+    ]
+   }
+  },
+  {
+   "id": "clone-pair",
+   "category": "clone",
+   "problem": "mvvault",
+   "title": "Listing saved media and preview filenames",
+   "what_is_wrong": "vault_filenames(name, dirname) is a parameterised copy of media_filenames, written 70 lines later. preview_filenames uses the general version, but nobody pointed media_filenames at it.",
+   "what_changed": "One asset_names(name, directory) helper, with media_names and preview_names as one-line wrappers. The other spectest run has the same shape.",
+   "before": {
+    "run": "mvvault.just-solve.20260915T0940",
+    "segments": [
+     {
+      "file": "mvault.py",
+      "start": 1330,
+      "end": 1335,
+      "label": "instance 1: media_filenames"
+     },
+     {
+      "file": "mvault.py",
+      "start": 1407,
+      "end": 1417,
+      "label": "instance 2: vault_filenames and its preview wrapper"
+     }
+    ]
+   },
+   "after": {
+    "run": "mvvault.min12.20260914T2119",
+    "segments": [
+     {
+      "file": "mvault.py",
+      "start": 1143,
+      "end": 1158,
+      "label": "asset_names with media and preview wrappers"
+     }
+    ]
+   }
+  },
+  {
+   "id": "erosion-pair",
+   "category": "erosion",
+   "problem": "mvvault",
+   "title": "Classifying an entry for the digest",
+   "what_is_wrong": "The removal test, the addition test, the changed-field scan and the reappeared special case all sit in one function that returns a three-part tuple.",
+   "what_changed": "The removal test and the changed-field scan are their own functions, and reappeared becomes a label in the changed list instead of a third return value.",
+   "before": {
+    "run": "mvvault.just-solve.20260830T0354",
+    "segments": [
+     {
+      "file": "mvault.py",
+      "start": 1181,
+      "end": 1217,
+      "label": "classify_entry"
+     }
+    ]
+   },
+   "after": {
+    "run": "mvvault.min12.20260915T0327",
+    "segments": [
+     {
+      "file": "mvault.py",
+      "start": 1263,
+      "end": 1268,
+      "label": "is_removal"
+     },
+     {
+      "file": "mvault.py",
+      "start": 1271,
+      "end": 1280,
+      "label": "changed_fields"
+     },
+     {
+      "file": "mvault.py",
+      "start": 1283,
+      "end": 1298,
+      "label": "classify_entry"
+     }
+    ]
+   }
+  },
+  {
+   "id": "cloned-tests",
+   "category": "blowup",
+   "problem": "xjq",
+   "title": "One-assert CLI tests for text flags",
+   "what_is_wrong": "Each test is `proc = run_argv([...], PAGE)` and one assert, and only the argv and the expected string change. This test file is 2,571 lines. One pytest.mark.parametrize table of (argv, doc, expected) would replace the whole group.",
+   "before": {
+    "run": "xjq.min12.20260914T1526",
+    "segments": [
+     {
+      "file": "test_xjq.py",
+      "start": 552,
+      "end": 554,
+      "label": "instance 1"
+     },
+     {
+      "file": "test_xjq.py",
+      "start": 556,
+      "end": 558,
+      "label": "instance 2"
+     },
+     {
+      "file": "test_xjq.py",
+      "start": 601,
+      "end": 603,
+      "label": "instance 3"
+     }
+    ]
+   }
+  }
+ ]
+}

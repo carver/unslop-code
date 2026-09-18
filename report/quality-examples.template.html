@@ -1,0 +1,128 @@
+<title>Spectest Code Pairs</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root {
+  color-scheme: light;
+  --bg: #f4f5f7; --panel: #fbfbfc; --ink: #181b1f; --ink-2: #5b6170; --ink-3: #8a909c;
+  --rule: #d7dae0; --grid: #e6e8ec;
+  --js: #2a78d6; --min: #eb6834; --js-soft: #cfdff5; --min-soft: #f9d9cb;
+  --hit: #c8372d; --hit-soft: #fbe1dd; --good: #2a7a4b; --good-soft: #d9efe1;
+  --kw: #6f42a8; --str: #2f6f4f; --num: #9a5b00; --fn: #1f5fae; --builtin: #0f6b7a;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #15171a; --panel: #1c1f23; --ink: #eceef1; --ink-2: #a6acb6; --ink-3: #737a86;
+    --rule: #2e333a; --grid: #262a30;
+    --js: #3987e5; --min: #d95926; --js-soft: #23395a; --min-soft: #55301f;
+    --hit: #ef6a5e; --hit-soft: #47221f; --good: #5cc487; --good-soft: #1d3a2a;
+    --kw: #b893e6; --str: #86c9a0; --num: #e0a458; --fn: #78aef0; --builtin: #6fc3d1;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #15171a; --panel: #1c1f23; --ink: #eceef1; --ink-2: #a6acb6; --ink-3: #737a86;
+  --rule: #2e333a; --grid: #262a30;
+  --js: #3987e5; --min: #d95926; --js-soft: #23395a; --min-soft: #55301f;
+  --hit: #ef6a5e; --hit-soft: #47221f; --good: #5cc487; --good-soft: #1d3a2a;
+  --kw: #b893e6; --str: #86c9a0; --num: #e0a458; --fn: #78aef0; --builtin: #6fc3d1;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: "Familjen Grotesk", "Helvetica Neue", Arial, sans-serif; font-size: 15px; line-height: 1.45; padding-block: 32px 48px; padding-inline: 20px; }
+.wrap { max-width: 1320px; margin: 0 auto; display: grid; gap: 36px; }
+h1 { font-size: 30px; font-weight: 600; letter-spacing: -0.01em; margin: 0 0 6px; text-wrap: balance; }
+h2 { font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2); margin: 0; }
+h3 { font-size: 17px; font-weight: 600; margin: 0; text-wrap: balance; }
+.lede { color: var(--ink-2); max-width: 68ch; margin: 0 0 8px; }
+.lede b { color: var(--ink); font-weight: 600; }
+.note { color: var(--ink-2); font-size: 13.5px; max-width: 70ch; margin: 0; }
+.mono { font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; font-variant-numeric: tabular-nums; }
+a { color: var(--js); text-underline-offset: 2px; }
+
+.bar { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: center; padding: 10px 14px; background: var(--panel); border: 1px solid var(--rule); border-radius: 6px; font-size: 13.5px; }
+.bar nav { display: flex; flex-wrap: wrap; gap: 4px 16px; }
+
+.group { display: grid; gap: 14px; }
+.ex { display: grid; gap: 10px; padding-top: 18px; border-top: 1px solid var(--rule); min-width: 0; }
+.ex header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 10px; }
+.chip { font-size: 12.5px; border: 1px solid var(--rule); border-radius: 999px; padding: 0 9px; color: var(--ink); white-space: nowrap; }
+.why { margin: 0; max-width: 78ch; }
+
+.switch { justify-self: start; display: inline-flex; align-items: center; gap: 9px; font: inherit; font-size: 14px; font-weight: 500; color: var(--ink); background: none; border: 0; padding: 4px 0; cursor: pointer; }
+.track { width: 34px; height: 20px; border-radius: 999px; background: var(--rule); position: relative; transition: background 120ms; flex: none; }
+.thumb { position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: var(--panel); transition: transform 120ms; }
+.switch[aria-checked="true"] .track { background: var(--min); }
+.switch[aria-checked="true"] .thumb { transform: translateX(14px); }
+.switch:focus-visible, a:focus-visible { outline: 2px solid var(--js); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .track, .thumb { transition: none; } }
+
+.panes { display: grid; gap: 14px; grid-template-columns: minmax(0, 1fr); align-items: start; }
+@media (min-width: 1100px) { .panes:has(.pane.min:not([hidden])):has(.pane.js) { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.pane { --side: var(--js); min-width: 0; background: var(--panel); border: 1px solid var(--rule); border-top: 3px solid var(--side); border-radius: 4px; }
+.pane.min { --side: var(--min); }
+.panehead { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; padding: 8px 12px; font-size: 13.5px; }
+.panehead b { font-weight: 600; color: var(--side); }
+.panehead .run { font-size: 11.5px; color: var(--ink-3); }
+.panehead .stat { margin-left: auto; font-weight: 500; }
+.seghead { font-size: 11.5px; color: var(--ink-2); padding: 5px 12px; background: var(--grid); border-block: 1px solid var(--rule); overflow-wrap: anywhere; }
+.code { overflow-x: auto; font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; font-size: 12.5px; line-height: 1.55; padding-block: 6px; }
+.lines { display: grid; min-width: max-content; }
+.ln { display: flex; white-space: pre; border-left: 3px solid transparent; padding-right: 14px; }
+.ln.flag { background: var(--hit-soft); border-left-color: var(--hit); }
+.no { flex: none; width: 5ch; text-align: right; padding-right: 1.5ch; color: var(--ink-3); user-select: none; }
+.items { list-style: none; margin: 0; padding: 8px 12px 10px; display: flex; flex-wrap: wrap; gap: 5px 8px; border-top: 1px solid var(--rule); font-size: 12.5px; color: var(--ink-2); }
+.items li { border: 1px solid var(--rule); border-radius: 3px; padding: 0 6px; }
+.items li.over { border-color: var(--hit); color: var(--ink); }
+.items .mono { font-size: 12px; }
+.changed { margin: 0; padding: 10px 12px 12px; border-top: 1px solid var(--rule); max-width: 78ch; }
+.verdict { font-size: 12.5px; font-weight: 600; border-radius: 3px; padding: 1px 7px; margin-right: 4px; white-space: nowrap; }
+.verdict.good { background: var(--good-soft); color: var(--good); }
+.verdict.flat { background: var(--grid); color: var(--ink-2); }
+.verdict.bad { background: var(--hit-soft); color: var(--hit); }
+
+.src .k, .src .kn, .src .kc, .src .kd, .src .kr, .src .ow { color: var(--kw); }
+.src .s, .src .s1, .src .s2, .src .sa, .src .sb, .src .sc, .src .sd, .src .se, .src .sh, .src .si, .src .sr, .src .ss, .src .dl { color: var(--str); }
+.src .c, .src .c1, .src .cm, .src .ch, .src .cs { color: var(--ink-3); font-style: italic; }
+.src .m, .src .mi, .src .mf, .src .mh, .src .mo, .src .mb, .src .il { color: var(--num); }
+.src .nf, .src .nc, .src .fm, .src .nd { color: var(--fn); }
+.src .nb, .src .bp, .src .ne { color: var(--builtin); }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>What just-solve wrote, and what spectest wrote instead</h1>
+    <p class="lede">Code Opus 5 wrote for the six dev problems under the benchmark's <b>just-solve</b> prompt, at the final checkpoint, spec v0. Tinted lines are what scb-check 0.1.3 flagged. The switch on each example shows what the <b>spectest</b> prompt (min12-ABDJKMN) wrote for the same job in its own run. Implementation files only, because spectest's test files dilute its scores.</p>
+    <p class="lede"><b>These are not representative.</b> They were picked by hand from 21 candidates to show spectest at its best. On other code from the same runs its version is no better: the same isinstance ladder line for line, a CC 25 main that stays CC 25, a check pasted three times on both sides.</p>
+  </header>
+
+  <div class="bar">
+    <nav aria-label="Groups">
+      <a href="#ast">ast-grep smells</a><a href="#clone">Cloned lines</a><a href="#erosion">Erosion</a><a href="#blowup">Cloned tests</a>
+    </nav>
+    <button type="button" class="switch" id="all-switch" role="switch" aria-checked="false"><span class="track"><span class="thumb"></span></span>Show every spectest version</button>
+  </div>
+
+  __EXAMPLES__
+</div>
+
+<script>
+(function () {
+  const switches = [...document.querySelectorAll('.ex .switch')];
+  const all = document.getElementById('all-switch');
+  function set(sw, on) {
+    sw.setAttribute('aria-checked', String(on));
+    const pane = document.getElementById(sw.getAttribute('aria-controls'));
+    if (pane) pane.hidden = !on;
+  }
+  switches.forEach(sw => sw.addEventListener('click', () => {
+    set(sw, sw.getAttribute('aria-checked') !== 'true');
+    all.setAttribute('aria-checked', String(switches.every(s => s.getAttribute('aria-checked') === 'true')));
+  }));
+  all.addEventListener('click', () => {
+    const on = all.getAttribute('aria-checked') !== 'true';
+    all.setAttribute('aria-checked', String(on));
+    switches.forEach(sw => set(sw, on));
+  });
+
+})();
+</script>

@@ -157,7 +157,7 @@ datagate:
     - /runs/x/datagate/checkpoint_2
 
 No changes made (dry run).
-"""
+"""  # noqa: W291  scb prints a trailing space after Completed:
 
 
 def test_deletions_lists_the_directories_a_preview_would_remove():

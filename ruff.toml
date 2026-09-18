@@ -18,5 +18,3 @@ select = ["E", "F", "W", "B", "SIM"]
 "report/build.py" = ["E501"]
 # Its fixtures quote spec sentences verbatim.
 "tests/test_judge_ambiguities.py" = ["E501"]
-# PREVIEW reproduces scb's dry-run output verbatim, trailing space included.
-"tests/test_scb_extend.py" = ["W291"]

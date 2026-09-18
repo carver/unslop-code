@@ -71,7 +71,7 @@ svg .hit { fill: transparent; }
   <header>
     <h1>Unslop Results on Slop Code Bench</h1>
     <p class="lede">Use two strategies on six problems: tweak the spec if ambiguous, and use a new prompt, "spectest". Every figure is lower-is-better. Two runs per problem, using Claude Opus 5.</p>
-    <p class="lede" style="margin-top:8px">The <b style="color:var(--ink);font-weight:600">spectest</b> prompt guides the agent to write tests from the spec before implementing. The agent splits the spec into phrases, writes a test for each one, and logs every ambiguity. <a href="min12-prompt.html">This spectest</a> is my 12th version. In the code, it's called <span class="mono" style="font-size:13.5px">min12-ABDJKMN</span>. Version 12 was split into chunks A->S, and then trimmed. The remaining bits are: A and B are shell tool hygiene, D writes tests from the spec, J and K log ambiguities, M and N speed up tests by focusing on new ones.</p>
+    <p class="lede" style="margin-top:8px">The <b style="color:var(--ink);font-weight:600">spectest</b> prompt replaces the benchmark's default, just-solve. Spectest guides the agent to write tests from the spec before implementing. The agent splits the spec into phrases, writes a test for each one, and logs every ambiguity. <a href="min12-prompt.html">This spectest</a> is my 12th version. In the code, it's called <span class="mono" style="font-size:13.5px">min12-ABDJKMN</span>. Version 12 was split into chunks A to S, and then trimmed. The remaining bits are: A and B are shell tool hygiene, D writes tests from the spec, J and K log ambiguities, M and N speed up execution by running focused tests.</p>
   </header>
 
   <div class="legend">

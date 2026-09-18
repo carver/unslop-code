@@ -1,4 +1,4 @@
-<title>SCBench Uplift Grid</title>
+<title>Unslop Results on Slop Code Bench</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
 :root {
@@ -27,6 +27,7 @@ body { background: var(--bg); color: var(--ink); font-family: "Familjen Grotesk"
 h1 { font-size: 30px; font-weight: 600; letter-spacing: -0.01em; margin: 0 0 6px; text-wrap: balance; }
 h2 { font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2); margin: 0 0 12px; }
 .lede { color: var(--ink-2); max-width: 62ch; margin: 0; }
+a { color: var(--js); text-underline-offset: 2px; }
 .mono, .num { font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; font-variant-numeric: tabular-nums; }
 .legend { display: flex; flex-wrap: wrap; gap: 8px 22px; align-items: center; color: var(--ink-2); font-size: 13px; }
 .legend span { display: inline-flex; align-items: center; gap: 7px; }
@@ -68,9 +69,9 @@ svg .hit { fill: transparent; }
 
 <div class="wrap">
   <header>
-    <h1>SCBench Uplift Grid</h1>
-    <p class="lede">Two levers on the six dev problems, Claude Opus 5 as the agent: rewriting the spec where it is ambiguous, and swapping the benchmark's bare prompt, just-solve, for spectest. Every figure is lower-is-better. Two runs per cell.</p>
-    <p class="lede" style="margin-top:8px"><b style="color:var(--ink);font-weight:600">spectest</b> is a 444-word prompt. It has the agent split the spec into phrases, write a test section for each one, and log every ambiguity with the reading it chose, all before it implements. These runs use the version named <span class="mono" style="font-size:13.5px">min12-ABDJKMN</span>. min12 is the rule set and the letters are the rules taken from it: A and B are shell hygiene, D is the test per phrase, J and K are the ambiguity log, M and N keep test runs to checking the tests themselves.</p>
+    <h1>Unslop Results on Slop Code Bench</h1>
+    <p class="lede">Use two strategies on six problems: tweak the spec if ambiguous, and use a new prompt, "spectest". Every figure is lower-is-better. Two runs per problem, using Claude Opus 5.</p>
+    <p class="lede" style="margin-top:8px">The <b style="color:var(--ink);font-weight:600">spectest</b> prompt guides the agent to write tests from the spec before implementing. The agent splits the spec into phrases, writes a test for each one, and logs every ambiguity. <a href="min12-prompt.html">This spectest</a> is my 12th version. In the code, it's called <span class="mono" style="font-size:13.5px">min12-ABDJKMN</span>. Version 12 was split into chunks A->S, and then trimmed. The remaining bits are: A and B are shell tool hygiene, D writes tests from the spec, J and K log ambiguities, M and N speed up tests by focusing on new ones.</p>
   </header>
 
   <div class="legend">

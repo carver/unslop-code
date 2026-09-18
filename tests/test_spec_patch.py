@@ -7,7 +7,8 @@ SCRIPT = Path(__file__).resolve().parent.parent / "bin" / "spec-patch"
 
 
 def make_cache(tmp_path):
-    cache = tmp_path / "cache"; (cache / "toy").mkdir(parents=True)
+    cache = tmp_path / "cache"
+    (cache / "toy").mkdir(parents=True)
     (cache / "toy" / "checkpoint_1.md").write_text("alpha\nbeta\ngamma\n")
     return cache
 
@@ -23,7 +24,8 @@ def run(tmp_path, version):
 
 def test_patches_apply_in_filename_order_into_the_version_root(tmp_path):
     make_cache(tmp_path)
-    v = tmp_path / "specs" / "toy" / "v2"; v.mkdir(parents=True)
+    v = tmp_path / "specs" / "toy" / "v2"
+    v.mkdir(parents=True)
     (v / "01-first.patch").write_text(patch_text("beta", "BETA"))
     (v / "02-toy-second.patch").write_text(patch_text("BETA", "delta"))  # the old problem-prefixed name still counts
     r = run(tmp_path, "v2")
@@ -34,7 +36,8 @@ def test_patches_apply_in_filename_order_into_the_version_root(tmp_path):
 
 def test_a_hunk_that_does_not_apply_fails_the_build(tmp_path):
     make_cache(tmp_path)
-    v = tmp_path / "specs" / "toy" / "v3"; v.mkdir(parents=True)
+    v = tmp_path / "specs" / "toy" / "v3"
+    v.mkdir(parents=True)
     (v / "01-wrong.patch").write_text(patch_text("nothing-here", "x"))
     assert run(tmp_path, "v3").returncode != 0
 

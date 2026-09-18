@@ -4,7 +4,9 @@ import types
 from pathlib import Path
 
 SCRIPT = Path(__file__).resolve().parent.parent / "bin" / "grid"
-gr = types.ModuleType("grid"); gr.__file__ = str(SCRIPT); sys.modules["grid"] = gr
+gr = types.ModuleType("grid")
+gr.__file__ = str(SCRIPT)
+sys.modules["grid"] = gr
 exec(compile(SCRIPT.read_text(), str(SCRIPT), "exec"), gr.__dict__)
 
 

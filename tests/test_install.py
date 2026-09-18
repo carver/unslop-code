@@ -4,7 +4,9 @@ import types
 from pathlib import Path
 
 SCRIPT = Path(__file__).resolve().parent.parent / "install.py"
-mod = types.ModuleType("install_tool"); mod.__file__ = str(SCRIPT); sys.modules["install_tool"] = mod
+mod = types.ModuleType("install_tool")
+mod.__file__ = str(SCRIPT)
+sys.modules["install_tool"] = mod
 exec(compile(SCRIPT.read_text(), str(SCRIPT), "exec"), mod.__dict__)
 
 PATCH = """--- a/greeting.txt
@@ -16,9 +18,11 @@ PATCH = """--- a/greeting.txt
 
 
 def test_apply_patch_once_then_already_applied_then_failure(tmp_path):
-    tree = tmp_path / "tree"; tree.mkdir()
+    tree = tmp_path / "tree"
+    tree.mkdir()
     (tree / "greeting.txt").write_text("hello\n")
-    patch = tmp_path / "greet.patch"; patch.write_text(PATCH)
+    patch = tmp_path / "greet.patch"
+    patch.write_text(PATCH)
     assert mod.apply_patch(patch, tree) == "applied"
     assert (tree / "greeting.txt").read_text() == "hello, world\n"
     assert mod.apply_patch(patch, tree) == "already applied"

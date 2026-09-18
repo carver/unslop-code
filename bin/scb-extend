@@ -136,7 +136,8 @@ def repair_run_info(problem_dir, total, now=None):
 
 def deletions(dry_run_output):
     """Checkpoint directories a `--resume --dry-run` preview says it would delete."""
-    paths = []; listing = False
+    paths = []
+    listing = False
     for line in dry_run_output.splitlines():
         if line.strip() == "Directories to delete:":
             listing = True
@@ -318,7 +319,9 @@ def main():
     fresh = args[0] == "--new"
     if fresh:
         args = args[1:]
-    target = pathlib.Path(args[0]).resolve(); problem = args[1]; total = int(args[2])
+    target = pathlib.Path(args[0]).resolve()
+    problem = args[1]
+    total = int(args[2])
     records = []
     prior = prior_costs(problem)
     log = None
@@ -345,7 +348,8 @@ def main():
         say(f"starting a fresh run from {target.name}, checkpoint_1 (window {pct(reading)})")
         run_dir, code = start_run(target)
         if run_dir is None:
-            say(f"scb printed no output directory (exit {code}); halting"); sys.exit(4)
+            say(f"scb printed no output directory (exit {code}); halting")
+            sys.exit(4)
         say(f"run_dir={run_dir}")
     else:
         run_dir = target
@@ -361,7 +365,8 @@ def main():
         halt_on_quota(problem_dir / "checkpoint_1")
         res = outcome(problem_dir, 1)
         if res is None:
-            say(f"checkpoint_1 left no evaluation; halting (run_dir={run_dir})"); sys.exit(3)
+            say(f"checkpoint_1 left no evaluation; halting (run_dir={run_dir})")
+            sys.exit(3)
         errored = agent_errored(problem_dir / "checkpoint_1")
         say(f"checkpoint_1 {res[0]}/{res[1]} infra_fail={res[2]} agent_error={errored} window {pct(reading)} -> {pct(after)}")
         if res[2] or (code != 0 and not errored):
@@ -369,7 +374,8 @@ def main():
         if errored:
             say("checkpoint_1 agent run errored; the resume loop re-runs it")
 
-    retried = set(); overloads = 0
+    retried = set()
+    overloads = 0
     while (n := next_checkpoint(problem_dir, total)) is not None:
         for name in repair_run_info(problem_dir, total):
             say(f"run_info.yaml had finished {name} marked not-ran; set to ran so resume keeps it")
@@ -391,22 +397,26 @@ def main():
         halt_on_quota(problem_dir / f"checkpoint_{n}")
         res = outcome(problem_dir, n)
         if res is None:
-            say(f"checkpoint_{n} left no evaluation; halting (run_dir={run_dir})"); sys.exit(3)
+            say(f"checkpoint_{n} left no evaluation; halting (run_dir={run_dir})")
+            sys.exit(3)
         passed, tests, infra = res
         errored = agent_errored(problem_dir / f"checkpoint_{n}")
         say(f"checkpoint_{n} {passed}/{tests} infra_fail={infra} agent_error={errored} window {pct(reading)} -> {pct(after)}")
         if infra:
-            say(f"checkpoint_{n} infrastructure failure; halting (run_dir={run_dir})"); sys.exit(3)
+            say(f"checkpoint_{n} infrastructure failure; halting (run_dir={run_dir})")
+            sys.exit(3)
         if errored:
             if overloaded(problem_dir / f"checkpoint_{n}"):
                 overloads += 1
                 if overloads > OVERLOAD_TRIES:
-                    say(f"API overloaded {overloads} times; halting (run_dir={run_dir})"); sys.exit(3)
+                    say(f"API overloaded {overloads} times; halting (run_dir={run_dir})")
+                    sys.exit(3)
                 say(f"checkpoint_{n} died on API overload ({overloads}/{OVERLOAD_TRIES}); sleeping {OVERLOAD_WAIT_S // 60} min, then re-running it")
                 time.sleep(OVERLOAD_WAIT_S)
                 continue
             if n in retried:
-                say(f"checkpoint_{n} agent run errored twice; halting (run_dir={run_dir})"); sys.exit(3)
+                say(f"checkpoint_{n} agent run errored twice; halting (run_dir={run_dir})")
+                sys.exit(3)
             retried.add(n)
             say(f"checkpoint_{n} agent run errored; re-running it once")
             continue

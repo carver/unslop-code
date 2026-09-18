@@ -8,7 +8,9 @@ import pytest
 import yaml
 
 SCRIPT = Path(__file__).resolve().parent.parent / "bin" / "fork-run"
-mod = types.ModuleType("fork_run"); mod.__file__ = str(SCRIPT); sys.modules["fork_run"] = mod
+mod = types.ModuleType("fork_run")
+mod.__file__ = str(SCRIPT)
+sys.modules["fork_run"] = mod
 exec(compile(SCRIPT.read_text(), str(SCRIPT), "exec"), mod.__dict__)
 
 

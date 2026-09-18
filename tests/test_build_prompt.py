@@ -7,7 +7,9 @@ import pytest
 
 ROOT = Path(__file__).resolve().parent.parent
 SCRIPT = ROOT / "bin" / "build-prompt"
-bp = types.ModuleType("build_prompt"); bp.__file__ = str(SCRIPT); sys.modules["build_prompt"] = bp
+bp = types.ModuleType("build_prompt")
+bp.__file__ = str(SCRIPT)
+sys.modules["build_prompt"] = bp
 exec(compile(SCRIPT.read_text(), str(SCRIPT), "exec"), bp.__dict__)
 
 

@@ -4,7 +4,9 @@ import types
 from pathlib import Path
 
 SCRIPT = Path(__file__).resolve().parent.parent / "bin" / "run-config"
-rc = types.ModuleType("run_config"); rc.__file__ = str(SCRIPT); sys.modules["run_config"] = rc
+rc = types.ModuleType("run_config")
+rc.__file__ = str(SCRIPT)
+sys.modules["run_config"] = rc
 exec(compile(SCRIPT.read_text(), str(SCRIPT), "exec"), rc.__dict__)
 
 

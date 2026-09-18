@@ -7,8 +7,10 @@ rows = [json.loads(line) for line in (R/'checkpoint_results.jsonl').read_text().
 diff = {line.split(',')[0]: line.split(',')[1] for line in pathlib.Path('problems.csv').read_text().splitlines()[1:]}
 for r in rows:
     scb = R/r['problem']/r['checkpoint']/'quality_analysis'/'scb_check.json'
-    d = json.loads(scb.read_text()); t = d.get('total_loc') or 0
-    r['erosion'] = d.get('erosion'); r['verbosity'] = d.get('verbosity')
+    d = json.loads(scb.read_text())
+    t = d.get('total_loc') or 0
+    r['erosion'] = d.get('erosion')
+    r['verbosity'] = d.get('verbosity')
     r['ast'] = (d.get('ast_grep_flagged_loc') or 0)/t if t else None
     r['cloned'] = (d.get('clone_loc') or 0)/t if t else None
     r['capped'] = 'error_max_turns' in (R/r['problem']/r['checkpoint']/'agent'/'stdout.jsonl').read_text()[-3000:]
@@ -22,10 +24,17 @@ def num(v, f='{:.3f}'):
 by = collections.defaultdict(list)
 for r in rows:
     by[r['problem']].append(r)
-prob_rows = []; tot = collections.Counter()
+prob_rows = []
+tot = collections.Counter()
 for p, rs in sorted(by.items()):
-    n=len(rs); s=sum(r['strict_pass_rate']==1 for r in rs); i=sum(r['isolated_pass_rate']==1 for r in rs); c=sum(r['core_pass_rate']==1 for r in rs)
-    cost=sum(r['cost'] for r in rs); el=sum(r['elapsed'] for r in rs); st=sum(r['steps'] for r in rs); cap=sum(r['capped'] for r in rs)
+    n=len(rs)
+    s=sum(r['strict_pass_rate']==1 for r in rs)
+    i=sum(r['isolated_pass_rate']==1 for r in rs)
+    c=sum(r['core_pass_rate']==1 for r in rs)
+    cost=sum(r['cost'] for r in rs)
+    el=sum(r['elapsed'] for r in rs)
+    st=sum(r['steps'] for r in rs)
+    cap=sum(r['capped'] for r in rs)
     prob_rows.append(dict(p=p,d=diff[p],n=n,s=s,i=i,c=c,cost=cost,cpc=cost/n,mpc=el/60/n,spc=st/n,cap=cap))
     tot.update(dict(n=n,s=s,i=i,c=c,cost=cost,el=el,st=st,cap=cap))
 maxcpc = max(x['cpc'] for x in prob_rows)
@@ -47,8 +56,10 @@ def run_stats(R):
     for r in rows2:
         scb=R/r['problem']/r['checkpoint']/'quality_analysis'/'scb_check.json'
         if scb.exists():
-            d=json.loads(scb.read_text()); t=d.get('total_loc') or 0
-            r['erosion']=d.get('erosion'); r['verbosity']=d.get('verbosity')
+            d=json.loads(scb.read_text())
+            t=d.get('total_loc') or 0
+            r['erosion']=d.get('erosion')
+            r['verbosity']=d.get('verbosity')
             r['ast']=(d.get('ast_grep_flagged_loc') or 0)/t if t else None
             r['cloned']=(d.get('clone_loc') or 0)/t if t else None
     n2=len(rows2)
@@ -100,4 +111,5 @@ for k, v in dict(PROB_TABLE=prob_table, CK_TABLE=ck_table, BARS=bars,
     page = page.replace('{{'+k+'}}', v)
 assert '{{' not in page, [line for line in page.splitlines() if '{{' in line][:3]
 out = pathlib.Path('report/scbench-baseline.html')
-out.write_text(page); print(out, len(page))
+out.write_text(page)
+print(out, len(page))

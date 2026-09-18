@@ -4,7 +4,9 @@ import types
 from pathlib import Path
 
 SCRIPT = Path(__file__).resolve().parent.parent / "bin" / "registry-scores"
-rs = types.ModuleType("registry_scores"); rs.__file__ = str(SCRIPT); sys.modules["registry_scores"] = rs
+rs = types.ModuleType("registry_scores")
+rs.__file__ = str(SCRIPT)
+sys.modules["registry_scores"] = rs
 exec(compile(SCRIPT.read_text(), str(SCRIPT), "exec"), rs.__dict__)
 
 SECTION_STYLE = """## T1. Heading one

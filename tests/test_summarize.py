@@ -30,15 +30,18 @@ def checkpoint(tmp_path, snapshot=True):
 
 def test_existing_report_is_read_without_running_scb_check(tmp_path, monkeypatch):
     ck = checkpoint(tmp_path)
-    (ck / "quality_analysis").mkdir(); (ck / "quality_analysis" / "scb_check.json").write_text(json.dumps(REPORT))
-    calls = []; monkeypatch.setattr(subprocess, "run", fake_run(calls))
+    (ck / "quality_analysis").mkdir()
+    (ck / "quality_analysis" / "scb_check.json").write_text(json.dumps(REPORT))
+    calls = []
+    monkeypatch.setattr(subprocess, "run", fake_run(calls))
     assert summarize.quality_report(ck) == REPORT
     assert calls == []
 
 
 def test_missing_report_is_computed_from_snapshot_and_cached(tmp_path, monkeypatch):
     ck = checkpoint(tmp_path)
-    calls = []; monkeypatch.setattr(subprocess, "run", fake_run(calls))
+    calls = []
+    monkeypatch.setattr(subprocess, "run", fake_run(calls))
     assert summarize.quality_report(ck) == REPORT
     assert len(calls) == 1 and calls[0][-1] == str(ck / "snapshot") and "--include-all" in calls[0]
     assert json.loads((ck / "quality_analysis" / "scb_check.json").read_text()) == REPORT
@@ -47,15 +50,18 @@ def test_missing_report_is_computed_from_snapshot_and_cached(tmp_path, monkeypat
 
 def test_corrupt_report_is_recomputed(tmp_path, monkeypatch):
     ck = checkpoint(tmp_path)
-    (ck / "quality_analysis").mkdir(); (ck / "quality_analysis" / "scb_check.json").write_text("")
-    calls = []; monkeypatch.setattr(subprocess, "run", fake_run(calls))
+    (ck / "quality_analysis").mkdir()
+    (ck / "quality_analysis" / "scb_check.json").write_text("")
+    calls = []
+    monkeypatch.setattr(subprocess, "run", fake_run(calls))
     assert summarize.quality_report(ck) == REPORT
     assert len(calls) == 1
 
 
 def test_no_snapshot_means_no_report(tmp_path, monkeypatch):
     ck = checkpoint(tmp_path, snapshot=False)
-    calls = []; monkeypatch.setattr(subprocess, "run", fake_run(calls))
+    calls = []
+    monkeypatch.setattr(subprocess, "run", fake_run(calls))
     assert summarize.quality_report(ck) is None
     assert calls == []
 

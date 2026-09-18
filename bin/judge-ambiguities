@@ -402,7 +402,8 @@ def cmd_run(args, dry: bool) -> None:
     for v in variants:
         if v not in VARIANTS:
             sys.exit(f"unknown variant {v}; choose from {', '.join(VARIANTS)}")
-    out = Path(args.out); out.mkdir(parents=True, exist_ok=True)
+    out = Path(args.out)
+    out.mkdir(parents=True, exist_ok=True)
     done = done_keys(out)
     todo = build_plan(entries, variants, args.samples, args.batch, done)
     n_judgments = sum(len(b) for b, _, _ in todo)
@@ -450,7 +451,8 @@ def cmd_run(args, dry: bool) -> None:
             for rec in recs:
                 log.write(json.dumps(rec) + "\n")
             log.flush()
-            state["n"] += 1; state["cost"] += res.get("cost") or 0.0
+            state["n"] += 1
+            state["cost"] += res.get("cost") or 0.0
             state["errors"] += sum("error" in r for r in recs)
             n = state["n"]
             if n % 5 == 0 or n == len(todo):
@@ -524,14 +526,19 @@ def main() -> None:
     sub = ap.add_subparsers(dest="cmd", required=True)
     for name in ("plan", "run"):
         p = sub.add_parser(name)
-        p.add_argument("run_dir"); p.add_argument("--out", required=True)
+        p.add_argument("run_dir")
+        p.add_argument("--out", required=True)
         p.add_argument("--problem", help="problem name inside the run dir (inferred when there is one)")
-        p.add_argument("--entries"); p.add_argument("--variants"); p.add_argument("--samples", type=int, default=5)
+        p.add_argument("--entries")
+        p.add_argument("--variants")
+        p.add_argument("--samples", type=int, default=5)
         p.add_argument("--batch", type=int, default=15)
         p.add_argument("--spec-patch", action="append", default=[], help="unified diff of the specs; repeatable (specs/<problem>/vN/*.patch); rewrites matching quoted sentences in entries")
-        p.add_argument("--workers", type=int, default=4); p.add_argument("--pause-at", type=float, default=85)
+        p.add_argument("--workers", type=int, default=4)
+        p.add_argument("--pause-at", type=float, default=85)
         p.add_argument("--check-every", type=int, default=5)
-    s = sub.add_parser("summarize"); s.add_argument("out")
+    s = sub.add_parser("summarize")
+    s.add_argument("out")
     s.add_argument("--hidden", help='JSON {"T7": [1], "T9": [2, "both"]}: readings the hidden tests take, per entry')
     args = ap.parse_args()
     if getattr(args, "hidden", None):

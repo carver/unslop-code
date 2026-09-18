@@ -81,8 +81,11 @@ save_template: spectest/${{model.name}}_${{agent.version}}_${{thinking}}_{name}/
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--prompt", required=True); ap.add_argument("--problem", required=True)
-    ap.add_argument("--spec", default="v0"); ap.add_argument("--patched", action="store_true"); ap.add_argument("--name")
+    ap.add_argument("--prompt", required=True)
+    ap.add_argument("--problem", required=True)
+    ap.add_argument("--spec", default="v0")
+    ap.add_argument("--patched", action="store_true")
+    ap.add_argument("--name")
     a = ap.parse_args()
     spec = "v1" if a.patched else a.spec
     if not re.fullmatch(r"v\d+", spec):
@@ -94,7 +97,8 @@ def main():
     env = "" if spec == "v0" else f"SCBENCH_PROBLEMS_PATH=$PWD/specs/{a.problem}/{spec}/problems "
     launch = f"{env}bin/scb-extend --new {out.relative_to(ROOT)} {a.problem} {checkpoint_count(a.problem) or '<n>'}"
     out.write_text(config_text(resolve_prompt(a.prompt), a.problem, name, spec, launch))
-    print(out.relative_to(ROOT)); print(launch)
+    print(out.relative_to(ROOT))
+    print(launch)
 
 
 if __name__ == "__main__":

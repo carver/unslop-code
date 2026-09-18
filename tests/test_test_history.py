@@ -5,7 +5,9 @@ import types
 from pathlib import Path
 
 SCRIPT = Path(__file__).resolve().parent.parent / "bin" / "test-history"
-mod = types.ModuleType("test_history"); mod.__file__ = str(SCRIPT); sys.modules["test_history"] = mod
+mod = types.ModuleType("test_history")
+mod.__file__ = str(SCRIPT)
+sys.modules["test_history"] = mod
 exec(compile(SCRIPT.read_text(), str(SCRIPT), "exec"), mod.__dict__)
 
 

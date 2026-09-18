@@ -23,7 +23,8 @@ import types
 
 HERE = pathlib.Path(__file__).resolve().parent
 ROOT = HERE.parent
-summarize = types.ModuleType("summarize"); summarize.__file__ = str(HERE / "summarize")
+summarize = types.ModuleType("summarize")
+summarize.__file__ = str(HERE / "summarize")
 sys.modules["summarize"] = summarize
 exec(compile((HERE / "summarize").read_text(), str(HERE / "summarize"), "exec"), summarize.__dict__)
 
@@ -90,7 +91,8 @@ def mean(xs):
 
 def collect(dirs, checkpoints=checkpoint_names):
     """({(problem, prompt, spec, model): [per-run summaries]} for complete runs, [(problem, prompt, spec, run, reached, of)] for partial ones)."""
-    cells = collections.defaultdict(list); partial = []
+    cells = collections.defaultdict(list)
+    partial = []
     for run in dirs:
         prompt, spec, model = cell_key(run)
         by_problem = collections.defaultdict(dict)

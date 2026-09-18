@@ -62,7 +62,8 @@ def load_rows(run):
         d = quality_report(run / r["problem"] / r["checkpoint"])
         if d is not None:
             t = d.get("total_loc") or 0
-            r["verbosity"] = d.get("verbosity"); r["erosion"] = d.get("erosion")
+            r["verbosity"] = d.get("verbosity")
+            r["erosion"] = d.get("erosion")
             r["cloned_pct"] = (d.get("clone_loc") or 0) / t if t else None
             r["ast_grep_pct"] = (d.get("ast_grep_flagged_loc") or 0) / t if t else None
     rows.sort(key=lambda r: (r["problem"], r["idx"]))
@@ -70,18 +71,33 @@ def load_rows(run):
 
 
 def main():
-    run = pathlib.Path(sys.argv[1]); md = "--md" in sys.argv
+    run = pathlib.Path(sys.argv[1])
+    md = "--md" in sys.argv
     rows = load_rows(run)
     hdr = ["problem", "ckpt", "state", "strict", "iso", "core", "core_pr", "steps", "in", "out", "cache_r", "cache_w", "cc_$", "list_$", "elapsed_s", "erosion", "verbosity", "ast%", "cloned%"]
     out = []
-    tot = collections.Counter(); n = 0; sol = collections.Counter(); er = []; vb = []; cl = []; ag = []
+    tot = collections.Counter()
+    n = 0
+    sol = collections.Counter()
+    er = []
+    vb = []
+    cl = []
+    ag = []
     for r in rows:
-        c = cost(r); n += 1
-        s = r.get("strict_pass_rate", r.get("pass_rate")) == 1.0; i = r.get("isolated_pass_rate", r.get("checkpoint_pass_rate")) == 1.0; k = r.get("core_pass_rate") == 1.0
-        sol["strict"] += s; sol["iso"] += i; sol["core"] += k
+        c = cost(r)
+        n += 1
+        s = r.get("strict_pass_rate", r.get("pass_rate")) == 1.0
+        i = r.get("isolated_pass_rate", r.get("checkpoint_pass_rate")) == 1.0
+        k = r.get("core_pass_rate") == 1.0
+        sol["strict"] += s
+        sol["iso"] += i
+        sol["core"] += k
         for kk in PRICE:
             tot[kk] += r.get(kk) or 0
-        tot["cost"] += c; tot["cc_cost"] += r.get("cost") or 0; tot["elapsed"] += elapsed(r); tot["steps"] += r.get("steps") or 0
+        tot["cost"] += c
+        tot["cc_cost"] += r.get("cost") or 0
+        tot["elapsed"] += elapsed(r)
+        tot["steps"] += r.get("steps") or 0
         if r.get("erosion") is not None:
             er.append(r["erosion"])
         if r.get("verbosity") is not None:

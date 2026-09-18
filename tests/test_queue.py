@@ -6,7 +6,9 @@ import pytest
 from pathlib import Path
 
 SCRIPT = Path(__file__).resolve().parent.parent / "bin" / "queue"
-q = types.ModuleType("queue_tool"); q.__file__ = str(SCRIPT); sys.modules["queue_tool"] = q
+q = types.ModuleType("queue_tool")
+q.__file__ = str(SCRIPT)
+sys.modules["queue_tool"] = q
 exec(compile(SCRIPT.read_text(), str(SCRIPT), "exec"), q.__dict__)
 
 
@@ -30,16 +32,19 @@ def test_unpatched_config_has_no_override(tmp_path):
 
 
 def test_checkpoint_count_comes_from_the_catalog(tmp_path, monkeypatch):
-    cat = tmp_path / "cat"; (cat / "xjq").mkdir(parents=True)
+    cat = tmp_path / "cat"
+    (cat / "xjq").mkdir(parents=True)
     for i in range(1, 6):
         (cat / "xjq" / f"checkpoint_{i}.md").write_text("")
     monkeypatch.setattr(q, "CACHE", cat)
-    p = tmp_path / "just-solve-xjq-opus5.yaml"; p.write_text("problems:\n  - xjq\n")
+    p = tmp_path / "just-solve-xjq-opus5.yaml"
+    p.write_text("problems:\n  - xjq\n")
     assert q.job_for(p)[1][-1] == "5"
 
 
 def test_versioned_config_reads_its_own_problems_root(tmp_path):
-    root = tmp_path / "specs" / "v2" / "problems"; (root / "datagate").mkdir(parents=True)
+    root = tmp_path / "specs" / "v2" / "problems"
+    (root / "datagate").mkdir(parents=True)
     for i in range(1, 8):
         (root / "datagate" / f"checkpoint_{i}.md").write_text("")
     p = tmp_path / "spectest-v9-specv2-datagate-opus5.yaml"
@@ -77,9 +82,11 @@ def test_agent_containers_are_the_slop_code_images_only():
 
 def test_resume_job_continues_from_the_next_checkpoint(tmp_path, monkeypatch):
     run = tmp_path / "dev6-x" / "fable-5-1_2.1.251_high_just-solve" / "20260905T0532"
-    (run / "sith" / "checkpoint_1").mkdir(parents=True); (run / "sith" / "checkpoint_2").mkdir()
+    (run / "sith" / "checkpoint_1").mkdir(parents=True)
+    (run / "sith" / "checkpoint_2").mkdir()
     (run / "config.yaml").write_text("problems:\n- sith\n")
-    cat = tmp_path / "catalog" / "sith"; cat.mkdir(parents=True)
+    cat = tmp_path / "catalog" / "sith"
+    cat.mkdir(parents=True)
     for i in range(1, 7):
         (cat / f"checkpoint_{i}.md").write_text("spec")
     (run / "problem_catalog.json").write_text('{"version": "v1.0", "commit": "abc"}')
@@ -107,7 +114,8 @@ def test_resume_job_keeps_the_versioned_root_the_run_read(tmp_path):
     run = tmp_path / "spectest" / "opus-5_2.1.251_high_spectest-v9-specv2" / "20260906T0000"
     (run / "datagate" / "checkpoint_1").mkdir(parents=True)
     (run / "config.yaml").write_text("problems:\n- datagate\n")
-    root = tmp_path / "specs" / "v2" / "problems"; (root / "datagate").mkdir(parents=True)
+    root = tmp_path / "specs" / "v2" / "problems"
+    (root / "datagate").mkdir(parents=True)
     for i in range(1, 8):
         (root / "datagate" / f"checkpoint_{i}.md").write_text("")
     (run / "problem_catalog.json").write_text('{"version": "env-override", "commit": "%s"}' % root)

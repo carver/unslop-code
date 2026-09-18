@@ -25,7 +25,8 @@ import sys
 import types
 
 HERE = pathlib.Path(__file__).resolve().parent
-results = types.ModuleType("results"); results.__file__ = str(HERE / "results")
+results = types.ModuleType("results")
+results.__file__ = str(HERE / "results")
 sys.modules["results"] = results
 exec(compile((HERE / "results").read_text(), str(HERE / "results"), "exec"), results.__dict__)
 

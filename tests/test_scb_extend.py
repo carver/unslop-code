@@ -27,9 +27,11 @@ def rec(n, phase, pct, resets_at="2026-09-02T21:20:00+00:00"):
 
 def make_problem(tmp_path, evaluated, partial=()):
     for n in evaluated:
-        d = tmp_path / f"checkpoint_{n}"; d.mkdir()
+        d = tmp_path / f"checkpoint_{n}"
+        d.mkdir()
         (d / "evaluation.json").write_text(json.dumps({"pass_counts": {"Core": 4, "Error": 1}, "total_counts": {"Core": 5, "Error": 1}, "infrastructure_failure": False}))
-        (d / "inference_result.json").write_text(json.dumps({"had_error": False})); (d / "snapshot").mkdir()
+        (d / "inference_result.json").write_text(json.dumps({"had_error": False}))
+        (d / "snapshot").mkdir()
     for n in partial:
         (tmp_path / f"checkpoint_{n}").mkdir()
     return tmp_path
@@ -89,8 +91,11 @@ def test_wait_is_only_slack_when_reset_already_passed():
 
 
 def finished_checkpoint(problem_dir, n, had_error=False):
-    d = problem_dir / f"checkpoint_{n}"; d.mkdir(parents=True, exist_ok=True)
-    (d / "evaluation.json").write_text("{}"); (d / "inference_result.json").write_text(json.dumps({"had_error": had_error})); (d / "snapshot").mkdir()
+    d = problem_dir / f"checkpoint_{n}"
+    d.mkdir(parents=True, exist_ok=True)
+    (d / "evaluation.json").write_text("{}")
+    (d / "inference_result.json").write_text(json.dumps({"had_error": had_error}))
+    (d / "snapshot").mkdir()
 
 
 def write_run_info(problem_dir, states):
@@ -98,7 +103,9 @@ def write_run_info(problem_dir, states):
 
 
 def test_repair_marks_finished_checkpoints_ran_and_keeps_a_backup(tmp_path):
-    finished_checkpoint(tmp_path, 1); finished_checkpoint(tmp_path, 2); (tmp_path / "checkpoint_3").mkdir()
+    finished_checkpoint(tmp_path, 1)
+    finished_checkpoint(tmp_path, 2)
+    (tmp_path / "checkpoint_3").mkdir()
     write_run_info(tmp_path, {"checkpoint_1": "skipped", "checkpoint_2": "skipped", "checkpoint_3": "error"})
     now = datetime.datetime(2026, 9, 2, 21, 0, 0, tzinfo=UTC)
     assert ext.repair_run_info(tmp_path, 7, now) == ["checkpoint_1", "checkpoint_2"]
@@ -147,7 +154,9 @@ def test_deletions_empty_when_preview_keeps_everything():
 
 
 def test_finished_dir_needs_evaluation_result_and_snapshot(tmp_path):
-    finished_checkpoint(tmp_path, 1); (tmp_path / "checkpoint_2").mkdir(); (tmp_path / "checkpoint_2" / "prompt.txt").write_text("x")
+    finished_checkpoint(tmp_path, 1)
+    (tmp_path / "checkpoint_2").mkdir()
+    (tmp_path / "checkpoint_2" / "prompt.txt").write_text("x")
     assert ext.finished_dir(tmp_path / "checkpoint_1")
     assert not ext.finished_dir(tmp_path / "checkpoint_2")
 
@@ -159,8 +168,10 @@ def test_output_dir_parsed_through_ansi_colour():
 
 
 def test_backup_tars_each_finished_checkpoint_once(tmp_path, monkeypatch):
-    run_dir = tmp_path / "spectest-v4" / "20260902T2100"; problem_dir = run_dir / "datagate"
-    finished_checkpoint(problem_dir, 1); (problem_dir / "checkpoint_2").mkdir()
+    run_dir = tmp_path / "spectest-v4" / "20260902T2100"
+    problem_dir = run_dir / "datagate"
+    finished_checkpoint(problem_dir, 1)
+    (problem_dir / "checkpoint_2").mkdir()
     write_run_info(problem_dir, {"checkpoint_1": "ran"})
     monkeypatch.setattr(ext, "backup_dir", lambda: tmp_path / "backups")
     assert ext.backup_finished(run_dir, "datagate", 7) == ["checkpoint_1"]
@@ -183,14 +194,18 @@ def test_unknown_reading_never_waits_and_is_skipped_in_costs():
 def test_usage_retries_then_gives_up(monkeypatch):
     calls = []
     def run(cmd, **kw):
-        calls.append(cmd); return subprocess.CompletedProcess(cmd, 1, stdout="", stderr="HTTP Error 502")
-    monkeypatch.setattr(subprocess, "run", run); monkeypatch.setattr(ext.time, "sleep", lambda s: None)
+        calls.append(cmd)
+        return subprocess.CompletedProcess(cmd, 1, stdout="", stderr="HTTP Error 502")
+    monkeypatch.setattr(subprocess, "run", run)
+    monkeypatch.setattr(ext.time, "sleep", lambda s: None)
     assert ext.usage(attempts=3, pause=0) is None
     assert len(calls) == 3
 
 
 def test_an_errored_checkpoint_is_not_finished_and_is_next_to_run(tmp_path):
-    finished_checkpoint(tmp_path, 1); finished_checkpoint(tmp_path, 2, had_error=True); finished_checkpoint(tmp_path, 3)
+    finished_checkpoint(tmp_path, 1)
+    finished_checkpoint(tmp_path, 2, had_error=True)
+    finished_checkpoint(tmp_path, 3)
     assert not ext.finished(tmp_path, 2) and ext.finished(tmp_path, 1)
     assert ext.next_checkpoint(tmp_path, 7) == 2
 
@@ -203,12 +218,17 @@ def test_repair_never_marks_an_errored_checkpoint_ran(tmp_path):
 
 
 def test_unreadable_inference_result_counts_as_errored(tmp_path):
-    d = tmp_path / "checkpoint_1"; d.mkdir(); (d / "evaluation.json").write_text("{}"); (d / "inference_result.json").write_text(""); (d / "snapshot").mkdir()
+    d = tmp_path / "checkpoint_1"
+    d.mkdir()
+    (d / "evaluation.json").write_text("{}")
+    (d / "inference_result.json").write_text("")
+    (d / "snapshot").mkdir()
     assert ext.agent_errored(d) and not ext.finished_dir(d)
 
 
 def test_overloaded_means_capacity_errors_and_no_tool_use(tmp_path):
-    d = tmp_path / "checkpoint_1" / "agent"; d.mkdir(parents=True)
+    d = tmp_path / "checkpoint_1" / "agent"
+    d.mkdir(parents=True)
     (d / "stdout.jsonl").write_text('{"type":"system","error":"overloaded"}\n{"type":"assistant","error":"server_error"}\n')
     assert ext.overloaded(tmp_path / "checkpoint_1")
     (d / "stdout.jsonl").write_text('{"type":"assistant","message":{"content":[{"type":"tool_use","name":"Bash"}]}}\n{"type":"assistant","error":"server_error"}\n')
@@ -233,8 +253,10 @@ def test_prior_costs_reads_the_most_recent_runs_of_the_problem(tmp_path):
         log = tmp_path / "g" / "p" / f"2026090{i}T0000" / "datagate" / "window_usage.jsonl"
         log.parent.mkdir(parents=True)
         log.write_text("\n".join(json.dumps(r) for r in (_record("checkpoint_1", "before", a), _record("checkpoint_1", "after", b))) + "\n")
-        import os; os.utime(log, (1000 + i, 1000 + i))
-    other = tmp_path / "g" / "p" / "20260901T0000" / "xjq" / "window_usage.jsonl"; other.parent.mkdir(parents=True)
+        import os
+        os.utime(log, (1000 + i, 1000 + i))
+    other = tmp_path / "g" / "p" / "20260901T0000" / "xjq" / "window_usage.jsonl"
+    other.parent.mkdir(parents=True)
     other.write_text(json.dumps(_record("checkpoint_1", "before", 0)) + "\n" + json.dumps(_record("checkpoint_1", "after", 40)) + "\n")
     assert sorted(ext.prior_costs("datagate", outputs=tmp_path, runs=2)) == [3, 6]
     assert ext.prior_costs("nothing", outputs=tmp_path) == []

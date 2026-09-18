@@ -19,7 +19,8 @@ import sys
 import types
 
 HERE = pathlib.Path(__file__).resolve().parent
-summarize = types.ModuleType("summarize"); summarize.__file__ = str(HERE / "summarize")
+summarize = types.ModuleType("summarize")
+summarize.__file__ = str(HERE / "summarize")
 sys.modules["summarize"] = summarize
 exec(compile((HERE / "summarize").read_text(), str(HERE / "summarize"), "exec"), summarize.__dict__)
 

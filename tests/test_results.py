@@ -5,7 +5,9 @@ import types
 from pathlib import Path
 
 SCRIPT = Path(__file__).resolve().parent.parent / "bin" / "results"
-rs = types.ModuleType("results"); rs.__file__ = str(SCRIPT); sys.modules["results"] = rs
+rs = types.ModuleType("results")
+rs.__file__ = str(SCRIPT)
+sys.modules["results"] = rs
 exec(compile(SCRIPT.read_text(), str(SCRIPT), "exec"), rs.__dict__)
 
 
@@ -21,8 +23,10 @@ def test_cell_key_strips_prefix_and_falls_back_to_the_suffix_for_the_spec():
 
 def test_spec_comes_from_the_catalog_record_when_the_run_has_one(tmp_path):
     def run(name, record):
-        d = tmp_path / name / "20260906T0000"; d.mkdir(parents=True)
-        (d / "problem_catalog.json").write_text(json.dumps(record)); return d
+        d = tmp_path / name / "20260906T0000"
+        d.mkdir(parents=True)
+        (d / "problem_catalog.json").write_text(json.dumps(record))
+        return d
     assert rs.spec_of(run("opus-5_2.1.251_high_spectest-v9-specv2", {"version": "env-override", "commit": "/x/specs/v2/problems"})) == "v2"
     assert rs.spec_of(run("opus-5_2.1.251_high_min12-specv1", {"version": "env-override", "commit": "/x/specs/xjq/v1/problems"})) == "v1"
     assert rs.spec_of(run("opus-5_2.1.251_high_spectest-v9-disambiguated", {"version": "env-override", "commit": "/x/problems"})) == "v1"
@@ -38,7 +42,8 @@ def test_table_averages_a_cell_over_its_runs():
 
 
 def test_collect_separates_partial_runs(tmp_path, monkeypatch):
-    run = tmp_path / "spectest" / "opus-5_2.1.251_high_spectest-min3-disambiguated" / "20260903T1057"; run.mkdir(parents=True)
+    run = tmp_path / "spectest" / "opus-5_2.1.251_high_spectest-min3-disambiguated" / "20260903T1057"
+    run.mkdir(parents=True)
     rows = [{"problem": "datagate", "checkpoint": f"checkpoint_{i}", "idx": i, "passed_tests": 10, "total_tests": 10, "strict_pass_rate": 1.0, "cost": 1.0} for i in (1, 2)]
     (run / "checkpoint_results.jsonl").write_text("\n".join(json.dumps(r) for r in rows) + "\n")
     cells, partial = rs.collect([run], checkpoints=lambda problem, run: {f"checkpoint_{i}" for i in range(1, 8)})
@@ -49,10 +54,12 @@ def test_collect_separates_partial_runs(tmp_path, monkeypatch):
 
 def test_collect_uses_the_catalog_record_and_requires_each_checkpoint(tmp_path, monkeypatch):
     catalog = tmp_path / "catalog"
-    problem_dir = catalog / "datagate"; problem_dir.mkdir(parents=True)
+    problem_dir = catalog / "datagate"
+    problem_dir.mkdir(parents=True)
     for i in range(1, 4):
         (problem_dir / f"checkpoint_{i}.md").write_text("")
-    run = tmp_path / "spectest" / "opus-5_2.1.251_high_test" / "20260909T0000"; run.mkdir(parents=True)
+    run = tmp_path / "spectest" / "opus-5_2.1.251_high_test" / "20260909T0000"
+    run.mkdir(parents=True)
     (run / "problem_catalog.json").write_text(json.dumps({"version": "env-override", "commit": str(catalog)}))
     rows = [
         {"problem": "datagate", "checkpoint": "checkpoint_1", "idx": 1, "passed_tests": 10, "total_tests": 10},
@@ -66,7 +73,8 @@ def test_collect_uses_the_catalog_record_and_requires_each_checkpoint(tmp_path, 
 
 
 def test_collect_keeps_each_checkpoint_erosion_in_order(tmp_path):
-    run = tmp_path / "spectest" / "opus-5_2.1.251_high_test" / "20260909T0000"; run.mkdir(parents=True)
+    run = tmp_path / "spectest" / "opus-5_2.1.251_high_test" / "20260909T0000"
+    run.mkdir(parents=True)
     rows = [{"problem": "xjq", "checkpoint": f"checkpoint_{i}", "idx": i, "passed_tests": 1, "total_tests": 1, "erosion": e}
             for i, e in ((3, 0.5), (1, 0.1), (2, 0.3))]
     (run / "checkpoint_results.jsonl").write_text("\n".join(json.dumps(r) for r in rows) + "\n")
@@ -77,7 +85,8 @@ def test_collect_keeps_each_checkpoint_erosion_in_order(tmp_path):
 
 
 def test_collect_keeps_one_row_per_checkpoint_the_last_written(tmp_path):
-    run = tmp_path / "spectest" / "opus-5_2.1.251_high_test" / "20260909T0000"; run.mkdir(parents=True)
+    run = tmp_path / "spectest" / "opus-5_2.1.251_high_test" / "20260909T0000"
+    run.mkdir(parents=True)
     rows = [{"problem": "datagate", "checkpoint": "checkpoint_1", "idx": 1, "passed_tests": 10, "total_tests": 10, "strict_pass_rate": 1.0, "cost": 1.0},
             {"problem": "datagate", "checkpoint": "checkpoint_2", "idx": 2, "passed_tests": 5, "total_tests": 10, "strict_pass_rate": 0.5, "cost": 1.0},
             {"problem": "datagate", "checkpoint": "checkpoint_2", "idx": 2, "passed_tests": 10, "total_tests": 10, "strict_pass_rate": 1.0, "cost": 3.0}]

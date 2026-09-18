@@ -172,7 +172,9 @@ def test_infer_problem_finds_the_single_registry_holder(tmp_path):
 
 
 def _load(name):
-    m = types.ModuleType(name); m.__file__ = str(SCRIPT.parent / name); sys.modules[name] = m
+    m = types.ModuleType(name)
+    m.__file__ = str(SCRIPT.parent / name)
+    sys.modules[name] = m
     exec(compile((SCRIPT.parent / name).read_text(), name, "exec"), m.__dict__)
     return m
 
@@ -180,7 +182,8 @@ def _load(name):
 def test_miss_report_collects_failures_once_across_checkpoints(tmp_path):
     mr = _load("miss-report")
     for n, failed in ((1, ["TestCore::test_a"]), (2, ["TestCore::test_a", "TestX::test_b[xls]"])):
-        d = tmp_path / "prob" / f"checkpoint_{n}"; d.mkdir(parents=True)
+        d = tmp_path / "prob" / f"checkpoint_{n}"
+        d.mkdir(parents=True)
         (d / "evaluation.json").write_text(json.dumps({"tests": {"checkpoint_1-Regression": {"failed": failed}}}))
     fails = mr.failing_tests(tmp_path, "prob")
     assert fails == {(1, "test_a"): [1, 2], (1, "test_b[xls]"): [2]}

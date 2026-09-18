@@ -73,7 +73,8 @@ def show_problem(a, b, problem, with_messages):
         fa = fails(a, problem, ck)
         fb = fails(b, problem, ck) if b else None
         if fa is None or (b and fb is None):
-            print(f"\n== {problem} checkpoint {ck}: missing evaluation"); continue
+            print(f"\n== {problem} checkpoint {ck}: missing evaluation")
+            continue
         if b:
             print(f"\n== {problem} checkpoint {ck}: a fails {len(fa)}, b fails {len(fb)}, shared {len(set(fa) & set(fb))}")
         else:

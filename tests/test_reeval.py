@@ -8,14 +8,17 @@ import pytest
 
 ROOT = Path(__file__).resolve().parent.parent
 SCRIPT = ROOT / "bin" / "reeval"
-mod = types.ModuleType("reeval"); mod.__file__ = str(SCRIPT); sys.modules["reeval"] = mod
+mod = types.ModuleType("reeval")
+mod.__file__ = str(SCRIPT)
+sys.modules["reeval"] = mod
 exec(compile(SCRIPT.read_text(), str(SCRIPT), "exec"), mod.__dict__)
 if not mod.harness_available():  # the row rewrite needs the harness: run these under bin/scb's venv
     pytest.skip("slop_code is not importable here; run with ~/.venvs/scbench-harness/bin/python", allow_module_level=True)
 
 
 def make_run(tmp_path):
-    run = tmp_path / "run"; ck = run / "mvvault" / "checkpoint_6"
+    run = tmp_path / "run"
+    ck = run / "mvvault" / "checkpoint_6"
     (ck / "evaluation").mkdir(parents=True)
     (ck / "evaluation.json").write_text(json.dumps({"pass_counts": {"Core": 5}, "total_counts": {"Core": 5}}))
     (ck / "evaluation" / "report.json").write_text("old")
@@ -24,7 +27,8 @@ def make_run(tmp_path):
              "regression_total": 0, "regression_passed": 0, "cost": 2.5},
             {"problem": "xjq", "checkpoint": "checkpoint_6", "strict_pass_rate": 1.0, "cost": 3.0}]
     (run / "checkpoint_results.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows))
-    fresh = tmp_path / "fresh"; (fresh / "evaluation").mkdir(parents=True)
+    fresh = tmp_path / "fresh"
+    (fresh / "evaluation").mkdir(parents=True)
     (fresh / "evaluation.json").write_text(json.dumps({"pass_counts": {"Core": 5, "Regression": 179}, "total_counts": {"Core": 5, "Regression": 185}}))
     (fresh / "evaluation" / "report.json").write_text("new")
     return run, fresh

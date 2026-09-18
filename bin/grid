@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """The uplift grid: two prompts by two specs, per problem and averaged across problems.
 
-    bin/grid [--json] [--prompts A,B] [--model opus-5]
+    bin/grid [--json] [--prompts A,B] [--model opus-5] [--set dev|test|all]
 
 Rows are problems; the four cells are (prompt, spec) with spec v0 (the cached benchmark
 spec) and "patched", the highest spec version that BOTH prompts have a complete run on, so
@@ -12,12 +12,19 @@ wall clock (checkpoint end minus start, summed). A cell lists its
 runs and their mean; the bottom rows average the cell means over the problems that have the
 cell (n says how many). --json prints the same structure for a page to draw from.
 
+Problems default to the dev set of split.json, the six the experiment ran in full; --set test
+takes the test set as its runs land, --set all every problem with a run.
+
 Prompts default to the benchmark's just-solve and min12-ABDJKMN, the pair the 2x2 uplift
 experiment compares (notes/uplift-grid.md). Runs are read the way bin/results reads them.
 
 The JSON also carries "trajectory": erosion per progress phase for each prompt's v0 runs, the
 paper's five-phase view of a run (Start, Early, Mid, Late, Final) so the page can lay the two
 prompts over Figure 5 of arXiv 2603.24755v2.
+
+And "relative": for the quality scores with a human reference, the second prompt's v0 value as
+a share of the first prompt's, problem by problem, then the mean of those shares with the best
+and worst problem named. The human reference gets the same treatment, so the two compare.
 """
 import json
 import pathlib
@@ -25,6 +32,7 @@ import sys
 import types
 
 HERE = pathlib.Path(__file__).resolve().parent
+SPLIT = HERE.parent / "split.json"
 results = types.ModuleType("results")
 results.__file__ = str(HERE / "results")
 sys.modules["results"] = results
@@ -33,12 +41,25 @@ exec(compile((HERE / "results").read_text(), str(HERE / "results"), "exec"), res
 METRICS = ("fail", "erosion", "verbosity", "ast", "cloned", "cost", "minutes")
 DEFAULT_PROMPTS = ("just-solve", "min12-ABDJKMN")
 PHASES = ("Start", "Early", "Mid", "Late", "Final")
+# arXiv 2603.24755v1 Table 2, HEAD commit of the Major tier (over 10k stars, 28 of the 48
+# Python repositories). v2 grew the panel to 473 repos (Major erosion 0.37) but dropped the
+# ast-grep column, so v1 is the one source that covers both scores.
+HUMAN = {"erosion": 0.31, "ast": 0.10}
 
 
 def run_figures(run):
     """A run's row of the grid: fail% and the quality means, all lower-is-better."""
     return {"fail": 1 - run["score"], "erosion": run["erosion"], "verbosity": run["verbosity"],
             "ast": run["ast"], "cloned": run["cloned"], "cost": run["cost"], "minutes": run["minutes"]}
+
+
+def problem_set(name):
+    """The problems of split.json's dev or test list, or None for "all"."""
+    return None if name == "all" else set(json.loads(SPLIT.read_text())[name])
+
+
+def only(cells, problems):
+    return cells if problems is None else {key: runs for key, runs in cells.items() if key[0] in problems}
 
 
 def spec_number(spec):
@@ -92,6 +113,36 @@ def trajectory(cells, prompts=DEFAULT_PROMPTS, model="opus-5", spec="v0"):
     return out
 
 
+def relative(g, human=HUMAN):
+    """{"spec": "v0", "baseline": first prompt, "metrics": {metric: {"n": k,
+    "prompt": {"mean": share, "best": {"problem", "share"}, "worst": {...}},
+    "human": {"value": v, "mean": share}}}}: a share is a value over the first prompt's v0 cell
+    mean on the same problem, and "mean" averages the shares, not the values. A problem counts
+    when both prompts ran it at v0 and the baseline is above zero."""
+    a, b = g["prompts"]
+    out = {"spec": "v0", "baseline": a, "metrics": {}}
+    for metric, human_value in human.items():
+        pairs = {}
+        for problem, entry in g["problems"].items():
+            base, other = entry["cells"].get(f"{a}|v0"), entry["cells"].get(f"{b}|v0")
+            if base and other and base["mean"][metric] > 0:
+                pairs[problem] = (base["mean"][metric], other["mean"][metric])
+        if not pairs:
+            continue
+        share = {problem: other / base for problem, (base, other) in pairs.items()}
+        best, worst = min(share, key=share.get), max(share, key=share.get)
+        out["metrics"][metric] = {
+            "n": len(pairs),
+            "prompt": {
+                "mean": results.mean(list(share.values())),
+                "best": {"problem": best, "share": share[best]},
+                "worst": {"problem": worst, "share": share[worst]},
+            },
+            "human": {"value": human_value, "mean": results.mean([human_value / base for base, _ in pairs.values()])},
+        }
+    return out
+
+
 def cell_means(runs):
     return {k: results.mean([r[k] for r in runs]) for k in METRICS}
 
@@ -119,6 +170,7 @@ def grid(cells, prompts=DEFAULT_PROMPTS, model="opus-5"):
             if means:
                 out["means"][key] = {"n": len(means), **cell_means(means)}
     out["trajectory"] = trajectory(cells, prompts, model)
+    out["relative"] = relative(out)
     return out
 
 
@@ -168,12 +220,15 @@ def main():
     as_json = "--json" in args
     prompts = DEFAULT_PROMPTS
     model = "opus-5"
+    problems = "dev"
+    if "--set" in args:
+        problems = args[args.index("--set") + 1]
     if "--prompts" in args:
         prompts = tuple(args[args.index("--prompts") + 1].split(","))
     if "--model" in args:
         model = args[args.index("--model") + 1]
     cells, _ = results.collect(results.run_dirs())
-    g = grid(cells, prompts, model)
+    g = grid(only(cells, problem_set(problems)), prompts, model)
     print(json.dumps(g, indent=1) if as_json else table(g))
 
 

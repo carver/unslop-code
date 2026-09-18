@@ -92,3 +92,38 @@ def test_trajectory_pools_each_prompts_v0_checkpoints_by_phase():
     assert (
         m["ckpts"] == [2, 0, 0, 0, 1] and m["erosion"][2] is None
     )  # the None checkpoint is skipped, an empty phase is null
+
+
+def test_relative_averages_each_problems_share_of_the_first_prompt_and_names_the_extremes():
+    r = gr.grid(CELLS)["relative"]
+    assert r["spec"] == "v0" and r["baseline"] == "just-solve"
+    erosion = r["metrics"]["erosion"]
+    assert erosion["n"] == 2
+    assert abs(erosion["prompt"]["mean"] - (0.1 / 0.5 + 0.3 / 0.7) / 2) < 1e-9  # not 0.2 / 0.6, the share of the means
+    assert erosion["prompt"]["best"] == {"problem": "xjq", "share": 0.1 / 0.5}
+    assert erosion["prompt"]["worst"] == {"problem": "sith", "share": 0.3 / 0.7}
+    assert erosion["human"]["value"] == gr.HUMAN["erosion"]
+    assert abs(erosion["human"]["mean"] - (0.31 / 0.5 + 0.31 / 0.7) / 2) < 1e-9
+    assert abs(r["metrics"]["ast"]["prompt"]["mean"] - 1.0) < 1e-9
+
+
+def test_relative_skips_a_problem_whose_baseline_is_zero_or_whose_other_prompt_never_ran():
+    cells = dict(CELLS)
+    cells[("clean", "just-solve", "v0", "opus-5")] = [run(0.9, 0.0)]
+    cells[("clean", "min12-ABDJKMN", "v0", "opus-5")] = [run(0.9, 0.2)]
+    cells[("half", "just-solve", "v0", "opus-5")] = [run(0.9, 0.5)]
+    erosion = gr.grid(cells)["relative"]["metrics"]["erosion"]
+    assert erosion["n"] == 2
+    assert {erosion["prompt"]["best"]["problem"], erosion["prompt"]["worst"]["problem"]} == {"xjq", "sith"}
+
+
+def test_problem_set_reads_a_split_by_name_and_all_means_no_filter():
+    assert gr.problem_set("dev") == {"datagate", "file_merger", "mvvault", "rejector", "sith", "xjq"}
+    assert len(gr.problem_set("test")) == 15
+    assert gr.problem_set("all") is None
+
+
+def test_only_keeps_the_named_problems_cells():
+    kept = gr.only(CELLS, {"sith"})
+    assert kept and {key[0] for key in kept} == {"sith"}
+    assert gr.only(CELLS, None) == CELLS

@@ -168,7 +168,8 @@ def test_backup_tars_each_finished_checkpoint_once(tmp_path, monkeypatch):
     assert tgz.exists()
     assert ext.backup_finished(run_dir, "datagate", 7) == []
     import tarfile
-    assert sorted(tarfile.open(tgz).getnames())[:2] == ["checkpoint_1", "checkpoint_1/evaluation.json"]
+    with tarfile.open(tgz) as tar:
+        assert sorted(tar.getnames())[:2] == ["checkpoint_1", "checkpoint_1/evaluation.json"]
 
 
 def test_unknown_reading_never_waits_and_is_skipped_in_costs():
@@ -232,7 +233,7 @@ def test_prior_costs_reads_the_most_recent_runs_of_the_problem(tmp_path):
         log = tmp_path / "g" / "p" / f"2026090{i}T0000" / "datagate" / "window_usage.jsonl"
         log.parent.mkdir(parents=True)
         log.write_text("\n".join(json.dumps(r) for r in (_record("checkpoint_1", "before", a), _record("checkpoint_1", "after", b))) + "\n")
-        import os, time; os.utime(log, (1000 + i, 1000 + i))
+        import os; os.utime(log, (1000 + i, 1000 + i))
     other = tmp_path / "g" / "p" / "20260901T0000" / "xjq" / "window_usage.jsonl"; other.parent.mkdir(parents=True)
     other.write_text(json.dumps(_record("checkpoint_1", "before", 0)) + "\n" + json.dumps(_record("checkpoint_1", "after", 40)) + "\n")
     assert sorted(ext.prior_costs("datagate", outputs=tmp_path, runs=2)) == [3, 6]

@@ -48,7 +48,7 @@ def fails(run, problem, ck):
     if not p.exists():
         return None
     out = {}
-    for grp, v in json.load(open(p))["tests"].items():
+    for grp, v in json.loads(p.read_text())["tests"].items():
         for st, names in v.items():
             if st != "passed":
                 for n in names:

@@ -14,7 +14,8 @@ exec(compile(SCRIPT.read_text(), str(SCRIPT), "exec"), summarize.__dict__)
 REPORT = {"total_loc": 100, "ast_grep_flagged_loc": 7, "clone_loc": 3, "verbosity": 0.1, "erosion": 0.5}
 
 
-def fake_run(calls, returncode=0, stdout=json.dumps(REPORT)):
+def fake_run(calls, returncode=0, stdout=None):
+    stdout = json.dumps(REPORT) if stdout is None else stdout
     def run(cmd, **kw):
         calls.append(cmd)
         return subprocess.CompletedProcess(cmd, returncode, stdout=stdout, stderr="boom")

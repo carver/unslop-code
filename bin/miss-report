@@ -114,7 +114,7 @@ def main() -> None:
         problem = names[0]
     fails = failing_tests(run_dir, problem)
     entries = registry(run_dir, problem)
-    lines = [f"# Hidden-test misses: {problem}", f"", f"Run: `{run_dir}`", f"",
+    lines = [f"# Hidden-test misses: {problem}", "", f"Run: `{run_dir}`", "",
              f"{len(fails)} distinct failing tests; {len(entries)} registry entries.", ""]
     for (origin, name), at in sorted(fails.items()):
         doc, keep = test_source(problem, origin, name)

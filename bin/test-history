@@ -50,7 +50,7 @@ def main(argv=None):
     for test in tests:
         states = [hits.get(test, "-") for _, _, hits in rows]
         print(f"{test}: {states.count('pass')} pass, {states.count('FAIL')} fail, {states.count('-')} not reached")
-        for (label, checkpoint, hits), state in zip(rows, states):
+        for (label, _, _), state in zip(rows, states, strict=True):
             print(f"  {state:4} {label}")
 
 

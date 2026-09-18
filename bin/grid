@@ -74,7 +74,7 @@ def trajectory(cells, prompts=DEFAULT_PROMPTS, model="opus-5", spec="v0"):
     for prompt in prompts:
         pools = [[] for _ in PHASES]
         runs = 0
-        for (p, pr, sp, m), summaries in cells.items():
+        for (_, pr, sp, m), summaries in cells.items():
             if pr != prompt or sp != spec or m != model:
                 continue
             for run in summaries:

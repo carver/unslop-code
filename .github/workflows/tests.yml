@@ -1,4 +1,4 @@
-# Runs the bin tool tests on every pull request and on pushes to main.
+# Runs the bin tool tests and bin/lint on every pull request and on pushes to main.
 # The suite needs only pytest and pyyaml; tests/test_reeval.py skips itself
 # without the slop-code venv, as it does on any machine that lacks it.
 name: tests
@@ -22,3 +22,10 @@ jobs:
           python-version: "3.12"
       - run: pip install pytest pyyaml
       - run: python -m pytest
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: bin/lint

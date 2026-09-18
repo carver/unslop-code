@@ -83,7 +83,7 @@ def main():
                     f"{(r.get('core_pass_rate') or 0):.2f}", r.get("steps"), r.get("input"), r.get("output"), r.get("cache_read"), r.get("cache_write"),
                     f"{(r.get('cost') or 0):.2f}", f"{c:.2f}", f"{elapsed(r):.0f}", fmt(r.get("erosion")), fmt(r.get("verbosity")), fmt(r.get("ast_grep_pct")), fmt(r.get("cloned_pct"))])
     sep = " | " if md else "  "
-    print(sep.join(hdr));
+    print(sep.join(hdr))
     if md: print("|".join(["---"] * len(hdr)))
     for o in out: print(sep.join(str(x) for x in o))
     print()

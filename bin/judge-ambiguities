@@ -198,7 +198,7 @@ def rewrite_quotes(entries: list[Entry], pairs: list[tuple[str, str]]) -> list[s
             # one sentence of it. Substitute sentence by sentence when they align.
             olds, news = _sentences(old), _sentences(repl)
             if len(olds) == len(news):
-                for o, n in zip(olds, news):
+                for o, n in zip(olds, news, strict=True):
                     if o != n and o in new:
                         new = new.replace(o, n)
         if new != flat:

@@ -1,0 +1,25 @@
+# Lint rules for the Python here: the bin scripts (no .py extension, so they are listed),
+# the tests, report/ and install.py. The ignores are the house style of dense one-liners;
+# each names the rule it silences so the list can be revisited.
+target-version = "py312"
+extend-include = [
+  "bin/build-prompt", "bin/compare-runs", "bin/failures", "bin/fork-run", "bin/grid",
+  "bin/judge-ambiguities", "bin/ledger-row", "bin/miss-report", "bin/queue", "bin/reeval",
+  "bin/registry-scores", "bin/results", "bin/run-config", "bin/scb-extend", "bin/summarize",
+  "bin/test-history", "bin/usage",
+]
+
+[lint]
+select = ["E", "F", "W", "B", "SIM"]
+ignore = [
+  "E401",  # several imports on one line: `import argparse, os, pathlib`
+  "E501",  # line length; tables and ledger rows run wide on purpose
+  "E701",  # `if x: return` on one line
+  "E702",  # two statements on one line, joined by `;`
+  "E731",  # a lambda bound to a name
+  "E741",  # single-letter names such as `l`
+]
+
+[lint.per-file-ignores]
+# PREVIEW reproduces scb's dry-run output verbatim, trailing space included.
+"tests/test_scb_extend.py" = ["W291"]

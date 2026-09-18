@@ -1,7 +1,7 @@
-import json, pathlib, collections, datetime, html
+import json, pathlib, collections, datetime
 R = sorted(p.parent for p in pathlib.Path('outputs/dev6').glob('*/*/checkpoint_results.jsonl'))[-1]
-rows = [json.loads(l) for l in open(R/'checkpoint_results.jsonl')]
-diff = {l.split(',')[0]: l.split(',')[1] for l in open('problems.csv').read().splitlines()[1:]}
+rows = [json.loads(l) for l in (R/'checkpoint_results.jsonl').read_text().splitlines()]
+diff = {l.split(',')[0]: l.split(',')[1] for l in pathlib.Path('problems.csv').read_text().splitlines()[1:]}
 for r in rows:
     scb = R/r['problem']/r['checkpoint']/'quality_analysis'/'scb_check.json'
     d = json.loads(scb.read_text()); t = d.get('total_loc') or 0
@@ -38,7 +38,7 @@ mean = lambda k: sum(r[k] for r in rows if r[k] is not None)/sum(1 for r in rows
 stats = dict(strict=100*tot['s']/n, iso=100*tot['i']/n, core=100*tot['c']/n, cpc=tot['cost']/n, erosion=mean('erosion'), verbosity=mean('verbosity'), ast=mean('ast'), cloned=mean('cloned'))
 
 def run_stats(R):
-    rows2=[json.loads(l) for l in open(R/'checkpoint_results.jsonl')]
+    rows2=[json.loads(l) for l in (R/'checkpoint_results.jsonl').read_text().splitlines()]
     for r in rows2:
         scb=R/r['problem']/r['checkpoint']/'quality_analysis'/'scb_check.json'
         if scb.exists():
@@ -83,7 +83,7 @@ if probe_runs:
         PROBE_PROB += f"<tr><th scope=row>{p}</th><td>{diff[p]}</td>" + ''.join(
             f"<td class=n>{t[p][0]}/{t[p][1]}/{t[p][2]} of {t[p][3]}</td><td class=n>{t[p][4]:.2f}</td>" for t in tables) + "</tr>"
 
-page = open('report/template.html').read()
+page = pathlib.Path('report/template.html').read_text()
 for k, v in dict(PROB_TABLE=prob_table, CK_TABLE=ck_table, BARS=bars,
                  S_STRICT=f"{stats['strict']:.1f}", S_ISO=f"{stats['iso']:.1f}", S_CORE=f"{stats['core']:.1f}", S_CPC=f"{stats['cpc']:.2f}",
                  S_EROSION=f"{stats['erosion']:.3f}", S_VERB=f"{stats['verbosity']:.3f}", S_AST=f"{stats['ast']:.3f}", S_CLONED=f"{stats['cloned']:.3f}",

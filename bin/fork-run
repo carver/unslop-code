@@ -10,7 +10,7 @@ runs the remaining checkpoints one at a time and halts at the first that is not 
 checkpoints whose spec files vN leaves unchanged. Refuses an existing destination and a k beyond
 the run's finished checkpoints. First done by hand for xjq v3 on 2026-09-09.
 """
-import argparse, json, pathlib, re, shutil, subprocess, sys
+import argparse, json, pathlib, re, shutil, subprocess
 import yaml
 
 HERE = pathlib.Path(__file__).resolve().parent

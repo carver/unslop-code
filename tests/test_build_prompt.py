@@ -93,7 +93,7 @@ def test_min11_is_min10_with_only_the_generator_floor_and_task_line_changed():
     assert eleven["F-testing-generator-floor.txt"].rstrip().endswith("empty, one element, etc.")
     ten_skeleton = (MIN10 / "SKELETON.jinja").read_text().splitlines()
     eleven_skeleton = (MIN11 / "SKELETON.jinja").read_text().splitlines()
-    assert [(a, b) for a, b in zip(ten_skeleton, eleven_skeleton) if a != b] == [
+    assert [(a, b) for a, b in zip(ten_skeleton, eleven_skeleton, strict=True) if a != b] == [
         ("Fully implement the following spec, without questions. Use the approach:",
          "Fully implement the following spec. Use the approach:")]
 
@@ -114,5 +114,5 @@ def test_min12_is_min11_with_only_the_intro_line_changed():
     assert eleven == twelve
     a = (MIN11 / "SKELETON.jinja").read_text().splitlines()
     b = (MIN12 / "SKELETON.jinja").read_text().splitlines()
-    assert [(x, y) for x, y in zip(a, b) if x != y] == [("- Implement with Red Green testing", "- Implement")]
+    assert [(x, y) for x, y in zip(a, b, strict=True) if x != y] == [("- Implement with Red Green testing", "- Implement")]
     assert len(a) == len(b)

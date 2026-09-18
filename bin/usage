@@ -5,9 +5,9 @@ Uses the live login access token in ~/.claude/.credentials.json. A `claude setup
 token cannot be used here: it only has inference scope and the usage endpoint answers 403.
 Both tokens belong to the same account, so the numbers are the same. Never prints the token.
 """
-import json, os, pathlib, sys, urllib.request, datetime
+import json, pathlib, urllib.request, datetime
 
-tok = json.load(open(pathlib.Path("~/.claude/.credentials.json").expanduser()))["claudeAiOauth"]["accessToken"]
+tok = json.loads(pathlib.Path("~/.claude/.credentials.json").expanduser().read_text())["claudeAiOauth"]["accessToken"]
 req = urllib.request.Request(
     "https://api.anthropic.com/api/oauth/usage",
     headers={"Authorization": "Bearer " + tok, "anthropic-beta": "oauth-2025-04-20", "User-Agent": "claude-code/2.1.251"},

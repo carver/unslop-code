@@ -36,7 +36,7 @@ its launch comment; `add` reads that, the problem from the config, and the check
 count from the catalog. Jobs run through pueue (install.py installs it), whose default
 group runs one task at a time, so the 5-hour window is drawn on by one run only.
 """
-import json, os, pathlib, re, shlex, signal, subprocess, sys, time
+import contextlib, json, os, pathlib, re, shlex, signal, subprocess, sys, time
 
 import yaml
 
@@ -306,10 +306,8 @@ def kill_job(task_id, keep_paused=False):
         for sig in (signal.SIGTERM, signal.SIGKILL):
             survivors = sorted(p for p in pids if alive(p))
             for p in survivors:
-                try:
+                with contextlib.suppress(ProcessLookupError):
                     os.kill(p, sig)
-                except ProcessLookupError:
-                    pass
             if survivors:
                 print(f"{sig.name} to surviving job processes: {survivors}")
                 time.sleep(5)

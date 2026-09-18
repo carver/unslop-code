@@ -13,7 +13,7 @@
 set -euo pipefail
 here=$(cd "$(dirname "$0")/.." && pwd)
 problem=${1:-}; version=${2:-}
-[ -n "$problem" ] && [ -n "$version" ] || { echo "usage: bin/spec-patch <problem> <vN>" >&2; exit 2; }
+if [ -z "$problem" ] || [ -z "$version" ]; then echo "usage: bin/spec-patch <problem> <vN>" >&2; exit 2; fi
 src="${SCBENCH_CACHE_PROBLEMS:-$HOME/.cache/scbench/problems}/$problem"
 vdir="${SCBENCH_SPECS_ROOT:-$here/specs}/$problem/$version"
 [ -d "$src" ] || { echo "spec-patch: no cached problem at $src" >&2; exit 2; }

@@ -1,0 +1,16 @@
+# min12-ABDJKMN on dynamic_config_service_api, against the cached spec (v0). Written by bin/run-config.
+# Same agent, model and thinking as every spectest run. Paths are relative to the repo
+# root, which bin/queue and bin/scb-extend run from.
+#
+#   bin/scb-extend --new configs/runs/min12-ABDJKMN-dynamic_config_service_api-opus5.yaml dynamic_config_service_api 4
+agent: configs/agents/claude_code-2.1.251.yaml
+environment: docker-python3.12-uv
+prompt: configs/prompts/min12-ABDJKMN.jinja
+model:
+  provider: claude_code_oauth
+  name: opus-5
+thinking: high
+problems:
+  - dynamic_config_service_api
+save_dir: outputs
+save_template: spectest/${model.name}_${agent.version}_${thinking}_min12-ABDJKMN/${now:%Y%m%dT%H%M}

@@ -79,19 +79,26 @@ def main():
         c = cost(r); n += 1
         s = r.get("strict_pass_rate", r.get("pass_rate")) == 1.0; i = r.get("isolated_pass_rate", r.get("checkpoint_pass_rate")) == 1.0; k = r.get("core_pass_rate") == 1.0
         sol["strict"] += s; sol["iso"] += i; sol["core"] += k
-        for kk in PRICE: tot[kk] += r.get(kk) or 0
+        for kk in PRICE:
+            tot[kk] += r.get(kk) or 0
         tot["cost"] += c; tot["cc_cost"] += r.get("cost") or 0; tot["elapsed"] += elapsed(r); tot["steps"] += r.get("steps") or 0
-        if r.get("erosion") is not None: er.append(r["erosion"])
-        if r.get("verbosity") is not None: vb.append(r["verbosity"])
-        if r.get("cloned_pct") is not None: cl.append(r["cloned_pct"])
-        if r.get("ast_grep_pct") is not None: ag.append(r["ast_grep_pct"])
+        if r.get("erosion") is not None:
+            er.append(r["erosion"])
+        if r.get("verbosity") is not None:
+            vb.append(r["verbosity"])
+        if r.get("cloned_pct") is not None:
+            cl.append(r["cloned_pct"])
+        if r.get("ast_grep_pct") is not None:
+            ag.append(r["ast_grep_pct"])
         out.append([r["problem"], r["idx"], r.get("state"), "Y" if s else "n", "Y" if i else "n", "Y" if k else "n",
                     f"{(r.get('core_pass_rate') or 0):.2f}", r.get("steps"), r.get("input"), r.get("output"), r.get("cache_read"), r.get("cache_write"),
                     f"{(r.get('cost') or 0):.2f}", f"{c:.2f}", f"{elapsed(r):.0f}", fmt(r.get("erosion")), fmt(r.get("verbosity")), fmt(r.get("ast_grep_pct")), fmt(r.get("cloned_pct"))])
     sep = " | " if md else "  "
     print(sep.join(hdr))
-    if md: print("|".join(["---"] * len(hdr)))
-    for o in out: print(sep.join(str(x) for x in o))
+    if md:
+        print("|".join(["---"] * len(hdr)))
+    for o in out:
+        print(sep.join(str(x) for x in o))
     print()
     print(f"checkpoints: {n}  strict {sol['strict']}/{n} = {100*sol['strict']/n:.2f}%  iso {sol['iso']}/{n} = {100*sol['iso']/n:.2f}%  core {sol['core']}/{n} = {100*sol['core']/n:.2f}%")
     print(f"tokens: in {tot['input']:,} out {tot['output']:,} cache_read {tot['cache_read']:,} cache_write {tot['cache_write']:,}")

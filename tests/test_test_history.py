@@ -18,7 +18,8 @@ def make_outputs(tmp_path):
     older = outputs / "spectest" / "opus-5_high_min12" / "20260909T0739" / "file_merger" / "checkpoint_4"
     newer = outputs / "spectest" / "opus-5_high_min12-specv3" / "20260910T0934" / "file_merger" / "checkpoint_4"
     short = outputs / "spectest" / "opus-5_high_min12-specv1" / "20260909T1429" / "file_merger" / "checkpoint_1"
-    for d in (older, newer, short): d.mkdir(parents=True)
+    for d in (older, newer, short):
+        d.mkdir(parents=True)
     (older / "evaluation.json").write_text(evaluation(["test_error_cases[errors/alias_cycle]"], []))
     (newer / "evaluation.json").write_text(evaluation([], ["test_error_cases[errors/alias_cycle]"]))
     (short / "evaluation.json").write_text(evaluation(["test_core_cases[x]"], []))

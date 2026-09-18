@@ -20,7 +20,8 @@ def num(v, f='{:.3f}'):
     return '&ndash;' if v is None else f.format(v)
 # per-problem
 by = collections.defaultdict(list)
-for r in rows: by[r['problem']].append(r)
+for r in rows:
+    by[r['problem']].append(r)
 prob_rows = []; tot = collections.Counter()
 for p, rs in sorted(by.items()):
     n=len(rs); s=sum(r['strict_pass_rate']==1 for r in rs); i=sum(r['isolated_pass_rate']==1 for r in rs); c=sum(r['core_pass_rate']==1 for r in rs)
@@ -80,7 +81,8 @@ if probe_runs:
         ('AST-grep flagged', 'ast', lambda v: f"{v:.3f}"), ('Cloned', 'cloned', lambda v: f"{v:.3f}")])
     def per_problem(rws):
         by = collections.defaultdict(list)
-        for r in rws: by[r['problem']].append(r)
+        for r in rws:
+            by[r['problem']].append(r)
         return {p: (sum(r['strict_pass_rate']==1 for r in rs), sum(r['isolated_pass_rate']==1 for r in rs),
                     sum(r['core_pass_rate']==1 for r in rs), len(rs), sum(r['cost'] for r in rs)) for p, rs in by.items()}
     tables = [per_problem(rows)] + [per_problem(run_stats(r)[0]) for _, r in probe_runs]

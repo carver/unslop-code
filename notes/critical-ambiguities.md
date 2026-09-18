@@ -2,7 +2,7 @@
 
 Where the datagate spec and its hidden tests disagree, and what it took to fix each one.
 
-Published page: https://claude.ai/code/artifact/f4e7d4b9-fe2c-4b56-821d-4cbc96e8449d (source `report/five-sentences.html`; republish that file to update it).
+The page: `report/five-sentences.html`.
 
 ## Summary
 

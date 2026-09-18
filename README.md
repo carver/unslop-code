@@ -40,8 +40,7 @@ Two levers, measured in both orders on the six dev problems with Opus 5, two run
 Start here:
 
 - `baseline-report.md` — the Sonnet 4.6 reproduction vs the leaderboard, with manifest.
-  Published page: https://claude.ai/code/artifact/d4db605f-59b1-4a23-aa50-6ae72dc36dc1
-  (regenerate with `python3 report/build.py`, then republish).
+  The page: `report/scbench-baseline.html` (regenerate with `python3 report/build.py`).
 - `report/` — every published page as plain HTML, so nothing depends on the claude.ai links:
   the baseline (`scbench-baseline.html`), the five datagate sentences (`five-sentences.html`),
   the uplift grid (`uplift-grid.html`), the spec patches per problem (`spec-patches.html`),

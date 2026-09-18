@@ -80,3 +80,9 @@ def test_pooled_sums_the_runs_before_dividing():
 def test_a_part_with_no_lines_has_no_scores():
     a = {"impl": report(100, ast=30), "test": report(0), "all": report(100, ast=30)}
     assert qs.pooled([a])["test"]["ast"] is None
+
+
+def test_a_tree_with_no_python_prints_dashes():
+    empty = dict.fromkeys(("impl", "test", "all"), report(0))
+    line = qs.table([{"name": "rusty", **qs.pooled([empty])}]).splitlines()[-1]
+    assert line == "| rusty | - | 1 | 0 | 0 | - | - / - / - | - / - / - | - / - / - |"

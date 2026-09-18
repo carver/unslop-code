@@ -121,8 +121,8 @@ def rows_for_runs(prompts, model, problems):
     return rows
 
 
-def fmt(share):
-    return "-" if share is None else f"{share:.3f}"
+def fmt(share, spec=".3f"):
+    return "-" if share is None else format(share, spec)
 
 
 def table(rows):
@@ -132,7 +132,7 @@ def table(rows):
         triples = (" / ".join(fmt(row[part][score]) for part in PARTS) for score in ("ast", "erosion", "cloned"))
         scores = " | ".join(triples)
         lines.append(f"| {row['name']} | {row.get('prompt', '-')} | {row['runs']} | {row['impl']['loc']} | "
-                     f"{row['test']['loc']} | {row['test_share']:.0%} | {scores} |")
+                     f"{row['test']['loc']} | {fmt(row['test_share'], '.0%')} | {scores} |")
     return "\n".join(lines)
 
 

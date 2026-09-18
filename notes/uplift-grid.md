@@ -55,10 +55,18 @@ erosion / ast% are the cell means of the quality scores (lower is better); $ is 
 - **As a share of just-solve, problem by problem.** Divide each problem's min12 value by its
   own just-solve value at v0 and average the six shares (`relative` in `bin/grid --json`).
   Erosion under min12 is 23% of just-solve's (-77%), from datagate's 6% to sith's 60%.
-  ast-grep is 37% (-63%), from xjq's 18% to rejector's 53%. The paper's human figures, divided
-  by the same six baselines, come to 56% and 42%, so min12 lands under the 10k-star repos on
-  both. This mean weighs every problem the same, so it differs from the ratio of the means
-  above (0.15 / 0.58 is 25%).
+  ast-grep is 37% (-63%), from xjq's 18% to rejector's 53%. The human repositories, divided
+  by the same six baselines, come to 56% and 27%, so on whole snapshots min12 lands under the
+  10k-star repos on erosion and above them on ast-grep. This mean weighs every problem the
+  same, so it differs from the ratio of the means above (0.15 / 0.58 is 25%).
+- **Implementation files only (2026-09-18).** The page has a switch that rescores erosion
+  and ast-grep with the test files left out, every checkpoint of every drawn run and the human
+  repositories too (`bin/grid --json` carries it as `impl`). Over the six problems at v0:
+  erosion 0.53 to 0.33 instead of 0.58 to 0.15, ast-grep 0.30 to 0.26 instead of 0.25 to 0.09;
+  as shares of just-solve 57% and 89%, against the humans' 92% and 44%. Implementation only,
+  min12's erosion also climbs along the run (0.27 to 0.36, just-solve 0.52 to 0.55), so the
+  flat whole-snapshot line was its growing test suite. Background in
+  `notes/quality-test-dilution.md`.
 - **dev only, for now.** `bin/grid` reads the dev set of `split.json` unless told `--set test`
   or `--set all`. The test-set runs (jobs 170-199) are landing in the same outputs, and one
   of them has no min12 cell yet, which the page cannot draw.
@@ -66,9 +74,11 @@ erosion / ast% are the cell means of the quality scores (lower is better); $ is 
   `bin/grid --json`; three headline bars, a second row with the two shares above (min12, its
   best-to-worst whisker, the human bar, just-solve as the 100% line), the Figure 5 overlay, five 2x2 squares averaged over
   the patched problems, then per-problem dumbbells for every figure. The erosion and ast-grep headlines
-  carry a human reference: the paper's Major tier (over 10k stars, 28 repos) at HEAD, erosion
-  0.31 and ast-grep 0.10, Table 2 of arXiv 2603.24755v1. v2's Table 2 covers 473 repos (Major
-  erosion 0.37) but drops the ast-grep and clone columns, so v1 is the source for both bars.
+  carry a human reference: the paper's Major tier (over 10k stars), 27 of its 28 repos rescored
+  at HEAD with scb-check 0.1.3 (`report/human-split.json`), erosion 0.31 and ast-grep 0.063,
+  with a whisker from the lowest repo to the highest and a band for the middle half. Until
+  2026-09-18 the bars were the paper's own Table 2 figures, 0.31 and 0.10; the rerun matches
+  the first and not the second (another rule set), so the paper's 0.10 is named, not drawn.
 - **Erosion along the run, against the paper's Figure 5.** The v2 paper (arXiv 2603.24755v2)
   says erosion rises in 77% of agent trajectories, 0.026 per checkpoint, and that quality
   prompts lower the starting point "but do not slow the degradation" (its Figure 5, top row:

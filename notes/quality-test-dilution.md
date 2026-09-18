@@ -99,7 +99,8 @@ result is report/human-split.json, which the uplift page reads for its human row
   against 0.071), so the paper's table used another rule set or version. With one tool version
   on both sides, min12's whole-snapshot 0.094 is above the human 0.063, and in implementation
   files it is 2.1 times the human share (0.264 against 0.124; just-solve 0.312, 2.5 times).
-  The uplift page's human ast-grep bar still uses the paper's 0.10.
+  The uplift page's human bars are this rerun (bin/grid reads report/human-split.json), with a
+  switch for implementation files only; the paper's 0.10 is named on the page, not drawn.
 - **Clones.** min12's implementation is less cloned than human code (0.034 against 0.079); its
   tests are 1.8 times as cloned as human tests (0.204 against 0.113).
 - Caveat: the human figures are means of per-repository values, as the paper reports them;

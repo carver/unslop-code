@@ -50,6 +50,14 @@ summary:focus-visible, .mark:focus-visible { outline: 2px solid var(--js); outli
 table { border-collapse: collapse; font-size: 13px; white-space: nowrap; }
 th, td { text-align: left; padding: 5px 12px 5px 0; border-bottom: 1px solid var(--rule); }
 th { color: var(--ink-2); font-weight: 500; }
+.scopebar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 4; display: flex; flex-wrap: wrap; gap: 6px 18px; align-items: center; padding: 8px 14px; background: var(--panel); border: 1px solid var(--rule); border-radius: 6px; }
+.switch { display: inline-flex; align-items: center; gap: 9px; font: inherit; font-size: 14px; font-weight: 500; color: var(--ink); background: none; border: 0; padding: 2px 0; cursor: pointer; white-space: nowrap; }
+.track { width: 34px; height: 20px; border-radius: 999px; background: var(--rule); position: relative; transition: background 120ms; flex: none; }
+.thumb { position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: var(--panel); transition: transform 120ms; }
+.switch[aria-checked="true"] .track { background: var(--ink); }
+.switch[aria-checked="true"] .thumb { transform: translateX(14px); }
+.switch:focus-visible { outline: 2px solid var(--js); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .track, .thumb { transition: none; } }
 #tip { position: fixed; pointer-events: none; background: var(--ink); color: var(--bg); padding: 6px 9px; border-radius: 4px; font-size: 12.5px; line-height: 1.35; max-width: 260px; opacity: 0; transition: opacity 120ms; z-index: 5; }
 #tip.on { opacity: 1; }
 @media (prefers-reduced-motion: reduce) { #tip { transition: none; } }
@@ -79,7 +87,12 @@ svg .hit { fill: transparent; }
     <span><i class="sw fill" style="--c:var(--js)"></i>just-solve, patched spec</span>
     <span><i class="sw" style="--c:var(--min)"></i>spectest, spec v0</span>
     <span><i class="sw fill" style="--c:var(--min)"></i>spectest, patched spec</span>
-    <span><i class="sw fill" style="--c:var(--ink-3)"></i>human repos, paper Table 2</span>
+    <span><i class="sw fill" style="--c:var(--ink-3)"></i>human repos over 10k stars, rescored</span>
+  </div>
+
+  <div class="scopebar">
+    <button type="button" class="switch" id="scope-switch" role="switch" aria-checked="false"><span class="track"><span class="thumb"></span></span>Implementation files only</button>
+    <span class="note" id="scope-note"></span>
   </div>
 
   <section>
@@ -141,12 +154,21 @@ const METRICS = [
 const SQUARE_METRICS = METRICS;
 // The human values come from bin/grid (HUMAN there carries the citation), so the absolute bars
 // and the share bars read one number.
-const R = G.relative.metrics;
-const HUMAN_TIP = "Human repositories with over 10k stars\nHEAD commit, n = 28\nSlopCodeBench paper v1, Table 2";
-const HUMAN = {
-  erosion: { v: R.erosion.human.value, label: "human, 10k+ stars", tip: `${HUMAN_TIP}\nerosion ${R.erosion.human.value.toFixed(2)} \u00b1 0.12 (v2's 473-repo panel: 0.37)` },
-  ast: { v: R.ast.human.value, label: "human, 10k+ stars", tip: `${HUMAN_TIP}\nast-grep ${R.ast.human.value.toFixed(2)} \u00b1 0.04` },
-};
+// D is the grid the charts read: G scores whole snapshots, G.impl the same runs with the test
+// files left out. Only erosion and ast-grep differ between the two.
+let D, R, HUMAN;
+const SCOPED = new Set(["erosion", "ast"]);
+const implOnly = () => D !== G;
+const scopeSub = m => SCOPED.has(m.key) && implOnly() ? " \u00b7 implementation files only" : "";
+function setScope(impl) {
+  D = impl ? G.impl : G;
+  R = D.relative.metrics;
+  const tip = (h, name, extra) => `Human repositories with over 10k stars\n${h.n} of the paper's 28, at HEAD in September 2026\nrescored with scb-check 0.1.3, ${impl ? "test files left out" : "whole repository"}\n${name} ${h.value.toFixed(2)}, from ${h.min.repo} ${h.min.value.toFixed(2)} to ${h.max.repo} ${h.max.value.toFixed(2)}${extra}`;
+  HUMAN = {
+    erosion: { v: R.erosion.human.value, label: "human, 10k+ stars", tip: tip(R.erosion.human, "erosion", "\nthe paper's own table: 0.31, whole repository") },
+    ast: { v: R.ast.human.value, label: "human, 10k+ stars", tip: tip(R.ast.human, "ast-grep", "\nthe paper's own table says 0.10, from another rule set") },
+  };
+}
 // arXiv 2603.24755v2 Figure 5, top row: mean structural erosion per progress phase for three
 // prompts on three models. Read off the figure's vector paths by report/paper_figure5.py, the
 // axis gridlines anchoring the scale, so each value is good to about 0.003.
@@ -160,7 +182,7 @@ const PAPER = {
 };
 const problems = Object.keys(G.problems);
 const patched = problems.filter(p => G.problems[p].patched);
-const cell = (p, prompt, kind) => G.problems[p].cells[`${prompt}|${kind}`];
+const cell = (p, prompt, kind) => D.problems[p].cells[`${prompt}|${kind}`];
 const mean = xs => xs.reduce((a, b) => a + b, 0) / xs.length;
 const avg = (set, prompt, kind, key) => mean(set.map(p => cell(p, prompt, kind).mean[key]));
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -188,7 +210,7 @@ function square(m) {
   return `
   <div class="card">
     <h3>${esc(m.name)}</h3>
-    <p class="sub">columns: prompt · rows: spec</p>
+    <p class="sub">columns: prompt · rows: spec${scopeSub(m)}</p>
     <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(m.name)}, mean of ${set.join(", ")}: just-solve v0 ${esc(m.fmt(v.a))}, spectest v0 ${esc(m.fmt(v.b))}, just-solve patched ${esc(m.fmt(v.c))}, spectest patched ${esc(m.fmt(v.d))}">
       <text class="lab" x="${x1}" y="16" text-anchor="middle">just-solve</text>
       <text class="lab" x="${x2}" y="16" text-anchor="middle">spectest</text>
@@ -242,7 +264,7 @@ function panel(m) {
   return `
   <div class="card">
     <h3>${esc(m.name)}</h3>
-    <p class="sub">cell means; hover a mark for its two runs</p>
+    <p class="sub">cell means; hover a mark for its two runs${scopeSub(m)}</p>
     <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(m.name)} per problem">
       ${rows.join("")}
       <line class="axis" x1="${left}" y1="${ax}" x2="${W - right}" y2="${ax}"></line>
@@ -262,7 +284,7 @@ function spreadLabels(items, gap, lo, hi) {
 }
 
 function trajectoryPanel(model) {
-  const T = G.trajectory, phases = T.phases, m = METRICS[1];
+  const T = D.trajectory, phases = T.phases, m = METRICS[1];
   const W = 340, left = 40, right = 78, top = 12, bottom = 30, H = 210, ymax = 0.8;
   const x = i => left + (i / (phases.length - 1)) * (W - left - right);
   const y = v => top + (1 - v / ymax) * (H - top - bottom);
@@ -289,7 +311,7 @@ function trajectoryPanel(model) {
   return `
   <div class="card">
     <h3>${esc(model)}</h3>
-    <p class="sub">the paper's three prompts faint, this repo's two bold</p>
+    <p class="sub">the paper's three prompts faint, this repo's two bold${implOnly() ? " and implementation only" : ""}</p>
     <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Erosion by phase Start to Final. ${esc(summary)}">
       ${grid}${xlab}
       <line class="axis" x1="${left}" y1="${top}" x2="${left}" y2="${H - bottom}"></line>
@@ -330,7 +352,7 @@ function promptBars(m) {
   const a = avg(problems, JS, "v0", m.key), b = avg(problems, MIN, "v0", m.key);
   const per = prompt => problems.map(p => `${p} ${m.fmt(cell(p, prompt, "v0").mean[m.key])}`).join(", ");
   const human = HUMAN[m.key];
-  return bars(`${m.name}, by prompt`, `spec v0, mean of all six problems`, m, [
+  return bars(`${m.name}, by prompt`, `spec v0, mean of all six problems${scopeSub(m)}`, m, [
     { label: "just-solve", v: a, color: "var(--js)", soft: true, tip: `just-solve at v0\n${per(JS)}` },
     { label: "spectest", v: b, color: "var(--min)", soft: true, tip: `spectest at v0\n${per(MIN)}` },
     ...(human ? [{ label: human.label, v: human.v, color: "var(--ink-3)", soft: false, tip: human.tip }] : []),
@@ -346,22 +368,24 @@ function shareBars(m) {
   // however many problems the mean covers.
   const r = R[m.key], pr = r.prompt, human = HUMAN[m.key];
   const W = 320, left = 132, right = 86, top = 22, barH = 22;
-  const maxV = Math.max(1, pr.worst.share, r.human.mean);
+  const h = r.human;
+  const maxV = Math.max(1, pr.worst.share, h.max.share);
   const x = v => left + (v / maxV) * (W - left - right);
-  const yMin = top + 6, yWhisk = yMin + barH + 10, yHuman = yWhisk + 50, H = yHuman + barH + 8;
+  const yMin = top + 6, yWhisk = yMin + barH + 10, yHuman = yWhisk + 50, yHW = yHuman + barH + 10, H = yHW + 42;
   const value = (v, y) => `<text class="num" x="${W - right + 8}" y="${y + barH / 2 + 4}" style="font-size:12.5px">${esc(share(v))}<tspan style="fill:var(--ink-3)"> (${esc(change(v))})</tspan></text>`;
   const minTip = `spectest at v0, mean over ${r.n} problems of spectest / just-solve\n${share(pr.mean)} of just-solve (${change(pr.mean)})`;
   const rangeTip = `spectest's best and worst problem\nbest: ${pr.best.problem} ${share(pr.best.share)} (${change(pr.best.share)})\nworst: ${pr.worst.problem} ${share(pr.worst.share)} (${change(pr.worst.share)})`;
-  const humanTip = `${human.tip}\nmean over ${r.n} problems of ${m.fmt(human.v)} / just-solve: ${share(r.human.mean)} (${change(r.human.mean)})`;
+  const humanTip = `${human.tip}\nmean over ${r.n} problems of ${m.fmt(human.v)} / just-solve: ${share(h.mean)} (${change(h.mean)})`;
+  const spreadTip = `The ${h.n} human repositories, as shares of just-solve\nlowest: ${h.min.repo} ${m.fmt(h.min.value)} (${share(h.min.share)})\nmiddle half: ${m.fmt(h.q1.value)} to ${m.fmt(h.q3.value)} (${share(h.q1.share)} to ${share(h.q3.share)})\nhighest: ${h.max.repo} ${m.fmt(h.max.value)} (${share(h.max.share)})`;
   // The halo keeps a long problem name legible where it crosses the 100% line.
-  const extreme = (word, e, y) => `<text x="${left - 10}" y="${y}" text-anchor="end" style="font-size:11.5px">${word}</text>` +
-    `<text x="${left + 6}" y="${y}" style="font-size:11.5px;fill:var(--ink);stroke:var(--panel);stroke-width:4;paint-order:stroke">${esc(e.problem)} <tspan class="num" style="font-size:11.5px">${esc(share(e.share))}</tspan></text>`;
-  const cap = v => `<line x1="${x(v)}" y1="${yWhisk - 4}" x2="${x(v)}" y2="${yWhisk + 4}" style="stroke:var(--min);stroke-width:2"></line>`;
+  const extreme = (word, name, v, y) => `<text x="${left - 10}" y="${y}" text-anchor="end" style="font-size:11.5px">${word}</text>` +
+    `<text x="${left + 6}" y="${y}" style="font-size:11.5px;fill:var(--ink);stroke:var(--panel);stroke-width:4;paint-order:stroke">${esc(name)} <tspan class="num" style="font-size:11.5px">${esc(share(v))}</tspan></text>`;
+  const cap = (v, y, color) => `<line x1="${x(v)}" y1="${y - 4}" x2="${x(v)}" y2="${y + 4}" style="stroke:${color};stroke-width:2"></line>`;
   return `
   <div class="card">
     <h3>${esc(m.name)}, share of just-solve</h3>
-    <p class="sub">spec v0, mean of the ${r.n} per-problem shares</p>
-    <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(m.name)} as a share of just-solve: spectest ${esc(share(pr.mean))}, from ${esc(pr.best.problem)} ${esc(share(pr.best.share))} to ${esc(pr.worst.problem)} ${esc(share(pr.worst.share))}; ${esc(human.label)} ${esc(share(r.human.mean))}">
+    <p class="sub">spec v0, mean of the ${r.n} per-problem shares${scopeSub(m)}</p>
+    <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(m.name)} as a share of just-solve: spectest ${esc(share(pr.mean))}, from ${esc(pr.best.problem)} ${esc(share(pr.best.share))} to ${esc(pr.worst.problem)} ${esc(share(pr.worst.share))}; ${esc(human.label)} ${esc(share(h.mean))}, from ${esc(h.min.repo)} ${esc(share(h.min.share))} to ${esc(h.max.repo)} ${esc(share(h.max.share))}">
       <line class="axis" x1="${left}" y1="${top}" x2="${left}" y2="${H - 4}"></line>
       <line x1="${x(1)}" y1="${top}" x2="${x(1)}" y2="${H - 4}" style="stroke:var(--js);stroke-width:1.5;stroke-dasharray:3 3"></line>
       <text x="${x(1)}" y="${top - 8}" text-anchor="middle" style="font-size:11.5px">just-solve, 100%</text>
@@ -369,12 +393,17 @@ function shareBars(m) {
       <rect x="${left}" y="${yMin}" width="${Math.max(2, x(pr.mean) - left)}" height="${barH}" rx="3" style="fill:var(--min);opacity:0.45" data-tip="${esc(minTip)}"></rect>
       ${value(pr.mean, yMin)}
       <line x1="${x(pr.best.share)}" y1="${yWhisk}" x2="${x(pr.worst.share)}" y2="${yWhisk}" style="stroke:var(--min);stroke-width:2"></line>
-      ${cap(pr.best.share)}${cap(pr.worst.share)}
+      ${cap(pr.best.share, yWhisk, "var(--min)")}${cap(pr.worst.share, yWhisk, "var(--min)")}
       <rect class="hit" x="${left}" y="${yWhisk - 8}" width="${W - left - right}" height="16" tabindex="0" data-tip="${esc(rangeTip)}" aria-label="${esc(rangeTip)}"></rect>
-      ${extreme("best", pr.best, yWhisk + 19)}${extreme("worst", pr.worst, yWhisk + 33)}
+      ${extreme("best", pr.best.problem, pr.best.share, yWhisk + 19)}${extreme("worst", pr.worst.problem, pr.worst.share, yWhisk + 33)}
       <text class="lab" x="${left - 10}" y="${yHuman + barH / 2 + 4}" text-anchor="end" style="font-size:12.5px">${esc(human.label)}</text>
-      <rect x="${left}" y="${yHuman}" width="${Math.max(2, x(r.human.mean) - left)}" height="${barH}" rx="3" style="fill:var(--ink-3)" data-tip="${esc(humanTip)}"></rect>
-      ${value(r.human.mean, yHuman)}
+      <rect x="${left}" y="${yHuman}" width="${Math.max(2, x(h.mean) - left)}" height="${barH}" rx="3" style="fill:var(--ink-3)" data-tip="${esc(humanTip)}"></rect>
+      ${value(h.mean, yHuman)}
+      <line x1="${x(h.min.share)}" y1="${yHW}" x2="${x(h.max.share)}" y2="${yHW}" style="stroke:var(--ink-3);stroke-width:2"></line>
+      <line x1="${x(h.q1.share)}" y1="${yHW}" x2="${x(h.q3.share)}" y2="${yHW}" style="stroke:var(--ink-3);stroke-width:8"></line>
+      ${cap(h.min.share, yHW, "var(--ink-3)")}${cap(h.max.share, yHW, "var(--ink-3)")}
+      <rect class="hit" x="${left}" y="${yHW - 8}" width="${W - left - right}" height="16" tabindex="0" data-tip="${esc(spreadTip)}" aria-label="${esc(spreadTip)}"></rect>
+      ${extreme("lowest", h.min.repo, h.min.share, yHW + 19)}${extreme("highest", h.max.repo, h.max.share, yHW + 33)}
     </svg>
   </div>`;
 }
@@ -385,9 +414,9 @@ function shareReading() {
   <div class="card">
     <h3>Reading the shares</h3>
     <p class="reading">Each problem's spectest value is divided by its own just-solve value, and the bar is the mean of those ${e.n} shares. That weighs every problem the same, so it differs from dividing the two means in the row above. ` +
-    `The human bar is the paper's one figure divided by each problem's just-solve value, averaged the same way. ` +
-    `Erosion under spectest is ${esc(share(e.prompt.mean))} of just-solve's, below the human ${esc(share(e.human.mean))}; ast-grep is ${esc(share(a.prompt.mean))} against ${esc(share(a.human.mean))}. ` +
-    `The whisker names the problems where spectest helped most and least.</p>
+    `The human bar is the mean of ${e.human.n} repositories divided by each problem's just-solve value, averaged the same way. ` +
+    `Erosion under spectest is ${esc(share(e.prompt.mean))} of just-solve's and the human repositories are at ${esc(share(e.human.mean))}; ast-grep is ${esc(share(a.prompt.mean))} against ${esc(share(a.human.mean))}. ` +
+    `Spectest's whisker names the problems where it helped most and least. The human whisker runs from the lowest repository to the highest, and its thick part holds the middle half of them.</p>
   </div>`;
 }
 
@@ -403,36 +432,54 @@ function caseBars() {
   ]);
 }
 
-document.getElementById("headline").innerHTML = [promptBars(METRICS[1]), promptBars(METRICS[2]), caseBars()].join("");
-document.getElementById("headline-share").innerHTML = [shareBars(METRICS[1]), shareBars(METRICS[2]), shareReading()].join("");
-document.getElementById("trajectory").innerHTML = Object.keys(PAPER.models).map(trajectoryPanel).join("");
-{
-  const T = G.trajectory, f = v => v.toFixed(2);
+function render() {
+  document.getElementById("headline").innerHTML = [promptBars(METRICS[1]), promptBars(METRICS[2]), caseBars()].join("");
+  document.getElementById("headline-share").innerHTML = [shareBars(METRICS[1]), shareBars(METRICS[2]), shareReading()].join("");
+  document.getElementById("trajectory").innerHTML = Object.keys(PAPER.models).map(trajectoryPanel).join("");
+  {
+  const T = D.trajectory, f = v => v.toFixed(2);
   const js = T.prompts[JS].erosion, mn = T.prompts[MIN].erosion;
-  document.getElementById("trajectory-note").innerHTML =
-    `<b>Reading.</b> The paper's Figure 5 (top row) is redrawn from its vector paths, one y axis for all three models instead of a range per panel. ` +
-    `Its Baseline prompt is just-solve; Anti-Slop is its quality prompt. Every paper line climbs from Start to Final, and the paper reads that as prompting not slowing the decay. ` +
-    `Our two lines are the same twelve v0 runs per prompt from the headline, each checkpoint placed in the paper's phase (first is Start, last is Final, the rest split into thirds) and pooled: ` +
-    `just-solve ${esc(f(js[0]))} to ${esc(f(js[4]))}, spectest ${esc(f(mn[0]))} to ${esc(f(mn[4]))}. Opus 5's climb is shallower than any paper model's, and under spectest there is none to see; two runs per problem and four to seven checkpoints, so read the wiggles as noise.`;
-}
-document.getElementById("squares").innerHTML = SQUARE_METRICS.map(square).join("");
-document.getElementById("panels").innerHTML = METRICS.map(panel).join("");
+    document.getElementById("trajectory-note").innerHTML =
+      `<b>Reading.</b> The paper's Figure 5 (top row) is redrawn from its vector paths, one y axis for all three models instead of a range per panel. ` +
+      `Its Baseline prompt is just-solve; Anti-Slop is its quality prompt. Every paper line climbs from Start to Final, and the paper reads that as prompting not slowing the decay. ` +
+      `Our two lines are the same twelve v0 runs per prompt from the headline, each checkpoint placed in the paper's phase (first is Start, last is Final, the rest split into thirds) and pooled: ` +
+      `just-solve ${esc(f(js[0]))} to ${esc(f(js[4]))}, spectest ${esc(f(mn[0]))} to ${esc(f(mn[4]))}. From Start to Final just-solve moves ${esc(signed(METRICS[1], js[4] - js[0]))} and spectest ${esc(signed(METRICS[1], mn[4] - mn[0]))}, where the paper's Baseline lines climb 0.11 to 0.16 and its Anti-Slop lines 0.07 to 0.13; two runs per problem and four to seven checkpoints, so read the wiggles as noise.` +
+      (implOnly() ? ` The paper's lines score whole repositories, tests included; only our two are implementation only.` : "");
+  }
+  document.getElementById("squares").innerHTML = SQUARE_METRICS.map(square).join("");
+  document.getElementById("panels").innerHTML = METRICS.map(panel).join("");
 
-const specs = patched.map(p => `${p} ${G.problems[p].patched}`).join(", ");
-document.getElementById("foot").innerHTML =
-  `<b>Reading.</b> The spec moves correctness; the prompt moves quality; the order does not change where you end up. ` +
-  `Patched specs: ${esc(specs)}. datagate's residual ${esc((100 * cell("datagate", MIN, "patched").mean.fail).toFixed(1))}% is the whitespace-preservation class, left as a benchmark failure. ` +
-  `Erosion and ast-grep are the harness's quality scores, share of files flagged; cost is Claude Code's reported spend per run; wall clock is checkpoint end minus start, summed, and includes waits on the 5-hour window. ` +
-  `The human bars are the paper's Major tier at HEAD, 28 repositories with over 10k stars, from Table 2 of v1 (v2 grew the panel to 473 repositories, erosion ${esc(HUMAN.erosion.v.toFixed(2))} to 0.37, and dropped the ast-grep column).`;
+  const specs = patched.map(p => `${p} ${G.problems[p].patched}`).join(", ");
+  document.getElementById("foot").innerHTML =
+    `<b>Reading.</b> The spec moves correctness; the prompt moves quality; the order does not change where you end up. ` +
+    `Patched specs: ${esc(specs)}. datagate's residual ${esc((100 * cell("datagate", MIN, "patched").mean.fail).toFixed(1))}% is the whitespace-preservation class, left as a benchmark failure. ` +
+    `Erosion and ast-grep are the harness's quality scores, share of files flagged; cost is Claude Code's reported spend per run; wall clock is checkpoint end minus start, summed, and includes waits on the 5-hour window. ` +
+    `The human bars are the paper's Major tier, repositories with over 10k stars, rescored at HEAD with the scb-check version the runs use: ${R.erosion.human.n} of its 28, because one is no longer Python. ` +
+    `The paper's own table gives erosion 0.31, which the rerun matches, and ast-grep 0.10, which it does not (${esc(G.relative.metrics.ast.human.value.toFixed(3))} here, so another rule set); ` +
+    `a figure from another rule set cannot sit beside ours, and the rerun also gives the spread and the implementation-only values.`;
 
-const cols = [[JS, "v0"], [MIN, "v0"], [MIN, "patched"], [JS, "patched"]];
-const th = cols.map(([pr, k]) => `<th>${esc(pr === JS ? "just-solve" : "spectest")} ${k}</th>`).join("");
-const rows = problems.map(p => `<tr><td>${esc(p)}</td>` + cols.map(([pr, k]) => {
+  const cols = [[JS, "v0"], [MIN, "v0"], [MIN, "patched"], [JS, "patched"]];
+  const th = cols.map(([pr, k]) => `<th>${esc(pr === JS ? "just-solve" : "spectest")} ${k}</th>`).join("");
+  const rows = problems.map(p => `<tr><td>${esc(p)}</td>` + cols.map(([pr, k]) => {
   const c = cell(p, pr, k);
-  return `<td class="num">${c ? esc(`${(100 * c.mean.fail).toFixed(1)}% · ${c.mean.erosion.toFixed(2)} · ${c.mean.ast.toFixed(2)} · $${c.mean.cost.toFixed(0)} · ${c.mean.minutes.toFixed(0)}m`) : "–"}</td>`;
-}).join("") + "</tr>").join("");
-document.getElementById("tbl").innerHTML = `<thead><tr><th>problem</th>${th}</tr></thead><tbody>${rows}</tbody>` +
-  `<tfoot><tr><td colspan="5" style="color:var(--ink-3)">failed% · erosion · ast-grep · $ · minutes per run, means of two runs</td></tr></tfoot>`;
+    return `<td class="num">${c ? esc(`${(100 * c.mean.fail).toFixed(1)}% · ${c.mean.erosion.toFixed(2)} · ${c.mean.ast.toFixed(2)} · $${c.mean.cost.toFixed(0)} · ${c.mean.minutes.toFixed(0)}m`) : "–"}</td>`;
+  }).join("") + "</tr>").join("");
+  document.getElementById("tbl").innerHTML = `<thead><tr><th>problem</th>${th}</tr></thead><tbody>${rows}</tbody>` +
+    `<tfoot><tr><td colspan="5" style="color:var(--ink-3)">failed% · erosion · ast-grep · $ · minutes per run, means of two runs</td></tr></tfoot>`;
+  document.getElementById("scope-note").textContent = implOnly()
+    ? "Erosion and ast-grep are rescored with the test files left out, for the runs and for the human repositories. Failed tests, cost and time do not change."
+    : "Scores cover every Python file in a snapshot, tests included, the way the benchmark scores it.";
+}
+
+const scopeSwitch = document.getElementById("scope-switch");
+scopeSwitch.addEventListener("click", () => {
+  const impl = scopeSwitch.getAttribute("aria-checked") !== "true";
+  scopeSwitch.setAttribute("aria-checked", String(impl));
+  setScope(impl);
+  render();
+});
+setScope(false);
+render();
 
 const tip = document.getElementById("tip");
 function showTip(el, ev) {

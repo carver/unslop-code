@@ -139,6 +139,7 @@ def collect(dirs, checkpoints=checkpoint_names):
                     "verbosity": mean(r.get("verbosity") for r in rows),
                     "ast": mean(r.get("ast_grep_pct") for r in rows),
                     "cloned": mean(r.get("cloned_pct") for r in rows),
+                    "snapshots": [str(run / problem / r["checkpoint"] / "snapshot") for r in rows],
                 }
             )
     return cells, partial

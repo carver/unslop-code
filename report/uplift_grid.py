@@ -73,9 +73,9 @@ def split_section(rows, repos):
              f'{new["impl"]["erosion"]:.2f} against {human["impl"]["erosion"]:.2f}, and its cloned share is '
              f'{new["impl"]["cloned"]:.3f} against {human["impl"]["cloned"]:.3f}. Its tests are cloned '
              f'{new["test"]["cloned"] / human["test"]["cloned"]:.1f} times as much as '
-             f'human tests. With this scb-check version the human whole-repository ast-grep mean is '
-             f'{human["all"]["ast"]:.3f}, under the 0.10 of the paper\'s table that the headline bar uses; the erosion '
-             f'mean, {human["all"]["erosion"]:.2f}, matches the paper\'s.</p>')
+             f'human tests. The human bars in the headline are this same rerun. The paper\'s own table gives '
+             f'0.10 for ast-grep, which this scb-check version does not reproduce ({human["all"]["ast"]:.3f} here); '
+             f'its erosion mean, 0.31, it does ({human["all"]["erosion"]:.2f}).</p>')
     return table + note
 
 

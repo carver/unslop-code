@@ -1,6 +1,6 @@
-# unslop-code-bench
+# Unslop Code
 
-Improving Code Quality against the excellent SlopCodeBench.
+Improving Code Quality against the excellent [Slop Code Bench](https://github.com/SprocketLab/slop-code-bench).
 
 Using Opus 5 and a custom prompt, it's tempting to say that I have solved the quality issues.
 I only had the credits to run against 6 of the problems so far, but will keep expanding whenever I have spare credits at the end of the week.

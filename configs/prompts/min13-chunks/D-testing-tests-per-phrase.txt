@@ -1,0 +1,2 @@
+Split the spec file into minimal possible logical phrases and minimal context, and iterate through each phrase.
+For each phrase, add a test section with a comment of the phrase & context.

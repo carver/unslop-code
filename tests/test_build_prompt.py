@@ -129,3 +129,31 @@ def test_min12_is_min11_with_only_the_intro_line_changed():
         ("- Implement with Red Green testing", "- Implement")
     ]
     assert len(a) == len(b)
+
+
+MIN13 = ROOT / "configs/prompts/min13-chunks"
+
+
+def test_all_min13_chunks_rebuild_v13_line_for_line():
+    name, text = bp.build("ABCDEFGHIJKLMNOPQRST", MIN13)
+    assert name == "min13-ABCDEFGHIJKLMNOPQRST"
+    assert nonblank(text) == nonblank((ROOT / "configs/prompts/spectest-v13.jinja").read_text())
+
+
+def test_min13_is_min12_plus_the_anti_slop_chunk():
+    """Same skeleton, letters and chunk text, so a min12 subset name means the same rules in min13."""
+    twelve = {p.name: p.read_text() for p in MIN12.glob("?-*.txt")}
+    thirteen = {p.name: p.read_text() for p in MIN13.glob("?-*.txt")}
+    assert set(thirteen) - set(twelve) == {"T-implement-anti-slop.txt"}
+    assert {name: thirteen[name] for name in twelve} == twelve
+    assert (MIN13 / "SKELETON.jinja").read_text() == (MIN12 / "SKELETON.jinja").read_text()
+
+
+def test_a_min13_subset_without_t_is_its_min12_twin():
+    assert bp.build("ABDJKMN", MIN13)[1] == bp.build("ABDJKMN", MIN12)[1]
+
+
+def test_the_anti_slop_chunk_is_the_whole_implement_section_when_no_other_implement_chunk_is_chosen():
+    text = bp.build("ABDJKMNT", MIN13)[1]
+    implement = text.split("# Implement\n")[1].split("\n# Declare complete")[0]
+    assert implement == (MIN13 / "T-implement-anti-slop.txt").read_text()

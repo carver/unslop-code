@@ -1,0 +1,3 @@
+When killing a process never run a pkill. Instead, pgrep.
+Make sure only one process is found, then kill that one by PID.
+Why? It's too easy to pkill your own Bash argv.

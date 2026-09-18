@@ -60,7 +60,8 @@ def test_table_has_a_row_per_problem_and_a_mean_row():
 
 
 def test_phases_pin_the_ends_and_split_the_interior_into_thirds_by_position():
-    names = lambda count: [gr.PHASES[gr.phase_of(i, count)] for i in range(count)]
+    def names(count):
+        return [gr.PHASES[gr.phase_of(i, count)] for i in range(count)]
     assert names(3) == ["Start", "Mid", "Final"]
     assert names(4) == ["Start", "Early", "Late", "Final"]
     assert names(5) == ["Start", "Early", "Mid", "Late", "Final"]

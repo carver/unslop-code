@@ -56,7 +56,8 @@ def fork(run_dir, spec, keep):
     for path in (dst / problem).glob("checkpoint_*"):
         if int(path.name.split("_")[1]) > keep:
             shutil.rmtree(path)
-    rename = lambda text: text.replace(run_dir.parent.name, dst.parent.name)
+    def rename(text):
+        return text.replace(run_dir.parent.name, dst.parent.name)
     (dst / "config.yaml").write_text(rename((dst / "config.yaml").read_text()))
     (dst / "problem_catalog.json").write_text(json.dumps({"version": "env-override", "commit": str(spec_root)}))
     rows = [json.loads(line) for line in (dst / "checkpoint_results.jsonl").read_text().splitlines() if line.strip()]

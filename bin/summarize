@@ -92,7 +92,8 @@ def main():
     print(f"cost as reported by Claude Code (cc_$): ${tot['cc_cost']:.2f} total, ${tot['cc_cost']/n:.2f}/ckpt   (leaderboard $1.96/ckpt)")
     print(f"cost at Sonnet list price from token counts (list_$): ${tot['cost']:.2f} total, ${tot['cost']/n:.2f}/ckpt")
     print(f"wall time: {tot['elapsed']/60:.1f} min total, {tot['elapsed']/n/60:.1f} min/ckpt; steps/ckpt {tot['steps']/n:.1f}")
-    mean = lambda xs: sum(xs) / len(xs) if xs else float("nan")
+    def mean(xs):
+        return sum(xs) / len(xs) if xs else float("nan")
     print(f"{'quality means':<22}erosion {mean(er):.3f}  verbosity {mean(vb):.3f}  ast-grep {mean(ag):.3f}  cloned {mean(cl):.3f}")
     print(f"{'sonnet 4.6 just-solve':<22}erosion {LEADERBOARD['erosion']:.3f}  verbosity {LEADERBOARD['verbosity']:.3f}  ast-grep {LEADERBOARD['ast-grep']:.3f}  cloned {LEADERBOARD['cloned']:.3f}")
 

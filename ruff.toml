@@ -16,7 +16,6 @@ ignore = [
   "E501",  # line length; tables and ledger rows run wide on purpose
   "E701",  # `if x: return` on one line
   "E702",  # two statements on one line, joined by `;`
-  "E731",  # a lambda bound to a name
 ]
 
 [lint.per-file-ignores]

@@ -34,7 +34,8 @@ ck_table = ''.join(
   f"<td class=n>{r['core_pass_rate']:.2f}</td><td class=n>{r['steps']}{' <span class=cap title=\"ended by --max-turns 100\">cap</span>' if r['capped'] else ''}</td><td class=n>{r['output']:,}</td><td class=n>{r['cache_read']/1e6:.2f}M</td><td class=n>{r['cache_write']/1e3:.0f}k</td>"
   f"<td class=n>{r['cost']:.2f}</td><td class=n>{r['elapsed']/60:.1f}</td><td class=n>{num(r['erosion'])}</td><td class=n>{num(r['verbosity'])}</td><td class=n>{num(r['ast'])}</td><td class=n>{num(r['cloned'])}</td></tr>" for r in rows)
 toks = {k: sum(r[k] for r in rows) for k in ('input','output','cache_read','cache_write')}
-mean = lambda k: sum(r[k] for r in rows if r[k] is not None)/sum(1 for r in rows if r[k] is not None)
+def mean(k):
+    return sum(r[k] for r in rows if r[k] is not None)/sum(1 for r in rows if r[k] is not None)
 stats = dict(strict=100*tot['s']/n, iso=100*tot['i']/n, core=100*tot['c']/n, cpc=tot['cost']/n, erosion=mean('erosion'), verbosity=mean('verbosity'), ast=mean('ast'), cloned=mean('cloned'))
 
 def run_stats(R):
@@ -47,7 +48,8 @@ def run_stats(R):
             r['ast']=(d.get('ast_grep_flagged_loc') or 0)/t if t else None
             r['cloned']=(d.get('clone_loc') or 0)/t if t else None
     n2=len(rows2)
-    m=lambda k: sum(r[k] for r in rows2 if r.get(k) is not None)/max(1,sum(1 for r in rows2 if r.get(k) is not None))
+    def m(k):
+        return sum(r[k] for r in rows2 if r.get(k) is not None)/max(1,sum(1 for r in rows2 if r.get(k) is not None))
     return rows2, dict(n=n2, strict=100*sum(r['strict_pass_rate']==1 for r in rows2)/n2,
         iso=100*sum(r['isolated_pass_rate']==1 for r in rows2)/n2,
         core=100*sum(r['core_pass_rate']==1 for r in rows2)/n2,

@@ -91,6 +91,7 @@ def test_a_hit_is_test_code_only_when_every_span_is():
 def test_is_test_file_by_name():
     assert scb_hits.is_test_file("tests/helpers.py")
     assert scb_hits.is_test_file("conftest.py")
+    assert scb_hits.is_test_file("pkg/testing/plugin.py")
     assert scb_hits.is_test_file("pkg/cli_test.py")
     assert not scb_hits.is_test_file("pkg/testing_tools/latest.py")
     assert not scb_hits.is_test_file("contest.py")

@@ -22,7 +22,7 @@ HEADER = re.compile(rf"^(?P<kind>{'|'.join(KINDS)})(\[(?P<rule>[\w-]+)\])?: (?P<
 LOCATION = re.compile(r"^\s+┌─ (?P<path>\S+?):(?P<line>\d+)")
 SOURCE_LINE = re.compile(r"^\s*(?P<number>\d+) │")
 COMPLEXITY = re.compile(r"^\s+= complexity: (?P<cc>\d+)")
-TEST_FILE = re.compile(r"(^|/)(tests?/|test[^/]*\.py$|conftest\.py$|[^/]*_test\.py$)")
+TEST_FILE = re.compile(r"(^|/)((tests?|testing)/|test[^/]*\.py$|conftest\.py$|[^/]*_test\.py$)")
 
 
 def is_test_file(path):

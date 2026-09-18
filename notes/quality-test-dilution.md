@@ -92,19 +92,25 @@ result is report/human-split.json, which the uplift page reads for its human row
   0.018) and erodes more (0.164 against 0.015).
 - **Erosion reproduces the paper.** Whole-repo mean 0.309 against the paper's 0.31, and the
   per-repo values agree to a few hundredths (django 0.290 and 0.285, salt 0.542 and 0.555).
-  Implementation against implementation: human 0.44, min12 0.48, just-solve 0.64. min12 is
-  level with the human code, not under it; the whole-snapshot 0.21 against 0.31 is its tests.
+  Implementation against implementation: human 0.44, min12 0.36, just-solve 0.56, each the
+  mean of per-problem (or per-repository) values at the final checkpoint. min12 stays under
+  the human code without its tests, by less: 0.16 against 0.31 on whole snapshots. The pooled
+  ALL row above says 0.48 because pooling weighs by size and sith is 8.6k of min12's 22k
+  implementation LOC at 0.58; do not set a pooled figure beside the human mean.
 - **ast% does not reproduce.** Our whole-repo mean is 0.063 against the paper's 0.10, and single
   repos differ both ways (django 0.041 against 0.113, click 0.059 against 0.163, tqdm 0.102
   against 0.071), so the paper's table used another rule set or version. With one tool version
   on both sides, min12's whole-snapshot 0.094 is above the human 0.063, and in implementation
-  files it is 2.1 times the human share (0.264 against 0.124; just-solve 0.312, 2.5 times).
+  files it is about twice the human share (0.250 against 0.124 as a mean of problems, 0.264 pooled;
+  just-solve 0.303).
   The uplift page's human bars are this rerun (bin/grid reads report/human-split.json), with a
   switch for implementation files only; the paper's 0.10 is named on the page, not drawn.
 - **Clones.** min12's implementation is less cloned than human code (0.034 against 0.079); its
   tests are 1.8 times as cloned as human tests (0.204 against 0.113).
-- Caveat: the human figures are means of per-repository values, as the paper reports them;
-  ours pool the twelve runs of a prompt. Final checkpoint only.
+- Caveat: the human figures are means of per-repository values, as the paper reports them. The
+  ALL rows of the dev-set table pool the twelve runs of a prompt, which weighs problems by
+  size; the uplift page's table takes the mean of the six per-problem rows instead (ast-grep
+  0.303 to 0.250 implementation only, erosion 0.563 to 0.360). Final checkpoint only.
 
 | repo | impl LOC | test LOC | test share | ast impl / test / all | erosion impl / test / all | cloned impl / test / all |
 |---|---|---|---|---|---|---|

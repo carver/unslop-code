@@ -36,9 +36,24 @@ def human_mean(repos):
     return row | {"test_share": statistics.mean(r["test_share"] for r in repos)}
 
 
+def prompt_row(rows, prompt):
+    """A prompt's table row. Each score is the mean of the per-problem values, every problem
+    counting once the way every repository does in the human row; pooling the runs instead lets
+    the largest problem set the figure. The line counts are sums over all the runs."""
+    problems = [r for r in rows if r["prompt"] == prompt and r["name"] != "ALL"]
+    total = next(r for r in rows if r["prompt"] == prompt and r["name"] == "ALL")
+    row = {"test_share": total["test_share"]}
+    for part, _ in PARTS:
+        counts = {key: total[part][key] for key in ("loc", "ast_lines")}
+        means = {score: statistics.mean(r[part][score] for r in problems if r[part][score] is not None)
+                 for score, _ in SCORES}
+        row[part] = counts | means
+    return row
+
+
 def split_section(rows, repos):
-    """The pooled row of each prompt and the human mean as a table, and the reading of it."""
-    pooled = {r["prompt"]: r for r in rows if r["name"] == "ALL"}
+    """The row of each prompt and the human mean as a table, and the reading of it."""
+    pooled = {prompt: prompt_row(rows, prompt) for prompt in PROMPT_LABELS}
     base, new, human = pooled["just-solve"], pooled["min12-ABDJKMN"], human_mean(repos)
     head = "".join(f'<th colspan="3">{label}</th>' for _, label in SCORES)
     sub = "".join(f"<th>{label}</th>" for _ in SCORES for _, label in PARTS)

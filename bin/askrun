@@ -34,7 +34,7 @@ sid="$(head -1 "$stdout_log" | python3 -c 'import json,sys; print(json.load(sys.
 if [[ -z "$sid" || ! -f "$sessions_dir/$sid.jsonl" ]]; then
   # Continuation checkpoints resume an earlier session; fall back to the
   # newest saved session file.
-  sid="$(ls -t "$sessions_dir"/*.jsonl | head -1 | xargs -n1 basename | sed 's/\.jsonl$//')"
+  sid="$(find "$sessions_dir" -maxdepth 1 -name '*.jsonl' -printf '%T@ %f\n' | sort -rn | head -1 | sed -E 's/^[^ ]+ //; s/\.jsonl$//')"
 fi
 if [[ -z "$sid" ]]; then
   echo "askrun: no saved session file under $sessions_dir" >&2

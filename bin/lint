@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # The linters CI runs, as one command. Arguments go to ruff, so `bin/lint --fix` applies
-# its safe fixes.
+# its safe fixes. Shell scripts are every tracked file with a bash shebang.
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 uvx ruff@0.14.3 check "$@"
+mapfile -t shell_scripts < <(git grep -lE '^#!(/usr/bin/env |/bin/)bash$')
+shellcheck "${shell_scripts[@]}"

@@ -20,7 +20,7 @@ vdir="${SCBENCH_SPECS_ROOT:-$here/specs}/$problem/$version"
 [ -d "$vdir" ] || { echo "spec-patch: no spec version $version for $problem at $vdir" >&2; exit 2; }
 root="$vdir/problems"
 mkdir -p "$root"
-rm -rf "$root/$problem"
+rm -rf "${root:?}/${problem:?}"
 cp -r "$src" "$root/$problem"
 applied=0
 for patch_file in "$vdir"/[0-9][0-9]-*.patch; do

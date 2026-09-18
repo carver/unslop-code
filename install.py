@@ -10,7 +10,8 @@ Then builds the harness the runs use: a clone of slop-code-bench at harness/ (no
 pinned to HARNESS_COMMIT with the six source patches from patches/ applied in README order,
 and its venv at ~/.venvs/scbench-harness, which bin/scb runs. The clone at slop-code-bench/
 is for developing the harness and is left alone: on 2026-09-11 a branch switch there dropped
-the patches under a running queue, which is why runs read a checkout of their own.
+the patches under a running queue, which is why runs read a checkout of their own. Last, points
+git's hooks at .githooks/, so bin/lint runs before every commit.
 """
 import os
 import pathlib
@@ -89,6 +90,11 @@ def install_harness():
     print(f"harness venv at {HARNESS_VENV}")
 
 
+def install_hooks(repo=ROOT):
+    """Point the checkout's git hooks at the tracked .githooks/ (pre-commit runs bin/lint)."""
+    subprocess.run(["git", "-C", str(repo), "config", "core.hooksPath", ".githooks"], check=True)
+
+
 def main():
     BIN.mkdir(parents=True, exist_ok=True)
     for name in ("pueue", "pueued"):
@@ -104,6 +110,7 @@ def main():
         subprocess.run([BIN / "pueued", "-d"], check=True)
     patch_problems()
     install_harness()
+    install_hooks()
 
 
 if __name__ == "__main__":

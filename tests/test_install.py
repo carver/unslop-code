@@ -1,4 +1,5 @@
 """install.py: a patch applies once, reports itself already applied after, and names a failure."""
+import subprocess
 import sys
 import types
 from pathlib import Path
@@ -35,3 +36,11 @@ def test_harness_patches_are_the_six_in_readme_order():
     names = [p.name for p in mod.HARNESS_PATCHES]
     assert names[0] == "claude-code-stream-parser-string-message.patch" and names[1] == "stop-after-checkpoint.patch"
     assert len(names) == 6 and all(p.exists() for p in mod.HARNESS_PATCHES)
+
+
+def test_install_hooks_points_the_repo_at_the_tracked_hooks(tmp_path):
+    subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
+    mod.install_hooks(tmp_path)
+    query = ["git", "-C", str(tmp_path), "config", "core.hooksPath"]
+    got = subprocess.run(query, capture_output=True, text=True).stdout
+    assert got.strip() == ".githooks"

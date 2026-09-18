@@ -96,6 +96,7 @@ prompt and `save_dir` relative to it, which is where `bin/queue` and `bin/scb-ex
                                              # run it in the background so the wake-up names the run directory
     bin/queue add configs/runs/<name>.yaml   # enqueue a run (one at a time); bin/queue = status
     bin/lint [--fix]                         # what CI lints (ruff.toml lists the rules and the bin scripts)
+                                             # also the pre-commit hook, once install.py has pointed git at .githooks/
     bin/queue add-strict configs/runs/<name>.yaml  # enqueue it under bin/scb-strict: halts at the first non-strict checkpoint
     bin/queue solo <id>                      # run one queued job while the rest wait (stash, start, pause --wait, re-queue)
     bin/build-prompt BEG                     # configs/prompts/min4-BEG.jinja from the chunks in

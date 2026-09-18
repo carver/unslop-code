@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# Runs bin/lint before every commit. Installed by `python3 install.py`, which points
+# core.hooksPath here; `git commit --no-verify` skips it. Lints the whole working tree,
+# not only the staged files, so an unstaged lint error blocks the commit too.
+set -euo pipefail
+cd "$(git rev-parse --show-toplevel)"
+bin/lint

@@ -1,4 +1,7 @@
-import json, pathlib, collections, datetime
+import json
+import pathlib
+import collections
+import datetime
 R = sorted(p.parent for p in pathlib.Path('outputs/dev6').glob('*/*/checkpoint_results.jsonl'))[-1]
 rows = [json.loads(line) for line in (R/'checkpoint_results.jsonl').read_text().splitlines()]
 diff = {line.split(',')[0]: line.split(',')[1] for line in pathlib.Path('problems.csv').read_text().splitlines()[1:]}

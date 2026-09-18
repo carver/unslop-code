@@ -9,7 +9,10 @@ missed, one row each, with a mark under each run that missed it (a test counts o
 however many checkpoints it failed at). This is the "what did each rung buy" view of a
 prompt ladder, and the input to the minimal-prompt report.
 """
-import json, pathlib, sys, types
+import json
+import pathlib
+import sys
+import types
 
 HERE = pathlib.Path(__file__).resolve().parent
 summarize = types.ModuleType("summarize"); summarize.__file__ = str(HERE / "summarize")

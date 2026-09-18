@@ -7,7 +7,13 @@ The quality columns come from a per-checkpoint scb-check report; a missing repor
 computed from the checkpoint snapshot on first use and cached next to it, since
 `slop-code metrics static` only keeps those scores in the aggregated result.json.
 """
-import json, os, sys, pathlib, collections, datetime, subprocess
+import json
+import os
+import sys
+import pathlib
+import collections
+import datetime
+import subprocess
 
 PRICE = {"input": 3.0, "output": 15.0, "cache_read": 0.30, "cache_write": 3.75}  # $/M, Sonnet 4.6 list
 # Leaderboard row for Sonnet 4.6 / Claude Code 2.1.44 / thinking high, means over all 196

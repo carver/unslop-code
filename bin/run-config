@@ -14,7 +14,10 @@ Usage: bin/run-config --prompt <name|path> --problem <problem> [--spec vN] [--na
 Writes configs/runs/<name>-<problem>-opus5.yaml (same agent, model and thinking as every
 spectest run) and prints the launch command with the problem's checkpoint count.
 """
-import argparse, os, pathlib, re
+import argparse
+import os
+import pathlib
+import re
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 CACHE = pathlib.Path(os.environ.get("SCBENCH_PROBLEMS_PATH", os.path.expanduser("~/.cache/scbench/problems")))

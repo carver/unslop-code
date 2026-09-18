@@ -6,7 +6,10 @@ Reads <run_dir>/<problem>/checkpoint_N/snapshot/AMBIGUITIES.md (last checkpoint 
 accepts every entry style seen so far (### Differs sections, ### Risk: N headings, **Differs** — N and
 **Differs** N lines, Risk spelled the same ways). --grep prints the Choice and Risk text of entries whose heading matches, which is how a known flip is checked.
 """
-import collections, pathlib, re, sys
+import collections
+import pathlib
+import re
+import sys
 
 
 def entries(text):

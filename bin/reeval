@@ -9,7 +9,13 @@ the checkpoint's row in checkpoint_results.jsonl gets its score fields rebuilt b
 harness's own extractor. The agent's work, cost and quality figures are untouched: this is
 for scoring changes, such as a problem config that starts including prior tests.
 """
-import json, os, pathlib, shutil, subprocess, sys, tempfile
+import json
+import os
+import pathlib
+import shutil
+import subprocess
+import sys
+import tempfile
 HERE = pathlib.Path(__file__).resolve().parent
 ROOT = HERE.parent
 sys.path.insert(0, str(ROOT / "harness" / "src"))

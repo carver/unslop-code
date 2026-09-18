@@ -14,7 +14,9 @@ empty slot disappears with its trailing blank line, so section headers survive a
     bin/build-prompt [--set NAME] LETTERS
     bin/build-prompt [--set NAME] --list      the chunk index
 """
-import pathlib, re, sys
+import pathlib
+import re
+import sys
 
 PROMPTS = pathlib.Path(__file__).resolve().parent.parent / "configs" / "prompts"
 CHUNKS = PROMPTS / "min4-chunks"

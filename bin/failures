@@ -12,7 +12,9 @@ Options:
 With no problem, all problems in the run are shown. A "run" is a directory like
 outputs/dev6-opus5/opus-5_2.1.251_high_just-solve/20260830T0354.
 """
-import json, sys, pathlib
+import json
+import sys
+import pathlib
 
 OUTPUTS = pathlib.Path(__file__).resolve().parent.parent / "outputs"
 

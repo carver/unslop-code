@@ -11,7 +11,12 @@ are where to look. Ends by running `bin/results --write`, so the cross-problem t
 notes/results.md always carries the run; commit it with the ledger. After a ladder run, also
 extend the ladder section with `bin/compare-runs <runs...> --md`.
 """
-import collections, json, pathlib, subprocess, sys, types
+import collections
+import json
+import pathlib
+import subprocess
+import sys
+import types
 
 HERE = pathlib.Path(__file__).resolve().parent
 summarize = types.ModuleType("summarize"); summarize.__file__ = str(HERE / "summarize")

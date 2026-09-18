@@ -5,7 +5,10 @@ Uses the live login access token in ~/.claude/.credentials.json. A `claude setup
 token cannot be used here: it only has inference scope and the usage endpoint answers 403.
 Both tokens belong to the same account, so the numbers are the same. Never prints the token.
 """
-import json, pathlib, urllib.request, datetime
+import json
+import pathlib
+import urllib.request
+import datetime
 
 tok = json.loads(pathlib.Path("~/.claude/.credentials.json").expanduser().read_text())["claudeAiOauth"]["accessToken"]
 req = urllib.request.Request(

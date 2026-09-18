@@ -13,7 +13,13 @@ after the model/agent/thinking prefix; spec is v0 (cached), v1, v2, ... from the
 outputs/spectest are scanned; a run is any directory holding checkpoint_results.jsonl.
 Interpretation belongs in the per-problem ledger; this file is the numbers.
 """
-import collections, json, os, pathlib, re, sys, types
+import collections
+import json
+import os
+import pathlib
+import re
+import sys
+import types
 
 HERE = pathlib.Path(__file__).resolve().parent
 ROOT = HERE.parent

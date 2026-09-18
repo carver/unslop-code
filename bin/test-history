@@ -5,7 +5,9 @@ Reads each run's <problem>/checkpoint_N/evaluation.json under outputs/; a run th
 the test's checkpoint shows as "-". Made for the question every spec pitch asks: is this miss a
 coin (some runs pass, some fail) or a reading every run shares.
 """
-import argparse, json, pathlib
+import argparse
+import json
+import pathlib
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 

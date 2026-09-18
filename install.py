@@ -12,7 +12,11 @@ and its venv at ~/.venvs/scbench-harness, which bin/scb runs. The clone at slop-
 is for developing the harness and is left alone: on 2026-09-11 a branch switch there dropped
 the patches under a running queue, which is why runs read a checkout of their own.
 """
-import os, pathlib, shutil, subprocess, urllib.request
+import os
+import pathlib
+import shutil
+import subprocess
+import urllib.request
 
 VERSION = "v4.0.4"
 BIN = pathlib.Path.home() / ".local" / "bin"

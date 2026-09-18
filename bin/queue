@@ -36,7 +36,16 @@ its launch comment; `add` reads that, the problem from the config, and the check
 count from the catalog. Jobs run through pueue (install.py installs it), whose default
 group runs one task at a time, so the 5-hour window is drawn on by one run only.
 """
-import contextlib, json, os, pathlib, re, shlex, signal, subprocess, sys, time
+import contextlib
+import json
+import os
+import pathlib
+import re
+import shlex
+import signal
+import subprocess
+import sys
+import time
 
 import yaml
 

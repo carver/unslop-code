@@ -38,7 +38,6 @@ h2 { font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: 
 .card h3 { margin: 0 0 2px; font-size: 15px; font-weight: 600; }
 .card .sub { margin: 0 0 8px; font-size: 12.5px; color: var(--ink-3); }
 .card svg { width: 100%; height: auto; display: block; }
-.nb { white-space: nowrap; }
 .card p.reading { margin: 6px 0 0; font-size: 13.5px; color: var(--ink-2); }
 .panels { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
 .note { color: var(--ink-2); font-size: 13.5px; max-width: 70ch; margin: 0; }
@@ -70,15 +69,15 @@ svg .hit { fill: transparent; }
 <div class="wrap">
   <header>
     <h1>SCBench Uplift Grid</h1>
-    <p class="lede">Two levers on the six dev problems, Claude Opus 5 as the agent: rewriting the spec where it is ambiguous, and swapping the benchmark's bare prompt, just-solve, for <span class="nb">spec-test</span>. Every figure is lower-is-better. Two runs per cell.</p>
-    <p class="lede" style="margin-top:8px"><b style="color:var(--ink);font-weight:600" class="nb">spec-test</b> is a 444-word prompt. It has the agent split the spec into phrases, write a test section for each one, and log every ambiguity with the reading it chose, all before it implements. These runs use the version named <span class="mono" style="font-size:13.5px">min12-ABDJKMN</span>. min12 is the rule set and the letters are the rules taken from it: A and B are shell hygiene, D is the test per phrase, J and K are the ambiguity log, M and N keep test runs to checking the tests themselves.</p>
+    <p class="lede">Two levers on the six dev problems, Claude Opus 5 as the agent: rewriting the spec where it is ambiguous, and swapping the benchmark's bare prompt, just-solve, for spectest. Every figure is lower-is-better. Two runs per cell.</p>
+    <p class="lede" style="margin-top:8px"><b style="color:var(--ink);font-weight:600">spectest</b> is a 444-word prompt. It has the agent split the spec into phrases, write a test section for each one, and log every ambiguity with the reading it chose, all before it implements. These runs use the version named <span class="mono" style="font-size:13.5px">min12-ABDJKMN</span>. min12 is the rule set and the letters are the rules taken from it: A and B are shell hygiene, D is the test per phrase, J and K are the ambiguity log, M and N keep test runs to checking the tests themselves.</p>
   </header>
 
   <div class="legend">
     <span><i class="sw" style="--c:var(--js)"></i>just-solve, spec v0</span>
     <span><i class="sw fill" style="--c:var(--js)"></i>just-solve, patched spec</span>
-    <span><i class="sw" style="--c:var(--min)"></i>spec-test, spec v0</span>
-    <span><i class="sw fill" style="--c:var(--min)"></i>spec-test, patched spec</span>
+    <span><i class="sw" style="--c:var(--min)"></i>spectest, spec v0</span>
+    <span><i class="sw fill" style="--c:var(--min)"></i>spectest, patched spec</span>
     <span><i class="sw fill" style="--c:var(--ink-3)"></i>human repos, paper Table 2</span>
   </div>
 
@@ -92,7 +91,7 @@ svg .hit { fill: transparent; }
     <h2>Erosion along the run, over the paper's Figure 5</h2>
     <div class="legend" style="margin-bottom:12px">
       <span><i class="sw fill" style="--c:var(--js)"></i>just-solve, this repo</span>
-      <span><i class="sw fill" style="--c:var(--min)"></i>spec-test, this repo</span>
+      <span><i class="sw fill" style="--c:var(--min)"></i>spectest, this repo</span>
       <span><i class="sw fill soft" style="--c:var(--js)"></i>paper Baseline</span>
       <span><i class="sw fill soft" style="--c:var(--min)"></i>paper Anti-Slop</span>
       <span><i class="sw fill soft" style="--c:var(--ink-3)"></i>paper Plan-First</span>
@@ -866,7 +865,7 @@ const G = {
  }
 };
 const [JS, MIN] = G.prompts;
-const P = { js: "just-solve", min: "spec-test" };
+const P = { js: "just-solve", min: "spectest" };
 const METRICS = [
   { key: "fail", name: "Hidden tests failed", unit: "%", fmt: v => (100 * v).toFixed(1) + "%", max: 0.17, ticks: [0, 0.05, 0.10, 0.15], tick: v => (100 * v).toFixed(0) + "%" },
   { key: "erosion", name: "Erosion", unit: "", fmt: v => v.toFixed(2), max: 0.8, ticks: [0, 0.2, 0.4, 0.6, 0.8], tick: v => v.toFixed(1) },
@@ -925,9 +924,9 @@ function square(m) {
   <div class="card">
     <h3>${esc(m.name)}</h3>
     <p class="sub">columns: prompt · rows: spec</p>
-    <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(m.name)}, mean of ${set.join(", ")}: just-solve v0 ${esc(m.fmt(v.a))}, spec-test v0 ${esc(m.fmt(v.b))}, just-solve patched ${esc(m.fmt(v.c))}, spec-test patched ${esc(m.fmt(v.d))}">
+    <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(m.name)}, mean of ${set.join(", ")}: just-solve v0 ${esc(m.fmt(v.a))}, spectest v0 ${esc(m.fmt(v.b))}, just-solve patched ${esc(m.fmt(v.c))}, spectest patched ${esc(m.fmt(v.d))}">
       <text class="lab" x="${x1}" y="16" text-anchor="middle">just-solve</text>
-      <text class="lab" x="${x2}" y="16" text-anchor="middle">spec-test</text>
+      <text class="lab" x="${x2}" y="16" text-anchor="middle">spectest</text>
       <text x="8" y="${y1 + 4}" text-anchor="start">v0</text>
       <text x="8" y="${y2 + 4}" text-anchor="start">patched</text>
       <line class="edge" x1="${x1 + nw / 2}" y1="${y1}" x2="${x2 - nw / 2}" y2="${y1}"></line>
@@ -1068,7 +1067,7 @@ function promptBars(m) {
   const human = HUMAN[m.key];
   return bars(`${m.name}, by prompt`, `spec v0, mean of all six problems`, m, [
     { label: "just-solve", v: a, color: "var(--js)", soft: true, tip: `just-solve at v0\n${per(JS)}` },
-    { label: "spec-test", v: b, color: "var(--min)", soft: true, tip: `spec-test at v0\n${per(MIN)}` },
+    { label: "spectest", v: b, color: "var(--min)", soft: true, tip: `spectest at v0\n${per(MIN)}` },
     ...(human ? [{ label: human.label, v: human.v, color: "var(--ink-3)", soft: false, tip: human.tip }] : []),
   ]);
 }
@@ -1078,7 +1077,7 @@ const change = v => (v < 1 ? "\u2212" : "+") + (100 * Math.abs(v - 1)).toFixed(0
 
 function shareBars(m) {
   // Each bar is a mean of per-problem shares of just-solve, which sits at the 100% line. The
-  // whisker under spec-test runs from its best problem to its worst, so the card stays this size
+  // whisker under spectest runs from its best problem to its worst, so the card stays this size
   // however many problems the mean covers.
   const r = R[m.key], pr = r.prompt, human = HUMAN[m.key];
   const W = 320, left = 132, right = 86, top = 22, barH = 22;
@@ -1086,8 +1085,8 @@ function shareBars(m) {
   const x = v => left + (v / maxV) * (W - left - right);
   const yMin = top + 6, yWhisk = yMin + barH + 10, yHuman = yWhisk + 50, H = yHuman + barH + 8;
   const value = (v, y) => `<text class="num" x="${W - right + 8}" y="${y + barH / 2 + 4}" style="font-size:12.5px">${esc(share(v))}<tspan style="fill:var(--ink-3)"> (${esc(change(v))})</tspan></text>`;
-  const minTip = `spec-test at v0, mean over ${r.n} problems of spec-test / just-solve\n${share(pr.mean)} of just-solve (${change(pr.mean)})`;
-  const rangeTip = `spec-test's best and worst problem\nbest: ${pr.best.problem} ${share(pr.best.share)} (${change(pr.best.share)})\nworst: ${pr.worst.problem} ${share(pr.worst.share)} (${change(pr.worst.share)})`;
+  const minTip = `spectest at v0, mean over ${r.n} problems of spectest / just-solve\n${share(pr.mean)} of just-solve (${change(pr.mean)})`;
+  const rangeTip = `spectest's best and worst problem\nbest: ${pr.best.problem} ${share(pr.best.share)} (${change(pr.best.share)})\nworst: ${pr.worst.problem} ${share(pr.worst.share)} (${change(pr.worst.share)})`;
   const humanTip = `${human.tip}\nmean over ${r.n} problems of ${m.fmt(human.v)} / just-solve: ${share(r.human.mean)} (${change(r.human.mean)})`;
   // The halo keeps a long problem name legible where it crosses the 100% line.
   const extreme = (word, e, y) => `<text x="${left - 10}" y="${y}" text-anchor="end" style="font-size:11.5px">${word}</text>` +
@@ -1097,11 +1096,11 @@ function shareBars(m) {
   <div class="card">
     <h3>${esc(m.name)}, share of just-solve</h3>
     <p class="sub">spec v0, mean of the ${r.n} per-problem shares</p>
-    <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(m.name)} as a share of just-solve: spec-test ${esc(share(pr.mean))}, from ${esc(pr.best.problem)} ${esc(share(pr.best.share))} to ${esc(pr.worst.problem)} ${esc(share(pr.worst.share))}; ${esc(human.label)} ${esc(share(r.human.mean))}">
+    <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(m.name)} as a share of just-solve: spectest ${esc(share(pr.mean))}, from ${esc(pr.best.problem)} ${esc(share(pr.best.share))} to ${esc(pr.worst.problem)} ${esc(share(pr.worst.share))}; ${esc(human.label)} ${esc(share(r.human.mean))}">
       <line class="axis" x1="${left}" y1="${top}" x2="${left}" y2="${H - 4}"></line>
       <line x1="${x(1)}" y1="${top}" x2="${x(1)}" y2="${H - 4}" style="stroke:var(--js);stroke-width:1.5;stroke-dasharray:3 3"></line>
       <text x="${x(1)}" y="${top - 8}" text-anchor="middle" style="font-size:11.5px">just-solve, 100%</text>
-      <text class="lab" x="${left - 10}" y="${yMin + barH / 2 + 4}" text-anchor="end" style="font-size:12.5px">spec-test</text>
+      <text class="lab" x="${left - 10}" y="${yMin + barH / 2 + 4}" text-anchor="end" style="font-size:12.5px">spectest</text>
       <rect x="${left}" y="${yMin}" width="${Math.max(2, x(pr.mean) - left)}" height="${barH}" rx="3" style="fill:var(--min);opacity:0.45" data-tip="${esc(minTip)}"></rect>
       ${value(pr.mean, yMin)}
       <line x1="${x(pr.best.share)}" y1="${yWhisk}" x2="${x(pr.worst.share)}" y2="${yWhisk}" style="stroke:var(--min);stroke-width:2"></line>
@@ -1120,10 +1119,10 @@ function shareReading() {
   return `
   <div class="card">
     <h3>Reading the shares</h3>
-    <p class="reading">Each problem's <span class="nb">spec-test</span> value is divided by its own just-solve value, and the bar is the mean of those ${e.n} shares. That weighs every problem the same, so it differs from dividing the two means in the row above. ` +
+    <p class="reading">Each problem's spectest value is divided by its own just-solve value, and the bar is the mean of those ${e.n} shares. That weighs every problem the same, so it differs from dividing the two means in the row above. ` +
     `The human bar is the paper's one figure divided by each problem's just-solve value, averaged the same way. ` +
-    `Erosion under <span class="nb">spec-test</span> is ${esc(share(e.prompt.mean))} of just-solve's, below the human ${esc(share(e.human.mean))}; ast-grep is ${esc(share(a.prompt.mean))} against ${esc(share(a.human.mean))}. ` +
-    `The whisker names the problems where <span class="nb">spec-test</span> helped most and least.</p>
+    `Erosion under spectest is ${esc(share(e.prompt.mean))} of just-solve's, below the human ${esc(share(e.human.mean))}; ast-grep is ${esc(share(a.prompt.mean))} against ${esc(share(a.human.mean))}. ` +
+    `The whisker names the problems where spectest helped most and least.</p>
   </div>`;
 }
 
@@ -1133,9 +1132,9 @@ function caseBars() {
   const it = (label, prompt, kind, color, soft) => ({ label, v: avg(patched, prompt, kind, m.key), color, soft, tip: `${label}\n${per(prompt, kind)}` });
   return bars("Hidden tests failed, four cases", `mean of ${patched.join(", ")}`, m, [
     it("just-solve, v0", JS, "v0", "var(--js)", true),
-    it("spec-test, v0", MIN, "v0", "var(--min)", true),
+    it("spectest, v0", MIN, "v0", "var(--min)", true),
     it("just-solve, patched", JS, "patched", "var(--js)", false),
-    it("spec-test, patched", MIN, "patched", "var(--min)", false),
+    it("spectest, patched", MIN, "patched", "var(--min)", false),
   ]);
 }
 
@@ -1149,7 +1148,7 @@ document.getElementById("trajectory").innerHTML = Object.keys(PAPER.models).map(
     `<b>Reading.</b> The paper's Figure 5 (top row) is redrawn from its vector paths, one y axis for all three models instead of a range per panel. ` +
     `Its Baseline prompt is just-solve; Anti-Slop is its quality prompt. Every paper line climbs from Start to Final, and the paper reads that as prompting not slowing the decay. ` +
     `Our two lines are the same twelve v0 runs per prompt from the headline, each checkpoint placed in the paper's phase (first is Start, last is Final, the rest split into thirds) and pooled: ` +
-    `just-solve ${esc(f(js[0]))} to ${esc(f(js[4]))}, <span class="nb">spec-test</span> ${esc(f(mn[0]))} to ${esc(f(mn[4]))}. Opus 5's climb is shallower than any paper model's, and under <span class="nb">spec-test</span> there is none to see; two runs per problem and four to seven checkpoints, so read the wiggles as noise.`;
+    `just-solve ${esc(f(js[0]))} to ${esc(f(js[4]))}, spectest ${esc(f(mn[0]))} to ${esc(f(mn[4]))}. Opus 5's climb is shallower than any paper model's, and under spectest there is none to see; two runs per problem and four to seven checkpoints, so read the wiggles as noise.`;
 }
 document.getElementById("squares").innerHTML = SQUARE_METRICS.map(square).join("");
 document.getElementById("panels").innerHTML = METRICS.map(panel).join("");
@@ -1162,7 +1161,7 @@ document.getElementById("foot").innerHTML =
   `The human bars are the paper's Major tier at HEAD, 28 repositories with over 10k stars, from Table 2 of v1 (v2 grew the panel to 473 repositories, erosion ${esc(HUMAN.erosion.v.toFixed(2))} to 0.37, and dropped the ast-grep column).`;
 
 const cols = [[JS, "v0"], [MIN, "v0"], [MIN, "patched"], [JS, "patched"]];
-const th = cols.map(([pr, k]) => `<th>${esc(pr === JS ? "just-solve" : "spec-test")} ${k}</th>`).join("");
+const th = cols.map(([pr, k]) => `<th>${esc(pr === JS ? "just-solve" : "spectest")} ${k}</th>`).join("");
 const rows = problems.map(p => `<tr><td>${esc(p)}</td>` + cols.map(([pr, k]) => {
   const c = cell(p, pr, k);
   return `<td class="num">${c ? esc(`${(100 * c.mean.fail).toFixed(1)}% · ${c.mean.erosion.toFixed(2)} · ${c.mean.ast.toFixed(2)} · $${c.mean.cost.toFixed(0)} · ${c.mean.minutes.toFixed(0)}m`) : "–"}</td>`;

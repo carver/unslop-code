@@ -49,8 +49,10 @@ Start here:
 - `notes/` — credential plumbing and incident log (`credential-setup.md`), control
   isolation audit, spec-delivery mechanism, per-run comparisons
   (`dev6-opus5.md`, `dev6-fable5.md`), leaderboard/paper reference, compiled results.
-- `split.json` / `problems.csv` — dev/holdout split (seed 20260829). Never read holdout
-  specs or re-run file_backup outside the holdout eval.
+- `split.json` / `problems.csv` — the problem split. dev (6, seed 20260829): specs may be
+  read and patched. test (15, seed 20260917, drawn 2026-09-17 from the other 30, 5 per
+  difficulty): run only, results reported, no spec or transcript reading, no patching.
+  validation (the other 15): sealed until just before publication.
 
 Running things (always through the wrapper; it enforces subscription-only auth
 and the sandbox-local venv). Launch from the repo root: run configs name their agent,

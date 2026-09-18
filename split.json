@@ -9,38 +9,48 @@
     "sith",
     "xjq"
   ],
-  "holdout": [
+  "test_seed": 20260917,
+  "test_method": "random.Random(test_seed); per difficulty over the 30 non-dev problems: sort names, shuffle, first 5 -> test, rest -> validation (2026-09-17)",
+  "test": [
     "cfgpipe",
     "circuit_eval",
     "code_search",
-    "dag_execution",
-    "database_migration",
-    "dynamic_buffer",
     "dynamic_config_service_api",
-    "env_manager",
     "etl_pipeline",
-    "eve_industry",
-    "eve_jump_planner",
     "eve_market_tools",
     "eve_route_planner",
-    "execution_server",
     "file_backup",
-    "file_query_tool",
     "forge",
-    "l2m",
     "layered_config_synthesizer",
     "log_query",
     "meshctl",
     "metric_transform_lang",
-    "migrate_configs",
     "mocked_http",
+    "recli"
+  ],
+  "validation": [
+    "dag_execution",
+    "database_migration",
+    "dynamic_buffer",
+    "env_manager",
+    "eve_industry",
+    "eve_jump_planner",
+    "execution_server",
+    "file_query_tool",
+    "l2m",
+    "migrate_configs",
     "pwd_manager",
-    "recli",
     "sheeteval",
     "test_translator",
     "textdrop",
     "trajectory_api"
   ],
-  "dev_checkpoints": 33,
-  "holdout_checkpoints": 163
+  "rules": {
+    "dev": "specs, transcripts and misses may be read and patched",
+    "test": "run only; scores and quality metrics reported, no spec or transcript reading, no spec patching",
+    "validation": "sealed until just before publication"
+  },
+  "notes": {
+    "file_backup": "one Sonnet 4.6 just-solve smoke run on 2026-08-29 (notes/smoke-run.md), results only, before the test draw"
+  }
 }

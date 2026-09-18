@@ -1,5 +1,5 @@
 # Spectest prompt experiment: datagate only, Opus 5, advanced one checkpoint at a time.
-# The spectest prompt (configs/prompts/spectest.jinja, from spectest-prompt.txt) asks for
+# The spectest prompt (configs/prompts/spectest.jinja) asks for
 # spec-phrase test sections, hypothesis tests, and library research before implementing.
 #
 #   start:    bin/scb run --config configs/runs/spectest-datagate-opus5.yaml \

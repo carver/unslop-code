@@ -26,7 +26,9 @@ def outcomes(evaluation):
 def history(problem, needle, outputs):
     """[(run label, checkpoint, {test id: outcome})] for tests matching needle, runs by timestamp."""
     rows = []
-    for run in sorted(outputs.glob(f"*/*/*/{problem}"), key=lambda p: p.parent.name):  # outputs/<group>/<family>/<stamp>/<problem>
+    for run in sorted(
+        outputs.glob(f"*/*/*/{problem}"), key=lambda p: p.parent.name
+    ):  # outputs/<group>/<family>/<stamp>/<problem>
         hits = {}
         checkpoint = None
         for ev in sorted(run.glob("checkpoint_*/evaluation.json")):

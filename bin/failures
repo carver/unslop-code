@@ -76,7 +76,9 @@ def show_problem(a, b, problem, with_messages):
             print(f"\n== {problem} checkpoint {ck}: missing evaluation")
             continue
         if b:
-            print(f"\n== {problem} checkpoint {ck}: a fails {len(fa)}, b fails {len(fb)}, shared {len(set(fa) & set(fb))}")
+            print(
+                f"\n== {problem} checkpoint {ck}: a fails {len(fa)}, b fails {len(fb)}, shared {len(set(fa) & set(fb))}"
+            )
         else:
             print(f"\n== {problem} checkpoint {ck}: {len(fa)} failing")
         msgs = messages(msg_run, problem, ck) if with_messages else {}
@@ -91,8 +93,13 @@ def show_problem(a, b, problem, with_messages):
 def main():
     args = [a for a in sys.argv[1:] if a != "--messages"]
     with_messages = "--messages" in sys.argv
-    runs = [pathlib.Path(a) for a in args if (pathlib.Path(a) / "checkpoint_results.jsonl").exists()
-            or pathlib.Path(a).is_dir() and any(pathlib.Path(a).glob("*/checkpoint_1"))]
+    runs = [
+        pathlib.Path(a)
+        for a in args
+        if (pathlib.Path(a) / "checkpoint_results.jsonl").exists()
+        or pathlib.Path(a).is_dir()
+        and any(pathlib.Path(a).glob("*/checkpoint_1"))
+    ]
     rest = [a for a in args if pathlib.Path(a) not in runs]
 
     if not runs:
@@ -115,7 +122,7 @@ def main():
     if problem is None and sys.stdin.isatty() and len(sys.argv) == 1:
         problem = pick("Problem (0 = all):", problems_in(b or a), allow_all=True)
 
-    for p in ([problem] if problem else problems_in(b or a)):
+    for p in [problem] if problem else problems_in(b or a):
         show_problem(a, b, p, with_messages)
 
 

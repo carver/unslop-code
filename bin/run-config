@@ -91,7 +91,9 @@ def main():
     if not re.fullmatch(r"v\d+", spec):
         raise SystemExit(f"run-config: --spec takes v0, v1, ...; got {spec!r}")
     if spec != "v0" and not (ROOT / "specs" / a.problem / spec).is_dir():
-        raise SystemExit(f"run-config: no specs/{a.problem}/{spec}/ folder; add its patches, then bin/spec-patch {a.problem} {spec}")
+        raise SystemExit(
+            f"run-config: no specs/{a.problem}/{spec}/ folder; add its patches, then bin/spec-patch {a.problem} {spec}"
+        )
     name = run_name(a.prompt, spec, a.name)
     out = ROOT / "configs" / "runs" / f"{name}-{a.problem}-opus5.yaml"
     env = "" if spec == "v0" else f"SCBENCH_PROBLEMS_PATH=$PWD/specs/{a.problem}/{spec}/problems "

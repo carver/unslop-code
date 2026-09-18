@@ -38,7 +38,9 @@ def the_problem(run_dir):
 
 def finished_checkpoints(problem_dir):
     """Checkpoint numbers that have an evaluation, in order."""
-    return sorted(int(p.name.split("_")[1]) for p in problem_dir.glob("checkpoint_*") if (p / "evaluation.json").exists())
+    return sorted(
+        int(p.name.split("_")[1]) for p in problem_dir.glob("checkpoint_*") if (p / "evaluation.json").exists()
+    )
 
 
 def fork(run_dir, spec, keep):
@@ -61,8 +63,10 @@ def fork(run_dir, spec, keep):
     for path in (dst / problem).glob("checkpoint_*"):
         if int(path.name.split("_")[1]) > keep:
             shutil.rmtree(path)
+
     def rename(text):
         return text.replace(run_dir.parent.name, dst.parent.name)
+
     (dst / "config.yaml").write_text(rename((dst / "config.yaml").read_text()))
     (dst / "problem_catalog.json").write_text(json.dumps({"version": "env-override", "commit": str(spec_root)}))
     rows = [json.loads(line) for line in (dst / "checkpoint_results.jsonl").read_text().splitlines() if line.strip()]

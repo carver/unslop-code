@@ -2,6 +2,7 @@
 # the tests, report/ and install.py. The ignores are the house style of dense one-liners;
 # each names the rule it silences so the list can be revisited.
 target-version = "py312"
+line-length = 120
 extend-include = [
   "bin/build-prompt", "bin/compare-runs", "bin/failures", "bin/fork-run", "bin/grid",
   "bin/judge-ambiguities", "bin/ledger-row", "bin/miss-report", "bin/queue", "bin/reeval",
@@ -11,10 +12,11 @@ extend-include = [
 
 [lint]
 select = ["E", "F", "W", "B", "SIM"]
-ignore = [
-  "E501",  # line length; tables and ledger rows run wide on purpose
-]
 
 [lint.per-file-ignores]
+# build.py writes HTML rows as f-strings; wrapping them helps nobody.
+"report/build.py" = ["E501"]
+# Its fixtures quote spec sentences verbatim.
+"tests/test_judge_ambiguities.py" = ["E501"]
 # PREVIEW reproduces scb's dry-run output verbatim, trailing space included.
 "tests/test_scb_extend.py" = ["W291"]

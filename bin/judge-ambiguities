@@ -62,7 +62,13 @@ MODEL = "claude-opus-5"
 # tests in the v7 run. A judge answer in the set counts as matching the hidden
 # reading. T74's hidden tests reject a value-bearing force AND a repeated one,
 # so "both" is right there too.
-HIDDEN_OK = {"T22": {1}, "T27": {1}, "T56": {1}, "T63": {1}, "T74": {1, "both"}}  # datagate v7; other problems: --hidden
+HIDDEN_OK = {
+    "T22": {1},
+    "T27": {1},
+    "T56": {1},
+    "T63": {1},
+    "T74": {1, "both"},
+}  # datagate v7; other problems: --hidden
 
 VARIANTS = {
     f"{mode}{'+both' if both else ''}{'+impl' if impl else ''}": (mode, both, impl)
@@ -105,24 +111,34 @@ def parse_registry(text: str) -> list[Entry]:
     heads = list(ENTRY_RE.finditer(text))
     entries = []
     for i, m in enumerate(heads):
-        body = text[m.end(): heads[i + 1].start() if i + 1 < len(heads) else len(text)]
+        body = text[m.end() : heads[i + 1].start() if i + 1 < len(heads) else len(text)]
         spec = _section(body, "Spec Text")
         alts = _section(body, "Alternatives")
         choice_raw = _section(body, "Choice")
         alternatives = _split_alternatives(alts)
         cm = re.match(r"\s*(?:—\s*\((\d+)\)|Alternative\s+(\d+))", choice_raw)
         choice = int(cm.group(1) or cm.group(2)) if cm else None
-        entries.append(Entry(
-            id=m.group("id"), title=m.group("title").strip(), spec_text=spec.strip(),
-            alternatives=alternatives, choice=choice,
-            choice_raw=choice_raw.strip(),
-        ))
+        entries.append(
+            Entry(
+                id=m.group("id"),
+                title=m.group("title").strip(),
+                spec_text=spec.strip(),
+                alternatives=alternatives,
+                choice=choice,
+                choice_raw=choice_raw.strip(),
+            )
+        )
     return entries
 
 
 def _section(body: str, name: str) -> str:
     """The text under a `**Name**` label or a `### Name` heading, up to the next label or heading."""
-    m = re.search(rf"^(?:\*\*{re.escape(name)}\*\*|###[ \t]*{re.escape(name)}[ \t]*:?[^\n]*)(.*?)(?=^\*\*[A-Z][^*]*\*\*|^###\s|^---|\Z)", body, re.M | re.S)
+    m = re.search(
+        rf"^(?:\*\*{re.escape(name)}\*\*|###[ \t]*{re.escape(name)}[ \t]*:?[^\n]*)"
+        r"(.*?)(?=^\*\*[A-Z][^*]*\*\*|^###\s|^---|\Z)",
+        body,
+        re.M | re.S,
+    )
     return m.group(1) if m else ""
 
 
@@ -147,9 +163,14 @@ def infer_problem(run_dir: Path) -> str:
 def load_entries(run_dir: Path, problem: str) -> list[Entry]:
     """Entries from the last checkpoint's registry, each tagged with the checkpoint
     it first appeared in, so the judge sees the spec the tester had."""
-    snaps = sorted((p for p in run_dir.glob(f"{problem}/checkpoint_*/snapshot/AMBIGUITIES.md")
-                    if re.fullmatch(r"checkpoint_\d+", p.parts[-3])),  # skip *.partial dirs
-                   key=lambda p: int(p.parts[-3].split("_")[1]))
+    snaps = sorted(
+        (
+            p
+            for p in run_dir.glob(f"{problem}/checkpoint_*/snapshot/AMBIGUITIES.md")
+            if re.fullmatch(r"checkpoint_\d+", p.parts[-3])
+        ),  # skip *.partial dirs
+        key=lambda p: int(p.parts[-3].split("_")[1]),
+    )
     if not snaps:
         sys.exit(f"no AMBIGUITIES.md snapshots under {run_dir}")
     first_seen: dict[str, int] = {}
@@ -220,6 +241,7 @@ def cumulative_spec(problem: str, checkpoint: int) -> str:
 
 # --------------------------------------------------------------------------- prompts
 
+
 def system_prompt(spec: str, variant: str) -> str:
     mode, both, impl = VARIANTS[variant]
     lines = [
@@ -255,8 +277,7 @@ def user_prompt(batch: list[tuple[str, Entry, list[int]]]) -> str:
     blocks = []
     for label, entry, order in batch:
         alts = "\n".join(f"{i + 1}. {entry.alternatives[j]}" for i, j in enumerate(order))
-        blocks.append(f"### {label}: {entry.title}\n\nSpec text:\n{entry.spec_text}\n\n"
-                      f"Candidate readings:\n{alts}")
+        blocks.append(f"### {label}: {entry.title}\n\nSpec text:\n{entry.spec_text}\n\nCandidate readings:\n{alts}")
     return "AMBIGUITIES\n\n" + "\n\n".join(blocks) + "\n\nFor each ambiguity, which reading did the author intend?"
 
 
@@ -283,6 +304,7 @@ def normalize_choice(raw, order: list[int]):
 
 def parse_result(text: str) -> dict[str, dict] | None:
     """The judge's JSON array, keyed by ambiguity label."""
+
     def labelled(items) -> dict[str, dict]:
         return {str(it["id"]).strip(): it for it in items if isinstance(it, dict) and "id" in it}
 
@@ -319,6 +341,7 @@ def partition(entries: list[Entry], variant: str, sample: int, size: int) -> lis
 
 # --------------------------------------------------------------------------- judging
 
+
 def claude_env() -> dict[str, str]:
     env = {k: v for k, v in os.environ.items() if not k.upper().startswith("ANTHROPIC")}
     token = TOKEN_FILE.read_text().strip()
@@ -329,8 +352,20 @@ def claude_env() -> dict[str, str]:
 
 
 def judge_once(system: str, user: str, env: dict[str, str], timeout: int = 240) -> dict:
-    cmd = ["claude", "-p", "--model", MODEL, "--system-prompt", system, "--tools", "",
-           "--no-session-persistence", "--output-format", "json", user]
+    cmd = [
+        "claude",
+        "-p",
+        "--model",
+        MODEL,
+        "--system-prompt",
+        system,
+        "--tools",
+        "",
+        "--no-session-persistence",
+        "--output-format",
+        "json",
+        user,
+    ]
     t0 = time.monotonic()
     proc = subprocess.run(cmd, env=env, stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=timeout)
     elapsed = time.monotonic() - t0
@@ -342,8 +377,11 @@ def judge_once(system: str, user: str, env: dict[str, str], timeout: int = 240) 
         return {"error": "non-json output: " + proc.stdout[:200], "elapsed": elapsed}
     usage = out.get("usage") or {}
     return {
-        "result": out.get("result", ""), "cost": out.get("total_cost_usd"), "elapsed": elapsed,
-        "cache_read": usage.get("cache_read_input_tokens"), "cache_write": usage.get("cache_creation_input_tokens"),
+        "result": out.get("result", ""),
+        "cost": out.get("total_cost_usd"),
+        "elapsed": elapsed,
+        "cache_read": usage.get("cache_read_input_tokens"),
+        "cache_write": usage.get("cache_creation_input_tokens"),
         "output_tokens": usage.get("output_tokens"),
     }
 
@@ -363,8 +401,9 @@ def wait_for_reset(resets_at: str) -> None:
         time.sleep(60)
 
 
-def build_plan(entries: list[Entry], variants: list[str], samples: int, size: int,
-               done: set[tuple[str, str, int]]) -> list[tuple[list[Entry], str, int]]:
+def build_plan(
+    entries: list[Entry], variants: list[str], samples: int, size: int, done: set[tuple[str, str, int]]
+) -> list[tuple[list[Entry], str, int]]:
     """Batches still to judge: entries of one checkpoint, per variant and sample,
     minus those already judged."""
     by_ckpt = collections.defaultdict(list)
@@ -397,7 +436,11 @@ def cmd_run(args, dry: bool) -> None:
     entries = select_entries(load_entries(Path(args.run_dir), problem), args.entries)
     if args.spec_patch:
         changed = rewrite_quotes(entries, patch_sentences("\n".join(Path(f).read_text() for f in args.spec_patch)))
-        print(f"spec patch {args.spec_patch}: problem root {PROBLEM_ROOT}; rewrote quotes in {', '.join(changed) or 'no entries'}", flush=True)
+        print(
+            f"spec patch {args.spec_patch}: problem root {PROBLEM_ROOT}; "
+            f"rewrote quotes in {', '.join(changed) or 'no entries'}",
+            flush=True,
+        )
     variants = args.variants.split(",") if args.variants else list(VARIANTS)
     for v in variants:
         if v not in VARIANTS:
@@ -407,9 +450,12 @@ def cmd_run(args, dry: bool) -> None:
     done = done_keys(out)
     todo = build_plan(entries, variants, args.samples, args.batch, done)
     n_judgments = sum(len(b) for b, _, _ in todo)
-    print(f"{len(entries)} entries x {len(variants)} variants x {args.samples} samples = "
-          f"{len(entries) * len(variants) * args.samples} judgments; {len(done)} done, "
-          f"{n_judgments} to run in {len(todo)} calls of up to {args.batch}", flush=True)
+    print(
+        f"{len(entries)} entries x {len(variants)} variants x {args.samples} samples = "
+        f"{len(entries) * len(variants) * args.samples} judgments; {len(done)} done, "
+        f"{n_judgments} to run in {len(todo)} calls of up to {args.batch}",
+        flush=True,
+    )
     if dry:
         for e in entries:
             print(f"  {e.id} ckpt{e.checkpoint} alts={len(e.alternatives)} tester={e.choice} :: {e.title[:70]}")
@@ -432,9 +478,18 @@ def cmd_run(args, dry: bool) -> None:
         batch_ids = [e.id for e in batch]
         recs = []
         for label, e, order in labelled:
-            rec = {"entry": e.id, "checkpoint": ckpt, "variant": v, "sample": s, "order": order,
-                   "tester": e.choice, "batch": batch_ids, "at": at,
-                   "cost": (res.get("cost") or 0.0) / len(batch), "elapsed": res.get("elapsed")}
+            rec = {
+                "entry": e.id,
+                "checkpoint": ckpt,
+                "variant": v,
+                "sample": s,
+                "order": order,
+                "tester": e.choice,
+                "batch": batch_ids,
+                "at": at,
+                "cost": (res.get("cost") or 0.0) / len(batch),
+                "elapsed": res.get("elapsed"),
+            }
             if "error" in res:
                 rec["error"] = res["error"]
             elif parsed is None:
@@ -456,15 +511,20 @@ def cmd_run(args, dry: bool) -> None:
             state["errors"] += sum("error" in r for r in recs)
             n = state["n"]
             if n % 5 == 0 or n == len(todo):
-                print(f"[{n}/{len(todo)} calls] cost=${state['cost']:.2f} errors={state['errors']} "
-                      f"last=ckpt{ckpt}/{v}#{s} x{len(batch)} ({res.get('elapsed', 0):.0f}s)", flush=True)
+                print(
+                    f"[{n}/{len(todo)} calls] cost=${state['cost']:.2f} errors={state['errors']} "
+                    f"last=ckpt{ckpt}/{v}#{s} x{len(batch)} ({res.get('elapsed', 0):.0f}s)",
+                    flush=True,
+                )
             if n % args.check_every == 0:
                 u = five_hour_pct()
                 if u and u[0] >= args.pause_at:
                     print(f"5h window at {u[0]}%, pausing until {u[1]}", flush=True)
                     state["paused"] = True
-                    threading.Thread(target=lambda: (wait_for_reset(u[1]), state.update(paused=False),
-                                                     print("resumed", flush=True)), daemon=True).start()
+                    threading.Thread(
+                        target=lambda: (wait_for_reset(u[1]), state.update(paused=False), print("resumed", flush=True)),
+                        daemon=True,
+                    ).start()
         return recs
 
     with ThreadPoolExecutor(max_workers=args.workers) as pool:
@@ -488,6 +548,7 @@ def select_entries(entries: list[Entry], spec: str | None) -> list[Entry]:
 
 # --------------------------------------------------------------------------- summary
 
+
 def cmd_summarize(args) -> None:
     out = Path(args.out)
     recs = [json.loads(line) for line in (out / "judgments.jsonl").read_text().splitlines() if line.strip()]
@@ -506,8 +567,10 @@ def cmd_summarize(args) -> None:
         known = [r for r in vs if r["entry"] in HIDDEN_OK]
         hidden = sum(r["choice"] in HIDDEN_OK[r["entry"]] for r in known)
         pos1 = sum(r.get("choice_raw") in (1, "1") for r in vs)
-        print(f"  {v:18s} agree_with_tester={agree}/{len(vs)}  hidden_reading={hidden}/{len(known)}  "
-              f"picked_position_1={pos1}/{len(vs)}")
+        print(
+            f"  {v:18s} agree_with_tester={agree}/{len(vs)}  hidden_reading={hidden}/{len(known)}  "
+            f"picked_position_1={pos1}/{len(vs)}"
+        )
     print("\nPer entry (vote = choice:count over all samples of the variant)")
     print(f"  {'entry':6s} {'tester':6s} {'hidden':7s} " + " ".join(f"{v[:14]:14s}" for v in variants))
     for e in entries:
@@ -533,7 +596,13 @@ def main() -> None:
         p.add_argument("--variants")
         p.add_argument("--samples", type=int, default=5)
         p.add_argument("--batch", type=int, default=15)
-        p.add_argument("--spec-patch", action="append", default=[], help="unified diff of the specs; repeatable (specs/<problem>/vN/*.patch); rewrites matching quoted sentences in entries")
+        p.add_argument(
+            "--spec-patch",
+            action="append",
+            default=[],
+            help="unified diff of the specs; repeatable (specs/<problem>/vN/*.patch); "
+            "rewrites matching quoted sentences in entries",
+        )
         p.add_argument("--workers", type=int, default=4)
         p.add_argument("--pause-at", type=float, default=85)
         p.add_argument("--check-every", type=int, default=5)

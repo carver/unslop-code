@@ -22,7 +22,10 @@ def test_problems_root_is_the_cache_for_v0_and_the_problems_specs_folder_otherwi
 
 
 def test_prompt_resolves_to_local_template_or_benchmark_name():
-    assert rc.resolve_prompt("spectest-v8A-no-libs-no-subagent") == "configs/prompts/spectest-v8A-no-libs-no-subagent.jinja"
+    assert (
+        rc.resolve_prompt("spectest-v8A-no-libs-no-subagent")
+        == "configs/prompts/spectest-v8A-no-libs-no-subagent.jinja"
+    )
     assert rc.resolve_prompt(str(rc.ROOT / "configs/prompts/spectest-v9.jinja")) == "configs/prompts/spectest-v9.jinja"
     assert rc.resolve_prompt("just-solve") == "just-solve"
 

@@ -24,12 +24,27 @@ def make_run(root, family="opus-5_high_min12-specv4", stamp="20260910T1126", che
             (ck / "evaluation.json").write_text("{}")
     (run / "config.yaml").write_text(
         f"output_path: {run}\nproblems:\n  - file_merger\nsave_template: spectest/{family}/{stamp}\n")
-    (run / "problem_catalog.json").write_text(json.dumps({"version": "env-override", "commit": f"{root}/specs/file_merger/v4/problems"}))
-    (run / "checkpoint_results.jsonl").write_text("".join(
-        json.dumps({"problem": "file_merger", "checkpoint": f"checkpoint_{n}", "path": f"{run}/file_merger/checkpoint_{n}"}) + "\n"
-        for n in checkpoints))
-    (run / "file_merger" / "run_info.yaml").write_text(yaml.safe_dump(
-        {"seed": 42, "summary": {"checkpoints": {f"checkpoint_{n}": "ran" for n in checkpoints}, "total_cost": 20.0}}, sort_keys=False))
+    (run / "problem_catalog.json").write_text(
+        json.dumps({"version": "env-override", "commit": f"{root}/specs/file_merger/v4/problems"})
+    )
+    (run / "checkpoint_results.jsonl").write_text(
+        "".join(
+            json.dumps(
+                {"problem": "file_merger", "checkpoint": f"checkpoint_{n}", "path": f"{run}/file_merger/checkpoint_{n}"}
+            )
+            + "\n"
+            for n in checkpoints
+        )
+    )
+    (run / "file_merger" / "run_info.yaml").write_text(
+        yaml.safe_dump(
+            {
+                "seed": 42,
+                "summary": {"checkpoints": {f"checkpoint_{n}": "ran" for n in checkpoints}, "total_cost": 20.0},
+            },
+            sort_keys=False,
+        )
+    )
     (root / "specs" / "file_merger" / "v5" / "problems" / "file_merger").mkdir(parents=True)
     mod.ROOT = root
     return run
@@ -40,12 +55,18 @@ def test_fork_keeps_early_checkpoints_and_points_everything_at_the_new_spec(tmp_
     dst = mod.fork(run, "v5", 2)
     assert dst == tmp_path / "outputs" / "spectest" / "opus-5_high_min12-specv5" / "20260910T1126"
     assert sorted(p.name for p in (dst / "file_merger").glob("checkpoint_*")) == ["checkpoint_1", "checkpoint_2"]
-    assert sorted(p.name for p in (run / "file_merger").glob("checkpoint_*")) == [f"checkpoint_{n}" for n in (1, 2, 3, 4)]
+    assert sorted(p.name for p in (run / "file_merger").glob("checkpoint_*")) == [
+        f"checkpoint_{n}" for n in (1, 2, 3, 4)
+    ]
     config = (dst / "config.yaml").read_text()
-    assert f"output_path: {dst}" in config and "save_template: spectest/opus-5_high_min12-specv5/20260910T1126" in config
+    assert (
+        f"output_path: {dst}" in config and "save_template: spectest/opus-5_high_min12-specv5/20260910T1126" in config
+    )
     assert "specv4" not in config
     assert json.loads((dst / "problem_catalog.json").read_text()) == {
-        "version": "env-override", "commit": str(tmp_path / "specs" / "file_merger" / "v5" / "problems")}
+        "version": "env-override",
+        "commit": str(tmp_path / "specs" / "file_merger" / "v5" / "problems"),
+    }
     rows = [json.loads(line) for line in (dst / "checkpoint_results.jsonl").read_text().splitlines()]
     assert [r["checkpoint"] for r in rows] == ["checkpoint_1", "checkpoint_2"]
     assert all(r["path"].startswith(str(dst)) for r in rows)

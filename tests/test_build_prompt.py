@@ -23,7 +23,14 @@ def test_all_chunks_rebuild_min4_line_for_line():
     assert nonblank(text) == nonblank((ROOT / "configs/prompts/spectest-min4-ambiguities.jinja").read_text())
 
 
-@pytest.mark.parametrize("letters,rung", [("ADEJK", "spectest-min2-strict-errors"), ("ABCJK", "spectest-min2b-generator-floor"), ("ABCDEJK", "spectest-min3-hypothesis")])
+@pytest.mark.parametrize(
+    "letters,rung",
+    [
+        ("ADEJK", "spectest-min2-strict-errors"),
+        ("ABCJK", "spectest-min2b-generator-floor"),
+        ("ABCDEJK", "spectest-min3-hypothesis"),
+    ],
+)
 def test_existing_rungs_are_chunk_sets(letters, rung):
     assert nonblank(bp.build(letters)[1]) == nonblank((ROOT / f"configs/prompts/{rung}.jinja").read_text())
 
@@ -38,7 +45,6 @@ def test_unknown_or_repeated_letters_fail():
         bp.build("BZ")
     with pytest.raises(SystemExit):
         bp.build("BB")
-
 
 
 MIN9 = ROOT / "configs/prompts/min9-chunks"
@@ -96,8 +102,11 @@ def test_min11_is_min10_with_only_the_generator_floor_and_task_line_changed():
     ten_skeleton = (MIN10 / "SKELETON.jinja").read_text().splitlines()
     eleven_skeleton = (MIN11 / "SKELETON.jinja").read_text().splitlines()
     assert [(a, b) for a, b in zip(ten_skeleton, eleven_skeleton, strict=True) if a != b] == [
-        ("Fully implement the following spec, without questions. Use the approach:",
-         "Fully implement the following spec. Use the approach:")]
+        (
+            "Fully implement the following spec, without questions. Use the approach:",
+            "Fully implement the following spec. Use the approach:",
+        )
+    ]
 
 
 MIN12 = ROOT / "configs/prompts/min12-chunks"
@@ -116,5 +125,7 @@ def test_min12_is_min11_with_only_the_intro_line_changed():
     assert eleven == twelve
     a = (MIN11 / "SKELETON.jinja").read_text().splitlines()
     b = (MIN12 / "SKELETON.jinja").read_text().splitlines()
-    assert [(x, y) for x, y in zip(a, b, strict=True) if x != y] == [("- Implement with Red Green testing", "- Implement")]
+    assert [(x, y) for x, y in zip(a, b, strict=True) if x != y] == [
+        ("- Implement with Red Green testing", "- Implement")
+    ]
     assert len(a) == len(b)

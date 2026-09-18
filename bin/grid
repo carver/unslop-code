@@ -84,7 +84,11 @@ def trajectory(cells, prompts=DEFAULT_PROMPTS, model="opus-5", spec="v0"):
                 for idx, erosion in enumerate(by_ckpt):
                     if erosion is not None:
                         pools[phase_of(idx, len(by_ckpt))].append(erosion)
-        out["prompts"][prompt] = {"runs": runs, "ckpts": [len(x) for x in pools], "erosion": [results.mean(x) for x in pools]}
+        out["prompts"][prompt] = {
+            "runs": runs,
+            "ckpts": [len(x) for x in pools],
+            "erosion": [results.mean(x) for x in pools],
+        }
     return out
 
 
@@ -93,8 +97,9 @@ def cell_means(runs):
 
 
 def grid(cells, prompts=DEFAULT_PROMPTS, model="opus-5"):
-    """{"prompts": [...], "problems": {problem: {"patched": "vN" | None, "cells": {"prompt|v0": {...}, "prompt|patched": {...}}}},
-        "means": {"prompt|v0": {"n": k, **means}, ...}} with every cell {"spec": "vN", "runs": [...], "mean": {...}}."""
+    """{"prompts": [...], "problems": {problem: {"patched": "vN" | None,
+    "cells": {"prompt|v0": {...}, "prompt|patched": {...}}}},
+    "means": {"prompt|v0": {"n": k, **means}, ...}} with every cell {"spec": "vN", "runs": [...], "mean": {...}}."""
     problems = sorted({p for (p, pr, spec, m) in cells if pr in prompts and m == model})
     out = {"prompts": list(prompts), "problems": {}, "means": {}}
     for problem in problems:
@@ -125,7 +130,10 @@ def cell_text(cell):
     if cell is None:
         return "-"
     m = cell["mean"]
-    return f"{pct(m['fail'])} / {m['erosion']:.2f} / {m['ast']:.2f} / ${m['cost']:.0f} / {m['minutes']:.0f}m ({len(cell['runs'])})"
+    return (
+        f"{pct(m['fail'])} / {m['erosion']:.2f} / {m['ast']:.2f} / "
+        f"${m['cost']:.0f} / {m['minutes']:.0f}m ({len(cell['runs'])})"
+    )
 
 
 def table(g):
@@ -135,11 +143,23 @@ def table(g):
     keys = [f"{a}|v0", f"{b}|v0", f"{b}|patched", f"{a}|patched"]
     lines = ["| problem | patched | " + " | ".join(heads) + " |", "|---|---|" + "---|" * 4]
     for problem, e in g["problems"].items():
-        lines.append(f"| {problem} | {e['patched'] or '-'} | " + " | ".join(cell_text(e["cells"].get(k)) for k in keys) + " |")
+        lines.append(
+            f"| {problem} | {e['patched'] or '-'} | " + " | ".join(cell_text(e["cells"].get(k)) for k in keys) + " |"
+        )
     means = [g["means"].get(k) for k in keys]
     ns = {m["n"] for m in means if m}
     n = f"n={'/'.join(str(x) for x in sorted(ns))}"
-    lines.append(f"| mean | {n} | " + " | ".join("-" if m is None else f"{pct(m['fail'])} / {m['erosion']:.2f} / {m['ast']:.2f} / ${m['cost']:.0f} / {m['minutes']:.0f}m ({m['n']})" for m in means) + " |")
+    lines.append(
+        f"| mean | {n} | "
+        + " | ".join(
+            "-"
+            if m is None
+            else f"{pct(m['fail'])} / {m['erosion']:.2f} / {m['ast']:.2f} / "
+            f"${m['cost']:.0f} / {m['minutes']:.0f}m ({m['n']})"
+            for m in means
+        )
+        + " |"
+    )
     return "\n".join(lines)
 
 

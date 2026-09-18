@@ -18,7 +18,11 @@ def patch_text(old, new):
 
 
 def run(tmp_path, version):
-    env = {**os.environ, "SCBENCH_CACHE_PROBLEMS": str(tmp_path / "cache"), "SCBENCH_SPECS_ROOT": str(tmp_path / "specs")}
+    env = {
+        **os.environ,
+        "SCBENCH_CACHE_PROBLEMS": str(tmp_path / "cache"),
+        "SCBENCH_SPECS_ROOT": str(tmp_path / "specs"),
+    }
     return subprocess.run([str(SCRIPT), "toy", version], capture_output=True, text=True, env=env)
 
 

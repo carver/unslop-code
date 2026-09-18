@@ -17,7 +17,11 @@ import sys
 import pymupdf
 
 PANELS = {"GPT 5.3 Codex": (40, 215), "GPT 5.4": (250, 425), "GPT 5.5": (460, 635)}  # x span of each panel, points
-PROMPTS = {(0.03, 0.32, 0.61): "Baseline", (0.9, 0.33, 0.05): "Anti-Slop", (0.34, 0.64, 0.35): "Plan-First"}  # line colours
+PROMPTS = {
+    (0.03, 0.32, 0.61): "Baseline",
+    (0.9, 0.33, 0.05): "Anti-Slop",
+    (0.34, 0.64, 0.35): "Plan-First",
+}  # line colours
 TOP_ROW = 100  # y below which a path belongs to the erosion row, points
 
 
@@ -39,8 +43,11 @@ def tick_scale(page, x0, x1, gridlines):
 def erosion_lines(pdf_path):
     page = pymupdf.open(pdf_path)[0]
     drawings = page.get_drawings()
-    gridlines = [(d["items"][0][1].x, d["items"][0][1].y) for d in drawings
-                 if len(d["items"]) == 1 and d["items"][0][0] == "l" and abs(d["items"][0][1].y - d["items"][0][2].y) < 0.01]
+    gridlines = [
+        (d["items"][0][1].x, d["items"][0][1].y)
+        for d in drawings
+        if len(d["items"]) == 1 and d["items"][0][0] == "l" and abs(d["items"][0][1].y - d["items"][0][2].y) < 0.01
+    ]
     out = {}
     for model, (x0, x1) in PANELS.items():
         value = tick_scale(page, x0, x1, gridlines)

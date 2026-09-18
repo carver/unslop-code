@@ -21,24 +21,31 @@ import urllib.request
 VERSION = "v4.0.4"
 BIN = pathlib.Path.home() / ".local" / "bin"
 ROOT = pathlib.Path(__file__).resolve().parent
-PROBLEMS = pathlib.Path(os.environ.get("SCBENCH_PROBLEMS_PATH", pathlib.Path.home() / ".cache" / "scbench" / "problems"))
+PROBLEMS = pathlib.Path(
+    os.environ.get("SCBENCH_PROBLEMS_PATH", pathlib.Path.home() / ".cache" / "scbench" / "problems")
+)
 HARNESS_URL = "https://github.com/SprocketLab/slop-code-bench.git"
 HARNESS_COMMIT = "06b5c0687d4c05ee502e9696a4d0c22fc1eec5e0"  # "Forgot sonnet 5", the base the patches were cut against
 HARNESS = ROOT / "harness"
 HARNESS_VENV = pathlib.Path.home() / ".venvs" / "scbench-harness"
-HARNESS_PATCHES = [ROOT / "patches" / f"{name}.patch" for name in (
-    "claude-code-stream-parser-string-message",
-    "stop-after-checkpoint",
-    "agent-death-detection-and-prompt-context",
-    "resume-invalidate-infra-failed-checkpoints",
-    "container-init-and-timeout-kill",
-    "retry-keeps-every-attempt-transcript",
-)]
+HARNESS_PATCHES = [
+    ROOT / "patches" / f"{name}.patch"
+    for name in (
+        "claude-code-stream-parser-string-message",
+        "stop-after-checkpoint",
+        "agent-death-detection-and-prompt-context",
+        "resume-invalidate-infra-failed-checkpoints",
+        "container-init-and-timeout-kill",
+        "retry-keeps-every-attempt-transcript",
+    )
+]
 
 
 def apply_patch(patch, tree):
     """Apply one unified diff under `tree`; 'applied', 'already applied', or 'failed: <why>'."""
-    r = subprocess.run(["patch", "-p1", "-N", "-s", "-r", "-", "-d", str(tree)], stdin=patch.open(), capture_output=True, text=True)
+    r = subprocess.run(
+        ["patch", "-p1", "-N", "-s", "-r", "-", "-d", str(tree)], stdin=patch.open(), capture_output=True, text=True
+    )
     if r.returncode == 0:
         return "applied"
     if "Reversed" in r.stdout or "previously applied" in r.stdout:
@@ -67,7 +74,10 @@ def install_harness():
         git("checkout", "-q", HARNESS_COMMIT)
     head = git("rev-parse", "HEAD")
     if head != HARNESS_COMMIT:
-        print(f"harness at {head[:7]}, pinned to {HARNESS_COMMIT[:7]}; leaving it (git -C harness checkout {HARNESS_COMMIT[:7]} to re-pin)")
+        print(
+            f"harness at {head[:7]}, pinned to {HARNESS_COMMIT[:7]}; "
+            f"leaving it (git -C harness checkout {HARNESS_COMMIT[:7]} to re-pin)"
+        )
         return
     for patch in HARNESS_PATCHES:
         state = apply_patch(patch, HARNESS)

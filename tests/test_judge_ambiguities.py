@@ -160,7 +160,10 @@ def test_rewrite_quotes_replaces_a_wrapped_quoted_sentence():
     untouched = judge.parse_registry(SAMPLE)[1]
     changed = judge.rewrite_quotes([e, untouched], judge.patch_sentences(PATCH))
     assert changed == ["T7"]
-    assert e.spec_text == "> `_shape=objects`: `rows` is objects and includes `rowid` (1-based source-file row number, starting at the header)."
+    assert (
+        e.spec_text
+        == "> `_shape=objects`: `rows` is objects and includes `rowid` (1-based source-file row number, starting at the header)."
+    )
     assert untouched.spec_text == "> text"
 
 
@@ -191,9 +194,13 @@ def test_miss_report_collects_failures_once_across_checkpoints(tmp_path):
 
 def test_miss_report_ranks_entries_by_word_overlap():
     mr = _load("miss-report")
-    entries = [("T1", "Does rowid count the header row?", "> `rowid` (1-based source-file row number)"),
-               ("T2", "charset for uploads", "> `charset` applies only to text CSV sources.")]
-    ranked = mr.rank_entries(entries, mr.words_of("test_shape_objects_includes_rowid", "includes each row's source-file rowid"))
+    entries = [
+        ("T1", "Does rowid count the header row?", "> `rowid` (1-based source-file row number)"),
+        ("T2", "charset for uploads", "> `charset` applies only to text CSV sources."),
+    ]
+    ranked = mr.rank_entries(
+        entries, mr.words_of("test_shape_objects_includes_rowid", "includes each row's source-file rowid")
+    )
     assert [r[2] for r in ranked][0] == "T1"
 
 

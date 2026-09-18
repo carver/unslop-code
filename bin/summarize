@@ -28,9 +28,12 @@ def elapsed(r):
     if r.get("elapsed") is not None:
         return r["elapsed"]
     try:
-        return (datetime.datetime.fromisoformat(r["ended"]) - datetime.datetime.fromisoformat(r["started"])).total_seconds()
+        return (
+            datetime.datetime.fromisoformat(r["ended"]) - datetime.datetime.fromisoformat(r["started"])
+        ).total_seconds()
     except (KeyError, TypeError, ValueError):
         return 0.0
+
 
 def quality_report(ckpt):
     report = ckpt / "quality_analysis" / "scb_check.json"
@@ -43,9 +46,16 @@ def quality_report(ckpt):
         return None
     version = os.environ.get("SCB_CHECK_VERSION", "0.1.3")
     try:
-        proc = subprocess.run(["uvx", f"scb-check=={version}", "check", "--report", "--include-all", str(snapshot)], capture_output=True, text=True)
+        proc = subprocess.run(
+            ["uvx", f"scb-check=={version}", "check", "--report", "--include-all", str(snapshot)],
+            capture_output=True,
+            text=True,
+        )
     except OSError as exc:
-        print(f"Cannot run scb-check on {ckpt}: {exc}. Ensure uvx is installed and on PATH; using existing metrics.", file=sys.stderr)
+        print(
+            f"Cannot run scb-check on {ckpt}: {exc}. Ensure uvx is installed and on PATH; using existing metrics.",
+            file=sys.stderr,
+        )
         return None
     if proc.returncode != 0:
         print(f"scb-check failed on {ckpt}: {proc.stderr.strip()[-300:]}", file=sys.stderr)
@@ -74,7 +84,27 @@ def main():
     run = pathlib.Path(sys.argv[1])
     md = "--md" in sys.argv
     rows = load_rows(run)
-    hdr = ["problem", "ckpt", "state", "strict", "iso", "core", "core_pr", "steps", "in", "out", "cache_r", "cache_w", "cc_$", "list_$", "elapsed_s", "erosion", "verbosity", "ast%", "cloned%"]
+    hdr = [
+        "problem",
+        "ckpt",
+        "state",
+        "strict",
+        "iso",
+        "core",
+        "core_pr",
+        "steps",
+        "in",
+        "out",
+        "cache_r",
+        "cache_w",
+        "cc_$",
+        "list_$",
+        "elapsed_s",
+        "erosion",
+        "verbosity",
+        "ast%",
+        "cloned%",
+    ]
     out = []
     tot = collections.Counter()
     n = 0
@@ -106,9 +136,29 @@ def main():
             cl.append(r["cloned_pct"])
         if r.get("ast_grep_pct") is not None:
             ag.append(r["ast_grep_pct"])
-        out.append([r["problem"], r["idx"], r.get("state"), "Y" if s else "n", "Y" if i else "n", "Y" if k else "n",
-                    f"{(r.get('core_pass_rate') or 0):.2f}", r.get("steps"), r.get("input"), r.get("output"), r.get("cache_read"), r.get("cache_write"),
-                    f"{(r.get('cost') or 0):.2f}", f"{c:.2f}", f"{elapsed(r):.0f}", fmt(r.get("erosion")), fmt(r.get("verbosity")), fmt(r.get("ast_grep_pct")), fmt(r.get("cloned_pct"))])
+        out.append(
+            [
+                r["problem"],
+                r["idx"],
+                r.get("state"),
+                "Y" if s else "n",
+                "Y" if i else "n",
+                "Y" if k else "n",
+                f"{(r.get('core_pass_rate') or 0):.2f}",
+                r.get("steps"),
+                r.get("input"),
+                r.get("output"),
+                r.get("cache_read"),
+                r.get("cache_write"),
+                f"{(r.get('cost') or 0):.2f}",
+                f"{c:.2f}",
+                f"{elapsed(r):.0f}",
+                fmt(r.get("erosion")),
+                fmt(r.get("verbosity")),
+                fmt(r.get("ast_grep_pct")),
+                fmt(r.get("cloned_pct")),
+            ]
+        )
     sep = " | " if md else "  "
     print(sep.join(hdr))
     if md:
@@ -116,18 +166,43 @@ def main():
     for o in out:
         print(sep.join(str(x) for x in o))
     print()
-    print(f"checkpoints: {n}  strict {sol['strict']}/{n} = {100*sol['strict']/n:.2f}%  iso {sol['iso']}/{n} = {100*sol['iso']/n:.2f}%  core {sol['core']}/{n} = {100*sol['core']/n:.2f}%")
-    print(f"tokens: in {tot['input']:,} out {tot['output']:,} cache_read {tot['cache_read']:,} cache_write {tot['cache_write']:,}")
-    print(f"cost as reported by Claude Code (cc_$): ${tot['cc_cost']:.2f} total, ${tot['cc_cost']/n:.2f}/ckpt   (leaderboard $1.96/ckpt)")
-    print(f"cost at Sonnet list price from token counts (list_$): ${tot['cost']:.2f} total, ${tot['cost']/n:.2f}/ckpt")
-    print(f"wall time: {tot['elapsed']/60:.1f} min total, {tot['elapsed']/n/60:.1f} min/ckpt; steps/ckpt {tot['steps']/n:.1f}")
+    print(
+        f"checkpoints: {n}  strict {sol['strict']}/{n} = {100 * sol['strict'] / n:.2f}%  "
+        f"iso {sol['iso']}/{n} = {100 * sol['iso'] / n:.2f}%  "
+        f"core {sol['core']}/{n} = {100 * sol['core'] / n:.2f}%"
+    )
+    print(
+        f"tokens: in {tot['input']:,} out {tot['output']:,} "
+        f"cache_read {tot['cache_read']:,} cache_write {tot['cache_write']:,}"
+    )
+    print(
+        f"cost as reported by Claude Code (cc_$): ${tot['cc_cost']:.2f} total, "
+        f"${tot['cc_cost'] / n:.2f}/ckpt   (leaderboard $1.96/ckpt)"
+    )
+    print(
+        f"cost at Sonnet list price from token counts (list_$): ${tot['cost']:.2f} total, ${tot['cost'] / n:.2f}/ckpt"
+    )
+    print(
+        f"wall time: {tot['elapsed'] / 60:.1f} min total, {tot['elapsed'] / n / 60:.1f} min/ckpt; "
+        f"steps/ckpt {tot['steps'] / n:.1f}"
+    )
+
     def mean(xs):
         return sum(xs) / len(xs) if xs else float("nan")
-    print(f"{'quality means':<22}erosion {mean(er):.3f}  verbosity {mean(vb):.3f}  ast-grep {mean(ag):.3f}  cloned {mean(cl):.3f}")
-    print(f"{'sonnet 4.6 just-solve':<22}erosion {LEADERBOARD['erosion']:.3f}  verbosity {LEADERBOARD['verbosity']:.3f}  ast-grep {LEADERBOARD['ast-grep']:.3f}  cloned {LEADERBOARD['cloned']:.3f}")
+
+    print(
+        f"{'quality means':<22}erosion {mean(er):.3f}  verbosity {mean(vb):.3f}  "
+        f"ast-grep {mean(ag):.3f}  cloned {mean(cl):.3f}"
+    )
+    print(
+        f"{'sonnet 4.6 just-solve':<22}erosion {LEADERBOARD['erosion']:.3f}  verbosity {LEADERBOARD['verbosity']:.3f}  "
+        f"ast-grep {LEADERBOARD['ast-grep']:.3f}  cloned {LEADERBOARD['cloned']:.3f}"
+    )
+
 
 def fmt(v):
     return "-" if v is None else f"{v:.3f}"
+
 
 if __name__ == "__main__":
     main()

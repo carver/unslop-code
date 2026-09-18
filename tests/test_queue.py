@@ -15,7 +15,9 @@ exec(compile(SCRIPT.read_text(), str(SCRIPT), "exec"), q.__dict__)
 def write_config(tmp_path, name, patched):
     launch = "SCBENCH_PROBLEMS_PATH=$PWD/problems " if patched else ""
     p = tmp_path / f"{name}-datagate-opus5.yaml"
-    p.write_text(f"# header\n#   {launch}bin/scb-extend --new configs/runs/x.yaml datagate 7\nproblems:\n  - datagate\n")
+    p.write_text(
+        f"# header\n#   {launch}bin/scb-extend --new configs/runs/x.yaml datagate 7\nproblems:\n  - datagate\n"
+    )
     return p
 
 
@@ -48,7 +50,9 @@ def test_versioned_config_reads_its_own_problems_root(tmp_path):
     for i in range(1, 8):
         (root / "datagate" / f"checkpoint_{i}.md").write_text("")
     p = tmp_path / "spectest-v9-specv2-datagate-opus5.yaml"
-    p.write_text(f"# header\n#   SCBENCH_PROBLEMS_PATH={root} bin/scb-extend --new x datagate 7\nproblems:\n  - datagate\n")
+    p.write_text(
+        f"# header\n#   SCBENCH_PROBLEMS_PATH={root} bin/scb-extend --new x datagate 7\nproblems:\n  - datagate\n"
+    )
     label, argv, env = q.job_for(p)
     assert (label, argv[-1], env) == ("spectest-v9-specv2-datagate", "7", {"SCBENCH_PROBLEMS_PATH": str(root)})
 
@@ -64,12 +68,17 @@ def test_descendants_follows_the_ppid_chain():
 
 
 def test_job_roots_match_the_config_name_but_never_the_wrapper():
-    command = "SCBENCH_PROBLEMS_PATH=/x/problems /x/bin/scb-extend --new /x/configs/runs/spectest-v8-datagate-opus5.yaml datagate 7"
-    table = [(100, 1, "sh -c ... bin/scb-extend --new /x/configs/runs/spectest-v8-datagate-opus5.yaml datagate 7"),
-             (101, 100, "python3 /x/bin/scb-extend --new /x/configs/runs/spectest-v8-datagate-opus5.yaml datagate 7"),
-             (102, 101, "python -c from multiprocessing.spawn import spawn_main"),
-             (200, 1, "python3 /x/bin/queue kill 9"),
-             (201, 1, "grep spectest-v8-datagate-opus5.yaml somewhere")]
+    command = (
+        "SCBENCH_PROBLEMS_PATH=/x/problems "
+        "/x/bin/scb-extend --new /x/configs/runs/spectest-v8-datagate-opus5.yaml datagate 7"
+    )
+    table = [
+        (100, 1, "sh -c ... bin/scb-extend --new /x/configs/runs/spectest-v8-datagate-opus5.yaml datagate 7"),
+        (101, 100, "python3 /x/bin/scb-extend --new /x/configs/runs/spectest-v8-datagate-opus5.yaml datagate 7"),
+        (102, 101, "python -c from multiprocessing.spawn import spawn_main"),
+        (200, 1, "python3 /x/bin/queue kill 9"),
+        (201, 1, "grep spectest-v8-datagate-opus5.yaml somewhere"),
+    ]
     roots = q.job_roots(command, table, self_pid=999)
     assert roots == {100, 101, 201}
     assert q.descendants(roots, [(p, pp) for p, pp, _ in table]) == {100, 101, 102, 201}
@@ -98,7 +107,11 @@ def test_resume_job_continues_from_the_next_checkpoint(tmp_path, monkeypatch):
 
 
 def test_next_priority_is_one_above_the_highest_queued():
-    tasks = {"1": {"status": {"Running": {}}, "priority": 9}, "2": {"status": "Queued", "priority": 0}, "3": {"status": "Queued", "priority": 2}}
+    tasks = {
+        "1": {"status": {"Running": {}}, "priority": 9},
+        "2": {"status": "Queued", "priority": 0},
+        "3": {"status": "Queued", "priority": 2},
+    }
     assert q.next_priority(tasks) == 3
     assert q.next_priority({"1": {"status": "Done"}}) == 1
 
@@ -141,8 +154,13 @@ def test_added_id_is_read_from_pueues_reply_even_with_a_warning_after_it():
 
 
 def test_solo_plan_stashes_every_other_queued_job():
-    tasks = {"1": {"status": "Running"}, "2": {"status": {"Queued": {}}}, "3": {"status": {"Queued": {}}},
-             "4": {"status": {"Stashed": {}}}, "5": {"status": {"Done": {}}}}
+    tasks = {
+        "1": {"status": "Running"},
+        "2": {"status": {"Queued": {}}},
+        "3": {"status": {"Queued": {}}},
+        "4": {"status": {"Stashed": {}}},
+        "5": {"status": {"Done": {}}},
+    }
     assert q.solo_plan(tasks, 3) == [2]
     assert q.solo_plan(tasks, 2) == [3]
 
@@ -170,7 +188,9 @@ def multi_problem_run(tmp_path):
     for problem, done in (("file_merger", 2), ("xjq", 3)):
         for i in range(1, done + 1):
             (run / problem / f"checkpoint_{i}").mkdir(parents=True)
-    (run / "config.yaml").write_text("model:\n  provider: codex_auth\n  name: gpt-5.6-sol\nproblems: [file_merger, xjq]\n")
+    (run / "config.yaml").write_text(
+        "model:\n  provider: codex_auth\n  name: gpt-5.6-sol\nproblems: [file_merger, xjq]\n"
+    )
     root = tmp_path / "specs" / "xjq" / "v2" / "problems"
     for problem, n in (("file_merger", 4), ("xjq", 5)):
         (root / problem).mkdir(parents=True)
@@ -186,7 +206,11 @@ def test_multi_problem_resume_runs_the_named_problem_alone(tmp_path):
     assert argv == [str(q.ROOT / "bin" / "scb-extend"), str(run), "xjq", "5"]
     assert "file_merger" not in argv and "file_merger" not in label
     assert label.endswith("-xjq-resume-from-4")
-    assert env == {"SCBENCH_PROBLEMS_PATH": str(root), "SCB_LAUNCHER": str(q.ROOT / "bin" / "scb-sol"), "SCB_USAGE_TRACKING": "0"}
+    assert env == {
+        "SCBENCH_PROBLEMS_PATH": str(root),
+        "SCB_LAUNCHER": str(q.ROOT / "bin" / "scb-sol"),
+        "SCB_USAGE_TRACKING": "0",
+    }
 
 
 def test_multi_problem_resume_needs_a_problem(tmp_path):
@@ -210,19 +234,23 @@ def test_resume_strict_job_drives_scb_strict_from_the_same_plan(tmp_path):
 
 
 def test_job_result_keeps_the_driver_lines_and_names_the_run_dir():
-    log = ("[09/14/26 10:54:33] INFO 'datagate': progress update\n"
-           "STRICT-RUN: checkpoint_1 48/50 infra_fail=false run_dir=/o/spectest/x/20260914T1054\n"
-           "STRICT-RUN:   FAIL checkpoint_1-Functionality: TestFunctionality::test_preserves_whitespace\n"
-           "STRICT-RUN: HALT after checkpoint_1, not a strict solve\n")
+    log = (
+        "[09/14/26 10:54:33] INFO 'datagate': progress update\n"
+        "STRICT-RUN: checkpoint_1 48/50 infra_fail=false run_dir=/o/spectest/x/20260914T1054\n"
+        "STRICT-RUN:   FAIL checkpoint_1-Functionality: TestFunctionality::test_preserves_whitespace\n"
+        "STRICT-RUN: HALT after checkpoint_1, not a strict solve\n"
+    )
     lines, run_dir = q.job_result(log)
     assert [line.split(":")[0] for line in lines] == ["STRICT-RUN"] * 3
     assert run_dir == "/o/spectest/x/20260914T1054"
 
 
 def test_job_result_takes_the_last_run_dir_and_strips_the_closing_paren():
-    log = ("EXTEND: checkpoint_7 380/405 infra_fail=False agent_error=False window 14.0% -> 15.0% 19:48:07Z\n"
-           "EXTEND: DONE, 7 checkpoints present (run_dir=/o/spectest/just-solve/20260914T1154) 19:48:07Z\n"
-           "EXTEND: next: bin/ledger-row /o/spectest/just-solve/20260914T1154 -> notes/datagate-runs.md\n")
+    log = (
+        "EXTEND: checkpoint_7 380/405 infra_fail=False agent_error=False window 14.0% -> 15.0% 19:48:07Z\n"
+        "EXTEND: DONE, 7 checkpoints present (run_dir=/o/spectest/just-solve/20260914T1154) 19:48:07Z\n"
+        "EXTEND: next: bin/ledger-row /o/spectest/just-solve/20260914T1154 -> notes/datagate-runs.md\n"
+    )
     lines, run_dir = q.job_result(log)
     assert len(lines) == 3
     assert run_dir == "/o/spectest/just-solve/20260914T1154"

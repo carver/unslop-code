@@ -92,7 +92,10 @@ def job_for(config_path, n=None):
     problem = problems[0]
     n = n or len(list((root / problem).glob("checkpoint_*.md")))
     if not n:
-        raise SystemExit(f"queue: no checkpoints found for {problem} under {root}; build it with bin/spec-patch or pass n_checkpoints")
+        raise SystemExit(
+            f"queue: no checkpoints found for {problem} under {root}; "
+            "build it with bin/spec-patch or pass n_checkpoints"
+        )
     label = config_path.name.removesuffix(".yaml").removesuffix("-opus5")
     env = {} if root == CACHE else {"SCBENCH_PROBLEMS_PATH": str(root)}
     provider = provider_env(config)
@@ -125,15 +128,20 @@ def solo_plan(tasks, task_id):
 def add_task(label, argv, env, extra=()):
     """Enqueue a shell command through pueue and print the new task id last, whatever pueue warns."""
     cmd = shlex.join(["env", *(f"{k}={v}" for k, v in env.items()), *map(str, argv)])
-    reply = subprocess.run([PUEUE, "add", "--label", label, "--working-directory", str(ROOT), *extra, "--", cmd],
-                           capture_output=True, text=True, check=True).stdout
+    reply = subprocess.run(
+        [PUEUE, "add", "--label", label, "--working-directory", str(ROOT), *extra, "--", cmd],
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout
     task_id = added_id(reply)
     print(f"added task {task_id}: {label}")
     return task_id
 
 
 def solo(task_id):
-    tasks = json.loads(subprocess.run([PUEUE, "status", "--json"], capture_output=True, text=True, check=True).stdout)["tasks"]
+    status = subprocess.run([PUEUE, "status", "--json"], capture_output=True, text=True, check=True).stdout
+    tasks = json.loads(status)["tasks"]
     if state_of(tasks.get(str(task_id), {})) != "Queued":
         raise SystemExit(f"queue: task {task_id} is not queued")
     others = [str(i) for i in solo_plan(tasks, task_id)]
@@ -202,8 +210,10 @@ def swap_plan(order, moving, before):
 def move_job(task_id, before_id):
     status = json.loads(subprocess.run([PUEUE, "status", "--json"], capture_output=True, text=True, check=True).stdout)
     tasks = status["tasks"]
-    order = sorted((int(i) for i, t in tasks.items() if state_of(t) == "Queued"),
-                   key=lambda i: (-(tasks[str(i)].get("priority", 0) or 0), i))
+    order = sorted(
+        (int(i) for i, t in tasks.items() if state_of(t) == "Queued"),
+        key=lambda i: (-(tasks[str(i)].get("priority", 0) or 0), i),
+    )
     for a, b in swap_plan(order, task_id, before_id):
         subprocess.run([PUEUE, "switch", str(a), str(b)], check=True, capture_output=True)
     status = json.loads(subprocess.run([PUEUE, "status", "--json"], capture_output=True, text=True, check=True).stdout)
@@ -277,7 +287,8 @@ def job_result(log_text):
 def wait_job(task_id):
     """Block until the job ends, then print its state, its result lines and run_dir=<path>."""
     subprocess.run([PUEUE, "wait", str(task_id)], check=False)
-    tasks = json.loads(subprocess.run([PUEUE, "status", "--json"], capture_output=True, text=True, check=True).stdout)["tasks"]
+    status = subprocess.run([PUEUE, "status", "--json"], capture_output=True, text=True, check=True).stdout
+    tasks = json.loads(status)["tasks"]
     log = subprocess.run([PUEUE, "log", str(task_id), "--full"], capture_output=True, text=True).stdout
     lines, run_dir = job_result(log)
     print(f"job {task_id}: {state_of(tasks[str(task_id)])}")
@@ -309,7 +320,9 @@ def kill_job(task_id, keep_paused=False):
     subprocess.run([PUEUE, "pause", "--wait"], check=True, capture_output=True)
     try:
         table = process_table()
-        pids = descendants(job_roots(task["command"], [(p, pp, a) for p, pp, a in table], os.getpid()), [(p, pp) for p, pp, _ in table])
+        pids = descendants(
+            job_roots(task["command"], [(p, pp, a) for p, pp, a in table], os.getpid()), [(p, pp) for p, pp, _ in table]
+        )
         subprocess.run([PUEUE, "kill", str(task_id)], check=True, capture_output=True)
         time.sleep(3)
         for sig in (signal.SIGTERM, signal.SIGKILL):
@@ -323,7 +336,9 @@ def kill_job(task_id, keep_paused=False):
         if others:
             print(f"tasks {others} still running; leaving containers alone")
         else:
-            ps = subprocess.run(["docker", "ps", "--format", "{{.ID}} {{.Image}}"], capture_output=True, text=True).stdout.splitlines()
+            ps = subprocess.run(
+                ["docker", "ps", "--format", "{{.ID}} {{.Image}}"], capture_output=True, text=True
+            ).stdout.splitlines()
             for c in agent_containers(ps):
                 subprocess.run(["docker", "rm", "-f", c], check=True, capture_output=True)
                 print(f"removed agent container {c}")
@@ -343,7 +358,9 @@ def main():
         label, argv, env = job_for(rest[0], int(rest[1]) if len(rest) > 1 else None)
         extra = []
         if first:
-            tasks = json.loads(subprocess.run([PUEUE, "status", "--json"], capture_output=True, text=True, check=True).stdout)["tasks"]
+            tasks = json.loads(
+                subprocess.run([PUEUE, "status", "--json"], capture_output=True, text=True, check=True).stdout
+            )["tasks"]
             extra = ["--priority", str(next_priority(tasks))]
         add_task(label, argv, env, extra)
     elif args[:1] == ["add-strict"] and len(args) in (2, 3):
@@ -354,6 +371,7 @@ def main():
         move_job(int(args[1]), int(args[3]))
     elif args[:1] in (["resume"], ["resume-strict"]):
         import argparse
+
         parser = argparse.ArgumentParser(prog=f"queue {args[0]}")
         parser.add_argument("run_dir")
         parser.add_argument("n", nargs="?", type=int)
@@ -363,7 +381,12 @@ def main():
         add_task(*plan(options.run_dir, options.n, options.problem))
     elif args[:1] == ["wait"] and len(args) == 2:
         wait_job(int(args[1]))
-    elif args[:1] == ["kill"] and len(args) in (2, 3) and args[3:] == [] and (len(args) == 2 or args[2] == "--keep-paused"):
+    elif (
+        args[:1] == ["kill"]
+        and len(args) in (2, 3)
+        and args[3:] == []
+        and (len(args) == 2 or args[2] == "--keep-paused")
+    ):
         kill_job(int(args[1]), keep_paused=len(args) == 3)
     elif not args:
         subprocess.run([PUEUE, "status"], check=True)

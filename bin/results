@@ -48,7 +48,11 @@ def checkpoint_names(problem, run_dir=None):
 
 
 def run_dirs(outputs=ROOT / "outputs"):
-    return sorted(p.parent for p in outputs.glob("*/*/*/checkpoint_results.jsonl") if p.parent.parent.parent.name.startswith(("dev6", "spectest")))
+    return sorted(
+        p.parent
+        for p in outputs.glob("*/*/*/checkpoint_results.jsonl")
+        if p.parent.parent.parent.name.startswith(("dev6", "spectest"))
+    )
 
 
 MODEL_NAMES = {"fable-5-1": "fable-5.1"}  # registry alias -> the version spelling the table uses
@@ -90,7 +94,8 @@ def mean(xs):
 
 
 def collect(dirs, checkpoints=checkpoint_names):
-    """({(problem, prompt, spec, model): [per-run summaries]} for complete runs, [(problem, prompt, spec, run, reached, of)] for partial ones)."""
+    """({(problem, prompt, spec, model): [per-run summaries]} for complete runs,
+    [(problem, prompt, spec, run, reached, of)] for partial ones)."""
     cells = collections.defaultdict(list)
     partial = []
     for run in dirs:
@@ -108,15 +113,34 @@ def collect(dirs, checkpoints=checkpoint_names):
             if not expected or not expected.issubset(observed):
                 reached = len(observed & expected) if expected else len(observed)
                 total = len(expected) if expected else "?"
-                partial.append((problem, prompt, spec, run.parent.name.removeprefix(PREFIX) + "/" + run.name, reached, total, f"{last['passed_tests']}/{last['total_tests']}"))
+                partial.append(
+                    (
+                        problem,
+                        prompt,
+                        spec,
+                        run.parent.name.removeprefix(PREFIX) + "/" + run.name,
+                        reached,
+                        total,
+                        f"{last['passed_tests']}/{last['total_tests']}",
+                    )
+                )
                 continue
-            cells[(problem, prompt, spec, model)].append({
-                "score": last["passed_tests"] / last["total_tests"], "passed": last["passed_tests"], "total": last["total_tests"],
-                "strict": sum(r.get("strict_pass_rate", r.get("pass_rate")) == 1.0 for r in rows), "ckpts": len(rows),
-                "cost": sum(r.get("cost") or 0 for r in rows), "minutes": sum(summarize.elapsed(r) for r in rows) / 60,
-                "erosion": mean(r.get("erosion") for r in rows), "erosion_by_ckpt": [r.get("erosion") for r in rows],
-                "verbosity": mean(r.get("verbosity") for r in rows), "ast": mean(r.get("ast_grep_pct") for r in rows),
-                "cloned": mean(r.get("cloned_pct") for r in rows)})
+            cells[(problem, prompt, spec, model)].append(
+                {
+                    "score": last["passed_tests"] / last["total_tests"],
+                    "passed": last["passed_tests"],
+                    "total": last["total_tests"],
+                    "strict": sum(r.get("strict_pass_rate", r.get("pass_rate")) == 1.0 for r in rows),
+                    "ckpts": len(rows),
+                    "cost": sum(r.get("cost") or 0 for r in rows),
+                    "minutes": sum(summarize.elapsed(r) for r in rows) / 60,
+                    "erosion": mean(r.get("erosion") for r in rows),
+                    "erosion_by_ckpt": [r.get("erosion") for r in rows],
+                    "verbosity": mean(r.get("verbosity") for r in rows),
+                    "ast": mean(r.get("ast_grep_pct") for r in rows),
+                    "cloned": mean(r.get("cloned_pct") for r in rows),
+                }
+            )
     return cells, partial
 
 
@@ -132,27 +156,45 @@ def counted(values, total):
 
 
 def table(cells):
-    out = ["| problem | prompt | spec | model | runs | score | range | strict | range | cc_$ | min | erosion | verbosity | ast% | cloned% |",
-           "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
-    for (problem, prompt, spec, model), runs in sorted(cells.items(), key=lambda kv: (kv[0][0], -mean(r["score"] for r in kv[1]), kv[0][1].removeprefix("spectest-"))):
+    out = [
+        "| problem | prompt | spec | model | runs | score | range | strict | range | cc_$ | min "
+        "| erosion | verbosity | ast% | cloned% |",
+        "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|",
+    ]
+    for (problem, prompt, spec, model), runs in sorted(
+        cells.items(), key=lambda kv: (kv[0][0], -mean(r["score"] for r in kv[1]), kv[0][1].removeprefix("spectest-"))
+    ):
         score, rng = counted([r["passed"] for r in runs], runs[0]["total"])
         strict, srng = counted([r["strict"] for r in runs], runs[0]["ckpts"])
-        out.append(f"| {problem} | {prompt} | {spec} | {model} | {len(runs)} | {score} | {rng} | {strict} | {srng} | {mean(r['cost'] for r in runs):.0f} | {mean(r['minutes'] for r in runs):.0f} | "
-                   f"{fmt(mean(r['erosion'] for r in runs))} | {fmt(mean(r['verbosity'] for r in runs))} | {fmt(mean(r['ast'] for r in runs))} | {fmt(mean(r['cloned'] for r in runs))} |")
+        out.append(
+            f"| {problem} | {prompt} | {spec} | {model} | {len(runs)} | {score} | {rng} | {strict} | {srng} | "
+            f"{mean(r['cost'] for r in runs):.0f} | {mean(r['minutes'] for r in runs):.0f} | "
+            f"{fmt(mean(r['erosion'] for r in runs))} | {fmt(mean(r['verbosity'] for r in runs))} | "
+            f"{fmt(mean(r['ast'] for r in runs))} | {fmt(mean(r['cloned'] for r in runs))} |"
+        )
     return "\n".join(out)
 
 
 def partial_table(partial):
     out = ["| problem | prompt | spec | run | reached | last score |", "|---|---|---|---|---|---|"]
-    out += [f"| {p} | {pr} | {sp} | `{run}` | {reached}/{of} | {score} |" for p, pr, sp, run, reached, of, score in sorted(partial)]
+    out += [
+        f"| {p} | {pr} | {sp} | `{run}` | {reached}/{of} | {score} |"
+        for p, pr, sp, run, reached, of, score in sorted(partial)
+    ]
     return "\n".join(out)
 
 
 def main():
     cells, partial = collect(run_dirs())
-    text = ("# Results across problems\n\nGenerated by `bin/results --write`; do not edit. One row per problem, prompt and spec, "
-            "means over the complete runs in that cell. Interpretation lives in `notes/<problem>-runs.md`.\n\n" + table(cells)
-            + "\n\n## Partial runs (stopped, cut, or still running)\n\n" + partial_table(partial) + "\n")
+    text = (
+        "# Results across problems\n\nGenerated by `bin/results --write`; do not edit. "
+        "One row per problem, prompt and spec, "
+        "means over the complete runs in that cell. Interpretation lives in `notes/<problem>-runs.md`.\n\n"
+        + table(cells)
+        + "\n\n## Partial runs (stopped, cut, or still running)\n\n"
+        + partial_table(partial)
+        + "\n"
+    )
     print(text)
     if "--write" in sys.argv:
         (ROOT / "notes" / "results.md").write_text(text)

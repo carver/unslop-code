@@ -52,7 +52,10 @@ def main():
     print()
     print(f"### {name}")
     print()
-    print(f"{rows[-1]['passed_tests']}/{rows[-1]['total_tests']}, {strict}/{len(rows)} checkpoints strict, ${cost:.0f}, {minutes:.0f} min.")
+    print(
+        f"{rows[-1]['passed_tests']}/{rows[-1]['total_tests']}, {strict}/{len(rows)} checkpoints strict, "
+        f"${cost:.0f}, {minutes:.0f} min."
+    )
     print()
     by_origin = collections.defaultdict(list)
     for (origin, t), at in sorted(fails.items()):
@@ -68,7 +71,9 @@ def main():
 
 def regenerate_results():
     """notes/results.md is generated from the run directories; a finished run belongs in it."""
-    subprocess.run([str(pathlib.Path(__file__).resolve().with_name("results")), "--write"], check=True, stdout=subprocess.DEVNULL)
+    subprocess.run(
+        [str(pathlib.Path(__file__).resolve().with_name("results")), "--write"], check=True, stdout=subprocess.DEVNULL
+    )
     print("regenerated notes/results.md; commit it with the ledger", file=sys.stderr)
 
 

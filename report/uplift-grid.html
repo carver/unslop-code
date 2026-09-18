@@ -38,6 +38,7 @@ h2 { font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: 
 .card h3 { margin: 0 0 2px; font-size: 15px; font-weight: 600; }
 .card .sub { margin: 0 0 8px; font-size: 12.5px; color: var(--ink-3); }
 .card svg { width: 100%; height: auto; display: block; }
+.card p.reading { margin: 6px 0 0; font-size: 13.5px; color: var(--ink-2); }
 .panels { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
 .note { color: var(--ink-2); font-size: 13.5px; max-width: 70ch; margin: 0; }
 .note b { color: var(--ink); font-weight: 600; }
@@ -82,6 +83,7 @@ svg .hit { fill: transparent; }
   <section>
     <h2>The headline</h2>
     <div class="squares" id="headline"></div>
+    <div class="squares" id="headline-share" style="margin-top:16px"></div>
   </section>
 
   <section>
@@ -871,13 +873,13 @@ const METRICS = [
   { key: "minutes", name: "Wall clock per run", unit: "min", fmt: v => v.toFixed(0) + " min", max: 170, ticks: [0, 40, 80, 120, 160], tick: v => v + "m" },
 ];
 const SQUARE_METRICS = METRICS;
-// arXiv 2603.24755v1 Table 2, HEAD commit of the Major tier (over 10k stars, 28 of the 48
-// Python repositories). v2 grew the panel to 473 repos (Major erosion 0.37) but dropped the
-// ast-grep column, so v1 is the one source that covers both charts.
+// The human values come from bin/grid (HUMAN there carries the citation), so the absolute bars
+// and the share bars read one number.
+const R = G.relative.metrics;
 const HUMAN_TIP = "Human repositories with over 10k stars\nHEAD commit, n = 28\nSlopCodeBench paper v1, Table 2";
 const HUMAN = {
-  erosion: { v: 0.31, label: "human, 10k+ stars", tip: `${HUMAN_TIP}\nerosion 0.31 \u00b1 0.12 (v2's 473-repo panel: 0.37)` },
-  ast: { v: 0.10, label: "human, 10k+ stars", tip: `${HUMAN_TIP}\nast-grep 0.10 \u00b1 0.04` },
+  erosion: { v: R.erosion.human.value, label: "human, 10k+ stars", tip: `${HUMAN_TIP}\nerosion ${R.erosion.human.value.toFixed(2)} \u00b1 0.12 (v2's 473-repo panel: 0.37)` },
+  ast: { v: R.ast.human.value, label: "human, 10k+ stars", tip: `${HUMAN_TIP}\nast-grep ${R.ast.human.value.toFixed(2)} \u00b1 0.04` },
 };
 // arXiv 2603.24755v2 Figure 5, top row: mean structural erosion per progress phase for three
 // prompts on three models. Read off the figure's vector paths by report/paper_figure5.py, the
@@ -1069,6 +1071,60 @@ function promptBars(m) {
   ]);
 }
 
+const share = v => (100 * v).toFixed(0) + "%";
+const change = v => (v < 1 ? "\u2212" : "+") + (100 * Math.abs(v - 1)).toFixed(0) + "%";
+
+function shareBars(m) {
+  // Each bar is a mean of per-problem shares of just-solve, which sits at the 100% line. The
+  // whisker under min12 runs from its best problem to its worst, so the card stays this size
+  // however many problems the mean covers.
+  const r = R[m.key], pr = r.prompt, human = HUMAN[m.key];
+  const W = 320, left = 132, right = 86, top = 22, barH = 22;
+  const maxV = Math.max(1, pr.worst.share, r.human.mean);
+  const x = v => left + (v / maxV) * (W - left - right);
+  const yMin = top + 6, yWhisk = yMin + barH + 10, yHuman = yWhisk + 50, H = yHuman + barH + 8;
+  const value = (v, y) => `<text class="num" x="${W - right + 8}" y="${y + barH / 2 + 4}" style="font-size:12.5px">${esc(share(v))}<tspan style="fill:var(--ink-3)"> (${esc(change(v))})</tspan></text>`;
+  const minTip = `min12 at v0, mean over ${r.n} problems of min12 / just-solve\n${share(pr.mean)} of just-solve (${change(pr.mean)})`;
+  const rangeTip = `min12's best and worst problem\nbest: ${pr.best.problem} ${share(pr.best.share)} (${change(pr.best.share)})\nworst: ${pr.worst.problem} ${share(pr.worst.share)} (${change(pr.worst.share)})`;
+  const humanTip = `${human.tip}\nmean over ${r.n} problems of ${m.fmt(human.v)} / just-solve: ${share(r.human.mean)} (${change(r.human.mean)})`;
+  // The halo keeps a long problem name legible where it crosses the 100% line.
+  const extreme = (word, e, y) => `<text x="${left - 10}" y="${y}" text-anchor="end" style="font-size:11.5px">${word}</text>` +
+    `<text x="${left + 6}" y="${y}" style="font-size:11.5px;fill:var(--ink);stroke:var(--panel);stroke-width:4;paint-order:stroke">${esc(e.problem)} <tspan class="num" style="font-size:11.5px">${esc(share(e.share))}</tspan></text>`;
+  const cap = v => `<line x1="${x(v)}" y1="${yWhisk - 4}" x2="${x(v)}" y2="${yWhisk + 4}" style="stroke:var(--min);stroke-width:2"></line>`;
+  return `
+  <div class="card">
+    <h3>${esc(m.name)}, share of just-solve</h3>
+    <p class="sub">spec v0, mean of the ${r.n} per-problem shares</p>
+    <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(m.name)} as a share of just-solve: min12 ${esc(share(pr.mean))}, from ${esc(pr.best.problem)} ${esc(share(pr.best.share))} to ${esc(pr.worst.problem)} ${esc(share(pr.worst.share))}; ${esc(human.label)} ${esc(share(r.human.mean))}">
+      <line class="axis" x1="${left}" y1="${top}" x2="${left}" y2="${H - 4}"></line>
+      <line x1="${x(1)}" y1="${top}" x2="${x(1)}" y2="${H - 4}" style="stroke:var(--js);stroke-width:1.5;stroke-dasharray:3 3"></line>
+      <text x="${x(1)}" y="${top - 8}" text-anchor="middle" style="font-size:11.5px">just-solve, 100%</text>
+      <text class="lab" x="${left - 10}" y="${yMin + barH / 2 + 4}" text-anchor="end" style="font-size:12.5px">min12</text>
+      <rect x="${left}" y="${yMin}" width="${Math.max(2, x(pr.mean) - left)}" height="${barH}" rx="3" style="fill:var(--min);opacity:0.45" data-tip="${esc(minTip)}"></rect>
+      ${value(pr.mean, yMin)}
+      <line x1="${x(pr.best.share)}" y1="${yWhisk}" x2="${x(pr.worst.share)}" y2="${yWhisk}" style="stroke:var(--min);stroke-width:2"></line>
+      ${cap(pr.best.share)}${cap(pr.worst.share)}
+      <rect class="hit" x="${left}" y="${yWhisk - 8}" width="${W - left - right}" height="16" tabindex="0" data-tip="${esc(rangeTip)}" aria-label="${esc(rangeTip)}"></rect>
+      ${extreme("best", pr.best, yWhisk + 19)}${extreme("worst", pr.worst, yWhisk + 33)}
+      <text class="lab" x="${left - 10}" y="${yHuman + barH / 2 + 4}" text-anchor="end" style="font-size:12.5px">${esc(human.label)}</text>
+      <rect x="${left}" y="${yHuman}" width="${Math.max(2, x(r.human.mean) - left)}" height="${barH}" rx="3" style="fill:var(--ink-3)" data-tip="${esc(humanTip)}"></rect>
+      ${value(r.human.mean, yHuman)}
+    </svg>
+  </div>`;
+}
+
+function shareReading() {
+  const e = R.erosion, a = R.ast;
+  return `
+  <div class="card">
+    <h3>Reading the shares</h3>
+    <p class="reading">Each problem's min12 value is divided by its own just-solve value, and the bar is the mean of those ${e.n} shares. That weighs every problem the same, so it differs from dividing the two means in the row above. ` +
+    `The human bar is the paper's one figure divided by each problem's just-solve value, averaged the same way. ` +
+    `Erosion under min12 is ${esc(share(e.prompt.mean))} of just-solve's, below the human ${esc(share(e.human.mean))}; ast-grep is ${esc(share(a.prompt.mean))} against ${esc(share(a.human.mean))}. ` +
+    `The whisker names the problems where min12 helped most and least.</p>
+  </div>`;
+}
+
 function caseBars() {
   const m = METRICS[0];
   const per = (prompt, kind) => patched.map(p => `${p} ${m.fmt(cell(p, prompt, kind).mean[m.key])}`).join(", ");
@@ -1082,6 +1138,7 @@ function caseBars() {
 }
 
 document.getElementById("headline").innerHTML = [promptBars(METRICS[1]), promptBars(METRICS[2]), caseBars()].join("");
+document.getElementById("headline-share").innerHTML = [shareBars(METRICS[1]), shareBars(METRICS[2]), shareReading()].join("");
 document.getElementById("trajectory").innerHTML = Object.keys(PAPER.models).map(trajectoryPanel).join("");
 {
   const T = G.trajectory, f = v => v.toFixed(2);

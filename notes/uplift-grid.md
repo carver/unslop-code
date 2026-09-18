@@ -52,8 +52,19 @@ erosion / ast% are the cell means of the quality scores (lower is better); $ is 
   against 47. Wall clock is the larger downside, and it includes waits on the 5-hour window.
 - **ast-grep** follows erosion: 0.25 to 0.09 at v0 over six problems, 0.27 to 0.06 patched;
   the spec patch leaves just-solve's where it was (0.25 to 0.27).
+- **As a share of just-solve, problem by problem.** Divide each problem's min12 value by its
+  own just-solve value at v0 and average the six shares (`relative` in `bin/grid --json`).
+  Erosion under min12 is 23% of just-solve's (-77%), from datagate's 6% to sith's 60%.
+  ast-grep is 37% (-63%), from xjq's 18% to rejector's 53%. The paper's human figures, divided
+  by the same six baselines, come to 56% and 42%, so min12 lands under the 10k-star repos on
+  both. This mean weighs every problem the same, so it differs from the ratio of the means
+  above (0.15 / 0.58 is 25%).
+- **dev only, for now.** `bin/grid` reads the dev set of `split.json` unless told `--set test`
+  or `--set all`. The test-set runs (jobs 170-199) are landing in the same outputs, and one
+  of them has no min12 cell yet, which the page cannot draw.
 - **The page**: `report/uplift-grid.html`, built by `python3 report/uplift_grid.py` from
-  `bin/grid --json`; three headline bars, the Figure 5 overlay, five 2x2 squares averaged over
+  `bin/grid --json`; three headline bars, a second row with the two shares above (min12, its
+  best-to-worst whisker, the human bar, just-solve as the 100% line), the Figure 5 overlay, five 2x2 squares averaged over
   the patched problems, then per-problem dumbbells for every figure. The erosion and ast-grep headlines
   carry a human reference: the paper's Major tier (over 10k stars, 28 repos) at HEAD, erosion
   0.31 and ast-grep 0.10, Table 2 of arXiv 2603.24755v1. v2's Table 2 covers 473 repos (Major

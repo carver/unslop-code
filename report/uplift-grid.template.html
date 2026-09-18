@@ -174,7 +174,7 @@ function square(m) {
     c: avg(set, JS, "patched", m.key), d: avg(set, MIN, "patched", m.key),
   };
   const six = { a: avg(problems, JS, "v0", m.key), b: avg(problems, MIN, "v0", m.key) };
-  const W = 300, H = 178, x1 = 74, x2 = 226, y1 = 40, y2 = 122, nw = 78, nh = 28;
+  const W = 340, H = 178, x1 = 100, x2 = 242, y1 = 40, y2 = 122, nw = 78, nh = 28;
   const node = (x, y, val, color, fill) => `
     <rect class="node" x="${x - nw / 2}" y="${y - nh / 2}" width="${nw}" height="${nh}" rx="14" style="stroke:${color};${fill ? `fill:${color}` : ""}"></rect>
     <text class="num" x="${x}" y="${y + 4.5}" text-anchor="middle" style="${fill ? "fill:var(--panel)" : ""};font-size:13px">${esc(m.fmt(val))}</text>`;

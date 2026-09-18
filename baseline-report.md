@@ -171,7 +171,8 @@ notes/smoke-run.md.
    suspiciously cheap.
 3. `uvx` missing on the host silently dropped erosion/verbosity from the
    first run's report ("No such file or directory: 'uvx'" as a warning).
-   Fixed with a shim; `bin/scbcheck` writes per-checkpoint reports because
+   Fixed with a shim; a per-checkpoint scb-check helper (since folded into
+   `bin/summarize`, which computes any missing report) wrote the reports because
    `metrics static` keeps them only in the aggregate result.json.
 4. Haiku sub-agent calls: 26 of 37 checkpoints across both runs include
    `claude-haiku-4-5-20251001` messages (Task tool sub-agents). That is

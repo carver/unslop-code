@@ -60,7 +60,7 @@ def test_split_reports_are_cached(tmp_path):
 
     source = tree(tmp_path / "src", "app.py", "test_app.py")
     first = qs.split_reports(source, tmp_path / "cache", check)
-    assert qs.split_reports(source, tmp_path / "cache", check) == first
+    assert qs.split_reports(str(source), tmp_path / "cache", check) == first  # a path given as text is the same tree
     assert len(calls) == 3
     assert first["impl"]["ast_grep_flagged_loc"] == 2
 

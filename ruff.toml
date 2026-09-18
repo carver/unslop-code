@@ -16,5 +16,3 @@ select = ["E", "F", "W", "B", "SIM"]
 [lint.per-file-ignores]
 # build.py writes HTML rows as f-strings; wrapping them helps nobody.
 "report/build.py" = ["E501"]
-# Its fixtures quote spec sentences verbatim.
-"tests/test_judge_ambiguities.py" = ["E501"]

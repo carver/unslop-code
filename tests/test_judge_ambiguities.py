@@ -145,7 +145,7 @@ PATCH = """--- a/datagate/checkpoint_2.md
 -`_shape=objects`: `rows` is objects and includes `rowid` (1-based source-file row number). `rowid` is not in `columns`.
 +`_shape=objects`: `rows` is objects and includes `rowid` (1-based source-file row number, starting at the header). `rowid` is not in `columns`.
  context
-"""
+"""  # noqa: E501  a spec sentence, quoted verbatim
 
 
 def test_patch_sentences_pairs_removed_and_added_lines():
@@ -160,9 +160,9 @@ def test_rewrite_quotes_replaces_a_wrapped_quoted_sentence():
     untouched = judge.parse_registry(SAMPLE)[1]
     changed = judge.rewrite_quotes([e, untouched], judge.patch_sentences(PATCH))
     assert changed == ["T7"]
-    assert (
-        e.spec_text
-        == "> `_shape=objects`: `rows` is objects and includes `rowid` (1-based source-file row number, starting at the header)."
+    assert e.spec_text == (
+        "> `_shape=objects`: `rows` is objects and includes `rowid` "
+        "(1-based source-file row number, starting at the header)."
     )
     assert untouched.spec_text == "> text"
 

@@ -2,12 +2,13 @@
 """Which ast-grep rules flag each run's code: flagged lines per 1000 LOC, one column per run.
 
     bin/ast-rules [--json] [--part impl|test|all] [--floor N] [--prompts A,B] [--model opus-5]
-                  [--set dev|test|all] [--problem NAME ...]
+                  [--set dev|test|all] [--problem NAME ...] [--checkpoint N]
     bin/ast-rules [--json] [--part ...] [--floor N] --tree DIR [--tree DIR ...]
 
 bin/quality-split says how much of a snapshot's code ast-grep flags, implementation and tests
 apart; this says which rules do it. It picks the same snapshots (the final checkpoint of each
-v0 run) but keeps the runs apart, so two seeds of a prompt show how far a rule moves by chance.
+v0 run, or checkpoint N with --checkpoint) but keeps the runs apart, so two seeds of a prompt
+show how far a rule moves by chance.
 Lines are counted the way scb-check counts LOC (no blanks, comments or docstrings) and divided
 by its LOC, so the "all rules" row should sit within a few percent of the "scb-check ast" row,
 which is ast% times 1000. A rule that flags whole functions and a rule that flags one line read
@@ -55,15 +56,16 @@ def main():
     parser.add_argument("--model", default="opus-5")
     parser.add_argument("--set", default="dev", choices=["dev", "test", "all"])
     parser.add_argument("--problem", action="append")
+    parser.add_argument("--checkpoint", type=int)
     parser.add_argument("--tree", action="append", type=pathlib.Path, default=[])
     args = parser.parse_args()
     if args.tree:
         named = [(str(tree), tree) for tree in args.tree]
     else:
-        problems = set(args.problem) if args.problem else (
-            None if args.set == "all" else set(json.loads((ROOT / "split.json").read_text())[args.set]))
         prompts = args.prompts.split(",")
-        found = sorted(quality_split.final_snapshots(prompts, args.model, problems),
+        chosen = quality_split.final_snapshots(prompts, args.model, quality_split.chosen_problems(args),
+                                               checkpoint=args.checkpoint)
+        found = sorted(chosen,
                        key=lambda row: (row[0], prompts.index(row[1]), row[2].name))
         named = list(zip(run_names(found), (snapshot for *_, snapshot in found), strict=True))
     columns = [column(name, snapshot, args.part) for name, snapshot in named]

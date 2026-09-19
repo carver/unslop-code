@@ -108,3 +108,11 @@ def test_final_snapshots_are_the_last_scored_checkpoint_of_each_matching_run(tmp
     fake_run(tmp_path, "min13-ABDJKMNT", "20260919T0200", "mvvault", scored=(1,), model="sonnet-4.6")
     found = list(qs.final_snapshots(["min13-ABDJKMNT"], "opus-5", {"mvvault"}, qs.results.run_dirs(tmp_path)))
     assert found == [("mvvault", "min13-ABDJKMNT", first, first / "mvvault" / "checkpoint_2" / "snapshot")]
+
+
+def test_final_snapshots_take_a_named_checkpoint_and_skip_runs_that_never_reached_it(tmp_path):
+    first = fake_run(tmp_path, "min13-ABDJKMNT", "20260918T1850", "mvvault", scored=(1, 2, 3))
+    fake_run(tmp_path, "min13-ABDJKMNT", "20260919T0100", "mvvault", scored=())
+    runs = qs.results.run_dirs(tmp_path)
+    found = list(qs.final_snapshots(["min13-ABDJKMNT"], "opus-5", None, runs, checkpoint=1))
+    assert found == [("mvvault", "min13-ABDJKMNT", first, first / "mvvault" / "checkpoint_1" / "snapshot")]

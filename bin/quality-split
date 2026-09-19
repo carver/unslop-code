@@ -2,13 +2,15 @@
 """Quality scores of implementation files against test files, per problem and prompt.
 
     bin/quality-split [--json] [--prompts A,B] [--model opus-5] [--set dev|test|all]
+                      [--problem NAME ...] [--checkpoint N]
     bin/quality-split [--json] --tree DIR [--tree DIR ...]
 
 scb-check scores every Python file in a snapshot, tests included, so a prompt that writes
 more tests moves its scores without touching its implementation. For the final checkpoint of
 each v0 run this copies the implementation files and the test files (named `test*`,
 `*_test.py`, `conftest.py`, or under `tests/` or `testing/`) into two trees and runs the
-pinned scb-check on each, and on the whole snapshot. A cell pools its runs: ast% and cloned%
+pinned scb-check on each, and on the whole snapshot. --checkpoint N takes checkpoint N of the
+runs that reached it, and --problem narrows the --set to the problems named. A cell pools its runs: ast% and cloned%
 are flagged lines over LOC, erosion is high-complexity mass over total mass. --tree does the
 same for any directory, such as a checkout of a human-written repository.
 Reports are cached under outputs/quality-hits/split/.
@@ -38,33 +40,36 @@ def pooled(runs):
     return row
 
 
-def final_checkpoint(problem_dir):
-    scored = [c for c in problem_dir.glob("checkpoint_*") if (c / "quality_analysis" / "scb_check.json").exists()]
-    return max(scored, key=lambda c: int(c.name.rsplit("_", 1)[1]), default=None)
+def scored_checkpoint(problem_dir, number=None):
+    """The run's checkpoint `number` if it was scored, the last scored one when no number is given."""
+    scored = {int(c.name.rsplit("_", 1)[1]): c for c in problem_dir.glob("checkpoint_*")
+              if (c / "quality_analysis" / "scb_check.json").exists()}
+    return scored.get(max(scored, default=None) if number is None else number)
 
 
-def final_snapshots(prompts, model, problems, runs=None):
+def final_snapshots(prompts, model, problems, runs=None, checkpoint=None):
     """(problem, prompt, run, snapshot) for the final scored checkpoint of every v0 run of `prompts`
-    by `model`; `problems` of None means all of them."""
+    by `model`, or for checkpoint number `checkpoint` of the runs that reached it; `problems` of
+    None means all of them."""
     for run in results.run_dirs() if runs is None else runs:
         prompt, spec, run_model = results.cell_key(run)
         if prompt not in prompts or spec != "v0" or run_model != model:
             continue
         for problem_dir in sorted(d for d in run.iterdir() if d.is_dir() and (problems is None or d.name in problems)):
-            checkpoint = final_checkpoint(problem_dir)
-            if checkpoint:
-                yield problem_dir.name, prompt, run, checkpoint / "snapshot"
+            chosen = scored_checkpoint(problem_dir, checkpoint)
+            if chosen:
+                yield problem_dir.name, prompt, run, chosen / "snapshot"
 
 
-def collect(prompts, model, problems):
+def collect(prompts, model, problems, checkpoint=None):
     cells = {}
-    for problem, prompt, _, snapshot in final_snapshots(prompts, model, problems):
+    for problem, prompt, _, snapshot in final_snapshots(prompts, model, problems, checkpoint=checkpoint):
         cells.setdefault((problem, prompt), []).append(split_reports(snapshot))
     return cells
 
 
-def rows_for_runs(prompts, model, problems):
-    cells = collect(prompts, model, problems)
+def rows_for_runs(prompts, model, problems, checkpoint=None):
+    cells = collect(prompts, model, problems, checkpoint)
     rows = []
     for prompt in prompts:
         by_problem = {problem: runs for (problem, p), runs in sorted(cells.items()) if p == prompt}
@@ -89,19 +94,27 @@ def table(rows):
     return "\n".join(lines)
 
 
+def chosen_problems(args):
+    """The problems --problem names, else the --set's; None for every problem."""
+    if args.problem:
+        return set(args.problem)
+    return None if args.set == "all" else set(json.loads((ROOT / "split.json").read_text())[args.set])
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     parser.add_argument("--json", action="store_true")
     parser.add_argument("--prompts", default="just-solve,min12-ABDJKMN")
     parser.add_argument("--model", default="opus-5")
     parser.add_argument("--set", default="dev", choices=["dev", "test", "all"])
+    parser.add_argument("--problem", action="append")
+    parser.add_argument("--checkpoint", type=int)
     parser.add_argument("--tree", action="append", type=pathlib.Path, default=[])
     args = parser.parse_args()
     if args.tree:
         rows = [{"name": tree.name, **pooled([split_reports(tree)])} for tree in args.tree]
     else:
-        problems = None if args.set == "all" else set(json.loads((ROOT / "split.json").read_text())[args.set])
-        rows = rows_for_runs(args.prompts.split(","), args.model, problems)
+        rows = rows_for_runs(args.prompts.split(","), args.model, chosen_problems(args), args.checkpoint)
     print(json.dumps(rows, indent=1) if args.json else table(rows))
 
 

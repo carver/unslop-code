@@ -75,7 +75,7 @@ transcript. Each is PR-shaped as it stands. Two have branches in `slop-code-benc
 - A crashed checkpoint's `stdout.jsonl`. Filed as issue #36 and PR #37 (2026-09-18, marked
   ready for review the same day, from the fork, the same route as #34 / #35; #34 had promised
   it as a follow-up). Branch `claude-code-stdout-keeps-stream`, off main, has the test first
-  (`70d83f1`), then the fix (`813c66f`); the single commit it was split from is kept locally as
+  (`70d83f1`), then the fix (`9e0f522`); the single commit it was split from is kept locally as
   `backup/stdout-keeps-stream-single` (`c86baf6`). The issue text lives only on GitHub; the
   local draft was deleted once #36 was posted. Repro numbers, checked 2026-09-18 against
   upstream main (`06b5c06`): `TestStreamTranscriptArtifacts` fails 2 of 2 on main and on the

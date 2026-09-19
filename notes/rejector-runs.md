@@ -14,6 +14,7 @@ The control is the dev6 sweep's just-solve run (`notes/dev6-opus5.md`).
 | min11-ABDFJKMN, repeat | `…min11-ABDFJKMN/20260908T0648` | same config as the first run | 20/21, 33/34, 49/50, 65/67, 76/79 | complete 2026-09-08; 3 misses: retry exhaustion from checkpoint 1 (the control's miss, which the first run passed), agentic max iterations, dry run; the first run's single-task compatibility, invalid ICL file and TPM gate all passed. 0/5 strict, $30 (per checkpoint 4, 6, 6, 7, 8), 108 min. 114 registry entries all scored, Risk 0-55 (top: tool definitions in a completions prompt 55, multi-turn mistral 50). Quality: erosion 0.210, verbosity 0.197, ast 0.121, cloned 0.070 |
 | min12-ABDJKMN | `…min12-ABDJKMN/20260914T2312` | the 444-word no-F prompt on v0, for the six-problem quality-uplift comparison; first of two | 21/21, 32/34, 49/50, 65/67, 75/79 | complete 2026-09-15; 4 misses: first-number extraction (checkpoint 2, back at 5), agentic max iterations, dry run, and the single-task backward-compatibility case min11 also lost; the control's retry exhaustion, invalid ICL file and TPM gate passed. Two above the control, the best rejector score. 1/5 strict (checkpoint 1), $28 (per checkpoint 4, 5, 5, 6, 8), 92 min. 110 entries all scored, Risk 0-45 (tool definitions rendered into the prompt 45; 5xx retry count, meta for an all-failed row 40). Quality: erosion 0.192, verbosity 0.239, ast 0.114, cloned 0.118 |
 | min12-ABDJKMN, repeat | `…min12-ABDJKMN/20260915T0516` | same config as the first run | 21/21, 33/34, 49/50, 66/67, 76/79 | complete 2026-09-15; 3 misses: the single-task backward-compatibility case from checkpoint 2 (both min12 runs and both min11 runs), dry run and the TPM gate at checkpoint 5; the first run's first-number extraction and agentic max iterations passed. Three above the control, the best rejector score. 1/5 strict, $28 (per checkpoint 4, 5, 5, 6, 8), 113 min. 100 entries all scored, Risk 10-55 (tool definitions in a completions prompt 55; cost rounding, a permanently failing agentic request 45). Quality: erosion 0.151, verbosity 0.265, ast 0.114, cloned 0.149 |
+| min13-ABDJKMNT | `…min13-ABDJKMNT/20260918T2129` | min12-ABDJKMN plus chunk T, upstream's anti-slop rules as the whole Implement section; one sample run for the ast question | 20/21, 33/34, 49/50, 64/67, 74/79 | complete 2026-09-18; 5 misses: dry run and the TPM gate (the control's, and both min12 runs'); retries from checkpoint 1, where the run made four HTTP calls and the test wants three and a null output (its own T2, Risk 45, named the author's reading); agentic max iterations (`passed` is null, the test wants false; the first min12 run missed it too); costs, 0.011 against a 0.01 ceiling. First-number extraction failed at checkpoint 4 only. The backward-compat single-task case passed, the first min run where it did. 0/5 strict, $33, 107 min. 104 entries all scored, Risk 10-55. Quality: erosion 0.028, verbosity 0.214, ast 0.074, cloned 0.104; implementation only, ast 0.188 against min12's 0.339 and 0.344, erosion 0.172 against 0.608 and 0.539 |
 | min13-ABDJKMNT | `…min13-ABDJKMNT/20260918T2129` | min12 plus chunk T, the upstream anti-slop rule list (d902f32); second of the min13 pair, after mvvault | 20/21, 33/34, 49/50, 64/67, 74/79 | complete 2026-09-18; 6 misses: five that at least one other opus-5 run missed (max-retries at 1, first-number extract at 2, agentic max iterations at 4, dry run and tpm gate at 5) plus test_costs at 5, which no other run missed. 0/5 strict, $33, 107 min. Quality: erosion 0.028, verbosity 0.214, ast 0.074, cloned 0.104 |
 
 ## Test failure summaries
@@ -47,6 +48,21 @@ The control is the dev6 sweep's just-solve run (`notes/dev6-opus5.md`).
     Erosion 0.028 against min12's 0.192 and 0.151, ast 0.074 against 0.114; $33 and 107 min
     against min12's $28 and 103. With mvvault (215 against 220, 223) the pair reads: chunk T
     takes erosion down another 4x to 6x, score flat to slightly down, cost about the same.
+
+### min13-ABDJKMNT (min12-ABDJKMN plus the anti-slop chunk)
+
+  - one run (74): one and two below the min12 pair, one above the control. Dry run and the TPM
+    gate are shared with every run. Retries is a reading the registry scored at 45 and lost: four
+    HTTP calls for "retry up to 3 times" where the tests count three. Agentic max iterations
+    leaves `passed` null, as the first min12 run did. Costs is new: 0.011 against the test's
+    0.01. Backward-compat single-task passed for the first time in a min run.
+  - the question the run was for: implementation-only ast is 0.188, against 0.339 and 0.344 for
+    the two min12 runs and 0.334 for just-solve, which min12 had not moved at all. Erosion
+    0.172 against 0.608 and 0.539. The whole-function rules carry it, as on mvvault:
+    `defensive-isinstance-raise-heavy` and `defensive-try-soup-function` at zero,
+    `function-with-many-type-guards` and `defensive-function-isinstance-heavy` at less than half.
+    What rose is `defensive-validator-function` and `defensive-fstring-raise-heavy`, zero in
+    min12: the type checks that stayed sit in validators. 25 files against one. One run.
 
 ### min11-ABDFJKMN
 

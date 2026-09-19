@@ -1,43 +1,31 @@
 # Unslop Code
 
-Improving Code Quality against the excellent [Slop Code Bench](https://github.com/SprocketLab/slop-code-bench).
+Improving code quality against the excellent [Slop Code Bench](https://github.com/SprocketLab/slop-code-bench).
 
-Using Opus 5 and a custom prompt, it's tempting to say that I have solved the quality issues.
-I only had the credits to run against 6 of the problems so far, but will keep expanding whenever I have spare credits at the end of the week.
+Progress:
 
-Interestingly, the correctness scores (Core, Isolated, Strict) didn't improve much at all.
+- Improved quality on 21 problems
+- Near-perfect correctness on 3 problems
+- The last 15 problems are untouched as a holdout, for now
 
-I separately analyzed the specs of three problems, and came to the conclusion that the specs are legitimately ambiguous.
-The prompts now how help identify these ambiguities, and I have applied minimal patches to get (almost) perfect strict solves.
-Occasionally, Opus makes what I think is just a wrong call (actually only once so far).
+With a new prompt, code quality improves significantly on all 21 tested problems.
 
-## Findings so far (2026-09-15)
+The prompt lifts correctness (Core, Isolated, Strict) a bit, but mostly requires some changes to the spec.
 
-Two levers, measured in both orders on the six dev problems with Opus 5, two runs per cell
-(`notes/uplift-grid.md`, `bin/grid` for the table, the published grid linked there):
+In the 3 problems, I analyzed the test failures and concluded that the specs are legitimately ambiguous.
+The new prompt asks the agent to identify these ambiguities, which it does well.
 
-- **Correctness comes from the spec.** Rewriting the ambiguous sentences (datagate v2, xjq v3,
-  file_merger v6) takes hidden-test failures from 8% to under 2% for either prompt. The prompt
-  alone barely moves them at v0: 8.3% to 5.5% over six problems, most of that on sith.
-- **Code quality comes from the prompt.** The 444-word min12 prompt cuts the harness's erosion
-  score from 0.58 to 0.15 averaged over six problems, and ast-grep smells from 0.25 to 0.09;
-  the spec patch leaves both where they were.
-- **Order does not matter.** Prompt-then-spec and spec-then-prompt land on the same score; the
-  quality gap is the prompt's either way.
-- **The price is time more than money.** Averaged over six problems at v0, min12 costs $24 a
-  run to just-solve's $23 and takes 87 minutes to its 80; on the patched specs 62 minutes to
-  47. Small problems pay 1.5x to 2x in both; the large ones pay less, where the bare prompt's
-  long runs are the expense. The page: `report/uplift-grid.html` (`python3 report/uplift_grid.py`).
-- **Erosion does not climb under min12.** The paper's Figure 5 has every prompt on every GPT
-  model eroding further from the first checkpoint to the last, and says quality prompts do
-  not slow that. On the same five phases Opus 5 just-solve goes 0.56 to 0.61 and min12 0.14 to
-  0.16, flat within noise; the page draws both over the paper's lines (`notes/uplift-grid.md`).
-- **One miss is Claude's, not the spec's.** datagate's remaining failures are five tests that
-  expect header and cell whitespace kept verbatim. The spec never mentions whitespace; the
-  agent trims it anyway, and when asked afterwards concedes the spec gives no licence. Left
-  in as a benchmark failure (datagate diary, 2026-09-14).
+I patched the spec for datagate, file_merger, and xjq (chosen at random, one from each difficulty).
+With a few minimal patches, they all get nearly perfect strict solves.
 
-Start here:
+In a single test, Opus makes what I think is just a wrong call in reading the spec.
+I chose not to alter the spec to patch up Opus' bad call.
+
+## Navigating
+
+Some important entry points to understand and use the repository.
+
+### Notes
 
 - `baseline-report.md` — the Sonnet 4.6 reproduction vs the leaderboard, with manifest.
   The page: `report/scbench-baseline.html` (regenerate with `python3 report/build.py`).
@@ -53,6 +41,8 @@ Start here:
   read and patched. test (15, seed 20260917, drawn 2026-09-17 from the other 30, 5 per
   difficulty): run only, results reported, no spec or transcript reading, no patching.
   validation (the other 15): sealed until just before publication.
+
+### Tools
 
 Running things (always through the wrapper; it enforces subscription-only auth
 and the sandbox-local venv). Launch from the repo root: run configs name their agent,
@@ -117,6 +107,8 @@ queue is pueue, installed by `install.py`, one task at a time, persistent across
 sessions. The driver underneath (`bin/scb-extend`) waits out the 5h window and API
 overloads, dry-runs every resume, and tars finished checkpoints to `outputs/backups/`.
 
+### Skills
+
 Project skills (`.claude/skills/`, all user-invoked) tie those together:
 
     /solve-one-problem       one dev problem, start to finish: baseline pair, spec patch,
@@ -125,6 +117,8 @@ Project skills (`.claude/skills/`, all user-invoked) tie those together:
                              by blind judges, then a strict rerun
     /prompt-ladder           smallest prompt that strict-solves a patched spec, and where
                              code quality drops off
+
+### Running the Benchmark
 
 Runs use the harness checkout at `harness/`: a clone of slop-code-bench pinned to
 `06b5c06` with six source patches applied, built with its venv by `python3 install.py`
@@ -179,6 +173,34 @@ Every upstream PR idea, with evidence and blockers, is in `notes/upstream-prs.md
 
 `outputs/` holds the three dev6 baseline runs. The setup-token lives at
 `~/.config/scbench/claude-oauth-token` (mint a new one with `bin/setup-token-wizard`).
+
+## Findings so far (last updated 2026-09-18)
+
+Two levers, measured in both orders on the six dev problems with Opus 5, two runs per cell
+(`notes/uplift-grid.md`, `bin/grid` for the table, the published grid linked there):
+
+- **Correctness comes from the spec.** Rewriting the ambiguous sentences (datagate v2, xjq v3,
+  file_merger v6) takes hidden-test failures from 8% to under 2% for either prompt. The prompt
+  alone barely moves them at v0: 8.3% to 5.5% over six problems, most of that on sith.
+- **Code quality comes from the prompt.** The 444-word min12 prompt cuts the harness's erosion
+  score from 0.58 to 0.15 averaged over six problems, and ast-grep smells from 0.25 to 0.09;
+  the spec patch leaves both where they were.
+- **Order does not matter.** Prompt-then-spec and spec-then-prompt land on the same score; the
+  quality gap is the prompt's either way.
+- **The price is time more than money.** Averaged over six problems at v0, min12 costs $24 a
+  run to just-solve's $23 and takes 87 minutes to its 80; on the patched specs 62 minutes to
+  47. Small problems pay 1.5x to 2x in both; the large ones pay less, where the bare prompt's
+  long runs are the expense. The page: `report/uplift-grid.html` (`python3 report/uplift_grid.py`).
+- **Erosion may not climb under min12.** The paper's Figure 5 has every prompt on every GPT
+  model eroding further from the first checkpoint to the last, and says quality prompts do
+  not slow that. On the same five phases Opus 5 just-solve goes 0.56 to 0.61 and min12 0.14 to
+  0.16, flat within noise; the page draws both over the paper's lines (`notes/uplift-grid.md`).
+  2026-09-18: A huge caveat is that this flattening seems to go away when just measuring erosion in the implementation.
+  More work to do on implementation-only vs whole-code quality measures...
+- **One miss is Claude's, not the spec's.** datagate's remaining failures are five tests that
+  expect header and cell whitespace kept verbatim. The spec never mentions whitespace; the
+  agent trims it anyway, and when asked afterwards concedes the spec gives no license. Left
+  in as a benchmark failure (datagate diary, 2026-09-14).
 
 ## License
 

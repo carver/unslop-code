@@ -1,0 +1,67 @@
+#!/usr/bin/env python3
+"""A run's hidden-test misses grouped by how they failed, with the other runs that share them.
+
+    bin/miss-signatures <run_dir> [--problem NAME] [--json]
+
+A miss that comes from the prompt's reading of the spec usually fails alone. A miss that comes
+from outside it (a fixture that only reroutes one HTTP library, a port clash, a timeout) fails
+several tests the same way and shows up again in other runs, whatever their prompt. This groups
+the run's misses by signature (report/miss_signatures.py: the crash message's first line with
+numbers and paths blanked, plus the exceptions named in the captured output) and, for each
+group, names every other run of the problem where the same tests failed with the same
+signature. Read it before writing a cause into the ledger: seven mvvault tests failed on DNS
+for media.example.com in three runs before anyone saw they were one cause. bin/ledger-row
+prints this under its failure summary.
+"""
+import argparse
+import json
+import pathlib
+import sys
+import types
+
+HERE = pathlib.Path(__file__).resolve().parent
+results = types.ModuleType("results")
+results.__file__ = str(HERE / "results")
+sys.modules["results"] = results
+exec(compile((HERE / "results").read_text(), str(HERE / "results"), "exec"), results.__dict__)
+sys.path.insert(0, str(HERE.parent / "report"))
+import miss_signatures  # noqa: E402
+
+
+def label(run):
+    prompt, spec, model = results.cell_key(run)
+    return f"{prompt} {spec} {model} {run.name}"
+
+
+def other_runs(run, problem, runs):
+    """{label: misses} for every other run in `runs` that has the problem."""
+    return {label(other): miss_signatures.run_misses(other / problem)
+            for other in runs if other != run and (other / problem).is_dir()}
+
+
+def the_problem(run, named):
+    found = sorted(d.name for d in run.iterdir() if d.is_dir() and any(d.glob("checkpoint_*")))
+    if named or len(found) == 1:
+        return named or found[0]
+    raise SystemExit(f"miss-signatures: {run} has {', '.join(found)}; pick one with --problem")
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
+    parser.add_argument("run_dir", type=pathlib.Path)
+    parser.add_argument("--problem")
+    parser.add_argument("--json", action="store_true")
+    args = parser.parse_args()
+    run = args.run_dir.resolve()
+    problem = the_problem(run, args.problem)
+    mine = miss_signatures.run_misses(run / problem)
+    others = other_runs(run, problem, results.run_dirs())
+    if args.json:
+        print(json.dumps({"buckets": miss_signatures.buckets(mine), "shared": miss_signatures.shared(mine, others)},
+                         indent=1))
+    else:
+        print(miss_signatures.render(mine, others))
+
+
+if __name__ == "__main__":
+    main()

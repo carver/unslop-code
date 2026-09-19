@@ -6,10 +6,10 @@
 Prints the table row for notes/<problem>-runs.md (scores per checkpoint, miss count, cost, and
 the quality scores: the checkpoint mean notes/results.md shows, then the final checkpoint's
 implementation files alone, as bin/quality-split scores them) and the failure-summary entry:
-each missed hidden test under the checkpoint it belongs to,
-with the checkpoints it failed at. The cause of each miss is the reader's to add; the
-evaluation output (`<ckpt>/evaluation/stdout.txt`), `bin/miss-report`, and `bin/askrun`
-are where to look. Ends by running `bin/results --write`, so the cross-problem table in
+each missed hidden test under the checkpoint it belongs to, with the checkpoints it failed at,
+then the same misses grouped by how they failed and the other runs that share each group
+(bin/miss-signatures). The cause of each miss is the reader's to add; the evaluation output
+(`<ckpt>/evaluation/stdout.txt`), `bin/miss-report`, and `bin/askrun` are where to look. Ends by running `bin/results --write`, so the cross-problem table in
 notes/results.md always carries the run; commit it with the ledger. After a ladder run, also
 extend the ladder section with `bin/compare-runs <runs...> --md`.
 """
@@ -92,6 +92,12 @@ def main():
             print(f"      {t}{where}")
     if not fails:
         print("  - No misses.")
+        return
+    print()
+    print("Misses by how they failed (bin/miss-signatures); a group other runs share is rarely the prompt's doing:")
+    print()
+    sys.stdout.flush()
+    subprocess.run([str(HERE / "miss-signatures"), str(run), "--problem", problem], check=True)
 
 
 def regenerate_results():

@@ -57,7 +57,8 @@ existing snapshot with `bin/reeval`, and every later run scores it that way nati
 ### min13-ABDJKMNT (min12-ABDJKMN plus the anti-slop chunk)
 
   - one run (215): eight below the min12 repeat, and seven of the eight are not about the spec.
-    The implementation imported `requests`; both min12 runs used urllib. The tests' `legacy_source_env`
+    The implementation imported `requests`; both min12 runs used urllib. The just-solve repeat (214)
+    and the sonnet-4.6 control lost the same seven tests the same way; see `notes/upstream-prs.md`. The tests' `legacy_source_env`
     fixture reroutes `https://media.example.com/channel/…` by patching `urllib.request.urlopen`
     through a sitecustomize, so with `requests` each v1-vault sync went to the real host and exited 1.
     Counting those as passes gives 222, level with min12's 220 and 223.

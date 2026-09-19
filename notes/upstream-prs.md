@@ -65,13 +65,19 @@ prefix to the mock's base URL, and puts it on `PYTHONPATH`. The reference soluti
 own `build_opener().open()`, never goes through the patch. It asks DNS for media.example.com
 and exits 1.
 
-Evidence: min13-ABDJKMNT on mvvault, 2026-09-18 (`…min13-ABDJKMNT/20260918T1850`), the first
-of our opus-5 runs to import `requests`. Seven of its twelve misses are this and nothing else:
-five at checkpoint 2 (`test_sync_v1_*`, `test_sync_second_run_after_v1_auto_migration_…`),
+Evidence: three of our mvvault runs fetched with `requests` alone, and each lost the same
+seven tests to it and to nothing else: five at checkpoint 2
+(`test_sync_v1_auto_migrates_and_fetches_via_derived_source`, `…_updates_existing_entry_after_auto_migration`,
+`…_adds_new_entries_in_v3_shape`, `…_backup_preserves_original_v1_bytes`,
+`test_sync_second_run_after_v1_auto_migration_has_no_re_migration_artifacts`),
 `test_sync_v1_download_url` at 3 and `test_sync_links` at 4, each with
-`HTTPSConnectionPool(host='media.example.com') … NameResolutionError` on stderr. 215/227 as
-scored, 222 with those seven passing, level with min12-ABDJKMN's 220 and 223 on urllib. The
-fixture is used by about a dozen tests across checkpoints 2, 3 and 4.
+`HTTPSConnectionPool(host='media.example.com') … NameResolutionError` on stderr. The runs:
+sonnet-4.6 just-solve (`dev6/…/20260829T1910`, 206/227), opus-5 just-solve
+(`spectest/…just-solve/20260915T0940`, 214/227) and opus-5 min13-ABDJKMNT
+(`…min13-ABDJKMNT/20260918T1850`, 215/227, found 2026-09-18). Add seven and they read 213,
+221 and 222, level with the urllib runs of the same prompts. The 2026-09-15 ledger entry
+listed the 214's misses without a cause. The fixture is used by about a dozen tests across
+checkpoints 2, 3 and 4.
 
 Fixes, smallest first: say in the spec that fetching uses the standard library's
 `urllib.request`; or have the spec take the v1 base URL from an environment variable the

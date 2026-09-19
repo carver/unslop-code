@@ -54,6 +54,32 @@ follow the spec (write TSV with `lineterminator="\n"`, write CSV by doubling) or
 should say what the fixtures do; our `specs/file_merger/v1` patches 01 and 03 take the second
 road for our runs. Two PRs' worth, both small.
 
+## Problem set: mvvault's v1 tests only reroute `urllib.request.urlopen`
+
+The spec fixes a v1 vault's source URL at `https://media.example.com/channel/<source_id>`, a
+host that does not resolve, and says nothing about which HTTP client to use. The tests get a
+v1 sync to the mock platform through `legacy_source_env` (`tests/conftest.py`): it writes a
+`sitecustomize.py` that replaces `urllib.request.urlopen` with a wrapper that rewrites that
+prefix to the mock's base URL, and puts it on `PYTHONPATH`. The reference solution calls
+`urlopen`, so it passes. A solution that fetches with `requests` or `httpx`, or with urllib's
+own `build_opener().open()`, never goes through the patch. It asks DNS for media.example.com
+and exits 1.
+
+Evidence: min13-ABDJKMNT on mvvault, 2026-09-18 (`…min13-ABDJKMNT/20260918T1850`), the first
+of our opus-5 runs to import `requests`. Seven of its twelve misses are this and nothing else:
+five at checkpoint 2 (`test_sync_v1_*`, `test_sync_second_run_after_v1_auto_migration_…`),
+`test_sync_v1_download_url` at 3 and `test_sync_links` at 4, each with
+`HTTPSConnectionPool(host='media.example.com') … NameResolutionError` on stderr. 215/227 as
+scored, 222 with those seven passing, level with min12-ABDJKMN's 220 and 223 on urllib. The
+fixture is used by about a dozen tests across checkpoints 2, 3 and 4.
+
+Fixes, smallest first: say in the spec that fetching uses the standard library's
+`urllib.request`; or have the spec take the v1 base URL from an environment variable the
+tests already set (`MVVAULT_LEGACY_SOURCE_BASE_URL`), which works for any client; or make the
+patch cover `requests` and `httpx` too, which only moves the line. Not drafted; an issue
+first, since the second fix changes the spec's contract. No patch in `patches/scb-problems/`,
+and our runs are scored as the tests stand.
+
 ## Harness: patches we carry (all in `patches/`, applied to the checkout)
 
 Listed in `README.md` with what each fixes: stream-parser string message; stop-after-

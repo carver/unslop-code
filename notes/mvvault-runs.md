@@ -18,6 +18,7 @@ existing snapshot with `bin/reeval`, and every later run scores it that way nati
 | min11-ABDFJKMN | `…min11-ABDFJKMN/20260907T1659` | the 468-word min11 subset (twice strict on datagate v2); first of two | 35/37, 65/67, 112/115, 150/155, 180/185, 222/227 | complete 2026-09-08; 5 misses, four shared with the control (the two checkpoint-1 sync rejections, missing tracked field and wrong field type; skip-downloaded candidate; serve on a custom address) and one its own (the missing-vault route error from checkpoint 4); the control's two sync-v1 misses passed. 0/6 strict, $36 (per checkpoint 4, 6, 6, 8, 5, 6), 152 min of agent time; checkpoint 4 hit the spurious infra flag (two collection passes failed in a network blip, evaluation complete at 150/155; flag cleared by hand, backup beside it) and the run resumed from 5 as job 89. 80 registry entries all scored, Risk 0-55 (top: digest output shape 55, a static field whose source value changes 45; a source response missing a category 35). Quality: erosion 0.059, verbosity 0.179, ast 0.067, cloned 0.083 |
 | min12-ABDJKMN | `…min12-ABDJKMN/20260914T2119` | the 444-word no-F prompt on v0, for the six-problem quality-uplift comparison; first of two | 35/37, 64/67, 111/115, 150/155, 180/185, 220/227 | complete 2026-09-15; 7 misses: five of the control's six (the two checkpoint-1 sync rejections, sync-v1 new entries in v3 shape, skip-downloaded candidate, serve on a custom address; the sync-v1 download URL passed) plus the test_migration_atomic pair at checkpoint 6, new (a 302 where the test expects 500 on a bad catalog). One below the control. 0/6 strict, $29 (per checkpoint 2, 4, 5, 7, 5, 5), 98 min. 80 entries, 78 scored, Risk 0-55 (digest layout 55, digest trailing line 50, media extension from Content-Type 45). Quality: erosion 0.046, verbosity 0.214, ast 0.080, cloned 0.111 |
 | min12-ABDJKMN, repeat | `…min12-ABDJKMN/20260915T0327` | same config as the first run | 35/37, 65/67, 112/115, 151/155, 181/185, 223/227 | complete 2026-09-15; 4 misses, all the control's (the two checkpoint-1 sync rejections, skip-downloaded candidate, serve on a custom address); the first run's v3-shape and migration-atomic misses passed. Two above the control, one above min11, the best mvvault score. 0/6 strict, $24 (per checkpoint 2, 3, 4, 7, 4, 4), 95 min. Quality: erosion 0.074, verbosity 0.172, ast 0.076, cloned 0.082 |
+| min13-ABDJKMNT | `…min13-ABDJKMNT/20260918T1850` | min12-ABDJKMN plus chunk T, upstream's anti-slop rules as the whole Implement section; one sample run for the ast question | 35/37, 60/67, 106/115, 144/155, 174/185, 215/227 | complete 2026-09-18; 12 misses. Seven are one cause: the run fetched with `requests`, and the hidden tests reroute the v1 source URL by patching `urllib.request.urlopen`, so every v1-vault sync tried the real media.example.com (five at checkpoint 2, v1 download URL at 3, sync links at 4). Three are the ones every opus-5 run shares. New: missing-vault redirect carries `?missing=missing`, and the post page shows 1:30 where the test wants 90. 0/6 strict, $33, 140 min. Quality: erosion 0.007, verbosity 0.159, ast 0.048, cloned 0.075; implementation only, ast 0.132 against min12's 0.235 and 0.199 |
 | min13-ABDJKMNT | `…min13-ABDJKMNT/20260918T1850` | min12 plus chunk T, the upstream anti-slop rule list (d902f32); first of the min13 pair, rejector next | 35/37, 60/67, 106/115, 144/155, 174/185, 215/227 | complete 2026-09-18; 12 misses: ten shared with the just-solve repeat (the checkpoint-1 pair, the five-test v1 auto-migration block at 2, skip-downloaded and download URL at 3, sync links at 4) plus two no other run missed (missing vault route at 4, post create at 6); serve custom addr passed, which every other opus-5 run missed. 0/6 strict, $33, 140 min. Quality: erosion 0.007, verbosity 0.159, ast 0.048, cloned 0.075 |
 
 ## Test failure summaries
@@ -52,6 +53,19 @@ existing snapshot with `bin/reeval`, and every later run scores it that way nati
     0.007, the lowest of any mvvault run (min12 0.046 and 0.074); ast 0.048 against 0.078.
     $33 and 140 min against min12's $27 and 96. One run: whether the score is chunk T or
     noise needs the rejector run and a repeat.
+
+### min13-ABDJKMNT (min12-ABDJKMN plus the anti-slop chunk)
+
+  - one run (215): eight below the min12 repeat, and seven of the eight are not about the spec.
+    The implementation imported `requests`; both min12 runs used urllib. The tests' `legacy_source_env`
+    fixture reroutes `https://media.example.com/channel/…` by patching `urllib.request.urlopen`
+    through a sitecustomize, so with `requests` each v1-vault sync went to the real host and exited 1.
+    Counting those as passes gives 222, level with min12's 220 and 223.
+  - the other two new misses: `test_missing_vault_route` got `/?missing=missing` where the test
+    wants the bare root, and `test_post_create` looks for `90` on a page that prints `1:30`.
+  - the question the run was for: implementation-only ast is 0.132, against 0.235 and 0.199 for
+    the two min12 runs and 0.338 for just-solve. Implementation erosion 0.036 against 0.218 and
+    0.125. The implementation is 1457 lines against 1590 and 1711. One run.
 
 ### min11-ABDFJKMN
 

@@ -150,6 +150,7 @@ def test_impl_run_swaps_in_the_implementation_only_scores_checkpoint_by_checkpoi
     assert out["erosion_by_ckpt"] == [0.2, 0.6] and abs(out["erosion"] - 0.4) < 1e-9
     assert abs(out["ast"] - 0.2) < 1e-9 and abs(out["cloned"] - 0.05) < 1e-9
     assert out["ast_by_ckpt"] == [0.3, 0.1] and out["cloned_by_ckpt"] == [0.1, 0.0]
+    assert out["loc"] == 100  # the final checkpoint's implementation lines
     assert out["verbosity_by_ckpt"] == [0.35, 0.1] and abs(out["verbosity"] - 0.225) < 1e-9
     assert out["score"] == 0.9 and out["cost"] == whole["cost"]
 
@@ -184,6 +185,14 @@ def test_relative_averages_each_problems_share_of_the_first_prompt_and_names_the
     assert min13["n"] == 1 and abs(min13["mean"] - 0.05 / 0.5) < 1e-9  # only xjq ran it
     assert "human" not in erosion  # no panel given
     assert abs(r["metrics"]["ast"]["prompts"]["min12-ABDJKMN"]["mean"] - 1.0) < 1e-9
+    assert "loc" not in r["metrics"]  # whole-snapshot runs carry no implementation line count
+
+
+def test_relative_shares_implementation_lines_without_a_human_figure():
+    cells = {("xjq", "just-solve", "v0", "opus-5"): [run(0.9, 0.4) | {"loc": 200}],
+             ("xjq", "min12-ABDJKMN", "v0", "opus-5"): [run(0.9, 0.1) | {"loc": 150}]}
+    loc = gr.grid(cells, human=gr.human_panel(REPOS, "all"))["relative"]["metrics"]["loc"]
+    assert loc["prompts"]["min12-ABDJKMN"]["mean"] == 0.75 and "human" not in loc
 
 
 def test_relative_skips_a_problem_whose_baseline_is_zero_or_whose_other_prompt_never_ran():

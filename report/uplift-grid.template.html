@@ -445,16 +445,16 @@ function promptBars(m) {
 const share = v => (100 * v).toFixed(0) + "%";
 const change = v => (v < 1 ? "\u2212" : "+") + (100 * Math.abs(v - 1)).toFixed(0) + "%";
 
-function shareBars(m) {
+function shareBars(m, r = R[m.key], human = HUMAN[m.key], sub = `spec v0, mean of the per-problem shares${scopeSub(m)}`) {
   // Each bar is a mean of per-problem shares of just-solve, which sits at the 100% line. Under
   // each prompt's bar a whisker runs from its best problem to its worst, so the card stays this
   // size however many problems the mean covers; the human block closes the card.
-  const r = R[m.key], human = HUMAN[m.key], h = r.human;
+  const h = r.human;
   const blocks = OTHERS.filter(pr => r.prompts[pr]).map(pr => ({ prompt: pr, s: r.prompts[pr] }));
   const W = 320, left = 132, right = 104, top = 22, barH = 22, blockH = 72;
-  const maxV = Math.max(1, ...blocks.map(b => b.s.worst.share), h.max.share);
+  const maxV = Math.max(1, ...blocks.map(b => b.s.worst.share), human ? h.max.share : 1);
   const x = v => left + (v / maxV) * (W - left - right);
-  const yHuman = top + 6 + blockH * blocks.length, yHW = yHuman + barH + 10, H = yHW + 42;
+  const yHuman = top + 6 + blockH * blocks.length, yHW = yHuman + barH + 10, H = human ? yHW + 42 : yHuman + 4;
   const value = (v, y) => `<text class="num" x="${W - right + 8}" y="${y + barH / 2 + 4}" style="font-size:12.5px">${esc(share(v))}<tspan style="fill:var(--ink-3)"> (${esc(change(v))})</tspan></text>`;
   // The halo keeps a long problem name legible where it crosses the 100% line.
   const extreme = (word, name, v, y) => `<text x="${left - 10}" y="${y}" text-anchor="end" style="font-size:11.5px">${word}</text>` +
@@ -473,26 +473,83 @@ function shareBars(m) {
       `<rect class="hit" x="${left}" y="${yWhisk - 8}" width="${W - left - right}" height="16" tabindex="0" data-tip="${esc(rangeTip)}" aria-label="${esc(rangeTip)}"></rect>` +
       extreme("best", s.best.problem, s.best.share, yWhisk + 19) + extreme("worst", s.worst.problem, s.worst.share, yWhisk + 33);
   }).join("");
-  const humanTip = `${human.tip}\nmean over ${r.n} problems of ${m.fmt(human.v)} / just-solve: ${share(h.mean)} (${change(h.mean)})`;
-  const spreadTip = `The ${h.n} human repositories, as shares of just-solve\nlowest: ${h.min.repo} ${m.fmt(h.min.value)} (${share(h.min.share)})\nmiddle half: ${m.fmt(h.q1.value)} to ${m.fmt(h.q3.value)} (${share(h.q1.share)} to ${share(h.q3.share)})\nhighest: ${h.max.repo} ${m.fmt(h.max.value)} (${share(h.max.share)})`;
   const summary = blocks.map(({ prompt, s }) => `${label(prompt)} ${share(s.mean)}, from ${s.best.problem} ${share(s.best.share)} to ${s.worst.problem} ${share(s.worst.share)}`).join("; ");
+  let humanBlock = "", humanSummary = "";
+  if (human) {
+    const humanTip = `${human.tip}\nmean over ${r.n} problems of ${m.fmt(human.v)} / just-solve: ${share(h.mean)} (${change(h.mean)})`;
+    const spreadTip = `The ${h.n} human repositories, as shares of just-solve\nlowest: ${h.min.repo} ${m.fmt(h.min.value)} (${share(h.min.share)})\nmiddle half: ${m.fmt(h.q1.value)} to ${m.fmt(h.q3.value)} (${share(h.q1.share)} to ${share(h.q3.share)})\nhighest: ${h.max.repo} ${m.fmt(h.max.value)} (${share(h.max.share)})`;
+    humanSummary = `; ${human.label} ${share(h.mean)}, from ${h.min.repo} ${share(h.min.share)} to ${h.max.repo} ${share(h.max.share)}`;
+    humanBlock = lab(human.label, yHuman) +
+      `<rect x="${left}" y="${yHuman}" width="${Math.max(2, x(h.mean) - left)}" height="${barH}" rx="3" style="fill:var(--ink-3)" data-tip="${esc(humanTip)}"></rect>` +
+      value(h.mean, yHuman) +
+      `<line x1="${x(h.min.share)}" y1="${yHW}" x2="${x(h.max.share)}" y2="${yHW}" style="stroke:var(--ink-3);stroke-width:2"></line>` +
+      `<line x1="${x(h.q1.share)}" y1="${yHW}" x2="${x(h.q3.share)}" y2="${yHW}" style="stroke:var(--ink-3);stroke-width:8"></line>` +
+      cap(h.min.share, yHW, "var(--ink-3)") + cap(h.max.share, yHW, "var(--ink-3)") +
+      `<rect class="hit" x="${left}" y="${yHW - 8}" width="${W - left - right}" height="16" tabindex="0" data-tip="${esc(spreadTip)}" aria-label="${esc(spreadTip)}"></rect>` +
+      extreme("lowest", h.min.repo, h.min.share, yHW + 19) + extreme("highest", h.max.repo, h.max.share, yHW + 33);
+  }
   return `
   <div class="card">
     <h3>${esc(m.name)}, share of just-solve</h3>
-    <p class="sub">spec v0, mean of the per-problem shares${scopeSub(m)}</p>
-    <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(m.name)} as a share of just-solve: ${esc(summary)}; ${esc(human.label)} ${esc(share(h.mean))}, from ${esc(h.min.repo)} ${esc(share(h.min.share))} to ${esc(h.max.repo)} ${esc(share(h.max.share))}">
+    <p class="sub">${esc(sub)}</p>
+    <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(m.name)} as a share of just-solve: ${esc(summary + humanSummary)}">
       <line class="axis" x1="${left}" y1="${top}" x2="${left}" y2="${H - 4}"></line>
       <line x1="${x(1)}" y1="${top}" x2="${x(1)}" y2="${H - 4}" style="stroke:var(--js);stroke-width:1.5;stroke-dasharray:3 3"></line>
       <text x="${x(1)}" y="${top - 8}" text-anchor="middle" style="font-size:11.5px">just-solve, 100%</text>
       ${promptBlocks}
-      ${lab(human.label, yHuman)}
-      <rect x="${left}" y="${yHuman}" width="${Math.max(2, x(h.mean) - left)}" height="${barH}" rx="3" style="fill:var(--ink-3)" data-tip="${esc(humanTip)}"></rect>
-      ${value(h.mean, yHuman)}
-      <line x1="${x(h.min.share)}" y1="${yHW}" x2="${x(h.max.share)}" y2="${yHW}" style="stroke:var(--ink-3);stroke-width:2"></line>
-      <line x1="${x(h.q1.share)}" y1="${yHW}" x2="${x(h.q3.share)}" y2="${yHW}" style="stroke:var(--ink-3);stroke-width:8"></line>
-      ${cap(h.min.share, yHW, "var(--ink-3)")}${cap(h.max.share, yHW, "var(--ink-3)")}
-      <rect class="hit" x="${left}" y="${yHW - 8}" width="${W - left - right}" height="16" tabindex="0" data-tip="${esc(spreadTip)}" aria-label="${esc(spreadTip)}"></rect>
-      ${extreme("lowest", h.min.repo, h.min.share, yHW + 19)}${extreme("highest", h.max.repo, h.max.share, yHW + 33)}
+      ${humanBlock}
+    </svg>
+  </div>`;
+}
+
+// Implementation lines at the final checkpoint. The count only means something against the
+// same problem's just-solve, so both cards show shares; the data is the implementation-only
+// grid whichever way the switch is set.
+const LOC = { key: "loc", name: "Implementation lines", fmt: v => `${Math.round(v).toLocaleString()} lines` };
+function locShareBars() {
+  const r = G.impl.relative.metrics.loc;
+  if (!r) return "";
+  return shareBars(LOC, r, null, "final checkpoint, implementation files, mean of the per-problem shares; the same under either switch");
+}
+
+function locPanel() {
+  const W = 340, left = 88, right = 14, top = 26, rowH = 30, H = top + rowH * problems.length + 34;
+  const impl = (p, prompt, kind) => G.impl.problems[p].cells[`${prompt}|${kind}`];
+  const pts = problems.map(p => {
+    const base = impl(p, JS, "v0");
+    if (!base || !base.mean.loc) return [];
+    return G.prompts.flatMap(prompt => ["v0", "patched"].map(kind => {
+      const c = impl(p, prompt, kind);
+      if (!c || c.mean.loc == null || (prompt === JS && kind === "v0")) return null;
+      return { p, v: c.mean.loc / base.mean.loc, color: color(prompt), fill: kind === "patched",
+        tip: `${p} · ${label(prompt)}, spec ${c.spec}\n${LOC.fmt(c.mean.loc)} (runs ${c.runs.map(r => LOC.fmt(r.loc)).join(", ")})\n${share(c.mean.loc / base.mean.loc)} of just-solve v0's ${LOC.fmt(base.mean.loc)}` };
+    }).filter(Boolean));
+  });
+  const maxV = Math.max(1.2, ...pts.flat().map(q => q.v));
+  const x = v => left + (v / maxV) * (W - left - right);
+  const rows = problems.map((p, i) => {
+    const y = top + rowH * i + rowH / 2, marks = pts[i];
+    let s = `<line class="gridline" x1="${left}" y1="${y}" x2="${W - right}" y2="${y}"></line>`;
+    s += `<text x="${left - 8}" y="${y + 4}" text-anchor="end">${esc(p)}</text>`;
+    if (marks.length) s += `<line class="link" x1="${x(Math.min(1, ...marks.map(q => q.v)))}" y1="${y}" x2="${x(Math.max(1, ...marks.map(q => q.v)))}" y2="${y}" style="stroke:var(--rule)"></line>`;
+    for (const q of marks.sort((a, b) => b.v - a.v)) {
+      s += `<circle class="hit" cx="${x(q.v)}" cy="${y}" r="11" data-tip="${esc(q.tip)}"></circle>`;
+      s += `<circle class="mark${q.fill ? " fill" : ""}" cx="${x(q.v)}" cy="${y}" r="5" style="--c:${q.color};stroke:${q.color}" tabindex="0" data-tip="${esc(q.tip)}" aria-label="${esc(q.tip)}"></circle>`;
+    }
+    return s;
+  });
+  const ax = top + rowH * problems.length + 6;
+  const ticks = [0, 0.5, 1, ...(maxV > 1.5 ? [1.5] : [])].map(v => `<line class="axis" x1="${x(v)}" y1="${ax}" x2="${x(v)}" y2="${ax + 4}"></line><text class="num" x="${x(v)}" y="${ax + 17}" text-anchor="middle" style="fill:var(--ink-2);font-size:11px">${esc(share(v))}</text>`).join("");
+  return `
+  <div class="card">
+    <h3>${esc(LOC.name)}, share of just-solve</h3>
+    <p class="sub">final checkpoint, implementation files; each mark over its own problem's just-solve v0; the same under either switch</p>
+    <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Implementation lines per problem as a share of just-solve v0">
+      <line x1="${x(1)}" y1="${top - 6}" x2="${x(1)}" y2="${ax}" style="stroke:var(--js);stroke-width:1.5;stroke-dasharray:3 3"></line>
+      <text x="${x(1)}" y="${top - 10}" text-anchor="middle" style="font-size:11px">just-solve v0, 100%</text>
+      ${rows.join("")}
+      <line class="axis" x1="${left}" y1="${ax}" x2="${W - right}" y2="${ax}"></line>
+      ${ticks}
     </svg>
   </div>`;
 }
@@ -506,6 +563,7 @@ function shareReading() {
     <p class="reading">Each problem's value under a prompt is divided by its own just-solve value, and the bar is the mean of those ${e.n} shares. That weighs every problem the same, so it differs from dividing the two means in the row above. ` +
     `The human bar is the mean of ${e.human.n} repositories divided by each problem's just-solve value, averaged the same way. ` +
     `Erosion: ${under(e)}, the human repositories ${esc(share(e.human.mean))}. ast-grep: ${under(a)} against ${esc(share(a.human.mean))}. Cloned lines: ${under(c)} against ${esc(share(c.human.mean))}, the one score where the human repositories sit above just-solve. ` +
+    `Implementation lines have no human bar: a count only means something against the same problem's just-solve, so that card and its per-problem twin show shares alone. ` +
     `Each prompt's whisker names the problems where it helped most and least. The human whisker runs from the lowest repository to the highest, and its thick part holds the middle half of them.</p>
   </div>`;
 }
@@ -521,7 +579,7 @@ function caseBars() {
 
 function render() {
   document.getElementById("headline").innerHTML = [promptBars(M.erosion), promptBars(M.ast), promptBars(M.cloned), caseBars()].join("");
-  document.getElementById("headline-share").innerHTML = [shareBars(M.erosion), shareBars(M.ast), shareBars(M.cloned), shareReading()].join("");
+  document.getElementById("headline-share").innerHTML = [shareBars(M.erosion), shareBars(M.ast), shareBars(M.cloned), locShareBars(), shareReading()].join("");
   document.getElementById("trajectory").innerHTML = trajectoryRows();
   {
     const T = D.trajectory, f = v => v.toFixed(2);
@@ -544,7 +602,7 @@ function render() {
       (implOnly() ? ` The paper's lines score whole repositories, tests included; only our lines are implementation only.` : "");
   }
   document.getElementById("squares").innerHTML = SQUARE_METRICS.map(square).join("");
-  document.getElementById("panels").innerHTML = METRICS.map(panel).join("");
+  document.getElementById("panels").innerHTML = METRICS.map(panel).concat(locPanel()).join("");
 
   const specs = patched.map(p => `${p} ${G.problems[p].patched}`).join(", ");
   document.getElementById("foot").innerHTML =

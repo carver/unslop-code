@@ -48,7 +48,9 @@ exec(compile((HERE / "results").read_text(), str(HERE / "results"), "exec"), res
 sys.path.insert(0, str(HERE.parent / "report"))
 import scb_split  # noqa: E402
 
-METRICS = ("fail", "erosion", "verbosity", "ast", "cloned", "cost", "minutes")
+METRICS = ("fail", "erosion", "verbosity", "ast", "cloned", "cost", "minutes", "loc")
+# Shares of the baseline are computed for these; the human panel covers the first three.
+RELATIVE_METRICS = ("erosion", "ast", "cloned", "loc")
 DEFAULT_PROMPTS = ("just-solve", "min12-ABDJKMN", "min13-ABDJKMNT")
 PHASES = ("Start", "Early", "Mid", "Late", "Final")
 # The human reference: the Major tier (over 10k stars) of the panel in arXiv 2603.24755v1,
@@ -62,9 +64,11 @@ TRAJECTORY_METRICS = ("erosion", "verbosity", "ast", "cloned")
 
 
 def run_figures(run):
-    """A run's row of the grid: fail% and the quality means, all lower-is-better."""
+    """A run's row of the grid: fail% and the quality means, all lower-is-better. "loc" is the
+    final checkpoint's implementation lines, known only for implementation-only runs."""
     return {"fail": 1 - run["score"], "erosion": run["erosion"], "verbosity": run["verbosity"],
-            "ast": run["ast"], "cloned": run["cloned"], "cost": run["cost"], "minutes": run["minutes"]}
+            "ast": run["ast"], "cloned": run["cloned"], "cost": run["cost"], "minutes": run["minutes"],
+            "loc": run.get("loc")}
 
 
 def problem_set(name):
@@ -161,19 +165,20 @@ def relative(g, human=None):
     "prompts": {prompt: {"n": k, "mean": share, "best": {"problem", "share"}, "worst": {...}}},
     "human": human_shares(...)}}}: a share is a value over the first prompt's v0 cell mean on
     the same problem, and "mean" averages the shares, not the values. A problem counts when its
-    baseline is above zero; a prompt's shares cover the problems it ran at v0. human is a
-    human_panel, put on the same scale over every counted problem."""
+    baseline is known and above zero; a prompt's shares cover the problems it ran at v0. human is
+    a human_panel, put on the same scale over every counted problem, for the metrics it has."""
     baseline, others = g["prompts"][0], g["prompts"][1:]
     out = {"spec": "v0", "baseline": baseline, "metrics": {}}
-    for metric in HUMAN_METRICS:
+    for metric in RELATIVE_METRICS:
         bases = {problem: entry["cells"][f"{baseline}|v0"]["mean"][metric]
                  for problem, entry in g["problems"].items() if f"{baseline}|v0" in entry["cells"]}
-        bases = {problem: base for problem, base in bases.items() if base > 0}
+        bases = {problem: base for problem, base in bases.items() if base is not None and base > 0}
         prompts = {}
         for prompt in others:
             share = {problem: entry["cells"][f"{prompt}|v0"]["mean"][metric] / bases[problem]
                      for problem, entry in g["problems"].items()
-                     if problem in bases and f"{prompt}|v0" in entry["cells"]}
+                     if problem in bases and f"{prompt}|v0" in entry["cells"]
+                     and entry["cells"][f"{prompt}|v0"]["mean"][metric] is not None}
             if share:
                 best, worst = min(share, key=share.get), max(share, key=share.get)
                 prompts[prompt] = {"n": len(share), "mean": results.mean(list(share.values())),
@@ -182,7 +187,7 @@ def relative(g, human=None):
         if not prompts:
             continue
         out["metrics"][metric] = {"n": len(bases), "prompts": prompts}
-        if human:
+        if human and metric in HUMAN_METRICS:
             out["metrics"][metric]["human"] = human_shares(human[metric], list(bases.values()))
     return out
 
@@ -194,8 +199,10 @@ def cell_means(runs):
 def impl_run(run, split=scb_split.split_reports):
     """The run's summary with erosion, verbosity, ast% and cloned% rescored on implementation files
     only, checkpoint by checkpoint, and meaned the way bin/results means the whole-snapshot scores."""
-    by_ckpt = [scb_split.scores(split(snapshot)["impl"]) for snapshot in run["snapshots"]]
-    return run | {**{f"{metric}_by_ckpt": [c[metric] for c in by_ckpt] for metric in TRAJECTORY_METRICS},
+    parts = [split(snapshot)["impl"] for snapshot in run["snapshots"]]
+    by_ckpt = [scb_split.scores(part) for part in parts]
+    return run | {"loc": parts[-1]["total_loc"],
+                  **{f"{metric}_by_ckpt": [c[metric] for c in by_ckpt] for metric in TRAJECTORY_METRICS},
                   **{metric: results.mean([c[metric] for c in by_ckpt]) for metric in TRAJECTORY_METRICS}}
 
 

@@ -85,9 +85,11 @@ def fmt(share, spec=".3f"):
 
 def table(rows):
     lines = ["| name | prompt | runs | impl LOC | test LOC | test share | ast impl / test / all "
-             "| erosion impl / test / all | cloned impl / test / all |", "|---|---|---|---|---|---|---|---|---|"]
+             "| erosion impl / test / all | cloned impl / test / all | verbosity impl / test / all |",
+             "|---|---|---|---|---|---|---|---|---|---|"]
     for row in rows:
-        triples = (" / ".join(fmt(row[part][score]) for part in PARTS) for score in ("ast", "erosion", "cloned"))
+        triples = (" / ".join(fmt(row[part][score]) for part in PARTS)
+                   for score in ("ast", "erosion", "cloned", "verbosity"))
         scores = " | ".join(triples)
         lines.append(f"| {row['name']} | {row.get('prompt', '-')} | {row['runs']} | {row['impl']['loc']} | "
                      f"{row['test']['loc']} | {fmt(row['test_share'], '.0%')} | {scores} |")

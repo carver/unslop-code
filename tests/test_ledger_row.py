@@ -26,7 +26,8 @@ def test_failures_track_origin_and_every_checkpoint_failed_at(tmp_path):
 
 
 def counts(loc, ast=0, clone=0, high=0.0, mass=0.0):
-    return {"total_loc": loc, "ast_grep_flagged_loc": ast, "clone_loc": clone, "high_cc_mass": high, "total_mass": mass}
+    return {"total_loc": loc, "ast_grep_flagged_loc": ast, "clone_loc": clone, "high_cc_mass": high, "total_mass": mass,
+            "verbosity_flagged_loc": max(ast, clone)}
 
 
 def test_the_quality_clause_is_the_checkpoint_mean_then_the_final_implementation_alone():

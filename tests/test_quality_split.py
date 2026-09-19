@@ -1,4 +1,5 @@
 """bin/quality-split: scb-check scores of implementation files against test files."""
+import json
 import sys
 import types
 from pathlib import Path
@@ -10,8 +11,9 @@ sys.modules["quality_split"] = qs
 exec(compile(SCRIPT.read_text(), str(SCRIPT), "exec"), qs.__dict__)
 
 
-def report(loc, ast=0, clone=0, high=0.0, mass=0.0):
-    return {"total_loc": loc, "ast_grep_flagged_loc": ast, "clone_loc": clone, "high_cc_mass": high, "total_mass": mass}
+def report(loc, ast=0, clone=0, high=0.0, mass=0.0, verbose=None):
+    return {"total_loc": loc, "ast_grep_flagged_loc": ast, "clone_loc": clone, "high_cc_mass": high, "total_mass": mass,
+            "verbosity_flagged_loc": verbose if verbose is not None else max(ast, clone)}
 
 
 def tree(tmp_path, *names):
@@ -65,13 +67,23 @@ def test_split_reports_are_cached(tmp_path):
     assert first["impl"]["ast_grep_flagged_loc"] == 2
 
 
+def test_a_cached_split_missing_a_count_is_recomputed(tmp_path):
+    source = tree(tmp_path / "src", "app.py", "test_app.py")
+    stale = {part: {k: v for k, v in report(10, ast=2).items() if k != "verbosity_flagged_loc"} for part in qs.PARTS}
+    qs.split_reports(source, tmp_path / "cache", lambda d: report(1))  # fills the cache
+    for f in (tmp_path / "cache").glob("*.json"):
+        f.write_text(json.dumps(stale))
+    fresh = qs.split_reports(source, tmp_path / "cache", lambda d: report(10, ast=2, verbose=4))
+    assert fresh["impl"]["verbosity_flagged_loc"] == 4
+
+
 def test_pooled_sums_the_runs_before_dividing():
     a = {"impl": report(100, ast=30, high=5.0, mass=10.0), "test": report(0), "all": report(100, ast=30)}
     b = {"impl": report(300, ast=50, clone=40, high=1.0, mass=10.0), "test": report(400, ast=20),
          "all": report(700, ast=70)}
     row = qs.pooled([a, b])
     assert row["runs"] == 2
-    assert row["impl"] == {"loc": 400, "ast_lines": 80, "ast": 0.2, "cloned": 0.1, "erosion": 0.3}
+    assert row["impl"] == {"loc": 400, "ast_lines": 80, "ast": 0.2, "cloned": 0.1, "verbosity": 0.2, "erosion": 0.3}
     assert row["test"]["ast"] == 0.05
     assert row["all"]["ast"] == 0.125
     assert row["test_share"] == 0.5
@@ -85,7 +97,7 @@ def test_a_part_with_no_lines_has_no_scores():
 def test_a_tree_with_no_python_prints_dashes():
     empty = dict.fromkeys(("impl", "test", "all"), report(0))
     line = qs.table([{"name": "rusty", **qs.pooled([empty])}]).splitlines()[-1]
-    assert line == "| rusty | - | 1 | 0 | 0 | - | - / - / - | - / - / - | - / - / - |"
+    assert line == "| rusty | - | 1 | 0 | 0 | - | - / - / - | - / - / - | - / - / - | - / - / - |"
 
 
 def fake_run(outputs, prompt, stamp, problem, scored, model="opus-5"):

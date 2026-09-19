@@ -139,15 +139,15 @@ def test_relative_puts_every_human_figure_on_the_share_scale():
 
 def test_impl_run_swaps_in_the_implementation_only_scores_checkpoint_by_checkpoint():
     counts = {"a/snapshot": {"total_loc": 100, "ast_grep_flagged_loc": 30, "clone_loc": 10, "high_cc_mass": 2.0,
-                             "total_mass": 10.0},
+                             "total_mass": 10.0, "verbosity_flagged_loc": 35},
               "b/snapshot": {"total_loc": 100, "ast_grep_flagged_loc": 10, "clone_loc": 0, "high_cc_mass": 6.0,
-                             "total_mass": 10.0}}
+                             "total_mass": 10.0, "verbosity_flagged_loc": 10}}
     whole = run(0.9, 0.05) | {"snapshots": ["a/snapshot", "b/snapshot"]}
     out = gr.impl_run(whole, split=lambda snapshot: {"impl": counts[snapshot]})
     assert out["erosion_by_ckpt"] == [0.2, 0.6] and abs(out["erosion"] - 0.4) < 1e-9
     assert abs(out["ast"] - 0.2) < 1e-9 and abs(out["cloned"] - 0.05) < 1e-9
     assert out["ast_by_ckpt"] == [0.3, 0.1] and out["cloned_by_ckpt"] == [0.1, 0.0]
-    assert out["verbosity"] is None and out["verbosity_by_ckpt"] == [None, None]  # not split, so not passed off
+    assert out["verbosity_by_ckpt"] == [0.35, 0.1] and abs(out["verbosity"] - 0.225) < 1e-9
     assert out["score"] == 0.9 and out["cost"] == whole["cost"]
 
 
@@ -157,7 +157,7 @@ def test_impl_cells_keeps_only_the_cells_the_grid_draws():
     def split(snapshot):
         seen.append(snapshot)
         return {"impl": {"total_loc": 10, "ast_grep_flagged_loc": 1, "clone_loc": 0, "high_cc_mass": 1.0,
-                         "total_mass": 4.0}}
+                         "total_mass": 4.0, "verbosity_flagged_loc": 1}}
 
     cells = {key: [r | {"snapshots": [f"{key[0]}-{key[1]}-{key[2]}"]} for r in runs] for key, runs in CELLS.items()}
     out = gr.impl_cells(cells, split=split)

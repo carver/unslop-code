@@ -191,13 +191,11 @@ def cell_means(runs):
 
 
 def impl_run(run, split=scb_split.split_reports):
-    """The run's summary with erosion, ast% and cloned% rescored on implementation files only,
-    checkpoint by checkpoint, and meaned the way bin/results means the whole-snapshot scores."""
+    """The run's summary with erosion, verbosity, ast% and cloned% rescored on implementation files
+    only, checkpoint by checkpoint, and meaned the way bin/results means the whole-snapshot scores."""
     by_ckpt = [scb_split.scores(split(snapshot)["impl"]) for snapshot in run["snapshots"]]
-    split_metrics = ("erosion", "ast", "cloned")
-    return run | {"verbosity": None, "verbosity_by_ckpt": [None for _ in by_ckpt],
-                  **{f"{metric}_by_ckpt": [c[metric] for c in by_ckpt] for metric in split_metrics},
-                  **{metric: results.mean([c[metric] for c in by_ckpt]) for metric in split_metrics}}
+    return run | {**{f"{metric}_by_ckpt": [c[metric] for c in by_ckpt] for metric in TRAJECTORY_METRICS},
+                  **{metric: results.mean([c[metric] for c in by_ckpt]) for metric in TRAJECTORY_METRICS}}
 
 
 def impl_cells(cells, prompts=DEFAULT_PROMPTS, model="opus-5", split=scb_split.split_reports):

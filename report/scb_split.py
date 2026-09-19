@@ -4,8 +4,11 @@ scb-check scores every Python file it finds, tests included. `split_reports` cop
 implementation files and the test files (scb_hits.is_test_file) of a tree into two scratch
 trees, runs the pinned checker on each and on the two together, and caches the counts the
 scores are made of: {"impl" | "test" | "all": {total_loc, ast_grep_flagged_loc, clone_loc,
-high_cc_mass, total_mass}}. ast% and cloned% are flagged lines over LOC, erosion is
-high-complexity mass over total mass; `scores` does the division.
+verbosity_flagged_loc, high_cc_mass, total_mass}}. ast%, cloned% and verbosity are flagged
+lines over LOC (verbosity counts a line once however many of ast-grep, the clone detector and
+the trivial-wrapper check flag it), erosion is high-complexity mass over total mass; `scores`
+does the division. A cached report missing a count (written before that count was kept) is
+recomputed.
 """
 import hashlib
 import json
@@ -21,7 +24,7 @@ CACHE = ROOT / "outputs" / "quality-hits" / "split"
 PARTS = ("impl", "test", "all")
 SKIPPED_DIRS = {".git", "docs", "doc", ".venv", "venv", "env", "__pycache__", "node_modules", "site-packages", ".tox",
                 "build", "dist"}
-SUMMED = ("total_loc", "ast_grep_flagged_loc", "clone_loc", "high_cc_mass", "total_mass")
+SUMMED = ("total_loc", "ast_grep_flagged_loc", "clone_loc", "verbosity_flagged_loc", "high_cc_mass", "total_mass")
 
 
 def part_of(path):
@@ -55,10 +58,15 @@ def split_reports(tree, cache=CACHE, check=scb_report):
     tree = pathlib.Path(tree)
     key = hashlib.sha256(f"{scb_hits.SCB_CHECK_VERSION}:{tree.resolve()}".encode()).hexdigest()[:16]
     cached = pathlib.Path(cache) / f"{key}.json"
-    if not cached.exists():
+    if not (cached.exists() and complete(json.loads(cached.read_text()))):
         cached.parent.mkdir(parents=True, exist_ok=True)
         cached.write_text(json.dumps({part: part_report(tree, part, check) for part in PARTS}))
     return json.loads(cached.read_text())
+
+
+def complete(reports):
+    """Whether a cached split carries every count the scores need."""
+    return all(k in reports.get(part, {}) for part in PARTS for k in SUMMED)
 
 
 def ratio(top, bottom):
@@ -66,7 +74,8 @@ def ratio(top, bottom):
 
 
 def scores(counts):
-    """ast%, cloned% and erosion from one part's counts, None where the part has no code."""
+    """ast%, cloned%, verbosity and erosion from one part's counts, None where the part has no code."""
     return {"ast": ratio(counts["ast_grep_flagged_loc"], counts["total_loc"]),
             "cloned": ratio(counts["clone_loc"], counts["total_loc"]),
+            "verbosity": ratio(counts["verbosity_flagged_loc"], counts["total_loc"]),
             "erosion": ratio(counts["high_cc_mass"], counts["total_mass"])}

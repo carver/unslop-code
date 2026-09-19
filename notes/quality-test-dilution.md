@@ -162,3 +162,90 @@ the contrast. What the bad-first candidates showed, implementation files only:
 - Cloned tests: one-assert tests that a parametrize would collapse (23 copies in xjq, 15 in
   sith), and in rejector a 19-line helper pasted into five test files beside a shared
   conftest.
+
+## The anti-slop chunk moves the implementation (min13, 2026-09-18)
+
+min13-ABDJKMNT is min12-ABDJKMN plus chunk T: the code-quality bullets of upstream's
+`anti_slop.jinja`, word for word, as the whole Implement section (`configs/prompts/min13-chunks/`).
+Nothing in it mentions tests. One run each on mvvault and rejector, opus-5, spec v0, to ask
+whether ast% falls on the implementation files alone. It does, on both. Final checkpoint,
+`bin/quality-split`, implementation files only:
+
+| problem | prompt | impl LOC | test share | ast impl | erosion impl | cloned impl | score |
+|---|---|---|---|---|---|---|---|
+| mvvault | just-solve, 2 runs pooled | 3967 | 35% | 0.338 | 0.456 | 0.032 | 221, 214 |
+| mvvault | min12-ABDJKMN, first | 1590 | 79% | 0.235 | 0.218 | 0.034 | 220 |
+| mvvault | min12-ABDJKMN, repeat | 1711 | 75% | 0.199 | 0.125 | 0.029 | 223 |
+| mvvault | min13-ABDJKMNT | 1457 | 73% | 0.132 | 0.036 | 0.014 | 215 |
+| rejector | just-solve, 2 runs pooled | 5556 | 46% | 0.334 | 0.709 | 0.062 | 73, 76 |
+| rejector | min12-ABDJKMN, first | 1862 | 73% | 0.339 | 0.608 | 0.030 | 75 |
+| rejector | min12-ABDJKMN, repeat | 2129 | 73% | 0.344 | 0.539 | 0.051 | 76 |
+| rejector | min13-ABDJKMNT | 1845 | 68% | 0.188 | 0.172 | 0.019 | 74 |
+
+Reading:
+
+- This is not dilution. The test share is a little lower than min12's on both problems, and
+  the number is the implementation's own. On rejector min12 had left implementation ast where
+  just-solve had it (0.34 against 0.334); min13 takes it to 0.188. The two min12 runs there are
+  0.005 apart, so one min13 run sits far outside what we have seen a seed do.
+- On mvvault min12 already beat just-solve; min13 is below both min12 runs by more than they
+  differ from each other (0.132 against 0.199 and 0.235).
+- Implementation erosion fell with it, 0.17 to 0.04 on mvvault and 0.57 to 0.17 on rejector,
+  though nothing in chunk T names complexity except "heavy nesting" and "if/else ladders".
+- The implementation did not shrink much (mvvault 1457 lines against 1590 and 1711, rejector
+  1845 against 1862 and 2129), so ast% fell because fewer lines are flagged, not because the
+  denominator moved.
+- Score: level. mvvault's 215 is 222 without the seven tests any `requests` solution loses
+  (`notes/upstream-prs.md`); rejector's 74 is one and two below the min12 pair, on a retry-count
+  reading its registry scored at Risk 45 and a cost rounding.
+
+### Which rules stopped firing
+
+Flagged lines per rule, implementation files only, per 1000 raw lines of implementation
+(so not on the ast% scale, which divides by scb-check's LOC). Hits and spans from
+`report/scb_hits.py`; the union row counts a line once however many rules flag it.
+
+| rule | mvvault min13 | min12 a | min12 b | rejector min13 | min12 a | min12 b |
+|---|---|---|---|---|---|---|
+| all rules, union | 93 | 188 | 163 | 136 | 302 | 303 |
+| function-with-many-type-guards | 58 | 44 | 63 | 74 | 168 | 168 |
+| defensive-function-isinstance-heavy | 0 | 0 | 26 | 15 | 111 | 87 |
+| defensive-isinstance-raise-heavy | 0 | 13 | 16 | 0 | 55 | 81 |
+| defensive-validator-returnmix | 0 | 32 | 6 | 4 | 46 | 37 |
+| defensive-except-exception-heavy | 0 | 21 | 25 | 0 | 21 | 0 |
+| defensive-try-soup-function | 0 | 26 | 0 | 0 | 0 | 23 |
+| section-banner-comment | 0 | 9 | 10 | 0 | 13 | 0 |
+| isinstance-guard-raise | 12 | 11 | 17 | 14 | 19 | 23 |
+| defensive-validator-function | 52 | 0 | 0 | 71 | 0 | 0 |
+| defensive-fstring-raise-heavy | 14 | 0 | 0 | 48 | 0 | 0 |
+
+- The drop is the whole-function rules. Each flags every line of a function it judges
+  defensive (broad excepts, try blocks stacked in one function, isinstance-then-raise runs,
+  validators that mix return types), so a handful of hits is a lot of lines. They go to zero
+  or near it on both problems. That is the first gotcha in chunk T, "extra defensive checks or
+  try/catch blocks that are abnormal".
+- The raw code agrees. mvvault: 25 `try:` against 38 and 32, one broad `except` against 11
+  and 11, 20 `isinstance(` against 39 and 65. rejector: 12 `try:` against 25 and 36, 48
+  `isinstance(` against 71 and 102.
+- Banner comments are gone, and comment lines with them (rejector 5 against 80 and 88; mvvault
+  50 against 90 and 62). mvvault's docstrings rose from about 80 to about 130, so
+  "documented appropriately" and "extra comments a human wouldn't add" both landed.
+- The single inline type check (`isinstance-guard-raise`) did not move. What is left of the
+  type checking moved into dedicated validator functions, which trip two rules min12 never
+  hit: `defensive-validator-function` and `defensive-fstring-raise-heavy`. On mvvault those
+  validators are in `legacy.py` and `source.py`, the malformed v1/v2 entry and source-response
+  checks the spec's error rows ask for. So part of what remains may be a floor the spec sets,
+  and part is ast-grep naming the same checks differently once they are gathered in one place.
+- Layout changed completely: a package of 27 files (mvvault) and 25 (rejector), none long,
+  where every min12 and just-solve run wrote one file of 2300 to 3500 lines. "Group functions
+  into files" did that, and it probably explains the banner comments too: a single long file
+  gets section banners, a package has nowhere to put them.
+- Already visible at mvvault checkpoint 1 (0.227 against 0.323 and 0.384), where banners were
+  nearly the whole difference; the defensive rules separate later, as the code grows.
+
+Open: one run per problem, two problems, both on the dev side. The twice bar needs a second
+run of each. Whether the validator floor is spec-driven would show on a problem with few error
+rows. Which of chunk T's bullets does the work is untested; T is one chunk, and splitting it
+(file grouping, the defensive gotcha, the comment gotcha) would let the subset search answer.
+Runs: `…min13-ABDJKMNT/20260918T1850` (mvvault) and `…/20260918T2129` (rejector); ledger rows in
+`notes/mvvault-runs.md` and `notes/rejector-runs.md`.

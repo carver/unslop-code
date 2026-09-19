@@ -1,0 +1,74 @@
+#!/usr/bin/env python3
+"""Which ast-grep rules flag each run's code: flagged lines per 1000 LOC, one column per run.
+
+    bin/ast-rules [--json] [--part impl|test|all] [--floor N] [--prompts A,B] [--model opus-5]
+                  [--set dev|test|all] [--problem NAME ...]
+    bin/ast-rules [--json] [--part ...] [--floor N] --tree DIR [--tree DIR ...]
+
+bin/quality-split says how much of a snapshot's code ast-grep flags, implementation and tests
+apart; this says which rules do it. It picks the same snapshots (the final checkpoint of each
+v0 run) but keeps the runs apart, so two seeds of a prompt show how far a rule moves by chance.
+Lines are counted the way scb-check counts LOC (no blanks, comments or docstrings) and divided
+by its LOC, so the "all rules" row should sit within a few percent of the "scb-check ast" row,
+which is ast% times 1000. A rule that flags whole functions and a rule that flags one line read
+on the same scale. Rules under --floor (default 5) in every column are summed into one row.
+Rows are sorted by how far the columns disagree.
+"""
+import argparse
+import json
+import pathlib
+import sys
+import types
+
+HERE = pathlib.Path(__file__).resolve().parent
+ROOT = HERE.parent
+quality_split = types.ModuleType("quality_split")
+quality_split.__file__ = str(HERE / "quality-split")
+sys.modules["quality_split"] = quality_split
+exec(compile((HERE / "quality-split").read_text(), str(HERE / "quality-split"), "exec"), quality_split.__dict__)
+import scb_hits  # noqa: E402  (quality-split put report/ on the path)
+import scb_rules  # noqa: E402
+import scb_split  # noqa: E402
+
+HITS_CACHE = ROOT / "outputs" / "quality-hits"
+
+
+def column(name, snapshot, part):
+    snapshot = pathlib.Path(snapshot).resolve()
+    hits = scb_hits.load(snapshot, HITS_CACHE)
+    return {"name": name, **scb_rules.breakdown(snapshot, part, hits, scb_split.split_reports(snapshot))}
+
+
+def run_names(found):
+    """Column names for (problem, prompt, run, snapshot) rows: the prompt and the run's time stamp,
+    with the problem in front only when there is more than one."""
+    several = len({problem for problem, *_ in found}) > 1
+    return [f"{problem + ' ' if several else ''}{prompt} {run.name}" for problem, prompt, run, _ in found]
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
+    parser.add_argument("--json", action="store_true")
+    parser.add_argument("--part", default="impl", choices=scb_split.PARTS)
+    parser.add_argument("--floor", type=float, default=5)
+    parser.add_argument("--prompts", default="just-solve,min12-ABDJKMN")
+    parser.add_argument("--model", default="opus-5")
+    parser.add_argument("--set", default="dev", choices=["dev", "test", "all"])
+    parser.add_argument("--problem", action="append")
+    parser.add_argument("--tree", action="append", type=pathlib.Path, default=[])
+    args = parser.parse_args()
+    if args.tree:
+        named = [(str(tree), tree) for tree in args.tree]
+    else:
+        problems = set(args.problem) if args.problem else (
+            None if args.set == "all" else set(json.loads((ROOT / "split.json").read_text())[args.set]))
+        prompts = args.prompts.split(",")
+        found = sorted(quality_split.final_snapshots(prompts, args.model, problems),
+                       key=lambda row: (row[0], prompts.index(row[1]), row[2].name))
+        named = list(zip(run_names(found), (snapshot for *_, snapshot in found), strict=True))
+    columns = [column(name, snapshot, args.part) for name, snapshot in named]
+    print(json.dumps(columns, indent=1) if args.json else scb_rules.table(columns, args.floor))
+
+
+if __name__ == "__main__":
+    main()

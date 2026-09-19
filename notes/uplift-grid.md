@@ -93,6 +93,22 @@ erosion / ast% are the cell means of the quality scores (lower is better); $ is 
   one problem with a clear min12 climb is rejector (0.09 to 0.22). The page draws the paper's
   nine lines from the figure's vector paths (`report/paper_figure5.py`) with our two on top,
   on one y axis; the paper's panels each have their own.
+- **Cloned lines in the headline (added 2026-09-19).** At v0 over six problems: just-solve 0.04,
+  min12 0.17, the rescored human repositories 0.10 (v1 Table 2 says 0.07). On the share scale min12
+  is 843% of just-solve and the humans 376%, the one score where both sit above the bare prompt;
+  the per-problem whisker runs from mvvault 216% to xjq 3283%. The implementation-only switch tells
+  the story: min12's implementation clones are below just-solve's (0.034 against 0.046 pooled), the
+  excess is all test files (notes/quality-test-dilution.md).
+- **Verbosity, ast-grep and cloned lines along the run (added 2026-09-19).** Verbosity is the
+  paper's Figure 5 bottom row (its share of lines flagged by ast-grep, the clone detector or the
+  trivial-wrapper check), read out of the vector figure like erosion. Our v0 runs by phase, Start to
+  Final: verbosity just-solve 0.26 to 0.30, min12 0.26 to 0.26, against paper Baseline climbs of
+  0.00 to 0.09 and Anti-Slop of -0.02 to 0.07 across its three models; so on verbosity min12 sits
+  on the paper's Baseline lines, not below them, because its test files are cloned. ast-grep (no
+  paper figure): just-solve 0.23 to 0.26, min12 0.10 to 0.08. Cloned: just-solve 0.02 to 0.04,
+  min12 0.15 to 0.17. Implementation-only rescoring has no verbosity, since the split keeps only
+  the ast-grep, clone and complexity counts; the verbosity row shows the paper's lines alone under
+  the switch.
 - **datagate's residual five** are the whitespace-preservation tests, left as a benchmark
   failure by decision (see the datagate diary, 2026-09-14): the spec never mentions
   whitespace, and two of the four v2 runs registered stripping as their choice anyway.

@@ -23,8 +23,11 @@
 }
 * { box-sizing: border-box; }
 body { background: var(--bg); color: var(--ink); font-family: "Familjen Grotesk", "Helvetica Neue", Arial, sans-serif; font-size: 15px; line-height: 1.45; padding-block: 32px 48px; padding-inline: 20px; }
-.wrap { max-width: 1080px; margin: 0 auto; display: grid; gap: 28px; }
+.wrap { max-width: 1080px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr); gap: 28px; }
+.wrap > * { min-width: 0; } /* a wide table scrolls inside its section instead of widening the page */
 h1 { font-size: 30px; font-weight: 600; letter-spacing: -0.01em; margin: 0 0 6px; text-wrap: balance; }
+h3.rowlab { font-size: 12.5px; font-weight: 500; color: var(--ink-2); margin: 18px 0 8px; }
+#trajectory > h3.rowlab:first-child { margin-top: 0; }
 h2 { font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2); margin: 0 0 12px; }
 .lede { color: var(--ink-2); max-width: 62ch; margin: 0; }
 a { color: var(--js); text-underline-offset: 2px; }
@@ -35,6 +38,9 @@ a { color: var(--js); text-underline-offset: 2px; }
 .sw.fill { background: var(--c); }
 .sw.soft { opacity: 0.45; }
 .squares { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; }
+/* Trajectory rows keep three card widths even when a row holds two cards, so every panel draws at one size. */
+.squares.trio { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 860px) { .squares.trio { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); } }
 .card { background: var(--panel); border: 1px solid var(--rule); border-radius: 6px; padding: 14px 16px 12px; }
 .card h3 { margin: 0 0 2px; font-size: 15px; font-weight: 600; }
 .card .sub { margin: 0 0 8px; font-size: 12.5px; color: var(--ink-3); }
@@ -102,7 +108,7 @@ svg .hit { fill: transparent; }
   </section>
 
   <section>
-    <h2>Erosion along the run, over Figure 5 of the paper's v2</h2>
+    <h2>Quality along the run</h2>
     <div class="legend" style="margin-bottom:12px">
       <span><i class="sw fill" style="--c:var(--js)"></i>just-solve, this repo</span>
       <span><i class="sw fill" style="--c:var(--min)"></i>spectest, this repo</span>
@@ -110,7 +116,7 @@ svg .hit { fill: transparent; }
       <span><i class="sw fill soft" style="--c:var(--min)"></i>paper Anti-Slop</span>
       <span><i class="sw fill soft" style="--c:var(--ink-3)"></i>paper Plan-First</span>
     </div>
-    <div class="squares" id="trajectory"></div>
+    <div id="trajectory"></div>
     <p class="note" id="trajectory-note"></p>
   </section>
 
@@ -821,6 +827,27 @@ const G = {
      0.5482069322213929,
      0.5822511444327227,
      0.6104672852298884
+    ],
+    "verbosity": [
+     0.2560674278308614,
+     0.2675537292568854,
+     0.3155460783701285,
+     0.31507537635071453,
+     0.304205391167385
+    ],
+    "ast": [
+     0.23087285781236355,
+     0.23046167982897553,
+     0.2681076377659396,
+     0.2757376730148414,
+     0.2596216338369036
+    ],
+    "cloned": [
+     0.017480435727343854,
+     0.033275135326011326,
+     0.047395128923081786,
+     0.04405952425432652,
+     0.04237959168690072
     ]
    },
    "min12-ABDJKMN": {
@@ -838,6 +865,27 @@ const G = {
      0.16267903262796576,
      0.1247513252316353,
      0.1577197647642794
+    ],
+    "verbosity": [
+     0.26244471795891117,
+     0.27515875170366105,
+     0.2798725156742432,
+     0.2644312246501942,
+     0.2612869260806339
+    ],
+    "ast": [
+     0.09990639652009238,
+     0.09356189248394771,
+     0.09370692470752576,
+     0.08689133584128976,
+     0.0844491942339669
+    ],
+    "cloned": [
+     0.15114837396181802,
+     0.1740625863352135,
+     0.17620625665927347,
+     0.169931058510628,
+     0.16889533280686356
     ]
    }
   }
@@ -917,6 +965,43 @@ const G = {
      "q3": {
       "value": 0.06876725205960396,
       "share": 0.2885267292882176
+     }
+    }
+   },
+   "cloned": {
+    "n": 6,
+    "prompt": {
+     "mean": 8.429793189244723,
+     "best": {
+      "problem": "mvvault",
+      "share": 2.1609745164331517
+     },
+     "worst": {
+      "problem": "xjq",
+      "share": 32.82605641779095
+     }
+    },
+    "human": {
+     "n": 27,
+     "value": 0.09965523281135623,
+     "mean": 3.756920195030485,
+     "min": {
+      "repo": "cli",
+      "value": 0.037114479874542604,
+      "share": 1.3991853215843588
+     },
+     "max": {
+      "repo": "fastapi",
+      "value": 0.2498837132035351,
+      "share": 9.420410168733122
+     },
+     "q1": {
+      "value": 0.06886270600490865,
+      "share": 2.5960672969779752
+     },
+     "q3": {
+      "value": 0.1204047767765931,
+      "share": 4.539160911965402
      }
     }
    }
@@ -1602,6 +1687,27 @@ const G = {
       0.4903700049986073,
       0.5002918038343296,
       0.551971803742993
+     ],
+     "verbosity": [
+      null,
+      null,
+      null,
+      null,
+      null
+     ],
+     "ast": [
+      0.2932627226129063,
+      0.2978890092512608,
+      0.33583006320915637,
+      0.31516125615432183,
+      0.3044296046093659
+     ],
+     "cloned": [
+      0.020675315854499766,
+      0.029328766722112702,
+      0.039248915465362175,
+      0.04162511256664404,
+      0.039681293089915616
      ]
     },
     "min12-ABDJKMN": {
@@ -1619,6 +1725,27 @@ const G = {
       0.3475376719556529,
       0.2916992809978804,
       0.3585384706239209
+     ],
+     "verbosity": [
+      null,
+      null,
+      null,
+      null,
+      null
+     ],
+     "ast": [
+      0.2646365388871427,
+      0.2683751194867238,
+      0.27287030365685305,
+      0.259118067194349,
+      0.24877540545167973
+     ],
+     "cloned": [
+      0.01752484632169855,
+      0.027920405784626106,
+      0.03100798971624271,
+      0.0280110371783617,
+      0.029829946074414474
      ]
     }
    }
@@ -1700,6 +1827,43 @@ const G = {
        "share": 0.46654872629786504
       }
      }
+    },
+    "cloned": {
+     "n": 6,
+     "prompt": {
+      "mean": 0.8450148386943136,
+      "best": {
+       "problem": "datagate",
+       "share": 0.47143362712692877
+      },
+      "worst": {
+       "problem": "xjq",
+       "share": 1.0704087598278036
+      }
+     },
+     "human": {
+      "n": 27,
+      "value": 0.0786872807105109,
+      "mean": 3.0606388478731166,
+      "min": {
+       "repo": "cli",
+       "value": 0.011718217740836626,
+       "share": 0.4557945340287978
+      },
+      "max": {
+       "repo": "fastapi",
+       "value": 0.25769711560720404,
+       "share": 10.023447193631421
+      },
+      "q1": {
+       "value": 0.03819425212216123,
+       "share": 1.485612550783341
+      },
+      "q3": {
+       "value": 0.08954664335233689,
+       "share": 3.483027153385814
+      }
+     }
     }
    }
   }
@@ -1711,10 +1875,20 @@ const METRICS = [
   { key: "fail", name: "Hidden tests failed", unit: "%", fmt: v => (100 * v).toFixed(1) + "%", max: 0.17, ticks: [0, 0.05, 0.10, 0.15], tick: v => (100 * v).toFixed(0) + "%" },
   { key: "erosion", name: "Erosion", unit: "", fmt: v => v.toFixed(2), max: 0.8, ticks: [0, 0.2, 0.4, 0.6, 0.8], tick: v => v.toFixed(1) },
   { key: "ast", name: "ast-grep smells", unit: "", fmt: v => v.toFixed(2), max: 0.5, ticks: [0, 0.1, 0.2, 0.3, 0.4, 0.5], tick: v => v.toFixed(1) },
+  { key: "cloned", name: "Cloned lines", unit: "", fmt: v => v.toFixed(2), max: 0.5, ticks: [0, 0.1, 0.2, 0.3, 0.4, 0.5], tick: v => v.toFixed(1) },
   { key: "cost", name: "Cost per run", unit: "$", fmt: v => "$" + v.toFixed(0), max: 55, ticks: [0, 10, 20, 30, 40, 50], tick: v => "$" + v },
   { key: "minutes", name: "Wall clock per run", unit: "min", fmt: v => v.toFixed(0) + " min", max: 170, ticks: [0, 40, 80, 120, 160], tick: v => v + "m" },
 ];
 const SQUARE_METRICS = METRICS;
+const M = Object.fromEntries(METRICS.map(m => [m.key, m]));
+// The rows of the along-the-run section: the paper's Figure 5 has erosion and verbosity, so
+// those two carry its lines; ast-grep and cloned lines are ours alone.
+const TRAJECTORY = [
+  { key: "erosion", name: "Erosion", fmt: M.erosion.fmt, max: 0.8, ticks: [0, 0.2, 0.4, 0.6, 0.8], paper: true },
+  { key: "verbosity", name: "Verbosity", fmt: v => v.toFixed(2), max: 0.6, ticks: [0, 0.2, 0.4, 0.6], paper: true },
+  { key: "ast", name: "ast-grep smells", fmt: M.ast.fmt, max: 0.5, ticks: [0, 0.1, 0.2, 0.3, 0.4, 0.5], paper: false },
+  { key: "cloned", name: "Cloned lines", fmt: M.cloned.fmt, max: 0.5, ticks: [0, 0.1, 0.2, 0.3, 0.4, 0.5], paper: false },
+];
 // The human values come from bin/grid (HUMAN there carries the citation), so the absolute bars
 // and the share bars read one number.
 // D is the grid the charts read: G scores whole snapshots, G.impl the same runs with the test
@@ -1730,19 +1904,27 @@ function setScope(impl) {
   HUMAN = {
     erosion: { v: R.erosion.human.value, label: "human, 10k+ stars", tip: tip(R.erosion.human, "erosion", "\nv1 Table 2: 0.31, whole repository") },
     ast: { v: R.ast.human.value, label: "human, 10k+ stars", tip: tip(R.ast.human, "ast-grep", "\nv1 Table 2 says 0.10, from another rule set") },
+    cloned: { v: R.cloned.human.value, label: "human, 10k+ stars", tip: tip(R.cloned.human, "cloned", "\nv1 Table 2 says 0.07") },
   };
 }
-// arXiv 2603.24755v2 Figure 5, top row: mean structural erosion per progress phase for three
-// prompts on three models. Read off the figure's vector paths by report/paper_figure5.py, the
-// axis gridlines anchoring the scale, so each value is good to about 0.003.
+// arXiv 2603.24755v2 Figure 5: mean structural erosion (top row) and verbosity (bottom row)
+// per progress phase for three prompts on three models. Read off the figure's vector paths by
+// report/paper_figure5.py, the axis gridlines anchoring the scale, so each value is good to
+// about 0.003.
 const PAPER = {
-  models: {
-    "GPT 5.3 Codex": { "Baseline": [0.569, 0.63, 0.648, 0.665, 0.699], "Anti-Slop": [0.353, 0.413, 0.443, 0.425, 0.48], "Plan-First": [0.43, 0.508, 0.582, 0.58, 0.627] },
-    "GPT 5.4": { "Baseline": [0.449, 0.489, 0.513, 0.52, 0.554], "Anti-Slop": [0.244, 0.249, 0.285, 0.274, 0.316], "Plan-First": [0.358, 0.374, 0.397, 0.409, 0.44] },
-    "GPT 5.5": { "Baseline": [0.398, 0.47, 0.522, 0.524, 0.554], "Anti-Slop": [0.15, 0.198, 0.21, 0.227, 0.259], "Plan-First": [0.199, 0.276, 0.311, 0.288, 0.345] },
+  erosion: {
+    "GPT 5.3 Codex": {"Baseline": [0.569, 0.63, 0.648, 0.665, 0.699], "Anti-Slop": [0.353, 0.413, 0.443, 0.425, 0.48], "Plan-First": [0.43, 0.508, 0.582, 0.58, 0.627]},
+    "GPT 5.4": {"Baseline": [0.449, 0.489, 0.513, 0.52, 0.554], "Anti-Slop": [0.244, 0.249, 0.285, 0.274, 0.315], "Plan-First": [0.358, 0.374, 0.397, 0.409, 0.44]},
+    "GPT 5.5": {"Baseline": [0.398, 0.47, 0.522, 0.524, 0.554], "Anti-Slop": [0.15, 0.198, 0.21, 0.227, 0.259], "Plan-First": [0.199, 0.276, 0.311, 0.288, 0.345]},
+  },
+  verbosity: {
+    "GPT 5.3 Codex": {"Baseline": [0.404, 0.453, 0.476, 0.451, 0.49], "Anti-Slop": [0.264, 0.312, 0.331, 0.312, 0.332], "Plan-First": [0.334, 0.387, 0.429, 0.428, 0.419]},
+    "GPT 5.4": {"Baseline": [0.327, 0.332, 0.341, 0.318, 0.329], "Anti-Slop": [0.253, 0.238, 0.225, 0.24, 0.238], "Plan-First": [0.295, 0.306, 0.314, 0.292, 0.303]},
+    "GPT 5.5": {"Baseline": [0.264, 0.31, 0.327, 0.34, 0.335], "Anti-Slop": [0.183, 0.199, 0.212, 0.211, 0.219], "Plan-First": [0.232, 0.259, 0.26, 0.26, 0.256]},
   },
   color: { "Baseline": "var(--js)", "Anti-Slop": "var(--min)", "Plan-First": "var(--ink-3)" },
 };
+const PAPER_MODELS = Object.keys(PAPER.erosion);
 const problems = Object.keys(G.problems);
 const patched = problems.filter(p => G.problems[p].patched);
 const cell = (p, prompt, kind) => D.problems[p].cells[`${prompt}|${kind}`];
@@ -1846,20 +2028,25 @@ function spreadLabels(items, gap, lo, hi) {
   return items;
 }
 
-function trajectoryPanel(model) {
-  const T = D.trajectory, phases = T.phases, m = METRICS[1];
-  const W = 340, left = 40, right = 78, top = 12, bottom = 30, H = 210, ymax = 0.8;
+function trajectoryPanel(tm, model) {
+  // One card: the phases on x, `tm.key` on y. With a model, the paper's three prompts for that
+  // model sit faint under our two lines; without one, our two lines stand alone.
+  const T = D.trajectory, phases = T.phases;
+  const W = 340, left = 40, right = 78, top = 12, bottom = 30, H = 210, ymax = tm.max;
   const x = i => left + (i / (phases.length - 1)) * (W - left - right);
   const y = v => top + (1 - v / ymax) * (H - top - bottom);
   const series = [];
-  for (const [name, vals] of Object.entries(PAPER.models[model]))
-    series.push({ label: name, vals, color: PAPER.color[name], soft: true, tip: i => `paper v2 Figure 5, ${model}, ${name} prompt\n${phases[i]}: erosion ${m.fmt(vals[i])}` });
+  if (model)
+    for (const [name, vals] of Object.entries(PAPER[tm.key][model]))
+      series.push({ label: name, vals, color: PAPER.color[name], soft: true, tip: i => `paper v2 Figure 5, ${model}, ${name} prompt\n${phases[i]}: ${tm.name} ${tm.fmt(vals[i])}` });
   for (const [prompt, color, tag] of [[JS, "var(--js)", "js"], [MIN, "var(--min)", "min"]]) {
-    const t = T.prompts[prompt];
-    series.push({ label: P[tag], vals: t.erosion, color, soft: false, tip: i => `${P[tag]} at ${T.spec}, ${t.runs} runs, six problems\n${phases[i]}: erosion ${m.fmt(t.erosion[i])} over ${t.ckpts[i]} checkpoints` });
+    const t = T.prompts[prompt], vals = t[tm.key];
+    if (vals.every(v => v == null)) continue;
+    series.push({ label: P[tag], vals, color, soft: false, tip: i => `${P[tag]} at ${T.spec}, ${t.runs} runs, six problems\n${phases[i]}: ${tm.name} ${tm.fmt(vals[i])} over ${t.ckpts[i]} checkpoints` });
   }
-  const labels = spreadLabels(series.map(s => ({ s, y: y(s.vals[phases.length - 1]) })), 13, top + 4, H - bottom);
-  const grid = [0, 0.2, 0.4, 0.6, 0.8].map(t => `<line class="gridline" x1="${left}" y1="${y(t)}" x2="${W - right}" y2="${y(t)}"></line><text class="num" x="${left - 6}" y="${y(t) + 4}" text-anchor="end" style="fill:var(--ink-2);font-size:11px">${t.toFixed(1)}</text>`).join("");
+  const last = s => s.vals[phases.length - 1];
+  const labels = spreadLabels(series.map(s => ({ s, y: y(last(s)) })), 13, top + 4, H - bottom);
+  const grid = tm.ticks.map(v => `<line class="gridline" x1="${left}" y1="${y(v)}" x2="${W - right}" y2="${y(v)}"></line><text class="num" x="${left - 6}" y="${y(v) + 4}" text-anchor="end" style="fill:var(--ink-2);font-size:11px">${v.toFixed(1)}</text>`).join("");
   const xlab = phases.map((ph, i) => `<text x="${x(i)}" y="${H - bottom + 16}" text-anchor="middle">${esc(ph)}</text>`).join("");
   const lines = series.map(s => {
     const pts = s.vals.map((v, i) => v == null ? null : [x(i), y(v)]).filter(Boolean);
@@ -1870,17 +2057,30 @@ function trajectoryPanel(model) {
     return path + marks;
   }).join("");
   const ends = labels.map(({ s, ly }) => `<text x="${W - right + 8}" y="${ly + 4}" style="font-size:11.5px;${s.soft ? "fill:var(--ink-3)" : "fill:var(--ink);font-weight:500"}">${esc(s.label)}</text>`).join("");
-  const summary = series.map(s => `${s.label} ${s.vals.map(v => v == null ? "–" : m.fmt(v)).join(" ")}`).join("; ");
+  const summary = series.map(s => `${s.label} ${s.vals.map(v => v == null ? "–" : tm.fmt(v)).join(" ")}`).join("; ");
+  const ours = implOnly() && SCOPED.has(tm.key) ? "this repo's two bold and implementation only" : "this repo's two bold";
+  const sub = model ? `the paper's three prompts faint, ${ours}` : `${ours}; the paper has no such figure`;
+  const missing = model && series.every(s => s.soft) ? " (no implementation-only verbosity: the split scores erosion, ast-grep and clones)" : "";
   return `
   <div class="card">
-    <h3>${esc(model)}</h3>
-    <p class="sub">the paper's three prompts faint, this repo's two bold${implOnly() ? " and implementation only" : ""}</p>
-    <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Erosion by phase Start to Final. ${esc(summary)}">
+    <h3>${esc(model || tm.name)}</h3>
+    <p class="sub">${esc(sub + missing)}</p>
+    <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(tm.name)} by phase Start to Final. ${esc(summary)}">
       ${grid}${xlab}
       <line class="axis" x1="${left}" y1="${top}" x2="${left}" y2="${H - bottom}"></line>
       ${lines}${ends}
     </svg>
   </div>`;
+}
+
+function trajectoryRows() {
+  // A row per paper metric, its three models across; the metrics the paper does not plot
+  // share one last row.
+  const row = (label, cards) => `<h3 class="rowlab">${esc(label)}</h3><div class="squares trio">${cards.join("")}</div>`;
+  const withPaper = TRAJECTORY.filter(tm => tm.paper), ours = TRAJECTORY.filter(tm => !tm.paper);
+  return withPaper.map(tm => row(`${tm.name} · over the paper's Figure 5`, PAPER_MODELS.map(model => trajectoryPanel(tm, model))))
+    .concat(row(`${ours.map(tm => tm.name).join(" and ")} · this repo only`, ours.map(tm => trajectoryPanel(tm, null))))
+    .join("");
 }
 
 function bars(title, sub, m, items) {
@@ -1972,13 +2172,13 @@ function shareBars(m) {
 }
 
 function shareReading() {
-  const e = R.erosion, a = R.ast;
+  const e = R.erosion, a = R.ast, c = R.cloned;
   return `
   <div class="card">
     <h3>Reading the shares</h3>
     <p class="reading">Each problem's spectest value is divided by its own just-solve value, and the bar is the mean of those ${e.n} shares. That weighs every problem the same, so it differs from dividing the two means in the row above. ` +
     `The human bar is the mean of ${e.human.n} repositories divided by each problem's just-solve value, averaged the same way. ` +
-    `Erosion under spectest is ${esc(share(e.prompt.mean))} of just-solve's and the human repositories are at ${esc(share(e.human.mean))}; ast-grep is ${esc(share(a.prompt.mean))} against ${esc(share(a.human.mean))}. ` +
+    `Erosion under spectest is ${esc(share(e.prompt.mean))} of just-solve's and the human repositories are at ${esc(share(e.human.mean))}; ast-grep is ${esc(share(a.prompt.mean))} against ${esc(share(a.human.mean))}; cloned lines are ${esc(share(c.prompt.mean))} against ${esc(share(c.human.mean))}, the one score where the human repositories sit above just-solve. ` +
     `Spectest's whisker names the problems where it helped most and least. The human whisker runs from the lowest repository to the highest, and its thick part holds the middle half of them.</p>
   </div>`;
 }
@@ -1996,18 +2196,30 @@ function caseBars() {
 }
 
 function render() {
-  document.getElementById("headline").innerHTML = [promptBars(METRICS[1]), promptBars(METRICS[2]), caseBars()].join("");
-  document.getElementById("headline-share").innerHTML = [shareBars(METRICS[1]), shareBars(METRICS[2]), shareReading()].join("");
-  document.getElementById("trajectory").innerHTML = Object.keys(PAPER.models).map(trajectoryPanel).join("");
+  document.getElementById("headline").innerHTML = [promptBars(M.erosion), promptBars(M.ast), promptBars(M.cloned), caseBars()].join("");
+  document.getElementById("headline-share").innerHTML = [shareBars(M.erosion), shareBars(M.ast), shareBars(M.cloned), shareReading()].join("");
+  document.getElementById("trajectory").innerHTML = trajectoryRows();
   {
-  const T = D.trajectory, f = v => v.toFixed(2);
-  const js = T.prompts[JS].erosion, mn = T.prompts[MIN].erosion;
+    const T = D.trajectory, f = v => v.toFixed(2);
+    const climb = (row, prompt) => {
+      const d = PAPER_MODELS.map(model => { const v = PAPER[row][model][prompt]; return v[4] - v[0]; });
+      return `${f(Math.min(...d))} to ${f(Math.max(...d))}`;
+    };
+    const ours = key => {
+      const js = T.prompts[JS][key], mn = T.prompts[MIN][key];
+      if (js[0] == null || mn[0] == null) return null;
+      return `just-solve ${esc(f(js[0]))} to ${esc(f(js[4]))} (${esc(signed(M.erosion, js[4] - js[0]))}), spectest ${esc(f(mn[0]))} to ${esc(f(mn[4]))} (${esc(signed(M.erosion, mn[4] - mn[0]))})`;
+    };
+    const verbosity = ours("verbosity");
     document.getElementById("trajectory-note").innerHTML =
-      `<b>Reading.</b> Figure 5 of the paper's second revision (arXiv 2603.24755v2, top row) is redrawn from its vector paths, one y axis for all three models instead of a range per panel. ` +
-      `Its Baseline prompt is just-solve; Anti-Slop is its quality prompt. Every paper line climbs from Start to Final, and the paper reads that as prompting not slowing the decay. ` +
-      `Our two lines are the same twelve v0 runs per prompt from the headline, each checkpoint placed in the paper's phase (first is Start, last is Final, the rest split into thirds) and pooled: ` +
-      `just-solve ${esc(f(js[0]))} to ${esc(f(js[4]))}, spectest ${esc(f(mn[0]))} to ${esc(f(mn[4]))}. From Start to Final just-solve moves ${esc(signed(METRICS[1], js[4] - js[0]))} and spectest ${esc(signed(METRICS[1], mn[4] - mn[0]))}, where the paper's Baseline lines climb 0.11 to 0.16 and its Anti-Slop lines 0.07 to 0.13; two runs per problem and four to seven checkpoints, so read the wiggles as noise.` +
-      (implOnly() ? ` The paper's lines score whole repositories, tests included; only our two are implementation only.` : "");
+      `<b>Reading.</b> Figure 5 of the paper's second revision (arXiv 2603.24755v2) is redrawn from its vector paths, one y axis for all three models instead of a range per panel: erosion on its top row, verbosity on the bottom (the share of lines flagged by ast-grep, the clone detector or the trivial-wrapper check, so it covers the next two rows). ` +
+      `Its Baseline prompt is just-solve; Anti-Slop is its quality prompt. Every paper erosion line climbs from Start to Final, and the paper reads that as prompting not slowing the decay. ` +
+      `Our two lines are the same twelve v0 runs per prompt from the headline, each checkpoint placed in the paper's phase (first is Start, last is Final, the rest split into thirds) and pooled. ` +
+      `Erosion: ${ours("erosion")}, where the paper's Baseline lines climb ${esc(climb("erosion", "Baseline"))} and its Anti-Slop lines ${esc(climb("erosion", "Anti-Slop"))}. ` +
+      (verbosity ? `Verbosity: ${verbosity}, against paper Baseline climbs of ${esc(climb("verbosity", "Baseline"))} and Anti-Slop ${esc(climb("verbosity", "Anti-Slop"))}. ` : `Verbosity has no implementation-only rescoring, so only the paper's lines show while the switch is on. `) +
+      `ast-grep and cloned lines have no paper figure: ${ours("ast")} for ast-grep, ${ours("cloned")} for cloned lines, the last being the test-file dilution, since spectest's tests are the cloned part. ` +
+      `Two runs per problem and four to seven checkpoints, so read the wiggles as noise.` +
+      (implOnly() ? ` The paper's lines score whole repositories, tests included; only our lines are implementation only.` : "");
   }
   document.getElementById("squares").innerHTML = SQUARE_METRICS.map(square).join("");
   document.getElementById("panels").innerHTML = METRICS.map(panel).join("");
@@ -2016,7 +2228,7 @@ function render() {
   document.getElementById("foot").innerHTML =
     `<b>Reading.</b> The spec moves correctness; the prompt moves quality; the order does not change where you end up. ` +
     `Patched specs: ${esc(specs)}. datagate's residual ${esc((100 * cell("datagate", MIN, "patched").mean.fail).toFixed(1))}% is the whitespace-preservation class, left as a benchmark failure. ` +
-    `Erosion and ast-grep are the harness's quality scores, share of files flagged; cost is Claude Code's reported spend per run; wall clock is checkpoint end minus start, summed, and includes waits on the 5-hour window. ` +
+    `Erosion, ast-grep and cloned lines are the harness's quality scores, shares of lines flagged, and verbosity is the share of lines flagged by any of ast-grep, the clone detector or the trivial-wrapper check; cost is Claude Code's reported spend per run; wall clock is checkpoint end minus start, summed, and includes waits on the 5-hour window. ` +
     `The human bars are the Major tier of the paper's first revision (arXiv 2603.24755v1, Table 2), repositories with over 10k stars, rescored at HEAD with the scb-check version the runs use: ${R.erosion.human.n} of its 28, because one is no longer Python. ` +
     `v1's table gives erosion 0.31, which the rerun matches, and ast-grep 0.10, which it does not (${esc(G.relative.metrics.ast.human.value.toFixed(3))} here, so another rule set); ` +
     `a figure from another rule set cannot sit beside ours, and the rerun also gives the spread and the implementation-only values. ` +

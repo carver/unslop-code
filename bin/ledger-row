@@ -9,9 +9,10 @@ implementation files alone, as bin/quality-split scores them) and the failure-su
 each missed hidden test under the checkpoint it belongs to, with the checkpoints it failed at,
 then the same misses grouped by how they failed and the other runs that share each group
 (bin/miss-signatures). The cause of each miss is the reader's to add; the evaluation output
-(`<ckpt>/evaluation/stdout.txt`), `bin/miss-report`, and `bin/askrun` are where to look. Ends by running `bin/results --write`, so the cross-problem table in
-notes/results.md always carries the run; commit it with the ledger. After a ladder run, also
-extend the ladder section with `bin/compare-runs <runs...> --md`.
+(`<ckpt>/evaluation/stdout.txt`), `bin/miss-report`, and `bin/askrun` are where to look. Ends
+by running `bin/results --write`, so the cross-problem table in notes/results.md always carries
+the run; commit it with the ledger. After a ladder run, also extend the ladder section with
+`bin/compare-runs <runs...> --md`.
 """
 import collections
 import json

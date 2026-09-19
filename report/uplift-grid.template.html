@@ -183,7 +183,7 @@ const TRAJECTORY = [
 // D is the grid the charts read: G scores whole snapshots, G.impl the same runs with the test
 // files left out. Only the four quality scores differ between the two.
 let D, R, HUMAN;
-const SCOPED = new Set(["erosion", "verbosity", "ast", "cloned"]);
+const SCOPED = new Set(["erosion", "verbosity", "ast", "cloned", "loc"]);
 const implOnly = () => D !== G;
 const scopeSub = m => SCOPED.has(m.key) && implOnly() ? " \u00b7 implementation files only" : "";
 function setScope(impl) {
@@ -502,24 +502,22 @@ function shareBars(m, r = R[m.key], human = HUMAN[m.key], sub = `spec v0, mean o
   </div>`;
 }
 
-// Implementation lines at the final checkpoint. The count only means something against the
-// same problem's just-solve, so both cards show shares; the data is the implementation-only
-// grid whichever way the switch is set.
-const LOC = { key: "loc", name: "Implementation lines", fmt: v => `${Math.round(v).toLocaleString()} lines` };
+// Lines of code at the final checkpoint, whole snapshot or implementation files by the switch.
+// A count only means something against the same problem's just-solve, so both cards show shares.
+const LOC = { key: "loc", name: "Lines of code", fmt: v => `${Math.round(v).toLocaleString()} lines` };
 function locShareBars() {
-  const r = G.impl.relative.metrics.loc;
+  const r = R.loc;
   if (!r) return "";
-  return shareBars(LOC, r, null, "final checkpoint, implementation files, mean of the per-problem shares; the same under either switch");
+  return shareBars(LOC, r, null, `final checkpoint, mean of the per-problem shares${scopeSub(LOC)}`);
 }
 
 function locPanel() {
   const W = 340, left = 88, right = 14, top = 26, rowH = 30, H = top + rowH * problems.length + 34;
-  const impl = (p, prompt, kind) => G.impl.problems[p].cells[`${prompt}|${kind}`];
   const pts = problems.map(p => {
-    const base = impl(p, JS, "v0");
+    const base = cell(p, JS, "v0");
     if (!base || !base.mean.loc) return [];
     return G.prompts.flatMap(prompt => ["v0", "patched"].map(kind => {
-      const c = impl(p, prompt, kind);
+      const c = cell(p, prompt, kind);
       if (!c || c.mean.loc == null || (prompt === JS && kind === "v0")) return null;
       return { p, v: c.mean.loc / base.mean.loc, color: color(prompt), fill: kind === "patched",
         tip: `${p} · ${label(prompt)}, spec ${c.spec}\n${LOC.fmt(c.mean.loc)} (runs ${c.runs.map(r => LOC.fmt(r.loc)).join(", ")})\n${share(c.mean.loc / base.mean.loc)} of just-solve v0's ${LOC.fmt(base.mean.loc)}` };
@@ -539,11 +537,13 @@ function locPanel() {
     return s;
   });
   const ax = top + rowH * problems.length + 6;
-  const ticks = [0, 0.5, 1, ...(maxV > 1.5 ? [1.5] : [])].map(v => `<line class="axis" x1="${x(v)}" y1="${ax}" x2="${x(v)}" y2="${ax + 4}"></line><text class="num" x="${x(v)}" y="${ax + 17}" text-anchor="middle" style="fill:var(--ink-2);font-size:11px">${esc(share(v))}</text>`).join("");
+  const step = maxV > 2.5 ? 1 : 0.5, tickValues = [];
+  for (let v = 0; v <= maxV + 1e-9; v += step) tickValues.push(v);
+  const ticks = tickValues.map(v => `<line class="axis" x1="${x(v)}" y1="${ax}" x2="${x(v)}" y2="${ax + 4}"></line><text class="num" x="${x(v)}" y="${ax + 17}" text-anchor="middle" style="fill:var(--ink-2);font-size:11px">${esc(share(v))}</text>`).join("");
   return `
   <div class="card">
     <h3>${esc(LOC.name)}, share of just-solve</h3>
-    <p class="sub">final checkpoint, implementation files; each mark over its own problem's just-solve v0; the same under either switch</p>
+    <p class="sub">final checkpoint; each mark over its own problem's just-solve v0${scopeSub(LOC)}</p>
     <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Implementation lines per problem as a share of just-solve v0">
       <line x1="${x(1)}" y1="${top - 6}" x2="${x(1)}" y2="${ax}" style="stroke:var(--js);stroke-width:1.5;stroke-dasharray:3 3"></line>
       <text x="${x(1)}" y="${top - 10}" text-anchor="middle" style="font-size:11px">just-solve v0, 100%</text>
@@ -563,7 +563,7 @@ function shareReading() {
     <p class="reading">Each problem's value under a prompt is divided by its own just-solve value, and the bar is the mean of those ${e.n} shares. That weighs every problem the same, so it differs from dividing the two means in the row above. ` +
     `The human bar is the mean of ${e.human.n} repositories divided by each problem's just-solve value, averaged the same way. ` +
     `Erosion: ${under(e)}, the human repositories ${esc(share(e.human.mean))}. ast-grep: ${under(a)} against ${esc(share(a.human.mean))}. Cloned lines: ${under(c)} against ${esc(share(c.human.mean))}, the one score where the human repositories sit above just-solve. ` +
-    `Implementation lines have no human bar: a count only means something against the same problem's just-solve, so that card and its per-problem twin show shares alone. ` +
+    `Lines of code have no human bar: a count only means something against the same problem's just-solve, so that card and its per-problem twin show shares alone. ` +
     `Each prompt's whisker names the problems where it helped most and least. The human whisker runs from the lowest repository to the highest, and its thick part holds the middle half of them.</p>
   </div>`;
 }

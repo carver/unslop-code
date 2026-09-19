@@ -65,7 +65,8 @@ TRAJECTORY_METRICS = ("erosion", "verbosity", "ast", "cloned")
 
 def run_figures(run):
     """A run's row of the grid: fail% and the quality means, all lower-is-better. "loc" is the
-    final checkpoint's implementation lines, known only for implementation-only runs."""
+    final checkpoint's line count as scb-check counts it, whole snapshot or implementation
+    files by the grid (with_loc, impl_run)."""
     return {"fail": 1 - run["score"], "erosion": run["erosion"], "verbosity": run["verbosity"],
             "ast": run["ast"], "cloned": run["cloned"], "cost": run["cost"], "minutes": run["minutes"],
             "loc": run.get("loc")}
@@ -206,15 +207,23 @@ def impl_run(run, split=scb_split.split_reports):
                   **{metric: results.mean([c[metric] for c in by_ckpt]) for metric in TRAJECTORY_METRICS}}
 
 
+def drawn_cells(cells, prompts, model):
+    """The cells the grid draws: every prompt's v0 and patched-spec runs for the model."""
+    return {key: runs for key, runs in cells.items()
+            if key[1] in prompts and key[3] == model and key[2] in ("v0", patched_spec(cells, key[0], prompts, model))}
+
+
+def with_loc(cells, prompts=DEFAULT_PROMPTS, model="opus-5", split=scb_split.split_reports):
+    """cells with each drawn run's whole-snapshot line count at its final checkpoint, from the
+    split cache, so the count is the same measure the implementation-only grid uses."""
+    return {key: [run | {"loc": split(run["snapshots"][-1])["all"]["total_loc"]} for run in runs]
+            for key, runs in drawn_cells(cells, prompts, model).items()}
+
+
 def impl_cells(cells, prompts=DEFAULT_PROMPTS, model="opus-5", split=scb_split.split_reports):
     """cells with every run the grid draws (v0 and the patched spec) rescored by impl_run.
     Rescoring runs scb-check twice per checkpoint, so nothing else is touched."""
-    out = {}
-    for (problem, prompt, spec, m), runs in cells.items():
-        drawn = spec in ("v0", patched_spec(cells, problem, prompts, model))
-        if prompt in prompts and m == model and drawn:
-            out[(problem, prompt, spec, m)] = [impl_run(run, split) for run in runs]
-    return out
+    return {key: [impl_run(run, split) for run in runs] for key, runs in drawn_cells(cells, prompts, model).items()}
 
 
 def grid(cells, prompts=DEFAULT_PROMPTS, model="opus-5", human=None):
@@ -300,7 +309,7 @@ def main():
     cells, _ = results.collect(results.run_dirs())
     cells = only(cells, problem_set(problems))
     repos = json.loads(HUMAN_SPLIT.read_text())
-    g = grid(cells, prompts, model, human_panel(repos, "all"))
+    g = grid(with_loc(cells, prompts, model) if as_json else cells, prompts, model, human_panel(repos, "all"))
     if as_json:
         g["impl"] = grid(impl_cells(cells, prompts, model), prompts, model, human_panel(repos, "impl"))
     print(json.dumps(g, indent=1) if as_json else table(g))

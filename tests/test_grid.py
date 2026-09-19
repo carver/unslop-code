@@ -188,7 +188,15 @@ def test_relative_averages_each_problems_share_of_the_first_prompt_and_names_the
     assert "loc" not in r["metrics"]  # whole-snapshot runs carry no implementation line count
 
 
-def test_relative_shares_implementation_lines_without_a_human_figure():
+def test_with_loc_gives_each_drawn_run_its_final_whole_snapshot_line_count():
+    cells = {key: [r | {"snapshots": [f"{key[0]}-{key[1]}-{key[2]}-1", f"{key[0]}-{key[1]}-{key[2]}-2"]} for r in runs]
+             for key, runs in CELLS.items()}
+    out = gr.with_loc(cells, split=lambda snapshot: {"all": {"total_loc": len(snapshot)}})
+    assert ("xjq", "just-solve", "v2", "opus-5") not in out  # not drawn
+    assert out[("sith", "just-solve", "v0", "opus-5")][0]["loc"] == len("sith-just-solve-v0-2")
+
+
+def test_relative_shares_lines_of_code_without_a_human_figure():
     cells = {("xjq", "just-solve", "v0", "opus-5"): [run(0.9, 0.4) | {"loc": 200}],
              ("xjq", "min12-ABDJKMN", "v0", "opus-5"): [run(0.9, 0.1) | {"loc": 150}]}
     loc = gr.grid(cells, human=gr.human_panel(REPOS, "all"))["relative"]["metrics"]["loc"]

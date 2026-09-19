@@ -1,0 +1,16 @@
+# anti_slop on rejector, against the cached spec (v0). Written by bin/run-config.
+# Same agent, model and thinking as every spectest run. Paths are relative to the repo
+# root, which bin/queue and bin/scb-extend run from.
+#
+#   bin/scb-extend --new configs/runs/anti_slop-rejector-opus5.yaml rejector 5
+agent: configs/agents/claude_code-2.1.251.yaml
+environment: docker-python3.12-uv
+prompt: anti_slop
+model:
+  provider: claude_code_oauth
+  name: opus-5
+thinking: high
+problems:
+  - rejector
+save_dir: outputs
+save_template: spectest/${model.name}_${agent.version}_${thinking}_anti_slop/${now:%Y%m%dT%H%M}

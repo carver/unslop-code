@@ -5,21 +5,21 @@
   color-scheme: light;
   --bg: #f4f5f7; --panel: #fbfbfc; --ink: #181b1f; --ink-2: #5b6170; --ink-3: #8a909c;
   --rule: #d7dae0; --grid: #e6e8ec;
-  --js: #2a78d6; --min: #eb6834; --js-soft: #cfdff5; --min-soft: #f9d9cb;
+  --js: #2a78d6; --min: #eb6834; --anti: #7b52d9; --js-soft: #cfdff5; --min-soft: #f9d9cb; --anti-soft: #e4dbf8;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     color-scheme: dark;
     --bg: #15171a; --panel: #1c1f23; --ink: #eceef1; --ink-2: #a6acb6; --ink-3: #737a86;
     --rule: #2e333a; --grid: #262a30;
-    --js: #3987e5; --min: #d95926; --js-soft: #23395a; --min-soft: #55301f;
+    --js: #3987e5; --min: #d95926; --anti: #8f6ce6; --js-soft: #23395a; --min-soft: #55301f; --anti-soft: #35295c;
   }
 }
 :root[data-theme="dark"] {
   color-scheme: dark;
   --bg: #15171a; --panel: #1c1f23; --ink: #eceef1; --ink-2: #a6acb6; --ink-3: #737a86;
   --rule: #2e333a; --grid: #262a30;
-  --js: #3987e5; --min: #d95926; --js-soft: #23395a; --min-soft: #55301f;
+  --js: #3987e5; --min: #d95926; --anti: #8f6ce6; --js-soft: #23395a; --min-soft: #55301f; --anti-soft: #35295c;
 }
 * { box-sizing: border-box; }
 body { background: var(--bg); color: var(--ink); font-family: "Familjen Grotesk", "Helvetica Neue", Arial, sans-serif; font-size: 15px; line-height: 1.45; padding-block: 32px 48px; padding-inline: 20px; }
@@ -84,8 +84,8 @@ svg .hit { fill: transparent; }
 <div class="wrap">
   <header>
     <h1>Unslop Results on Slop Code Bench</h1>
-    <p class="lede">Use two strategies on six problems: tweak the spec if ambiguous, and use a new prompt, "spectest". Every figure is lower-is-better. Two runs per problem, using Claude Opus 5.</p>
-    <p class="lede" style="margin-top:8px">The <b style="color:var(--ink);font-weight:600">spectest</b> prompt replaces the benchmark's default, just-solve. Spectest guides the agent to write tests from the spec before implementing. The agent splits the spec into phrases, writes a test for each one, and logs every ambiguity. <a href="min12-prompt.html">This spectest</a> is my 12th version. In the code, it's called <span class="mono" style="font-size:13.5px">min12-ABDJKMN</span>. Version 12 was split into chunks A to S, and then trimmed. The remaining bits are: A and B are shell tool hygiene, D writes tests from the spec, J and K log ambiguities, M and N speed up execution by running focused tests.</p>
+    <p class="lede">Use two strategies on six problems: tweak the spec if ambiguous, and use a new prompt, "spectest". A third arm, spectest+antislop, adds the paper's own anti-slop rules to spectest. Every figure is lower-is-better. Two runs per problem, using Claude Opus 5.</p>
+    <p class="lede" style="margin-top:8px">The <b style="color:var(--ink);font-weight:600">spectest</b> prompt replaces the benchmark's default, just-solve. Spectest guides the agent to write tests from the spec before implementing. The agent splits the spec into phrases, writes a test for each one, and logs every ambiguity. <a href="min12-prompt.html">This spectest</a> is my 12th version. In the code, it's called <span class="mono" style="font-size:13.5px">min12-ABDJKMN</span>. Version 12 was split into chunks A to S, and then trimmed. The remaining bits are: A and B are shell tool hygiene, D writes tests from the spec, J and K log ambiguities, M and N speed up execution by running focused tests. <b style="color:var(--ink);font-weight:600">spectest+antislop</b> (min13-ABDJKMNT) is the same prompt with one chunk appended, T: the benchmark's upstream Anti-Slop rule list, unchanged, so the paper's Anti-Slop line is its counterpart in the figures below.</p>
   </header>
 
   <div class="legend">
@@ -93,6 +93,8 @@ svg .hit { fill: transparent; }
     <span><i class="sw fill" style="--c:var(--js)"></i>just-solve, patched spec</span>
     <span><i class="sw" style="--c:var(--min)"></i>spectest, spec v0</span>
     <span><i class="sw fill" style="--c:var(--min)"></i>spectest, patched spec</span>
+    <span><i class="sw" style="--c:var(--anti)"></i>spectest+antislop, spec v0</span>
+    <span><i class="sw fill" style="--c:var(--anti)"></i>spectest+antislop, patched spec</span>
     <span><i class="sw fill" style="--c:var(--ink-3)"></i>human repos over 10k stars, rescored</span>
   </div>
 
@@ -112,6 +114,7 @@ svg .hit { fill: transparent; }
     <div class="legend" style="margin-bottom:12px">
       <span><i class="sw fill" style="--c:var(--js)"></i>just-solve, this repo</span>
       <span><i class="sw fill" style="--c:var(--min)"></i>spectest, this repo</span>
+      <span><i class="sw fill" style="--c:var(--anti)"></i>spectest+antislop, this repo</span>
       <span><i class="sw fill soft" style="--c:var(--js)"></i>paper Baseline</span>
       <span><i class="sw fill soft" style="--c:var(--min)"></i>paper Anti-Slop</span>
       <span><i class="sw fill soft" style="--c:var(--ink-3)"></i>paper Plan-First</span>
@@ -148,8 +151,15 @@ svg .hit { fill: transparent; }
 
 <script>
 const G = __DATA__;
-const [JS, MIN] = G.prompts;
-const P = { js: "just-solve", min: "spectest" };
+const [JS, ...OTHERS] = G.prompts;
+const MIN = OTHERS[0];
+const PROMPTS = {
+  "just-solve": { label: "just-solve", color: "var(--js)" },
+  "min12-ABDJKMN": { label: "spectest", color: "var(--min)" },
+  "min13-ABDJKMNT": { label: "spectest+antislop", color: "var(--anti)" },
+};
+const label = prompt => (PROMPTS[prompt] || { label: prompt }).label;
+const color = prompt => (PROMPTS[prompt] || { color: "var(--ink-3)" }).color;
 const METRICS = [
   { key: "fail", name: "Hidden tests failed", unit: "%", fmt: v => (100 * v).toFixed(1) + "%", max: 0.17, ticks: [0, 0.05, 0.10, 0.15], tick: v => (100 * v).toFixed(0) + "%" },
   { key: "erosion", name: "Erosion", unit: "", fmt: v => v.toFixed(2), max: 0.8, ticks: [0, 0.2, 0.4, 0.6, 0.8], tick: v => v.toFixed(1) },
@@ -208,7 +218,10 @@ const problems = Object.keys(G.problems);
 const patched = problems.filter(p => G.problems[p].patched);
 const cell = (p, prompt, kind) => D.problems[p].cells[`${prompt}|${kind}`];
 const mean = xs => xs.reduce((a, b) => a + b, 0) / xs.length;
-const avg = (set, prompt, kind, key) => mean(set.map(p => cell(p, prompt, kind).mean[key]));
+// A prompt may not have run every problem yet; a mean covers the problems it did, null if none.
+const have = (set, prompt, kind) => set.filter(p => cell(p, prompt, kind));
+const avg = (set, prompt, kind, key) => { const s = have(set, prompt, kind); return s.length ? mean(s.map(p => cell(p, prompt, kind).mean[key])) : null; };
+const coverage = (set, prompt, kind) => { const n = have(set, prompt, kind).length; return n === set.length ? "" : ` (${n} of ${set.length} problems)`; };
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
 function signed(m, d) {
@@ -221,38 +234,46 @@ function signed(m, d) {
 }
 
 function square(m) {
+  // Prompts down the rows, v0 and the patched spec across. The delta on a row is the spec's
+  // effect for that prompt; the delta between two rows is the prompt step at that spec.
   const set = patched;
-  const v = {
-    a: avg(set, JS, "v0", m.key), b: avg(set, MIN, "v0", m.key),
-    c: avg(set, JS, "patched", m.key), d: avg(set, MIN, "patched", m.key),
-  };
-  const six = { a: avg(problems, JS, "v0", m.key), b: avg(problems, MIN, "v0", m.key) };
-  const W = 340, H = 178, x1 = 100, x2 = 242, y1 = 40, y2 = 122, nw = 78, nh = 28;
-  const node = (x, y, val, color, fill) => `
-    <rect class="node" x="${x - nw / 2}" y="${y - nh / 2}" width="${nw}" height="${nh}" rx="14" style="stroke:${color};${fill ? `fill:${color}` : ""}"></rect>
-    <text class="num" x="${x}" y="${y + 4.5}" text-anchor="middle" style="${fill ? "fill:var(--panel)" : ""};font-size:13px">${esc(m.fmt(val))}</text>`;
+  const rows = G.prompts.filter(pr => have(set, pr, "v0").length);
+  if (!rows.length) return emptyCard(m.name, NO_PATCHED);
+  const W = 352, top = 42, rowH = 66, x1 = 150, x2 = 262, nw = 60, nh = 28;
+  const y = i => top + rowH * i;
+  const H = y(rows.length - 1) + nh / 2 + 34;
+  const val = (pr, kind) => avg(set, pr, kind, m.key);
+  const cols = [["v0", x1, false], ["patched", x2, true]];
+  const node = (x, yy, v, c, fill) => v == null
+    ? `<rect class="node" x="${x - nw / 2}" y="${yy - nh / 2}" width="${nw}" height="${nh}" rx="14" style="stroke:var(--rule);stroke-dasharray:3 3"></rect><text x="${x}" y="${yy + 4.5}" text-anchor="middle" style="fill:var(--ink-3);font-size:12px">not yet</text>`
+    : `<rect class="node" x="${x - nw / 2}" y="${yy - nh / 2}" width="${nw}" height="${nh}" rx="14" style="stroke:${c};${fill ? `fill:${c}` : ""}"></rect>
+    <text class="num" x="${x}" y="${yy + 4.5}" text-anchor="middle" style="${fill ? "fill:var(--panel)" : ""};font-size:13px">${esc(m.fmt(v))}</text>`;
+  const delta = (a, b) => a == null || b == null ? "" : esc(signed(m, b - a));
+  let body = cols.map(([kind, x]) => `<text class="lab" x="${x}" y="16" text-anchor="middle">${kind}</text>`).join("");
+  rows.forEach((pr, i) => {
+    const yy = y(i), v0 = val(pr, "v0"), pa = val(pr, "patched");
+    const lines = label(pr).split("+").map((s, k) => k ? "+" + s : s);
+    body += lines.map((s, k) => `<text x="8" y="${yy + 4 + (k - (lines.length - 1) / 2) * 13}" text-anchor="start" style="font-size:11.5px;fill:var(--ink)">${esc(s)}</text>`).join("");
+    body += `<line class="edge" x1="${x1 + nw / 2}" y1="${yy}" x2="${x2 - nw / 2}" y2="${yy}"></line>`;
+    body += `<text class="delta" x="${(x1 + x2) / 2}" y="${yy - 6}" text-anchor="middle">${delta(v0, pa)}</text>`;
+    if (i + 1 < rows.length) {
+      const next = rows[i + 1], ym = yy + rowH / 2;
+      for (const [kind, x, right] of cols) {
+        body += `<line class="edge" x1="${x}" y1="${yy + nh / 2}" x2="${x}" y2="${yy + rowH - nh / 2}"></line>`;
+        body += `<text class="delta" x="${right ? x + nw / 2 + 4 : x - nw / 2 - 4}" y="${ym + 4}" text-anchor="${right ? "start" : "end"}">${delta(val(pr, kind), val(next, kind))}</text>`;
+      }
+    }
+    body += node(x1, yy, v0, color(pr), false) + node(x2, yy, pa, color(pr), true);
+  });
+  const six = rows.map(pr => m.fmt(avg(problems, pr, "v0", m.key))).join(" → ");
+  const summary = rows.map(pr => `${label(pr)}: v0 ${m.fmt(val(pr, "v0"))}, patched ${val(pr, "patched") == null ? "not yet" : m.fmt(val(pr, "patched"))}`).join("; ");
   return `
   <div class="card">
     <h3>${esc(m.name)}</h3>
-    <p class="sub">columns: prompt · rows: spec${scopeSub(m)}</p>
-    <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(m.name)}, mean of ${set.join(", ")}: just-solve v0 ${esc(m.fmt(v.a))}, spectest v0 ${esc(m.fmt(v.b))}, just-solve patched ${esc(m.fmt(v.c))}, spectest patched ${esc(m.fmt(v.d))}">
-      <text class="lab" x="${x1}" y="16" text-anchor="middle">just-solve</text>
-      <text class="lab" x="${x2}" y="16" text-anchor="middle">spectest</text>
-      <text x="8" y="${y1 + 4}" text-anchor="start">v0</text>
-      <text x="8" y="${y2 + 4}" text-anchor="start">patched</text>
-      <line class="edge" x1="${x1 + nw / 2}" y1="${y1}" x2="${x2 - nw / 2}" y2="${y1}"></line>
-      <line class="edge" x1="${x1 + nw / 2}" y1="${y2}" x2="${x2 - nw / 2}" y2="${y2}"></line>
-      <line class="edge" x1="${x1}" y1="${y1 + nh / 2}" x2="${x1}" y2="${y2 - nh / 2}"></line>
-      <line class="edge" x1="${x2}" y1="${y1 + nh / 2}" x2="${x2}" y2="${y2 - nh / 2}"></line>
-      <text class="delta" x="${(x1 + x2) / 2}" y="${y1 - 6}" text-anchor="middle">${esc(signed(m, v.b - v.a))}</text>
-      <text class="delta" x="${(x1 + x2) / 2}" y="${y2 + 15}" text-anchor="middle">${esc(signed(m, v.d - v.c))}</text>
-      <text class="delta" x="${x1 - nw / 2 - 4}" y="${(y1 + y2) / 2 + 4}" text-anchor="end">${esc(signed(m, v.c - v.a))}</text>
-      <text class="delta" x="${x2 + nw / 2 + 4}" y="${(y1 + y2) / 2 + 4}" text-anchor="start">${esc(signed(m, v.d - v.b))}</text>
-      ${node(x1, y1, v.a, "var(--js)", false)}
-      ${node(x2, y1, v.b, "var(--min)", false)}
-      ${node(x1, y2, v.c, "var(--js)", true)}
-      ${node(x2, y2, v.d, "var(--min)", true)}
-      <text x="${W / 2}" y="${H - 8}" text-anchor="middle" style="fill:var(--ink-3)">all six at v0: ${esc(m.fmt(six.a))} → ${esc(m.fmt(six.b))} (${esc(signed(m, six.b - six.a))})</text>
+    <p class="sub">rows: prompt · columns: spec${scopeSub(m)}</p>
+    <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(m.name)}, mean of ${set.join(", ")}: ${esc(summary)}">
+      ${body}
+      <text x="${W / 2}" y="${H - 8}" text-anchor="middle" style="fill:var(--ink-3);font-size:11.5px">all six problems at v0, top row to bottom: ${esc(six)}</text>
     </svg>
   </div>`;
 }
@@ -264,10 +285,10 @@ function panel(m) {
   const rows = problems.map((p, i) => {
     const y = top + rowH * i + rowH / 2;
     const pts = [];
-    for (const [prompt, color, tag] of [[JS, "var(--js)", "js"], [MIN, "var(--min)", "min"]]) {
+    for (const prompt of G.prompts) {
       for (const kind of ["v0", "patched"]) {
         const c = cell(p, prompt, kind);
-        if (c) pts.push({ v: c.mean[m.key], color, fill: kind === "patched", prompt: P[tag], kind, runs: c.runs.map(r => r[m.key]), spec: c.spec });
+        if (c) pts.push({ v: c.mean[m.key], color: color(prompt), fill: kind === "patched", prompt: label(prompt), kind, runs: c.runs.map(r => r[m.key]), spec: c.spec });
       }
     }
     const v0 = pts.filter(q => !q.fill).map(q => q.v);
@@ -311,17 +332,17 @@ function trajectoryPanel(tm, model) {
   // One card: the phases on x, `tm.key` on y. With a model, the paper's three prompts for that
   // model sit faint under our two lines; without one, our two lines stand alone.
   const T = D.trajectory, phases = T.phases;
-  const W = 340, left = 40, right = 78, top = 12, bottom = 30, H = 210, ymax = tm.max;
+  const W = 340, left = 40, right = 104, top = 12, bottom = 30, H = 210, ymax = tm.max;
   const x = i => left + (i / (phases.length - 1)) * (W - left - right);
   const y = v => top + (1 - v / ymax) * (H - top - bottom);
   const series = [];
   if (model)
     for (const [name, vals] of Object.entries(PAPER[tm.key][model]))
       series.push({ label: name, vals, color: PAPER.color[name], soft: true, tip: i => `paper v2 Figure 5, ${model}, ${name} prompt\n${phases[i]}: ${tm.name} ${tm.fmt(vals[i])}` });
-  for (const [prompt, color, tag] of [[JS, "var(--js)", "js"], [MIN, "var(--min)", "min"]]) {
-    const t = T.prompts[prompt], vals = t[tm.key];
-    if (vals.every(v => v == null)) continue;
-    series.push({ label: P[tag], vals, color, soft: false, tip: i => `${P[tag]} at ${T.spec}, ${t.runs} runs, six problems\n${phases[i]}: ${tm.name} ${tm.fmt(vals[i])} over ${t.ckpts[i]} checkpoints` });
+  for (const prompt of G.prompts) {
+    const t = T.prompts[prompt], vals = t ? t[tm.key] : null;
+    if (!vals || vals.every(v => v == null)) continue;
+    series.push({ label: label(prompt), vals, color: color(prompt), soft: false, tip: i => `${label(prompt)} at ${T.spec}, ${t.runs} runs\n${phases[i]}: ${tm.name} ${tm.fmt(vals[i])} over ${t.ckpts[i]} checkpoints` });
   }
   const last = s => s.vals[phases.length - 1];
   const labels = spreadLabels(series.map(s => ({ s, y: y(last(s)) })), 13, top + 4, H - bottom);
@@ -337,7 +358,7 @@ function trajectoryPanel(tm, model) {
   }).join("");
   const ends = labels.map(({ s, ly }) => `<text x="${W - right + 8}" y="${ly + 4}" style="font-size:11.5px;${s.soft ? "fill:var(--ink-3)" : "fill:var(--ink);font-weight:500"}">${esc(s.label)}</text>`).join("");
   const summary = series.map(s => `${s.label} ${s.vals.map(v => v == null ? "–" : tm.fmt(v)).join(" ")}`).join("; ");
-  const ours = implOnly() ? "this repo's two bold and implementation only" : "this repo's two bold";
+  const ours = implOnly() ? "this repo's prompts bold and implementation only" : "this repo's prompts bold";
   const sub = model ? `the paper's three prompts faint, ${ours}` : `${ours}; the paper has no such figure`;
   return `
   <div class="card">
@@ -361,8 +382,16 @@ function trajectoryRows() {
     .join("");
 }
 
-function bars(title, sub, m, items) {
-  const W = 320, left = 132, top = 8, rowH = 34, H = top + rowH * items.length + 4;
+const emptyCard = (title, why) => `
+  <div class="card">
+    <h3>${esc(title)}</h3>
+    <p class="sub">${esc(why)}</p>
+  </div>`;
+const NO_PATCHED = "no problem has a patched-spec run under every prompt yet";
+
+function bars(title, sub, m, items, left = 132) {
+  if (!items.length) return emptyCard(title, NO_PATCHED);
+  const W = 320, top = 8, rowH = 34, H = top + rowH * items.length + 4;
   const maxV = Math.max(...items.map(i => i.v));
   const first = items[0].v;
   const drops = items.map((it, i) => i === 0 ? "" : ` (${signed(m, it.v - first)})`);
@@ -390,12 +419,12 @@ function bars(title, sub, m, items) {
 }
 
 function promptBars(m) {
-  const a = avg(problems, JS, "v0", m.key), b = avg(problems, MIN, "v0", m.key);
-  const per = prompt => problems.map(p => `${p} ${m.fmt(cell(p, prompt, "v0").mean[m.key])}`).join(", ");
+  const per = prompt => have(problems, prompt, "v0").map(p => `${p} ${m.fmt(cell(p, prompt, "v0").mean[m.key])}`).join(", ");
   const human = HUMAN[m.key];
+  const items = G.prompts.map(prompt => ({ label: label(prompt), v: avg(problems, prompt, "v0", m.key), color: color(prompt), soft: true,
+    tip: `${label(prompt)} at v0${coverage(problems, prompt, "v0")}\n${per(prompt)}` })).filter(it => it.v != null);
   return bars(`${m.name}, by prompt`, `spec v0, mean of all six problems${scopeSub(m)}`, m, [
-    { label: "just-solve", v: a, color: "var(--js)", soft: true, tip: `just-solve at v0\n${per(JS)}` },
-    { label: "spectest", v: b, color: "var(--min)", soft: true, tip: `spectest at v0\n${per(MIN)}` },
+    ...items,
     ...(human ? [{ label: human.label, v: human.v, color: "var(--ink-3)", soft: false, tip: human.tip }] : []),
   ]);
 }
@@ -404,40 +433,46 @@ const share = v => (100 * v).toFixed(0) + "%";
 const change = v => (v < 1 ? "\u2212" : "+") + (100 * Math.abs(v - 1)).toFixed(0) + "%";
 
 function shareBars(m) {
-  // Each bar is a mean of per-problem shares of just-solve, which sits at the 100% line. The
-  // whisker under spectest runs from its best problem to its worst, so the card stays this size
-  // however many problems the mean covers.
-  const r = R[m.key], pr = r.prompt, human = HUMAN[m.key];
-  const W = 320, left = 132, right = 86, top = 22, barH = 22;
-  const h = r.human;
-  const maxV = Math.max(1, pr.worst.share, h.max.share);
+  // Each bar is a mean of per-problem shares of just-solve, which sits at the 100% line. Under
+  // each prompt's bar a whisker runs from its best problem to its worst, so the card stays this
+  // size however many problems the mean covers; the human block closes the card.
+  const r = R[m.key], human = HUMAN[m.key], h = r.human;
+  const blocks = OTHERS.filter(pr => r.prompts[pr]).map(pr => ({ prompt: pr, s: r.prompts[pr] }));
+  const W = 320, left = 132, right = 104, top = 22, barH = 22, blockH = 72;
+  const maxV = Math.max(1, ...blocks.map(b => b.s.worst.share), h.max.share);
   const x = v => left + (v / maxV) * (W - left - right);
-  const yMin = top + 6, yWhisk = yMin + barH + 10, yHuman = yWhisk + 50, yHW = yHuman + barH + 10, H = yHW + 42;
+  const yHuman = top + 6 + blockH * blocks.length, yHW = yHuman + barH + 10, H = yHW + 42;
   const value = (v, y) => `<text class="num" x="${W - right + 8}" y="${y + barH / 2 + 4}" style="font-size:12.5px">${esc(share(v))}<tspan style="fill:var(--ink-3)"> (${esc(change(v))})</tspan></text>`;
-  const minTip = `spectest at v0, mean over ${r.n} problems of spectest / just-solve\n${share(pr.mean)} of just-solve (${change(pr.mean)})`;
-  const rangeTip = `spectest's best and worst problem\nbest: ${pr.best.problem} ${share(pr.best.share)} (${change(pr.best.share)})\nworst: ${pr.worst.problem} ${share(pr.worst.share)} (${change(pr.worst.share)})`;
-  const humanTip = `${human.tip}\nmean over ${r.n} problems of ${m.fmt(human.v)} / just-solve: ${share(h.mean)} (${change(h.mean)})`;
-  const spreadTip = `The ${h.n} human repositories, as shares of just-solve\nlowest: ${h.min.repo} ${m.fmt(h.min.value)} (${share(h.min.share)})\nmiddle half: ${m.fmt(h.q1.value)} to ${m.fmt(h.q3.value)} (${share(h.q1.share)} to ${share(h.q3.share)})\nhighest: ${h.max.repo} ${m.fmt(h.max.value)} (${share(h.max.share)})`;
   // The halo keeps a long problem name legible where it crosses the 100% line.
   const extreme = (word, name, v, y) => `<text x="${left - 10}" y="${y}" text-anchor="end" style="font-size:11.5px">${word}</text>` +
     `<text x="${left + 6}" y="${y}" style="font-size:11.5px;fill:var(--ink);stroke:var(--panel);stroke-width:4;paint-order:stroke">${esc(name)} <tspan class="num" style="font-size:11.5px">${esc(share(v))}</tspan></text>`;
-  const cap = (v, y, color) => `<line x1="${x(v)}" y1="${y - 4}" x2="${x(v)}" y2="${y + 4}" style="stroke:${color};stroke-width:2"></line>`;
+  const cap = (v, y, c) => `<line x1="${x(v)}" y1="${y - 4}" x2="${x(v)}" y2="${y + 4}" style="stroke:${c};stroke-width:2"></line>`;
+  const lab = (text, y) => `<text class="lab" x="${left - 10}" y="${y + barH / 2 + 4}" text-anchor="end" style="font-size:12.5px">${esc(text)}</text>`;
+  const promptBlocks = blocks.map(({ prompt, s }, i) => {
+    const yBar = top + 6 + blockH * i, yWhisk = yBar + barH + 10, c = color(prompt), name = label(prompt);
+    const meanTip = `${name} at v0, mean over ${s.n} problems of ${name} / just-solve\n${share(s.mean)} of just-solve (${change(s.mean)})`;
+    const rangeTip = `${name}'s best and worst problem\nbest: ${s.best.problem} ${share(s.best.share)} (${change(s.best.share)})\nworst: ${s.worst.problem} ${share(s.worst.share)} (${change(s.worst.share)})`;
+    return lab(name, yBar) +
+      `<rect x="${left}" y="${yBar}" width="${Math.max(2, x(s.mean) - left)}" height="${barH}" rx="3" style="fill:${c};opacity:0.45" data-tip="${esc(meanTip)}"></rect>` +
+      value(s.mean, yBar) +
+      `<line x1="${x(s.best.share)}" y1="${yWhisk}" x2="${x(s.worst.share)}" y2="${yWhisk}" style="stroke:${c};stroke-width:2"></line>` +
+      cap(s.best.share, yWhisk, c) + cap(s.worst.share, yWhisk, c) +
+      `<rect class="hit" x="${left}" y="${yWhisk - 8}" width="${W - left - right}" height="16" tabindex="0" data-tip="${esc(rangeTip)}" aria-label="${esc(rangeTip)}"></rect>` +
+      extreme("best", s.best.problem, s.best.share, yWhisk + 19) + extreme("worst", s.worst.problem, s.worst.share, yWhisk + 33);
+  }).join("");
+  const humanTip = `${human.tip}\nmean over ${r.n} problems of ${m.fmt(human.v)} / just-solve: ${share(h.mean)} (${change(h.mean)})`;
+  const spreadTip = `The ${h.n} human repositories, as shares of just-solve\nlowest: ${h.min.repo} ${m.fmt(h.min.value)} (${share(h.min.share)})\nmiddle half: ${m.fmt(h.q1.value)} to ${m.fmt(h.q3.value)} (${share(h.q1.share)} to ${share(h.q3.share)})\nhighest: ${h.max.repo} ${m.fmt(h.max.value)} (${share(h.max.share)})`;
+  const summary = blocks.map(({ prompt, s }) => `${label(prompt)} ${share(s.mean)}, from ${s.best.problem} ${share(s.best.share)} to ${s.worst.problem} ${share(s.worst.share)}`).join("; ");
   return `
   <div class="card">
     <h3>${esc(m.name)}, share of just-solve</h3>
-    <p class="sub">spec v0, mean of the ${r.n} per-problem shares${scopeSub(m)}</p>
-    <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(m.name)} as a share of just-solve: spectest ${esc(share(pr.mean))}, from ${esc(pr.best.problem)} ${esc(share(pr.best.share))} to ${esc(pr.worst.problem)} ${esc(share(pr.worst.share))}; ${esc(human.label)} ${esc(share(h.mean))}, from ${esc(h.min.repo)} ${esc(share(h.min.share))} to ${esc(h.max.repo)} ${esc(share(h.max.share))}">
+    <p class="sub">spec v0, mean of the per-problem shares${scopeSub(m)}</p>
+    <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(m.name)} as a share of just-solve: ${esc(summary)}; ${esc(human.label)} ${esc(share(h.mean))}, from ${esc(h.min.repo)} ${esc(share(h.min.share))} to ${esc(h.max.repo)} ${esc(share(h.max.share))}">
       <line class="axis" x1="${left}" y1="${top}" x2="${left}" y2="${H - 4}"></line>
       <line x1="${x(1)}" y1="${top}" x2="${x(1)}" y2="${H - 4}" style="stroke:var(--js);stroke-width:1.5;stroke-dasharray:3 3"></line>
       <text x="${x(1)}" y="${top - 8}" text-anchor="middle" style="font-size:11.5px">just-solve, 100%</text>
-      <text class="lab" x="${left - 10}" y="${yMin + barH / 2 + 4}" text-anchor="end" style="font-size:12.5px">spectest</text>
-      <rect x="${left}" y="${yMin}" width="${Math.max(2, x(pr.mean) - left)}" height="${barH}" rx="3" style="fill:var(--min);opacity:0.45" data-tip="${esc(minTip)}"></rect>
-      ${value(pr.mean, yMin)}
-      <line x1="${x(pr.best.share)}" y1="${yWhisk}" x2="${x(pr.worst.share)}" y2="${yWhisk}" style="stroke:var(--min);stroke-width:2"></line>
-      ${cap(pr.best.share, yWhisk, "var(--min)")}${cap(pr.worst.share, yWhisk, "var(--min)")}
-      <rect class="hit" x="${left}" y="${yWhisk - 8}" width="${W - left - right}" height="16" tabindex="0" data-tip="${esc(rangeTip)}" aria-label="${esc(rangeTip)}"></rect>
-      ${extreme("best", pr.best.problem, pr.best.share, yWhisk + 19)}${extreme("worst", pr.worst.problem, pr.worst.share, yWhisk + 33)}
-      <text class="lab" x="${left - 10}" y="${yHuman + barH / 2 + 4}" text-anchor="end" style="font-size:12.5px">${esc(human.label)}</text>
+      ${promptBlocks}
+      ${lab(human.label, yHuman)}
       <rect x="${left}" y="${yHuman}" width="${Math.max(2, x(h.mean) - left)}" height="${barH}" rx="3" style="fill:var(--ink-3)" data-tip="${esc(humanTip)}"></rect>
       ${value(h.mean, yHuman)}
       <line x1="${x(h.min.share)}" y1="${yHW}" x2="${x(h.max.share)}" y2="${yHW}" style="stroke:var(--ink-3);stroke-width:2"></line>
@@ -451,26 +486,24 @@ function shareBars(m) {
 
 function shareReading() {
   const e = R.erosion, a = R.ast, c = R.cloned;
+  const under = r => OTHERS.filter(pr => r.prompts[pr]).map(pr => `${esc(label(pr))} ${esc(share(r.prompts[pr].mean))}`).join(", ");
   return `
   <div class="card">
     <h3>Reading the shares</h3>
-    <p class="reading">Each problem's spectest value is divided by its own just-solve value, and the bar is the mean of those ${e.n} shares. That weighs every problem the same, so it differs from dividing the two means in the row above. ` +
+    <p class="reading">Each problem's value under a prompt is divided by its own just-solve value, and the bar is the mean of those ${e.n} shares. That weighs every problem the same, so it differs from dividing the two means in the row above. ` +
     `The human bar is the mean of ${e.human.n} repositories divided by each problem's just-solve value, averaged the same way. ` +
-    `Erosion under spectest is ${esc(share(e.prompt.mean))} of just-solve's and the human repositories are at ${esc(share(e.human.mean))}; ast-grep is ${esc(share(a.prompt.mean))} against ${esc(share(a.human.mean))}; cloned lines are ${esc(share(c.prompt.mean))} against ${esc(share(c.human.mean))}, the one score where the human repositories sit above just-solve. ` +
-    `Spectest's whisker names the problems where it helped most and least. The human whisker runs from the lowest repository to the highest, and its thick part holds the middle half of them.</p>
+    `Erosion: ${under(e)}, the human repositories ${esc(share(e.human.mean))}. ast-grep: ${under(a)} against ${esc(share(a.human.mean))}. Cloned lines: ${under(c)} against ${esc(share(c.human.mean))}, the one score where the human repositories sit above just-solve. ` +
+    `Each prompt's whisker names the problems where it helped most and least. The human whisker runs from the lowest repository to the highest, and its thick part holds the middle half of them.</p>
   </div>`;
 }
 
 function caseBars() {
   const m = METRICS[0];
-  const per = (prompt, kind) => patched.map(p => `${p} ${m.fmt(cell(p, prompt, kind).mean[m.key])}`).join(", ");
-  const it = (label, prompt, kind, color, soft) => ({ label, v: avg(patched, prompt, kind, m.key), color, soft, tip: `${label}\n${per(prompt, kind)}` });
-  return bars("Hidden tests failed, four cases", `mean of ${patched.join(", ")}`, m, [
-    it("just-solve, v0", JS, "v0", "var(--js)", true),
-    it("spectest, v0", MIN, "v0", "var(--min)", true),
-    it("just-solve, patched", JS, "patched", "var(--js)", false),
-    it("spectest, patched", MIN, "patched", "var(--min)", false),
-  ]);
+  const per = (prompt, kind) => have(patched, prompt, kind).map(p => `${p} ${m.fmt(cell(p, prompt, kind).mean[m.key])}`).join(", ");
+  const it = (prompt, kind) => ({ label: `${label(prompt)}, ${kind}`, v: avg(patched, prompt, kind, m.key), color: color(prompt), soft: kind === "v0",
+    tip: `${label(prompt)}, ${kind}${coverage(patched, prompt, kind)}\n${per(prompt, kind)}` });
+  const items = ["v0", "patched"].flatMap(kind => G.prompts.map(prompt => it(prompt, kind))).filter(x => x.v != null);
+  return bars(items.length ? `Hidden tests failed, ${items.length} cases` : "Hidden tests failed", `mean of ${patched.join(", ")}`, m, items, 168);
 }
 
 function render() {
@@ -483,18 +516,17 @@ function render() {
       const d = PAPER_MODELS.map(model => { const v = PAPER[row][model][prompt]; return v[4] - v[0]; });
       return `${f(Math.min(...d))} to ${f(Math.max(...d))}`;
     };
-    const ours = key => {
-      const js = T.prompts[JS][key], mn = T.prompts[MIN][key];
-      if (js[0] == null || mn[0] == null) return null;
-      return `just-solve ${esc(f(js[0]))} to ${esc(f(js[4]))} (${esc(signed(M.erosion, js[4] - js[0]))}), spectest ${esc(f(mn[0]))} to ${esc(f(mn[4]))} (${esc(signed(M.erosion, mn[4] - mn[0]))})`;
-    };
+    const ours = key => G.prompts.filter(pr => T.prompts[pr] && T.prompts[pr][key][0] != null).map(pr => {
+      const v = T.prompts[pr][key];
+      return `${esc(label(pr))} ${esc(f(v[0]))} to ${esc(f(v[4]))} (${esc(signed(M.erosion, v[4] - v[0]))})`;
+    }).join(", ");
     document.getElementById("trajectory-note").innerHTML =
       `<b>Reading.</b> Figure 5 of the paper's second revision (arXiv 2603.24755v2) is redrawn from its vector paths, one y axis for all three models instead of a range per panel: erosion on its top row, verbosity on the bottom (the share of lines flagged by ast-grep, the clone detector or the trivial-wrapper check, so it covers the next two rows). ` +
       `Its Baseline prompt is just-solve; Anti-Slop is its quality prompt. Every paper erosion line climbs from Start to Final, and the paper reads that as prompting not slowing the decay. ` +
-      `Our two lines are the same twelve v0 runs per prompt from the headline, each checkpoint placed in the paper's phase (first is Start, last is Final, the rest split into thirds) and pooled. ` +
+      `Our lines are the v0 runs from the headline, each checkpoint placed in the paper's phase (first is Start, last is Final, the rest split into thirds) and pooled over every run of the prompt. ` +
       `Erosion: ${ours("erosion")}, where the paper's Baseline lines climb ${esc(climb("erosion", "Baseline"))} and its Anti-Slop lines ${esc(climb("erosion", "Anti-Slop"))}. ` +
       `Verbosity: ${ours("verbosity")}, against paper Baseline climbs of ${esc(climb("verbosity", "Baseline"))} and Anti-Slop ${esc(climb("verbosity", "Anti-Slop"))}. ` +
-      `ast-grep and cloned lines have no paper figure: ${ours("ast")} for ast-grep, ${ours("cloned")} for cloned lines, the last being the test-file dilution, since spectest's tests are the cloned part. ` +
+      `ast-grep and cloned lines have no paper figure: ${ours("ast")} for ast-grep, ${ours("cloned")} for cloned lines, the last being the test-file dilution, since the spectest prompts' tests are the cloned part. ` +
       `Two runs per problem and four to seven checkpoints, so read the wiggles as noise.` +
       (implOnly() ? ` The paper's lines score whole repositories, tests included; only our lines are implementation only.` : "");
   }
@@ -504,23 +536,23 @@ function render() {
   const specs = patched.map(p => `${p} ${G.problems[p].patched}`).join(", ");
   document.getElementById("foot").innerHTML =
     `<b>Reading.</b> The spec moves correctness; the prompt moves quality; the order does not change where you end up. ` +
-    `Patched specs: ${esc(specs)}. datagate's residual ${esc((100 * cell("datagate", MIN, "patched").mean.fail).toFixed(1))}% is the whitespace-preservation class, left as a benchmark failure. ` +
+    `Patched specs: ${esc(specs || "none shared by every prompt yet")}. datagate's residual ${esc((100 * (cell("datagate", MIN, "patched") || { mean: { fail: 0 } }).mean.fail).toFixed(1))}% under spectest is the whitespace-preservation class, left as a benchmark failure. ` +
     `Erosion, ast-grep and cloned lines are the harness's quality scores, shares of lines flagged, and verbosity is the share of lines flagged by any of ast-grep, the clone detector or the trivial-wrapper check; cost is Claude Code's reported spend per run; wall clock is checkpoint end minus start, summed, and includes waits on the 5-hour window. ` +
     `The human bars are the Major tier of the paper's first revision (arXiv 2603.24755v1, Table 2), repositories with over 10k stars, rescored at HEAD with the scb-check version the runs use: ${R.erosion.human.n} of its 28, because one is no longer Python. ` +
     `v1's table gives erosion 0.31, which the rerun matches, and ast-grep 0.10, which it does not (${esc(G.relative.metrics.ast.human.value.toFixed(3))} here, so another rule set); ` +
     `a figure from another rule set cannot sit beside ours, and the rerun also gives the spread and the implementation-only values. ` +
     `Two revisions are cited because each has what the other lacks: v1's human table carries the ast-grep and clone columns over 28 Major repositories, and v2 (473 repositories, 115 Major, erosion 0.37) drops those columns but adds GPT 5.5 to Figure 5.`;
 
-  const cols = [[JS, "v0"], [MIN, "v0"], [MIN, "patched"], [JS, "patched"]];
-  const th = cols.map(([pr, k]) => `<th>${esc(pr === JS ? "just-solve" : "spectest")} ${k}</th>`).join("");
+  const cols = ["v0", "patched"].flatMap(k => G.prompts.map(pr => [pr, k]));
+  const th = cols.map(([pr, k]) => `<th>${esc(label(pr))} ${k}</th>`).join("");
   const rows = problems.map(p => `<tr><td>${esc(p)}</td>` + cols.map(([pr, k]) => {
   const c = cell(p, pr, k);
     return `<td class="num">${c ? esc(`${(100 * c.mean.fail).toFixed(1)}% · ${c.mean.erosion.toFixed(2)} · ${c.mean.ast.toFixed(2)} · $${c.mean.cost.toFixed(0)} · ${c.mean.minutes.toFixed(0)}m`) : "–"}</td>`;
   }).join("") + "</tr>").join("");
   document.getElementById("tbl").innerHTML = `<thead><tr><th>problem</th>${th}</tr></thead><tbody>${rows}</tbody>` +
-    `<tfoot><tr><td colspan="5" style="color:var(--ink-3)">failed% · erosion · ast-grep · $ · minutes per run, means of two runs</td></tr></tfoot>`;
+    `<tfoot><tr><td colspan="${cols.length + 1}" style="color:var(--ink-3)">failed% · erosion · ast-grep · $ · minutes per run, means over the cell's runs</td></tr></tfoot>`;
   document.getElementById("scope-note").textContent = implOnly()
-    ? "Erosion and ast-grep are rescored with the test files left out, for the runs and for the human repositories. Failed tests, cost and time do not change."
+    ? "Erosion, verbosity, ast-grep and cloned lines are rescored with the test files left out, for the runs and for the human repositories. Failed tests, cost and time do not change."
     : "Scores cover every Python file in a snapshot, tests included, the way the benchmark scores it.";
 }
 

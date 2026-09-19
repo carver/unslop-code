@@ -26,6 +26,8 @@ CELLS = {
     ("xjq", "min12-ABDJKMN", "v0", "opus-5"): [run(0.9, 0.1, by_ckpt=[0.1, None, 0.1])],
     ("xjq", "min12-ABDJKMN", "v3", "opus-5"): [run(1.0, 0.05)],
     ("xjq", "just-solve", "v3", "opus-5"): [run(1.0, 0.5)],
+    ("xjq", "min13-ABDJKMNT", "v0", "opus-5"): [run(0.95, 0.05, by_ckpt=[0.05, 0.05])],
+    ("xjq", "min13-ABDJKMNT", "v3", "opus-5"): [run(1.0, 0.02)],
     ("xjq", "just-solve", "v2", "opus-5"): [run(0.95, 0.5)],
     ("sith", "just-solve", "v0", "opus-5"): [run(0.5, 0.7)],
     ("sith", "min12-ABDJKMN", "v0", "opus-5"): [run(0.7, 0.3)],
@@ -62,10 +64,11 @@ def test_grid_cells_average_their_runs_and_means_average_the_problems():
 def test_table_has_a_row_per_problem_and_a_mean_row():
     lines = gr.table(gr.grid(CELLS)).splitlines()
     assert lines[0].startswith(
-        "| problem | patched | just-solve v0 | min12-ABDJKMN v0 | min12-ABDJKMN patched | just-solve patched |"
+        "| problem | patched | just-solve v0 | min12-ABDJKMN v0 | min13-ABDJKMNT v0 | just-solve patched "
+        "| min12-ABDJKMN patched | min13-ABDJKMNT patched |"
     )
     assert lines[2].startswith(
-        "| sith | - | 50.0% / 0.70 / 0.10 / $10 / 30m (1) | 30.0% / 0.30 / 0.10 / $10 / 30m (1) | - | - |"
+        "| sith | - | 50.0% / 0.70 / 0.10 / $10 / 30m (1) | 30.0% / 0.30 / 0.10 / $10 / 30m (1) | - | - | - | - |"
     )
     assert lines[3].startswith("| xjq | v3 | 15.0% / 0.50 / 0.10 / $10 / 30m (2) |")
     assert lines[-1].startswith("| mean | n=1/2 | 32.5% / 0.60 / 0.10 / $10 / 30m (2) |")
@@ -173,11 +176,14 @@ def test_relative_averages_each_problems_share_of_the_first_prompt_and_names_the
     assert r["spec"] == "v0" and r["baseline"] == "just-solve"
     erosion = r["metrics"]["erosion"]
     assert erosion["n"] == 2
-    assert abs(erosion["prompt"]["mean"] - (0.1 / 0.5 + 0.3 / 0.7) / 2) < 1e-9  # not 0.2 / 0.6, the share of the means
-    assert erosion["prompt"]["best"] == {"problem": "xjq", "share": 0.1 / 0.5}
-    assert erosion["prompt"]["worst"] == {"problem": "sith", "share": 0.3 / 0.7}
+    min12 = erosion["prompts"]["min12-ABDJKMN"]
+    assert abs(min12["mean"] - (0.1 / 0.5 + 0.3 / 0.7) / 2) < 1e-9  # not 0.2 / 0.6, the share of the means
+    assert min12["best"] == {"problem": "xjq", "share": 0.1 / 0.5}
+    assert min12["worst"] == {"problem": "sith", "share": 0.3 / 0.7}
+    min13 = erosion["prompts"]["min13-ABDJKMNT"]
+    assert min13["n"] == 1 and abs(min13["mean"] - 0.05 / 0.5) < 1e-9  # only xjq ran it
     assert "human" not in erosion  # no panel given
-    assert abs(r["metrics"]["ast"]["prompt"]["mean"] - 1.0) < 1e-9
+    assert abs(r["metrics"]["ast"]["prompts"]["min12-ABDJKMN"]["mean"] - 1.0) < 1e-9
 
 
 def test_relative_skips_a_problem_whose_baseline_is_zero_or_whose_other_prompt_never_ran():
@@ -186,8 +192,9 @@ def test_relative_skips_a_problem_whose_baseline_is_zero_or_whose_other_prompt_n
     cells[("clean", "min12-ABDJKMN", "v0", "opus-5")] = [run(0.9, 0.2)]
     cells[("half", "just-solve", "v0", "opus-5")] = [run(0.9, 0.5)]
     erosion = gr.grid(cells)["relative"]["metrics"]["erosion"]
-    assert erosion["n"] == 2
-    assert {erosion["prompt"]["best"]["problem"], erosion["prompt"]["worst"]["problem"]} == {"xjq", "sith"}
+    assert erosion["n"] == 3  # xjq, sith and half have a baseline above zero; clean does not
+    min12 = erosion["prompts"]["min12-ABDJKMN"]
+    assert min12["n"] == 2 and {min12["best"]["problem"], min12["worst"]["problem"]} == {"xjq", "sith"}
 
 
 def test_problem_set_reads_a_split_by_name_and_all_means_no_filter():

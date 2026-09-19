@@ -15,16 +15,17 @@ cell (n says how many). --json prints the same structure for a page to draw from
 Problems default to the dev set of split.json, the six the experiment ran in full; --set test
 takes the test set as its runs land, --set all every problem with a run.
 
-Prompts default to the benchmark's just-solve and min12-ABDJKMN, the pair the 2x2 uplift
-experiment compares (notes/uplift-grid.md). Runs are read the way bin/results reads them.
+Prompts default to the benchmark's just-solve, min12-ABDJKMN and min13-ABDJKMNT: the first is
+the baseline every share is taken against, the rest are compared to it (notes/uplift-grid.md).
+Runs are read the way bin/results reads them.
 
 The JSON also carries "trajectory": erosion per progress phase for each prompt's v0 runs, the
 paper's five-phase view of a run (Start, Early, Mid, Late, Final) so the page can lay the two
 prompts over Figure 5 of arXiv 2603.24755v2.
 
-And "relative": for erosion and ast-grep, the second prompt's v0 value as a share of the first
-prompt's, problem by problem, then the mean of those shares with the best and worst problem
-named. The human reference gets the same treatment, so the two compare: its mean, its lowest
+And "relative": for erosion, ast-grep and cloned lines, each later prompt's v0 value as a share
+of the first prompt's, problem by problem, then the mean of those shares with the best and
+worst problem named. The human reference gets the same treatment, so the two compare: its mean, its lowest
 and highest repository and its quartiles, all as shares. The human figures come from
 report/human-split.json, the paper's Major-tier repositories rescored by bin/quality-split.
 
@@ -48,7 +49,7 @@ sys.path.insert(0, str(HERE.parent / "report"))
 import scb_split  # noqa: E402
 
 METRICS = ("fail", "erosion", "verbosity", "ast", "cloned", "cost", "minutes")
-DEFAULT_PROMPTS = ("just-solve", "min12-ABDJKMN")
+DEFAULT_PROMPTS = ("just-solve", "min12-ABDJKMN", "min13-ABDJKMNT")
 PHASES = ("Start", "Early", "Mid", "Late", "Final")
 # The human reference: the Major tier (over 10k stars) of the panel in arXiv 2603.24755v1,
 # Table 7, rescored at HEAD by bin/quality-split --tree with the scb-check version the runs
@@ -157,32 +158,32 @@ def human_shares(panel, bases):
 
 def relative(g, human=None):
     """{"spec": "v0", "baseline": first prompt, "metrics": {metric: {"n": k,
-    "prompt": {"mean": share, "best": {"problem", "share"}, "worst": {...}},
-    "human": human_shares(...)}}}: a share is a value over the first prompt's v0 cell
-    mean on the same problem, and "mean" averages the shares, not the values. A problem counts
-    when both prompts ran it at v0 and the baseline is above zero. human is a human_panel."""
-    a, b = g["prompts"]
-    out = {"spec": "v0", "baseline": a, "metrics": {}}
+    "prompts": {prompt: {"n": k, "mean": share, "best": {"problem", "share"}, "worst": {...}}},
+    "human": human_shares(...)}}}: a share is a value over the first prompt's v0 cell mean on
+    the same problem, and "mean" averages the shares, not the values. A problem counts when its
+    baseline is above zero; a prompt's shares cover the problems it ran at v0. human is a
+    human_panel, put on the same scale over every counted problem."""
+    baseline, others = g["prompts"][0], g["prompts"][1:]
+    out = {"spec": "v0", "baseline": baseline, "metrics": {}}
     for metric in HUMAN_METRICS:
-        pairs = {}
-        for problem, entry in g["problems"].items():
-            base, other = entry["cells"].get(f"{a}|v0"), entry["cells"].get(f"{b}|v0")
-            if base and other and base["mean"][metric] > 0:
-                pairs[problem] = (base["mean"][metric], other["mean"][metric])
-        if not pairs:
+        bases = {problem: entry["cells"][f"{baseline}|v0"]["mean"][metric]
+                 for problem, entry in g["problems"].items() if f"{baseline}|v0" in entry["cells"]}
+        bases = {problem: base for problem, base in bases.items() if base > 0}
+        prompts = {}
+        for prompt in others:
+            share = {problem: entry["cells"][f"{prompt}|v0"]["mean"][metric] / bases[problem]
+                     for problem, entry in g["problems"].items()
+                     if problem in bases and f"{prompt}|v0" in entry["cells"]}
+            if share:
+                best, worst = min(share, key=share.get), max(share, key=share.get)
+                prompts[prompt] = {"n": len(share), "mean": results.mean(list(share.values())),
+                                   "best": {"problem": best, "share": share[best]},
+                                   "worst": {"problem": worst, "share": share[worst]}}
+        if not prompts:
             continue
-        share = {problem: other / base for problem, (base, other) in pairs.items()}
-        best, worst = min(share, key=share.get), max(share, key=share.get)
-        out["metrics"][metric] = {
-            "n": len(pairs),
-            "prompt": {
-                "mean": results.mean(list(share.values())),
-                "best": {"problem": best, "share": share[best]},
-                "worst": {"problem": worst, "share": share[worst]},
-            },
-        }
+        out["metrics"][metric] = {"n": len(bases), "prompts": prompts}
         if human:
-            out["metrics"][metric]["human"] = human_shares(human[metric], [base for base, _ in pairs.values()])
+            out["metrics"][metric]["human"] = human_shares(human[metric], list(bases.values()))
     return out
 
 
@@ -251,11 +252,11 @@ def cell_text(cell):
 
 
 def table(g):
-    """Markdown: one row per problem, cells 'fail% / erosion / ast% / $ / minutes (runs)', then the means."""
-    a, b = g["prompts"]
-    heads = [f"{a} v0", f"{b} v0", f"{b} patched", f"{a} patched"]
-    keys = [f"{a}|v0", f"{b}|v0", f"{b}|patched", f"{a}|patched"]
-    lines = ["| problem | patched | " + " | ".join(heads) + " |", "|---|---|" + "---|" * 4]
+    """Markdown: one row per problem, a column per prompt at v0 then per prompt at the patched spec,
+    cells 'fail% / erosion / ast% / $ / minutes (runs)', then the means."""
+    keys = [f"{prompt}|{kind}" for kind in ("v0", "patched") for prompt in g["prompts"]]
+    heads = [key.replace("|", " ") for key in keys]
+    lines = ["| problem | patched | " + " | ".join(heads) + " |", "|---|---|" + "---|" * len(keys)]
     for problem, e in g["problems"].items():
         lines.append(
             f"| {problem} | {e['patched'] or '-'} | " + " | ".join(cell_text(e["cells"].get(k)) for k in keys) + " |"

@@ -17,7 +17,7 @@ import subprocess
 
 HERE = pathlib.Path(__file__).resolve().parent
 ROOT = HERE.parent
-PROMPT_LABELS = {"just-solve": "just-solve", "min12-ABDJKMN": "spectest"}
+PROMPT_LABELS = {"just-solve": "just-solve", "min12-ABDJKMN": "spectest", "min13-ABDJKMNT": "spectest+antislop"}
 SCORES = (("ast", "ast-grep"), ("erosion", "erosion"), ("cloned", "cloned"))
 PARTS = (("impl", "impl"), ("test", "tests"), ("all", "all"))
 
@@ -52,9 +52,12 @@ def prompt_row(rows, prompt):
 
 
 def split_section(rows, repos):
-    """The row of each prompt and the human mean as a table, and the reading of it."""
-    pooled = {prompt: prompt_row(rows, prompt) for prompt in PROMPT_LABELS}
-    base, new, human = pooled["just-solve"], pooled["min12-ABDJKMN"], human_mean(repos)
+    """The row of each prompt that has runs and the human mean as a table, and the reading of it:
+    a paragraph per prompt after the baseline, then the human paragraph."""
+    have = {r["prompt"] for r in rows}
+    pooled = {prompt: prompt_row(rows, prompt) for prompt in PROMPT_LABELS if prompt in have}
+    base, human = pooled["just-solve"], human_mean(repos)
+    others = [prompt for prompt in pooled if prompt != "just-solve"]
     head = "".join(f'<th colspan="3">{label}</th>' for _, label in SCORES)
     sub = "".join(f"<th>{label}</th>" for _ in SCORES for _, label in PARTS)
     body = ""
@@ -68,28 +71,35 @@ def split_section(rows, repos):
     table = (f'<div class="tablewrap"><table><thead><tr><th rowspan="2">prompt</th><th rowspan="2">impl LOC</th>'
              f'<th rowspan="2">test LOC</th><th rowspan="2">test share</th>{head}</tr><tr>{sub}</tr></thead>'
              f"<tbody>{body}</tbody></table></div>")
-    note = (f'<p class="note" style="margin-top:10px">scb-check scores the test files along with the '
-            f'implementation, and spectest writes '
-            f'{new["test"]["loc"] / base["test"]["loc"]:.1f} times the test code. Over the whole snapshot its '
-            f'ast-grep share falls {drop(base["all"]["ast"], new["all"]["ast"])}; in implementation files alone '
-            f'it falls {drop(base["impl"]["ast"], new["impl"]["ast"])}. spectest also writes '
-            f'{drop(base["impl"]["loc"], new["impl"]["loc"])} less implementation, so <b>the count of flagged '
-            f'implementation lines falls {drop(base["impl"]["ast_lines"], new["impl"]["ast_lines"])}</b> '
-            f'({base["impl"]["ast_lines"]:,} to {new["impl"]["ast_lines"]:,}). Erosion has the same shape with more '
-            f'left over: down {drop(base["all"]["erosion"], new["all"]["erosion"])} over the whole snapshot and '
-            f'{drop(base["impl"]["erosion"], new["impl"]["erosion"])} in implementation files. The rise in cloned '
-            f'lines is all in the tests; implementation clones fall from {base["impl"]["cloned"]:.3f} to '
-            f'{new["impl"]["cloned"]:.3f}.</p>')
+    note = ""
+    for prompt in others:
+        new, name = pooled[prompt], PROMPT_LABELS[prompt]
+        lead = ("scb-check scores the test files along with the implementation, and " if prompt == others[0]
+                else "")
+        note += (f'<p class="note" style="margin-top:{10 if prompt == others[0] else 8}px">{lead}{name} writes '
+                 f'{new["test"]["loc"] / base["test"]["loc"]:.1f} times the test code. Over the whole snapshot its '
+                 f'ast-grep share falls {drop(base["all"]["ast"], new["all"]["ast"])}; in implementation files alone '
+                 f'it falls {drop(base["impl"]["ast"], new["impl"]["ast"])}. {name} also writes '
+                 f'{drop(base["impl"]["loc"], new["impl"]["loc"])} less implementation, so <b>the count of flagged '
+                 f'implementation lines falls {drop(base["impl"]["ast_lines"], new["impl"]["ast_lines"])}</b> '
+                 f'({base["impl"]["ast_lines"]:,} to {new["impl"]["ast_lines"]:,}). Erosion has the same shape with '
+                 f'more left over: down {drop(base["all"]["erosion"], new["all"]["erosion"])} over the whole snapshot '
+                 f'and {drop(base["impl"]["erosion"], new["impl"]["erosion"])} in implementation files. The rise in '
+                 f'cloned lines is all in the tests; implementation clones go from {base["impl"]["cloned"]:.3f} to '
+                 f'{new["impl"]["cloned"]:.3f}.</p>')
+    against = "; ".join(
+        f'{PROMPT_LABELS[prompt]}\'s ast-grep share is '
+        f'{pooled[prompt]["impl"]["ast"] / human["impl"]["ast"]:.1f} times the human one, its erosion is '
+        f'{pooled[prompt]["impl"]["erosion"]:.2f} against {human["impl"]["erosion"]:.2f}, its cloned share is '
+        f'{pooled[prompt]["impl"]["cloned"]:.3f} against {human["impl"]["cloned"]:.3f}, and its tests are cloned '
+        f'{pooled[prompt]["test"]["cloned"] / human["test"]["cloned"]:.1f} times as much as human tests'
+        for prompt in others)
     note += (f'<p class="note" style="margin-top:8px">The human row is the mean over {len(repos)} of the 28 Major-tier '
              f'repositories (over 10k stars) in the paper\'s v1, Table 2, at HEAD, split by the same tool. '
              f'Humans write tests too, '
              f'{human["test_share"]:.0%} of their lines, so their whole-repository figures are diluted the same way. '
-             f'Implementation against implementation, spectest\'s ast-grep share is '
-             f'{new["impl"]["ast"] / human["impl"]["ast"]:.1f} times the human one, its erosion is '
-             f'{new["impl"]["erosion"]:.2f} against {human["impl"]["erosion"]:.2f}, and its cloned share is '
-             f'{new["impl"]["cloned"]:.3f} against {human["impl"]["cloned"]:.3f}. Its tests are cloned '
-             f'{new["test"]["cloned"] / human["test"]["cloned"]:.1f} times as much as '
-             f'human tests. The human bars in the headline are this same rerun. v1\'s Table 2 gives '
+             f'Implementation against implementation, {against}. '
+             f'The human bars in the headline are this same rerun. v1\'s Table 2 gives '
              f'0.10 for ast-grep, which this scb-check version does not reproduce ({human["all"]["ast"]:.3f} here); '
              f'its erosion mean, 0.31, it does ({human["all"]["erosion"]:.2f}).</p>')
     return table + note

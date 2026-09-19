@@ -171,9 +171,9 @@ const TRAJECTORY = [
 // The human values come from bin/grid (HUMAN there carries the citation), so the absolute bars
 // and the share bars read one number.
 // D is the grid the charts read: G scores whole snapshots, G.impl the same runs with the test
-// files left out. Only erosion and ast-grep differ between the two.
+// files left out. Only the four quality scores differ between the two.
 let D, R, HUMAN;
-const SCOPED = new Set(["erosion", "ast"]);
+const SCOPED = new Set(["erosion", "verbosity", "ast", "cloned"]);
 const implOnly = () => D !== G;
 const scopeSub = m => SCOPED.has(m.key) && implOnly() ? " \u00b7 implementation files only" : "";
 function setScope(impl) {
@@ -337,13 +337,12 @@ function trajectoryPanel(tm, model) {
   }).join("");
   const ends = labels.map(({ s, ly }) => `<text x="${W - right + 8}" y="${ly + 4}" style="font-size:11.5px;${s.soft ? "fill:var(--ink-3)" : "fill:var(--ink);font-weight:500"}">${esc(s.label)}</text>`).join("");
   const summary = series.map(s => `${s.label} ${s.vals.map(v => v == null ? "–" : tm.fmt(v)).join(" ")}`).join("; ");
-  const ours = implOnly() && SCOPED.has(tm.key) ? "this repo's two bold and implementation only" : "this repo's two bold";
+  const ours = implOnly() ? "this repo's two bold and implementation only" : "this repo's two bold";
   const sub = model ? `the paper's three prompts faint, ${ours}` : `${ours}; the paper has no such figure`;
-  const missing = model && series.every(s => s.soft) ? " (no implementation-only verbosity: the split scores erosion, ast-grep and clones)" : "";
   return `
   <div class="card">
     <h3>${esc(model || tm.name)}</h3>
-    <p class="sub">${esc(sub + missing)}</p>
+    <p class="sub">${esc(sub)}</p>
     <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(tm.name)} by phase Start to Final. ${esc(summary)}">
       ${grid}${xlab}
       <line class="axis" x1="${left}" y1="${top}" x2="${left}" y2="${H - bottom}"></line>
@@ -489,13 +488,12 @@ function render() {
       if (js[0] == null || mn[0] == null) return null;
       return `just-solve ${esc(f(js[0]))} to ${esc(f(js[4]))} (${esc(signed(M.erosion, js[4] - js[0]))}), spectest ${esc(f(mn[0]))} to ${esc(f(mn[4]))} (${esc(signed(M.erosion, mn[4] - mn[0]))})`;
     };
-    const verbosity = ours("verbosity");
     document.getElementById("trajectory-note").innerHTML =
       `<b>Reading.</b> Figure 5 of the paper's second revision (arXiv 2603.24755v2) is redrawn from its vector paths, one y axis for all three models instead of a range per panel: erosion on its top row, verbosity on the bottom (the share of lines flagged by ast-grep, the clone detector or the trivial-wrapper check, so it covers the next two rows). ` +
       `Its Baseline prompt is just-solve; Anti-Slop is its quality prompt. Every paper erosion line climbs from Start to Final, and the paper reads that as prompting not slowing the decay. ` +
       `Our two lines are the same twelve v0 runs per prompt from the headline, each checkpoint placed in the paper's phase (first is Start, last is Final, the rest split into thirds) and pooled. ` +
       `Erosion: ${ours("erosion")}, where the paper's Baseline lines climb ${esc(climb("erosion", "Baseline"))} and its Anti-Slop lines ${esc(climb("erosion", "Anti-Slop"))}. ` +
-      (verbosity ? `Verbosity: ${verbosity}, against paper Baseline climbs of ${esc(climb("verbosity", "Baseline"))} and Anti-Slop ${esc(climb("verbosity", "Anti-Slop"))}. ` : `Verbosity has no implementation-only rescoring, so only the paper's lines show while the switch is on. `) +
+      `Verbosity: ${ours("verbosity")}, against paper Baseline climbs of ${esc(climb("verbosity", "Baseline"))} and Anti-Slop ${esc(climb("verbosity", "Anti-Slop"))}. ` +
       `ast-grep and cloned lines have no paper figure: ${ours("ast")} for ast-grep, ${ours("cloned")} for cloned lines, the last being the test-file dilution, since spectest's tests are the cloned part. ` +
       `Two runs per problem and four to seven checkpoints, so read the wiggles as noise.` +
       (implOnly() ? ` The paper's lines score whole repositories, tests included; only our lines are implementation only.` : "");

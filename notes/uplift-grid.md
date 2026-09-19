@@ -106,9 +106,10 @@ erosion / ast% are the cell means of the quality scores (lower is better); $ is 
   0.00 to 0.09 and Anti-Slop of -0.02 to 0.07 across its three models; so on verbosity min12 sits
   on the paper's Baseline lines, not below them, because its test files are cloned. ast-grep (no
   paper figure): just-solve 0.23 to 0.26, min12 0.10 to 0.08. Cloned: just-solve 0.02 to 0.04,
-  min12 0.15 to 0.17. Implementation-only rescoring has no verbosity, since the split keeps only
-  the ast-grep, clone and complexity counts; the verbosity row shows the paper's lines alone under
-  the switch.
+  min12 0.15 to 0.17. Implementation only (the split cache keeps the verbosity line count since
+  2026-09-19): just-solve 0.32 to 0.34, min12 0.30 to 0.28, so in the implementation the two
+  prompts are close on verbosity and min12 does not climb; final-checkpoint means over six
+  problems 0.33 against 0.30 at v0, 0.28 against 0.22 on the patched specs.
 - **datagate's residual five** are the whitespace-preservation tests, left as a benchmark
   failure by decision (see the datagate diary, 2026-09-14): the spec never mentions
   whitespace, and two of the four v2 runs registered stripping as their choice anyway.

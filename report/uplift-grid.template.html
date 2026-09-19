@@ -164,7 +164,7 @@ const METRICS = [
   { key: "fail", name: "Hidden tests failed", unit: "%", fmt: v => (100 * v).toFixed(1) + "%", max: 0.17, ticks: [0, 0.05, 0.10, 0.15], tick: v => (100 * v).toFixed(0) + "%" },
   { key: "erosion", name: "Erosion", unit: "", fmt: v => v.toFixed(2), max: 0.8, ticks: [0, 0.2, 0.4, 0.6, 0.8], tick: v => v.toFixed(1) },
   { key: "ast", name: "ast-grep smells", unit: "", fmt: v => v.toFixed(2), max: 0.5, ticks: [0, 0.1, 0.2, 0.3, 0.4, 0.5], tick: v => v.toFixed(1) },
-  { key: "cloned", name: "Cloned lines", unit: "", fmt: v => v.toFixed(2), max: 0.5, ticks: [0, 0.1, 0.2, 0.3, 0.4, 0.5], tick: v => v.toFixed(1) },
+  { key: "cloned", name: "Cloned lines", unit: "", fmt: v => v.toFixed(2), max: 0.5, ticks: [0, 0.1, 0.2, 0.3, 0.4, 0.5], tick: v => v.toFixed(1), maxes: [0.1, 0.5] },
   { key: "cost", name: "Cost per run", unit: "$", fmt: v => "$" + v.toFixed(0), max: 55, ticks: [0, 10, 20, 30, 40, 50], tick: v => "$" + v },
   { key: "minutes", name: "Wall clock per run", unit: "min", fmt: v => v.toFixed(0) + " min", max: 170, ticks: [0, 40, 80, 120, 160], tick: v => v + "m" },
 ];
@@ -176,7 +176,7 @@ const TRAJECTORY = [
   { key: "erosion", name: "Erosion", fmt: M.erosion.fmt, max: 0.8, ticks: [0, 0.2, 0.4, 0.6, 0.8], paper: true },
   { key: "verbosity", name: "Verbosity", fmt: v => v.toFixed(2), max: 0.6, ticks: [0, 0.2, 0.4, 0.6], paper: true },
   { key: "ast", name: "ast-grep smells", fmt: M.ast.fmt, max: 0.5, ticks: [0, 0.1, 0.2, 0.3, 0.4, 0.5], paper: false },
-  { key: "cloned", name: "Cloned lines", fmt: M.cloned.fmt, max: 0.5, ticks: [0, 0.1, 0.2, 0.3, 0.4, 0.5], paper: false },
+  { key: "cloned", name: "Cloned lines", fmt: M.cloned.fmt, max: 0.3, ticks: [0, 0.1, 0.2, 0.3], paper: false },
 ];
 // The human values come from bin/grid (HUMAN there carries the citation), so the absolute bars
 // and the share bars read one number.
@@ -278,9 +278,22 @@ function square(m) {
   </div>`;
 }
 
+function panelAxis(m, values) {
+  // The axis is the metric's own unless it lists smaller ranges (`maxes`) and every value drawn
+  // fits one; then the smallest that fits is used, with its ticks, so a view whose values sit
+  // near zero (cloned lines, implementation only) is readable without rescaling every panel.
+  const top = Math.max(...values, 0);
+  const fits = (m.maxes || []).find(mx => mx < m.max && top <= mx);
+  if (fits == null) return { max: m.max, ticks: m.ticks, tick: m.tick, zoomed: false };
+  const step = fits / 5;
+  return { max: fits, ticks: [0, 1, 2, 3, 4, 5].map(i => +(i * step).toFixed(3)), tick: v => v.toFixed(2), zoomed: true };
+}
+
 function panel(m) {
   const W = 340, left = 88, right = 14, top = 10, rowH = 30, H = top + rowH * problems.length + 34;
-  const x = v => left + (Math.min(v, m.max) / m.max) * (W - left - right);
+  const drawn = problems.flatMap(p => G.prompts.flatMap(pr => ["v0", "patched"].map(k => cell(p, pr, k)))).filter(Boolean).map(c => c.mean[m.key]);
+  const axis = panelAxis(m, drawn);
+  const x = v => left + (Math.min(v, axis.max) / axis.max) * (W - left - right);
   const marks = [];
   const rows = problems.map((p, i) => {
     const y = top + rowH * i + rowH / 2;
@@ -305,11 +318,11 @@ function panel(m) {
     return s;
   });
   const ax = top + rowH * problems.length + 6;
-  const ticks = m.ticks.map(t => `<line class="axis" x1="${x(t)}" y1="${ax}" x2="${x(t)}" y2="${ax + 4}"></line><text class="num" x="${x(t)}" y="${ax + 17}" text-anchor="middle" style="fill:var(--ink-2);font-size:11px">${esc(m.tick(t))}</text>`).join("");
+  const ticks = axis.ticks.map(t => `<line class="axis" x1="${x(t)}" y1="${ax}" x2="${x(t)}" y2="${ax + 4}"></line><text class="num" x="${x(t)}" y="${ax + 17}" text-anchor="middle" style="fill:var(--ink-2);font-size:11px">${esc(axis.tick(t))}</text>`).join("");
   return `
   <div class="card">
     <h3>${esc(m.name)}</h3>
-    <p class="sub">cell means; hover a mark for its two runs${scopeSub(m)}</p>
+    <p class="sub">cell means; hover a mark for its two runs${scopeSub(m)}${axis.zoomed ? ` \u00b7 axis to ${esc(m.tick(axis.max))}, the values sit low` : ""}</p>
     <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(m.name)} per problem">
       ${rows.join("")}
       <line class="axis" x1="${left}" y1="${ax}" x2="${W - right}" y2="${ax}"></line>

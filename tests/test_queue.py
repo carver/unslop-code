@@ -116,11 +116,34 @@ def test_next_priority_is_one_above_the_highest_queued():
     assert q.next_priority({"1": {"status": "Done"}}) == 1
 
 
-def test_swap_plan_walks_the_job_to_just_before_the_target():
-    assert q.swap_plan([25, 26, 27, 28], 28, 26) == [(28, 27), (27, 26)]
-    assert q.swap_plan([25, 26, 27, 28], 25, 28) == [(25, 26), (26, 27)]
-    assert q.swap_plan([25, 26, 27, 28], 26, 27) == []
-    assert q.swap_plan([25, 26, 27, 28], 27, 27) == []
+def test_moved_order_places_the_job_right_before_the_target():
+    assert q.moved_order([25, 26, 27, 28], 28, 26) == [25, 28, 26, 27]
+    assert q.moved_order([25, 26, 27, 28], 25, 28) == [26, 27, 25, 28]
+    assert q.moved_order([25, 26, 27, 28], 26, 27) == [25, 26, 27, 28]
+    assert q.moved_order([25, 26, 27, 28], 27, 27) == [25, 26, 27, 28]
+    with pytest.raises(SystemExit):
+        q.moved_order([25, 26], 27, 25)
+
+
+def test_priorities_run_the_order_first_to_last_and_leave_zero_free():
+    assert q.priorities_for([28, 25, 26]) == {28: 3, 25: 2, 26: 1}
+
+
+def test_queued_order_is_highest_priority_then_lowest_id():
+    tasks = {
+        "1": {"status": "Queued", "priority": 0},
+        "2": {"status": "Queued", "priority": 5},
+        "3": {"status": {"Running": {}}, "priority": 9},
+        "4": {"status": "Queued", "priority": 5},
+    }
+    assert q.queued_order(tasks) == [2, 4, 1]
+
+
+def test_rewrite_priorities_touches_only_the_named_sections():
+    toml = "[7]\nid = 7\ncommand = \"x\"\npriority = 0\n\n[8]\nid = 8\npriority = 3\n"
+    assert q.rewrite_priorities(toml, {"7": 12}) == (
+        "[7]\nid = 7\ncommand = \"x\"\npriority = 12\n\n[8]\nid = 8\npriority = 3\n"
+    )
 
 
 def test_resume_job_keeps_the_versioned_root_the_run_read(tmp_path):

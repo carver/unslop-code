@@ -75,23 +75,25 @@ transcript. Each is PR-shaped as it stands. Two have branches in `slop-code-benc
 - A crashed checkpoint's `stdout.jsonl`. Filed as issue #36 and PR #37 (2026-09-18, marked
   ready for review the same day, from the fork, the same route as #34 / #35; #34 had promised
   it as a follow-up). Branch `claude-code-stdout-keeps-stream`, off main, has the test first
-  (`70d83f1`), then the fix (`9e0f522`); the single commit it was split from is kept locally as
+  (`a736cb8`), then the fix (`3d2ac94`); the single commit it was split from is kept locally as
   `backup/stdout-keeps-stream-single` (`c86baf6`). The issue text lives only on GitHub; the
-  local draft was deleted once #36 was posted. Repro numbers, checked 2026-09-18 against
-  upstream main (`06b5c06`): `TestStreamTranscriptArtifacts` fails 2 of 2 on main and on the
-  test commit, and passes on the branch. No saved run shows the symptom any more (the first
-  Opus 5 run directory is gone), so the unit test is the only evidence. Since 2026-09-18 the
-  fix also keeps every attempt's stderr (`_stderr_lines`, filled from each finished process's
-  result) and removes `final_result`, whose only remaining use was `stderr.log`; stderr from a
-  process that crashes `_run()` mid-stream is still lost, because `stream_cli_command` only
-  hands stderr over in the finished result. One behavior change the PR flags: a process that
-  prints nothing to a stream now writes no file for it, where main writes an empty one. Issue
-  #36 covers the stderr half too. Upstream writes the file from `final_result`, which only a
-  finished `_run()` sets and nothing clears, so a checkpoint whose `_run()` raises saves the
-  previous checkpoint's stdout and stderr. That is how the string-message cause stayed hidden
-  for 12 days. The branch keeps each stdout line as `_run()` parses it, so a crash leaves its
-  partial stream and a retry appends to the attempt before it. With the stderr half added it
-  covers all of the retry-transcript patch, which can go once this lands.
+  local draft was deleted once #36 was posted. Rebased 2026-09-18 onto upstream main `c2a53b4`
+  (#23 had appended tests to the same file; both sets kept, 69 pass, the test commit alone
+  still fails 2). Repro numbers, checked 2026-09-18 against upstream main (`06b5c06`):
+  `TestStreamTranscriptArtifacts` fails 2 of 2 on main and on the test commit, and passes on
+  the branch. No saved run shows the symptom any more (the first Opus 5 run directory is gone),
+  so the unit test is the only evidence. Since 2026-09-18 the fix also keeps every attempt's
+  stderr (`_stderr_lines`, filled from each finished process's result) and removes
+  `final_result`, whose only remaining use was `stderr.log`; stderr from a process that crashes
+  `_run()` mid-stream is still lost, because `stream_cli_command` only hands stderr over in the
+  finished result. One behavior change the PR flags: a process that prints nothing to a stream
+  now writes no file for it, where main writes an empty one. Issue #36 covers the stderr half
+  too. Upstream writes the file from `final_result`, which only a finished `_run()` sets and
+  nothing clears, so a checkpoint whose `_run()` raises saves the previous checkpoint's stdout
+  and stderr. That is how the string-message cause stayed hidden for 12 days. The branch keeps
+  each stdout line as `_run()` parses it, so a crash leaves its partial stream and a retry
+  appends to the attempt before it. With the stderr half added it covers all of the
+  retry-transcript patch, which can go once this lands.
 
 Findings without a patch yet:
 

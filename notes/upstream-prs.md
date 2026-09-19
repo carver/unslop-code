@@ -61,17 +61,20 @@ checkpoint; agent death detection and prompt context variables; resume invalidat
 infra-failed checkpoints; container init and timeout kill; retry keeps every attempt's
 transcript. Each is PR-shaped as it stands. Two have branches in `slop-code-bench/`:
 
-- Stream-parser string message. Filed as issue #34 and draft PR #35 (2026-09-11, from the
-  fork `robo-carver/slop-code-bench`, remote `fork`; the token has no push to SprocketLab).
-  Branch `claude-2.1.2xx-compatibility` has the test first, then the fix. Claude Code 2.1.251 streams a `system` / `permission_denied` event when its safety
-  check blocks a Bash command such as `cd /tmp/x && rm -rf *`, and that event's `message` is
-  a string. Three saved lines show it: dev6-opus5 file_merger ckpt 4 and sith ckpt 4,
-  dev6-fable51 file_merger ckpt 2. Replaying one through unpatched `_run()` gives the
+- Stream-parser string message. **Landed upstream 2026-09-18**: #23 (`c2a53b4`) carries both
+  commits from #35 (`8c58ef8` test, `9463b69` fix; the test class on main matches our branch
+  line for line), #34 is closed, and we closed #35 as moot. Once the checkout moves to upstream
+  main, `patches/claude-code-stream-parser-string-message.patch` can go. History: filed as
+  issue #34 and draft PR #35 (2026-09-11, from the fork `robo-carver/slop-code-bench`, remote
+  `fork`; the token has no push to SprocketLab). Branch `claude-2.1.2xx-compatibility` has the
+  test first, then the fix. Claude Code 2.1.251 streams a `system` / `permission_denied` event
+  when its safety check blocks a Bash command such as `cd /tmp/x && rm -rf *`, and that event's
+  `message` is a string. Three saved lines show it: dev6-opus5 file_merger ckpt 4 and sith ckpt
+  4, dev6-fable51 file_merger ckpt 2. Replaying one through unpatched `_run()` gives the
   2026-08-30 traceback. A live probe reproduces it on demand
-  (`notes/evidence/permission-denied-probe-2026-09-10/`). Under the harness launch, the
-  same prompt gets the event from 2.1.251, and unpatched `_run()` crashes on it. 2.1.44
-  streams no such event in bypassPermissions or default mode, and its `cli.js` has no
-  such event type.
+  (`notes/evidence/permission-denied-probe-2026-09-10/`). Under the harness launch, the same
+  prompt gets the event from 2.1.251, and unpatched `_run()` crashes on it. 2.1.44 streams no
+  such event in bypassPermissions or default mode, and its `cli.js` has no such event type.
 - A crashed checkpoint's `stdout.jsonl`. Filed as issue #36 and PR #37 (2026-09-18, marked
   ready for review the same day, from the fork, the same route as #34 / #35; #34 had promised
   it as a follow-up). Branch `claude-code-stdout-keeps-stream`, off main, has the test first

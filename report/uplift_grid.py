@@ -80,15 +80,16 @@ def split_section(rows, repos):
             f'{drop(base["impl"]["erosion"], new["impl"]["erosion"])} in implementation files. The rise in cloned '
             f'lines is all in the tests; implementation clones fall from {base["impl"]["cloned"]:.3f} to '
             f'{new["impl"]["cloned"]:.3f}.</p>')
-    note += (f'<p class="note" style="margin-top:8px">The human row is the mean over {len(repos)} of the paper\'s '
-             f'Major-tier repositories (over 10k stars) at HEAD, split by the same tool. Humans write tests too, '
+    note += (f'<p class="note" style="margin-top:8px">The human row is the mean over {len(repos)} of the 28 Major-tier '
+             f'repositories (over 10k stars) in the paper\'s v1, Table 2, at HEAD, split by the same tool. '
+             f'Humans write tests too, '
              f'{human["test_share"]:.0%} of their lines, so their whole-repository figures are diluted the same way. '
              f'Implementation against implementation, spectest\'s ast-grep share is '
              f'{new["impl"]["ast"] / human["impl"]["ast"]:.1f} times the human one, its erosion is '
              f'{new["impl"]["erosion"]:.2f} against {human["impl"]["erosion"]:.2f}, and its cloned share is '
              f'{new["impl"]["cloned"]:.3f} against {human["impl"]["cloned"]:.3f}. Its tests are cloned '
              f'{new["test"]["cloned"] / human["test"]["cloned"]:.1f} times as much as '
-             f'human tests. The human bars in the headline are this same rerun. The paper\'s own table gives '
+             f'human tests. The human bars in the headline are this same rerun. v1\'s Table 2 gives '
              f'0.10 for ast-grep, which this scb-check version does not reproduce ({human["all"]["ast"]:.3f} here); '
              f'its erosion mean, 0.31, it does ({human["all"]["erosion"]:.2f}).</p>')
     return table + note

@@ -102,7 +102,7 @@ svg .hit { fill: transparent; }
   </section>
 
   <section>
-    <h2>Erosion along the run, over the paper's Figure 5</h2>
+    <h2>Erosion along the run, over Figure 5 of the paper's v2</h2>
     <div class="legend" style="margin-bottom:12px">
       <span><i class="sw fill" style="--c:var(--js)"></i>just-solve, this repo</span>
       <span><i class="sw fill" style="--c:var(--min)"></i>spectest, this repo</span>
@@ -122,7 +122,7 @@ svg .hit { fill: transparent; }
   <section>
     <h2>Implementation files against test files</h2>
     <p class="note" style="margin-bottom:10px">The final checkpoint of every v0 run, scored three ways: implementation files only, test files only, and the whole snapshot as the benchmark scores it. Each score is the mean of the six problems, every problem counting once, as every repository does in the human row. Line counts are sums over the twelve runs. Lower is better.</p>
-    <div class="tablewrap"><table><thead><tr><th rowspan="2">prompt</th><th rowspan="2">impl LOC</th><th rowspan="2">test LOC</th><th rowspan="2">test share</th><th colspan="3">ast-grep</th><th colspan="3">erosion</th><th colspan="3">cloned</th></tr><tr><th>impl</th><th>tests</th><th>all</th><th>impl</th><th>tests</th><th>all</th><th>impl</th><th>tests</th><th>all</th></tr></thead><tbody><tr><td>just-solve</td><td class="num">30,174</td><td class="num">13,163</td><td class="num">30%</td><td class="num">0.303</td><td class="num">0.108</td><td class="num">0.254</td><td class="num">0.563</td><td class="num">0.590</td><td class="num">0.625</td><td class="num">0.040</td><td class="num">0.053</td><td class="num">0.043</td></tr><tr><td>spectest</td><td class="num">22,218</td><td class="num">49,643</td><td class="num">69%</td><td class="num">0.250</td><td class="num">0.016</td><td class="num">0.085</td><td class="num">0.360</td><td class="num">0.011</td><td class="num">0.157</td><td class="num">0.030</td><td class="num">0.225</td><td class="num">0.169</td></tr><tr><td>human, 27 repositories</td><td class="num">-</td><td class="num">-</td><td class="num">58%</td><td class="num">0.124</td><td class="num">0.019</td><td class="num">0.063</td><td class="num">0.444</td><td class="num">0.164</td><td class="num">0.309</td><td class="num">0.079</td><td class="num">0.113</td><td class="num">0.100</td></tr></tbody></table></div><p class="note" style="margin-top:10px">scb-check scores the test files along with the implementation, and spectest writes 3.8 times the test code. Over the whole snapshot its ast-grep share falls 67%; in implementation files alone it falls 18%. spectest also writes 26% less implementation, so <b>the count of flagged implementation lines falls 38%</b> (9,412 to 5,870). Erosion has the same shape with more left over: down 75% over the whole snapshot and 36% in implementation files. The rise in cloned lines is all in the tests; implementation clones fall from 0.040 to 0.030.</p><p class="note" style="margin-top:8px">The human row is the mean over 27 of the paper's Major-tier repositories (over 10k stars) at HEAD, split by the same tool. Humans write tests too, 58% of their lines, so their whole-repository figures are diluted the same way. Implementation against implementation, spectest's ast-grep share is 2.0 times the human one, its erosion is 0.36 against 0.44, and its cloned share is 0.030 against 0.079. Its tests are cloned 2.0 times as much as human tests. The human bars in the headline are this same rerun. The paper's own table gives 0.10 for ast-grep, which this scb-check version does not reproduce (0.063 here); its erosion mean, 0.31, it does (0.31).</p>
+    <div class="tablewrap"><table><thead><tr><th rowspan="2">prompt</th><th rowspan="2">impl LOC</th><th rowspan="2">test LOC</th><th rowspan="2">test share</th><th colspan="3">ast-grep</th><th colspan="3">erosion</th><th colspan="3">cloned</th></tr><tr><th>impl</th><th>tests</th><th>all</th><th>impl</th><th>tests</th><th>all</th><th>impl</th><th>tests</th><th>all</th></tr></thead><tbody><tr><td>just-solve</td><td class="num">30,174</td><td class="num">13,163</td><td class="num">30%</td><td class="num">0.303</td><td class="num">0.108</td><td class="num">0.254</td><td class="num">0.563</td><td class="num">0.590</td><td class="num">0.625</td><td class="num">0.040</td><td class="num">0.053</td><td class="num">0.043</td></tr><tr><td>spectest</td><td class="num">22,218</td><td class="num">49,643</td><td class="num">69%</td><td class="num">0.250</td><td class="num">0.016</td><td class="num">0.085</td><td class="num">0.360</td><td class="num">0.011</td><td class="num">0.157</td><td class="num">0.030</td><td class="num">0.225</td><td class="num">0.169</td></tr><tr><td>human, 27 repositories</td><td class="num">-</td><td class="num">-</td><td class="num">58%</td><td class="num">0.124</td><td class="num">0.019</td><td class="num">0.063</td><td class="num">0.444</td><td class="num">0.164</td><td class="num">0.309</td><td class="num">0.079</td><td class="num">0.113</td><td class="num">0.100</td></tr></tbody></table></div><p class="note" style="margin-top:10px">scb-check scores the test files along with the implementation, and spectest writes 3.8 times the test code. Over the whole snapshot its ast-grep share falls 67%; in implementation files alone it falls 18%. spectest also writes 26% less implementation, so <b>the count of flagged implementation lines falls 38%</b> (9,412 to 5,870). Erosion has the same shape with more left over: down 75% over the whole snapshot and 36% in implementation files. The rise in cloned lines is all in the tests; implementation clones fall from 0.040 to 0.030.</p><p class="note" style="margin-top:8px">The human row is the mean over 27 of the 28 Major-tier repositories (over 10k stars) in the paper's v1, Table 2, at HEAD, split by the same tool. Humans write tests too, 58% of their lines, so their whole-repository figures are diluted the same way. Implementation against implementation, spectest's ast-grep share is 2.0 times the human one, its erosion is 0.36 against 0.44, and its cloned share is 0.030 against 0.079. Its tests are cloned 2.0 times as much as human tests. The human bars in the headline are this same rerun. v1's Table 2 gives 0.10 for ast-grep, which this scb-check version does not reproduce (0.063 here); its erosion mean, 0.31, it does (0.31).</p>
     <p class="note" style="margin-top:8px">Per-problem rows, the rules that fire in tests and the same split on human repositories are in <span class="mono">notes/quality-test-dilution.md</span> in the repository.</p>
   </section>
 
@@ -1726,10 +1726,10 @@ const scopeSub = m => SCOPED.has(m.key) && implOnly() ? " \u00b7 implementation 
 function setScope(impl) {
   D = impl ? G.impl : G;
   R = D.relative.metrics;
-  const tip = (h, name, extra) => `Human repositories with over 10k stars\n${h.n} of the paper's 28, at HEAD in September 2026\nrescored with scb-check 0.1.3, ${impl ? "test files left out" : "whole repository"}\n${name} ${h.value.toFixed(2)}, from ${h.min.repo} ${h.min.value.toFixed(2)} to ${h.max.repo} ${h.max.value.toFixed(2)}${extra}`;
+  const tip = (h, name, extra) => `Human repositories with over 10k stars\n${h.n} of the 28 in the paper's v1 (Table 2), at HEAD in September 2026\nrescored with scb-check 0.1.3, ${impl ? "test files left out" : "whole repository"}\n${name} ${h.value.toFixed(2)}, from ${h.min.repo} ${h.min.value.toFixed(2)} to ${h.max.repo} ${h.max.value.toFixed(2)}${extra}`;
   HUMAN = {
-    erosion: { v: R.erosion.human.value, label: "human, 10k+ stars", tip: tip(R.erosion.human, "erosion", "\nthe paper's own table: 0.31, whole repository") },
-    ast: { v: R.ast.human.value, label: "human, 10k+ stars", tip: tip(R.ast.human, "ast-grep", "\nthe paper's own table says 0.10, from another rule set") },
+    erosion: { v: R.erosion.human.value, label: "human, 10k+ stars", tip: tip(R.erosion.human, "erosion", "\nv1 Table 2: 0.31, whole repository") },
+    ast: { v: R.ast.human.value, label: "human, 10k+ stars", tip: tip(R.ast.human, "ast-grep", "\nv1 Table 2 says 0.10, from another rule set") },
   };
 }
 // arXiv 2603.24755v2 Figure 5, top row: mean structural erosion per progress phase for three
@@ -1853,7 +1853,7 @@ function trajectoryPanel(model) {
   const y = v => top + (1 - v / ymax) * (H - top - bottom);
   const series = [];
   for (const [name, vals] of Object.entries(PAPER.models[model]))
-    series.push({ label: name, vals, color: PAPER.color[name], soft: true, tip: i => `paper, ${model}, ${name} prompt\n${phases[i]}: erosion ${m.fmt(vals[i])}` });
+    series.push({ label: name, vals, color: PAPER.color[name], soft: true, tip: i => `paper v2 Figure 5, ${model}, ${name} prompt\n${phases[i]}: erosion ${m.fmt(vals[i])}` });
   for (const [prompt, color, tag] of [[JS, "var(--js)", "js"], [MIN, "var(--min)", "min"]]) {
     const t = T.prompts[prompt];
     series.push({ label: P[tag], vals: t.erosion, color, soft: false, tip: i => `${P[tag]} at ${T.spec}, ${t.runs} runs, six problems\n${phases[i]}: erosion ${m.fmt(t.erosion[i])} over ${t.ckpts[i]} checkpoints` });
@@ -2003,7 +2003,7 @@ function render() {
   const T = D.trajectory, f = v => v.toFixed(2);
   const js = T.prompts[JS].erosion, mn = T.prompts[MIN].erosion;
     document.getElementById("trajectory-note").innerHTML =
-      `<b>Reading.</b> The paper's Figure 5 (top row) is redrawn from its vector paths, one y axis for all three models instead of a range per panel. ` +
+      `<b>Reading.</b> Figure 5 of the paper's second revision (arXiv 2603.24755v2, top row) is redrawn from its vector paths, one y axis for all three models instead of a range per panel. ` +
       `Its Baseline prompt is just-solve; Anti-Slop is its quality prompt. Every paper line climbs from Start to Final, and the paper reads that as prompting not slowing the decay. ` +
       `Our two lines are the same twelve v0 runs per prompt from the headline, each checkpoint placed in the paper's phase (first is Start, last is Final, the rest split into thirds) and pooled: ` +
       `just-solve ${esc(f(js[0]))} to ${esc(f(js[4]))}, spectest ${esc(f(mn[0]))} to ${esc(f(mn[4]))}. From Start to Final just-solve moves ${esc(signed(METRICS[1], js[4] - js[0]))} and spectest ${esc(signed(METRICS[1], mn[4] - mn[0]))}, where the paper's Baseline lines climb 0.11 to 0.16 and its Anti-Slop lines 0.07 to 0.13; two runs per problem and four to seven checkpoints, so read the wiggles as noise.` +
@@ -2017,9 +2017,10 @@ function render() {
     `<b>Reading.</b> The spec moves correctness; the prompt moves quality; the order does not change where you end up. ` +
     `Patched specs: ${esc(specs)}. datagate's residual ${esc((100 * cell("datagate", MIN, "patched").mean.fail).toFixed(1))}% is the whitespace-preservation class, left as a benchmark failure. ` +
     `Erosion and ast-grep are the harness's quality scores, share of files flagged; cost is Claude Code's reported spend per run; wall clock is checkpoint end minus start, summed, and includes waits on the 5-hour window. ` +
-    `The human bars are the paper's Major tier, repositories with over 10k stars, rescored at HEAD with the scb-check version the runs use: ${R.erosion.human.n} of its 28, because one is no longer Python. ` +
-    `The paper's own table gives erosion 0.31, which the rerun matches, and ast-grep 0.10, which it does not (${esc(G.relative.metrics.ast.human.value.toFixed(3))} here, so another rule set); ` +
-    `a figure from another rule set cannot sit beside ours, and the rerun also gives the spread and the implementation-only values.`;
+    `The human bars are the Major tier of the paper's first revision (arXiv 2603.24755v1, Table 2), repositories with over 10k stars, rescored at HEAD with the scb-check version the runs use: ${R.erosion.human.n} of its 28, because one is no longer Python. ` +
+    `v1's table gives erosion 0.31, which the rerun matches, and ast-grep 0.10, which it does not (${esc(G.relative.metrics.ast.human.value.toFixed(3))} here, so another rule set); ` +
+    `a figure from another rule set cannot sit beside ours, and the rerun also gives the spread and the implementation-only values. ` +
+    `Two revisions are cited because each has what the other lacks: v1's human table carries the ast-grep and clone columns over 28 Major repositories, and v2 (473 repositories, 115 Major, erosion 0.37) drops those columns but adds GPT 5.5 to Figure 5.`;
 
   const cols = [[JS, "v0"], [MIN, "v0"], [MIN, "patched"], [JS, "patched"]];
   const th = cols.map(([pr, k]) => `<th>${esc(pr === JS ? "just-solve" : "spectest")} ${k}</th>`).join("");

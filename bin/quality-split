@@ -43,16 +43,23 @@ def final_checkpoint(problem_dir):
     return max(scored, key=lambda c: int(c.name.rsplit("_", 1)[1]), default=None)
 
 
-def collect(prompts, model, problems):
-    cells = {}
-    for run in results.run_dirs():
+def final_snapshots(prompts, model, problems, runs=None):
+    """(problem, prompt, run, snapshot) for the final scored checkpoint of every v0 run of `prompts`
+    by `model`; `problems` of None means all of them."""
+    for run in results.run_dirs() if runs is None else runs:
         prompt, spec, run_model = results.cell_key(run)
         if prompt not in prompts or spec != "v0" or run_model != model:
             continue
-        for problem_dir in (d for d in run.iterdir() if d.is_dir() and (problems is None or d.name in problems)):
+        for problem_dir in sorted(d for d in run.iterdir() if d.is_dir() and (problems is None or d.name in problems)):
             checkpoint = final_checkpoint(problem_dir)
             if checkpoint:
-                cells.setdefault((problem_dir.name, prompt), []).append(split_reports(checkpoint / "snapshot"))
+                yield problem_dir.name, prompt, run, checkpoint / "snapshot"
+
+
+def collect(prompts, model, problems):
+    cells = {}
+    for problem, prompt, _, snapshot in final_snapshots(prompts, model, problems):
+        cells.setdefault((problem, prompt), []).append(split_reports(snapshot))
     return cells
 
 

@@ -86,3 +86,25 @@ def test_a_tree_with_no_python_prints_dashes():
     empty = dict.fromkeys(("impl", "test", "all"), report(0))
     line = qs.table([{"name": "rusty", **qs.pooled([empty])}]).splitlines()[-1]
     assert line == "| rusty | - | 1 | 0 | 0 | - | - / - / - | - / - / - | - / - / - |"
+
+
+def fake_run(outputs, prompt, stamp, problem, scored, model="opus-5"):
+    run = outputs / "spectest" / f"{model}_2.1.251_high_{prompt}" / stamp
+    for n in range(1, 4):
+        (run / problem / f"checkpoint_{n}" / "snapshot").mkdir(parents=True)
+    for n in scored:
+        analysis = run / problem / f"checkpoint_{n}" / "quality_analysis"
+        analysis.mkdir()
+        (analysis / "scb_check.json").write_text("{}")
+    (run / "checkpoint_results.jsonl").write_text("")
+    return run
+
+
+def test_final_snapshots_are_the_last_scored_checkpoint_of_each_matching_run(tmp_path):
+    first = fake_run(tmp_path, "min13-ABDJKMNT", "20260918T1850", "mvvault", scored=(1, 2))
+    fake_run(tmp_path, "min13-ABDJKMNT", "20260918T2129", "rejector", scored=(1,))
+    fake_run(tmp_path, "just-solve", "20260915T0940", "mvvault", scored=(1, 2, 3))
+    fake_run(tmp_path, "min13-ABDJKMNT", "20260919T0100", "mvvault", scored=())
+    fake_run(tmp_path, "min13-ABDJKMNT", "20260919T0200", "mvvault", scored=(1,), model="sonnet-4.6")
+    found = list(qs.final_snapshots(["min13-ABDJKMNT"], "opus-5", {"mvvault"}, qs.results.run_dirs(tmp_path)))
+    assert found == [("mvvault", "min13-ABDJKMNT", first, first / "mvvault" / "checkpoint_2" / "snapshot")]

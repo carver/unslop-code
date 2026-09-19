@@ -3,8 +3,10 @@
 
     bin/ledger-row <run_dir>
 
-Prints the table row for notes/<problem>-runs.md (scores per checkpoint, miss count, cost)
-and the failure-summary entry: each missed hidden test under the checkpoint it belongs to,
+Prints the table row for notes/<problem>-runs.md (scores per checkpoint, miss count, cost, and
+the quality scores: the checkpoint mean notes/results.md shows, then the final checkpoint's
+implementation files alone, as bin/quality-split scores them) and the failure-summary entry:
+each missed hidden test under the checkpoint it belongs to,
 with the checkpoints it failed at. The cause of each miss is the reader's to add; the
 evaluation output (`<ckpt>/evaluation/stdout.txt`), `bin/miss-report`, and `bin/askrun`
 are where to look. Ends by running `bin/results --write`, so the cross-problem table in
@@ -23,6 +25,8 @@ summarize = types.ModuleType("summarize")
 summarize.__file__ = str(HERE / "summarize")
 sys.modules["summarize"] = summarize
 exec(compile((HERE / "summarize").read_text(), str(HERE / "summarize"), "exec"), summarize.__dict__)
+sys.path.insert(0, str(HERE.parent / "report"))
+import scb_split  # noqa: E402
 
 
 def failures(problem_dir):
@@ -37,6 +41,26 @@ def failures(problem_dir):
     return out
 
 
+def fmt(value, spec=".3f"):
+    return "-" if value is None else format(value, spec)
+
+
+def mean(values):
+    values = [v for v in values if v is not None]
+    return sum(values) / len(values) if values else None
+
+
+def quality_clause(rows, split):
+    """`rows` are the run's checkpoints, `split` is scb_split.split_reports of the final snapshot."""
+    whole = ", ".join(f"{label} {fmt(mean(r.get(key) for r in rows))}" for label, key in
+                      [("erosion", "erosion"), ("verbosity", "verbosity"), ("ast", "ast_grep_pct"),
+                       ("cloned", "cloned_pct")])
+    impl = scb_split.scores(split["impl"])
+    share = scb_split.ratio(split["impl"]["total_loc"], split["impl"]["total_loc"] + split["test"]["total_loc"])
+    return (f"Quality: {whole}; final checkpoint, implementation only ({fmt(share, '.0%')} of LOC): "
+            f"ast {fmt(impl['ast'])}, erosion {fmt(impl['erosion'])}, cloned {fmt(impl['cloned'])}")
+
+
 def main():
     run = pathlib.Path(sys.argv[1]).resolve()
     rows = summarize.load_rows(run)
@@ -47,8 +71,9 @@ def main():
     minutes = sum(summarize.elapsed(r) for r in rows) / 60
     fails = failures(run / problem)
     name = run.parent.name.removeprefix("opus-5_2.1.251_high_")
+    quality = quality_clause(rows, scb_split.split_reports(run / problem / rows[-1]["checkpoint"] / "snapshot"))
     print(f"| {name} | `…{name}/{run.name}` | WHAT CHANGED | {scores} | complete {rows[-1].get('ended', '')[:10]}; "
-          f"{len(fails)} misses (CAUSES); {strict}/{len(rows)} strict, ${cost:.0f}, {minutes:.0f} min |")
+          f"{len(fails)} misses (CAUSES); {strict}/{len(rows)} strict, ${cost:.0f}, {minutes:.0f} min. {quality} |")
     print()
     print(f"### {name}")
     print()

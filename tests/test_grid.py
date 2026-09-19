@@ -43,9 +43,12 @@ def test_fail_is_the_share_of_hidden_tests_failed_and_minutes_come_through():
     assert figures["minutes"] == 42.0
 
 
-def test_patched_spec_is_the_highest_version_both_prompts_have():
+def test_patched_spec_is_the_highest_version_the_baseline_shares_with_another_prompt():
     assert gr.patched_spec(CELLS, "xjq", gr.DEFAULT_PROMPTS, "opus-5") == "v3"
-    assert gr.patched_spec(CELLS, "sith", gr.DEFAULT_PROMPTS, "opus-5") is None
+    assert gr.patched_spec(CELLS, "sith", gr.DEFAULT_PROMPTS, "opus-5") is None  # min12's v1 has no baseline run
+    # a prompt with no patched run (anti_slop here) does not hold the others back
+    assert gr.patched_spec(CELLS, "xjq", ("just-solve", "anti_slop", "min13-ABDJKMNT"), "opus-5") == "v3"
+    assert gr.patched_spec(CELLS, "xjq", ("just-solve", "anti_slop"), "opus-5") is None
 
 
 def test_grid_cells_average_their_runs_and_means_average_the_problems():
@@ -64,11 +67,12 @@ def test_grid_cells_average_their_runs_and_means_average_the_problems():
 def test_table_has_a_row_per_problem_and_a_mean_row():
     lines = gr.table(gr.grid(CELLS)).splitlines()
     assert lines[0].startswith(
-        "| problem | patched | just-solve v0 | min12-ABDJKMN v0 | min13-ABDJKMNT v0 | just-solve patched "
-        "| min12-ABDJKMN patched | min13-ABDJKMNT patched |"
+        "| problem | patched | just-solve v0 | anti_slop v0 | min12-ABDJKMN v0 | min13-ABDJKMNT v0 "
+        "| just-solve patched | anti_slop patched | min12-ABDJKMN patched | min13-ABDJKMNT patched |"
     )
     assert lines[2].startswith(
-        "| sith | - | 50.0% / 0.70 / 0.10 / $10 / 30m (1) | 30.0% / 0.30 / 0.10 / $10 / 30m (1) | - | - | - | - |"
+        "| sith | - | 50.0% / 0.70 / 0.10 / $10 / 30m (1) | - | 30.0% / 0.30 / 0.10 / $10 / 30m (1) | - "
+        "| - | - | - | - |"
     )
     assert lines[3].startswith("| xjq | v3 | 15.0% / 0.50 / 0.10 / $10 / 30m (2) |")
     assert lines[-1].startswith("| mean | n=1/2 | 32.5% / 0.60 / 0.10 / $10 / 30m (2) |")

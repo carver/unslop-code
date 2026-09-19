@@ -17,7 +17,8 @@ import subprocess
 
 HERE = pathlib.Path(__file__).resolve().parent
 ROOT = HERE.parent
-PROMPT_LABELS = {"just-solve": "just-solve", "min12-ABDJKMN": "spectest", "min13-ABDJKMNT": "spectest+antislop"}
+PROMPT_LABELS = {"just-solve": "just-solve", "anti_slop": "anti-slop", "min12-ABDJKMN": "spectest",
+                 "min13-ABDJKMNT": "spectest+antislop"}
 SCORES = (("ast", "ast-grep"), ("erosion", "erosion"), ("cloned", "cloned"))
 PARTS = (("impl", "impl"), ("test", "tests"), ("all", "all"))
 

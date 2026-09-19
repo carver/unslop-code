@@ -5,21 +5,21 @@
   color-scheme: light;
   --bg: #f4f5f7; --panel: #fbfbfc; --ink: #181b1f; --ink-2: #5b6170; --ink-3: #8a909c;
   --rule: #d7dae0; --grid: #e6e8ec;
-  --js: #2a78d6; --min: #eb6834; --anti: #7b52d9; --js-soft: #cfdff5; --min-soft: #f9d9cb; --anti-soft: #e4dbf8;
+  --js: #2a78d6; --aslop: #1a9c8f; --min: #eb6834; --anti: #9c27b0; --js-soft: #cfdff5; --min-soft: #f9d9cb;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     color-scheme: dark;
     --bg: #15171a; --panel: #1c1f23; --ink: #eceef1; --ink-2: #a6acb6; --ink-3: #737a86;
     --rule: #2e333a; --grid: #262a30;
-    --js: #3987e5; --min: #d95926; --anti: #8f6ce6; --js-soft: #23395a; --min-soft: #55301f; --anti-soft: #35295c;
+    --js: #3987e5; --aslop: #26a69a; --min: #d95926; --anti: #ab47bc; --js-soft: #23395a; --min-soft: #55301f;
   }
 }
 :root[data-theme="dark"] {
   color-scheme: dark;
   --bg: #15171a; --panel: #1c1f23; --ink: #eceef1; --ink-2: #a6acb6; --ink-3: #737a86;
   --rule: #2e333a; --grid: #262a30;
-  --js: #3987e5; --min: #d95926; --anti: #8f6ce6; --js-soft: #23395a; --min-soft: #55301f; --anti-soft: #35295c;
+  --js: #3987e5; --aslop: #26a69a; --min: #d95926; --anti: #ab47bc; --js-soft: #23395a; --min-soft: #55301f;
 }
 * { box-sizing: border-box; }
 body { background: var(--bg); color: var(--ink); font-family: "Familjen Grotesk", "Helvetica Neue", Arial, sans-serif; font-size: 15px; line-height: 1.45; padding-block: 32px 48px; padding-inline: 20px; }
@@ -84,13 +84,15 @@ svg .hit { fill: transparent; }
 <div class="wrap">
   <header>
     <h1>Unslop Results on Slop Code Bench</h1>
-    <p class="lede">Use two strategies on six problems: tweak the spec if ambiguous, and use a new prompt, "spectest". A third arm, spectest+antislop, adds the paper's own anti-slop rules to spectest. Every figure is lower-is-better. Two runs per problem, using Claude Opus 5.</p>
-    <p class="lede" style="margin-top:8px">The <b style="color:var(--ink);font-weight:600">spectest</b> prompt replaces the benchmark's default, just-solve. Spectest guides the agent to write tests from the spec before implementing. The agent splits the spec into phrases, writes a test for each one, and logs every ambiguity. <a href="min12-prompt.html">This spectest</a> is my 12th version. In the code, it's called <span class="mono" style="font-size:13.5px">min12-ABDJKMN</span>. Version 12 was split into chunks A to S, and then trimmed. The remaining bits are: A and B are shell tool hygiene, D writes tests from the spec, J and K log ambiguities, M and N speed up execution by running focused tests. <b style="color:var(--ink);font-weight:600">spectest+antislop</b> (min13-ABDJKMNT) is the same prompt with one chunk appended, T: the benchmark's upstream Anti-Slop rule list, unchanged, so the paper's Anti-Slop line is its counterpart in the figures below.</p>
+    <p class="lede">Use two strategies on six problems: tweak the spec if ambiguous, and use a new prompt, "spectest". Two more arms: anti-slop, the benchmark's own quality prompt, and spectest+antislop, which adds that prompt's rules to spectest. Every figure is lower-is-better. Two runs per problem, using Claude Opus 5.</p>
+    <p class="lede" style="margin-top:8px">The <b style="color:var(--ink);font-weight:600">spectest</b> prompt replaces the benchmark's default, just-solve. Spectest guides the agent to write tests from the spec before implementing. The agent splits the spec into phrases, writes a test for each one, and logs every ambiguity. <a href="min12-prompt.html">This spectest</a> is my 12th version. In the code, it's called <span class="mono" style="font-size:13.5px">min12-ABDJKMN</span>. Version 12 was split into chunks A to S, and then trimmed. The remaining bits are: A and B are shell tool hygiene, D writes tests from the spec, J and K log ambiguities, M and N speed up execution by running focused tests. <b style="color:var(--ink);font-weight:600">anti-slop</b> is the benchmark's upstream <span class="mono" style="font-size:13.5px">anti_slop</span> prompt as shipped, the paper's Anti-Slop arm, so the paper's faint Anti-Slop lines below are its counterpart. <b style="color:var(--ink);font-weight:600">spectest+antislop</b> (min13-ABDJKMNT) is spectest with one chunk appended, T: that prompt's rule list, unchanged. anti-slop against just-solve is the paper's own comparison; spectest+antislop against anti-slop is what writing tests first adds on top of the rules.</p>
   </header>
 
   <div class="legend">
     <span><i class="sw" style="--c:var(--js)"></i>just-solve, spec v0</span>
     <span><i class="sw fill" style="--c:var(--js)"></i>just-solve, patched spec</span>
+    <span><i class="sw" style="--c:var(--aslop)"></i>anti-slop, spec v0</span>
+    <span><i class="sw fill" style="--c:var(--aslop)"></i>anti-slop, patched spec</span>
     <span><i class="sw" style="--c:var(--min)"></i>spectest, spec v0</span>
     <span><i class="sw fill" style="--c:var(--min)"></i>spectest, patched spec</span>
     <span><i class="sw" style="--c:var(--anti)"></i>spectest+antislop, spec v0</span>
@@ -113,10 +115,11 @@ svg .hit { fill: transparent; }
     <h2>Quality along the run</h2>
     <div class="legend" style="margin-bottom:12px">
       <span><i class="sw fill" style="--c:var(--js)"></i>just-solve, this repo</span>
+      <span><i class="sw fill" style="--c:var(--aslop)"></i>anti-slop, this repo</span>
       <span><i class="sw fill" style="--c:var(--min)"></i>spectest, this repo</span>
       <span><i class="sw fill" style="--c:var(--anti)"></i>spectest+antislop, this repo</span>
       <span><i class="sw fill soft" style="--c:var(--js)"></i>paper Baseline</span>
-      <span><i class="sw fill soft" style="--c:var(--min)"></i>paper Anti-Slop</span>
+      <span><i class="sw fill soft" style="--c:var(--aslop)"></i>paper Anti-Slop</span>
       <span><i class="sw fill soft" style="--c:var(--ink-3)"></i>paper Plan-First</span>
     </div>
     <div id="trajectory"></div>
@@ -152,9 +155,10 @@ svg .hit { fill: transparent; }
 <script>
 const G = __DATA__;
 const [JS, ...OTHERS] = G.prompts;
-const MIN = OTHERS[0];
+const MIN = G.prompts.includes("min12-ABDJKMN") ? "min12-ABDJKMN" : OTHERS[0];
 const PROMPTS = {
   "just-solve": { label: "just-solve", color: "var(--js)" },
+  "anti_slop": { label: "anti-slop", color: "var(--aslop)" },
   "min12-ABDJKMN": { label: "spectest", color: "var(--min)" },
   "min13-ABDJKMNT": { label: "spectest+antislop", color: "var(--anti)" },
 };
@@ -211,7 +215,9 @@ const PAPER = {
     "GPT 5.4": {"Baseline": [0.327, 0.332, 0.341, 0.318, 0.329], "Anti-Slop": [0.253, 0.238, 0.225, 0.24, 0.238], "Plan-First": [0.295, 0.306, 0.314, 0.292, 0.303]},
     "GPT 5.5": {"Baseline": [0.264, 0.31, 0.327, 0.34, 0.335], "Anti-Slop": [0.183, 0.199, 0.212, 0.211, 0.219], "Plan-First": [0.232, 0.259, 0.26, 0.26, 0.256]},
   },
-  color: { "Baseline": "var(--js)", "Anti-Slop": "var(--min)", "Plan-First": "var(--ink-3)" },
+  // The paper's lines wear the colour of their counterpart here: Baseline is just-solve,
+  // Anti-Slop is the same prompt as our anti-slop arm; Plan-First has none.
+  color: { "Baseline": "var(--js)", "Anti-Slop": "var(--aslop)", "Plan-First": "var(--ink-3)" },
 };
 const PAPER_MODELS = Object.keys(PAPER.erosion);
 const problems = Object.keys(G.problems);
@@ -593,7 +599,7 @@ function render() {
     }).join(", ");
     document.getElementById("trajectory-note").innerHTML =
       `<b>Reading.</b> Figure 5 of the paper's second revision (arXiv 2603.24755v2) is redrawn from its vector paths, one y axis for all three models instead of a range per panel: erosion on its top row, verbosity on the bottom (the share of lines flagged by ast-grep, the clone detector or the trivial-wrapper check, so it covers the next two rows). ` +
-      `Its Baseline prompt is just-solve; Anti-Slop is its quality prompt. Every paper erosion line climbs from Start to Final, and the paper reads that as prompting not slowing the decay. ` +
+      `Its Baseline prompt is just-solve and its Anti-Slop prompt is our anti-slop arm, each drawn in that arm's colour. Every paper erosion line climbs from Start to Final, and the paper reads that as prompting not slowing the decay. ` +
       `Our lines are the v0 runs from the headline, each checkpoint placed in the paper's phase (first is Start, last is Final, the rest split into thirds) and pooled over every run of the prompt. ` +
       `Erosion: ${ours("erosion")}, where the paper's Baseline lines climb ${esc(climb("erosion", "Baseline"))} and its Anti-Slop lines ${esc(climb("erosion", "Anti-Slop"))}. ` +
       `Verbosity: ${ours("verbosity")}, against paper Baseline climbs of ${esc(climb("verbosity", "Baseline"))} and Anti-Slop ${esc(climb("verbosity", "Anti-Slop"))}. ` +

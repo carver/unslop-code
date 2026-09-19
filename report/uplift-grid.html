@@ -5,21 +5,21 @@
   color-scheme: light;
   --bg: #f4f5f7; --panel: #fbfbfc; --ink: #181b1f; --ink-2: #5b6170; --ink-3: #8a909c;
   --rule: #d7dae0; --grid: #e6e8ec;
-  --js: #2a78d6; --min: #eb6834; --anti: #7b52d9; --js-soft: #cfdff5; --min-soft: #f9d9cb; --anti-soft: #e4dbf8;
+  --js: #2a78d6; --aslop: #1a9c8f; --min: #eb6834; --anti: #9c27b0; --js-soft: #cfdff5; --min-soft: #f9d9cb;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     color-scheme: dark;
     --bg: #15171a; --panel: #1c1f23; --ink: #eceef1; --ink-2: #a6acb6; --ink-3: #737a86;
     --rule: #2e333a; --grid: #262a30;
-    --js: #3987e5; --min: #d95926; --anti: #8f6ce6; --js-soft: #23395a; --min-soft: #55301f; --anti-soft: #35295c;
+    --js: #3987e5; --aslop: #26a69a; --min: #d95926; --anti: #ab47bc; --js-soft: #23395a; --min-soft: #55301f;
   }
 }
 :root[data-theme="dark"] {
   color-scheme: dark;
   --bg: #15171a; --panel: #1c1f23; --ink: #eceef1; --ink-2: #a6acb6; --ink-3: #737a86;
   --rule: #2e333a; --grid: #262a30;
-  --js: #3987e5; --min: #d95926; --anti: #8f6ce6; --js-soft: #23395a; --min-soft: #55301f; --anti-soft: #35295c;
+  --js: #3987e5; --aslop: #26a69a; --min: #d95926; --anti: #ab47bc; --js-soft: #23395a; --min-soft: #55301f;
 }
 * { box-sizing: border-box; }
 body { background: var(--bg); color: var(--ink); font-family: "Familjen Grotesk", "Helvetica Neue", Arial, sans-serif; font-size: 15px; line-height: 1.45; padding-block: 32px 48px; padding-inline: 20px; }
@@ -84,13 +84,15 @@ svg .hit { fill: transparent; }
 <div class="wrap">
   <header>
     <h1>Unslop Results on Slop Code Bench</h1>
-    <p class="lede">Use two strategies on six problems: tweak the spec if ambiguous, and use a new prompt, "spectest". A third arm, spectest+antislop, adds the paper's own anti-slop rules to spectest. Every figure is lower-is-better. Two runs per problem, using Claude Opus 5.</p>
-    <p class="lede" style="margin-top:8px">The <b style="color:var(--ink);font-weight:600">spectest</b> prompt replaces the benchmark's default, just-solve. Spectest guides the agent to write tests from the spec before implementing. The agent splits the spec into phrases, writes a test for each one, and logs every ambiguity. <a href="min12-prompt.html">This spectest</a> is my 12th version. In the code, it's called <span class="mono" style="font-size:13.5px">min12-ABDJKMN</span>. Version 12 was split into chunks A to S, and then trimmed. The remaining bits are: A and B are shell tool hygiene, D writes tests from the spec, J and K log ambiguities, M and N speed up execution by running focused tests. <b style="color:var(--ink);font-weight:600">spectest+antislop</b> (min13-ABDJKMNT) is the same prompt with one chunk appended, T: the benchmark's upstream Anti-Slop rule list, unchanged, so the paper's Anti-Slop line is its counterpart in the figures below.</p>
+    <p class="lede">Use two strategies on six problems: tweak the spec if ambiguous, and use a new prompt, "spectest". Two more arms: anti-slop, the benchmark's own quality prompt, and spectest+antislop, which adds that prompt's rules to spectest. Every figure is lower-is-better. Two runs per problem, using Claude Opus 5.</p>
+    <p class="lede" style="margin-top:8px">The <b style="color:var(--ink);font-weight:600">spectest</b> prompt replaces the benchmark's default, just-solve. Spectest guides the agent to write tests from the spec before implementing. The agent splits the spec into phrases, writes a test for each one, and logs every ambiguity. <a href="min12-prompt.html">This spectest</a> is my 12th version. In the code, it's called <span class="mono" style="font-size:13.5px">min12-ABDJKMN</span>. Version 12 was split into chunks A to S, and then trimmed. The remaining bits are: A and B are shell tool hygiene, D writes tests from the spec, J and K log ambiguities, M and N speed up execution by running focused tests. <b style="color:var(--ink);font-weight:600">anti-slop</b> is the benchmark's upstream <span class="mono" style="font-size:13.5px">anti_slop</span> prompt as shipped, the paper's Anti-Slop arm, so the paper's faint Anti-Slop lines below are its counterpart. <b style="color:var(--ink);font-weight:600">spectest+antislop</b> (min13-ABDJKMNT) is spectest with one chunk appended, T: that prompt's rule list, unchanged. anti-slop against just-solve is the paper's own comparison; spectest+antislop against anti-slop is what writing tests first adds on top of the rules.</p>
   </header>
 
   <div class="legend">
     <span><i class="sw" style="--c:var(--js)"></i>just-solve, spec v0</span>
     <span><i class="sw fill" style="--c:var(--js)"></i>just-solve, patched spec</span>
+    <span><i class="sw" style="--c:var(--aslop)"></i>anti-slop, spec v0</span>
+    <span><i class="sw fill" style="--c:var(--aslop)"></i>anti-slop, patched spec</span>
     <span><i class="sw" style="--c:var(--min)"></i>spectest, spec v0</span>
     <span><i class="sw fill" style="--c:var(--min)"></i>spectest, patched spec</span>
     <span><i class="sw" style="--c:var(--anti)"></i>spectest+antislop, spec v0</span>
@@ -113,10 +115,11 @@ svg .hit { fill: transparent; }
     <h2>Quality along the run</h2>
     <div class="legend" style="margin-bottom:12px">
       <span><i class="sw fill" style="--c:var(--js)"></i>just-solve, this repo</span>
+      <span><i class="sw fill" style="--c:var(--aslop)"></i>anti-slop, this repo</span>
       <span><i class="sw fill" style="--c:var(--min)"></i>spectest, this repo</span>
       <span><i class="sw fill" style="--c:var(--anti)"></i>spectest+antislop, this repo</span>
       <span><i class="sw fill soft" style="--c:var(--js)"></i>paper Baseline</span>
-      <span><i class="sw fill soft" style="--c:var(--min)"></i>paper Anti-Slop</span>
+      <span><i class="sw fill soft" style="--c:var(--aslop)"></i>paper Anti-Slop</span>
       <span><i class="sw fill soft" style="--c:var(--ink-3)"></i>paper Plan-First</span>
     </div>
     <div id="trajectory"></div>
@@ -153,12 +156,13 @@ svg .hit { fill: transparent; }
 const G = {
  "prompts": [
   "just-solve",
+  "anti_slop",
   "min12-ABDJKMN",
   "min13-ABDJKMNT"
  ],
  "problems": {
   "datagate": {
-   "patched": null,
+   "patched": "v2",
    "cells": {
     "just-solve|v0": {
      "spec": "v0",
@@ -193,6 +197,41 @@ const G = {
       "cost": 12.46395175,
       "minutes": 39.16659134166667,
       "loc": 2423.5
+     }
+    },
+    "just-solve|patched": {
+     "spec": "v2",
+     "runs": [
+      {
+       "fail": 0.012345679012345734,
+       "erosion": 0.6659497459783106,
+       "verbosity": 0.5598494230198406,
+       "ast": 0.49948115455765496,
+       "cloned": 0.10426197165512471,
+       "cost": 14.735848500000001,
+       "minutes": 72.01164566666667,
+       "loc": 3421
+      },
+      {
+       "fail": 0.032098765432098775,
+       "erosion": 0.6208627414029285,
+       "verbosity": 0.5059762459442118,
+       "ast": 0.45495059534458615,
+       "cloned": 0.07683183595799117,
+       "cost": 12.195454000000002,
+       "minutes": 47.12074501666667,
+       "loc": 3078
+      }
+     ],
+     "mean": {
+      "fail": 0.022222222222222254,
+      "erosion": 0.6434062436906196,
+      "verbosity": 0.5329128344820262,
+      "ast": 0.47721587495112056,
+      "cloned": 0.09054690380655794,
+      "cost": 13.46565125,
+      "minutes": 59.56619534166667,
+      "loc": 3249.5
      }
     },
     "min12-ABDJKMN|v0": {
@@ -230,6 +269,41 @@ const G = {
       "loc": 4536.0
      }
     },
+    "min12-ABDJKMN|patched": {
+     "spec": "v2",
+     "runs": [
+      {
+       "fail": 0.012345679012345734,
+       "erosion": 0.13867570760258124,
+       "verbosity": 0.25572145168316907,
+       "ast": 0.06620725269445803,
+       "cloned": 0.1912316558922909,
+       "cost": 19.6985145,
+       "minutes": 63.662107633333335,
+       "loc": 4649
+      },
+      {
+       "fail": 0.012345679012345734,
+       "erosion": 0.10900021870609623,
+       "verbosity": 0.22640762241563214,
+       "ast": 0.11261183433247987,
+       "cloned": 0.10256572009227123,
+       "cost": 18.231073000000002,
+       "minutes": 61.11643696666667,
+       "loc": 3980
+      }
+     ],
+     "mean": {
+      "fail": 0.012345679012345734,
+      "erosion": 0.12383796315433873,
+      "verbosity": 0.24106453704940062,
+      "ast": 0.08940954351346894,
+      "cloned": 0.14689868799228106,
+      "cost": 18.964793750000002,
+      "minutes": 62.3892723,
+      "loc": 4314.5
+     }
+    },
     "min13-ABDJKMNT|v0": {
      "spec": "v0",
      "runs": [
@@ -258,7 +332,7 @@ const G = {
    }
   },
   "file_merger": {
-   "patched": null,
+   "patched": "v6",
    "cells": {
     "just-solve|v0": {
      "spec": "v0",
@@ -295,6 +369,41 @@ const G = {
       "loc": 3072.5
      }
     },
+    "just-solve|patched": {
+     "spec": "v6",
+     "runs": [
+      {
+       "fail": 0.03401360544217691,
+       "erosion": 0.609176520238915,
+       "verbosity": 0.314639803430432,
+       "ast": 0.15230040308223744,
+       "cloned": 0.16761031174038746,
+       "cost": 18.1518415,
+       "minutes": 72.69540106666666,
+       "loc": 3640
+      },
+      {
+       "fail": 0.013605442176870763,
+       "erosion": 0.7948657027294586,
+       "verbosity": 0.15877843200463468,
+       "ast": 0.12675222727295887,
+       "cloned": 0.0388796845392701,
+       "cost": 13.968291999999998,
+       "minutes": 53.0798733,
+       "loc": 3147
+      }
+     ],
+     "mean": {
+      "fail": 0.023809523809523836,
+      "erosion": 0.7020211114841868,
+      "verbosity": 0.23670911771753333,
+      "ast": 0.13952631517759817,
+      "cloned": 0.10324499813982878,
+      "cost": 16.060066749999997,
+      "minutes": 62.88763718333333,
+      "loc": 3393.5
+     }
+    },
     "min12-ABDJKMN|v0": {
      "spec": "v0",
      "runs": [
@@ -328,6 +437,66 @@ const G = {
       "cost": 21.577523999999997,
       "minutes": 79.65044806666668,
       "loc": 5240.0
+     }
+    },
+    "min12-ABDJKMN|patched": {
+     "spec": "v6",
+     "runs": [
+      {
+       "fail": 0.0,
+       "erosion": 0.21318725523129933,
+       "verbosity": 0.20717375554524414,
+       "ast": 0.06221647348926839,
+       "cloned": 0.1413160495982016,
+       "cost": 21.1509635,
+       "minutes": 73.53623541666667,
+       "loc": 5569
+      },
+      {
+       "fail": 0.0,
+       "erosion": 0.30302348074297913,
+       "verbosity": 0.26055635900066615,
+       "ast": 0.07564239815280635,
+       "cloned": 0.17426088356028394,
+       "cost": 21.953903999999998,
+       "minutes": 73.2372197,
+       "loc": 4923
+      }
+     ],
+     "mean": {
+      "fail": 0.0,
+      "erosion": 0.25810536798713923,
+      "verbosity": 0.23386505727295515,
+      "ast": 0.06892943582103737,
+      "cloned": 0.15778846657924278,
+      "cost": 21.55243375,
+      "minutes": 73.38672755833333,
+      "loc": 5246.0
+     }
+    },
+    "min13-ABDJKMNT|v0": {
+     "spec": "v0",
+     "runs": [
+      {
+       "fail": 0.13605442176870752,
+       "erosion": 0.018664472767889177,
+       "verbosity": 0.18693721681943687,
+       "ast": 0.026822852373036832,
+       "cloned": 0.13623419671593878,
+       "cost": 22.5753375,
+       "minutes": 77.03426205000001,
+       "loc": 3420
+      }
+     ],
+     "mean": {
+      "fail": 0.13605442176870752,
+      "erosion": 0.018664472767889177,
+      "verbosity": 0.18693721681943687,
+      "ast": 0.026822852373036832,
+      "cloned": 0.13623419671593878,
+      "cost": 22.5753375,
+      "minutes": 77.03426205000001,
+      "loc": 3420.0
      }
     }
    }
@@ -604,11 +773,36 @@ const G = {
       "minutes": 135.74713705,
       "loc": 9300.0
      }
+    },
+    "min13-ABDJKMNT|v0": {
+     "spec": "v0",
+     "runs": [
+      {
+       "fail": 0.14473684210526316,
+       "erosion": 0.0024484148552321367,
+       "verbosity": 0.2527764784522741,
+       "ast": 0.04377469925202618,
+       "cloned": 0.15171921981882988,
+       "cost": 49.2282225,
+       "minutes": 153.70829711666664,
+       "loc": 6778
+      }
+     ],
+     "mean": {
+      "fail": 0.14473684210526316,
+      "erosion": 0.0024484148552321367,
+      "verbosity": 0.2527764784522741,
+      "ast": 0.04377469925202618,
+      "cloned": 0.15171921981882988,
+      "cost": 49.2282225,
+      "minutes": 153.70829711666664,
+      "loc": 6778.0
+     }
     }
    }
   },
   "xjq": {
-   "patched": null,
+   "patched": "v3",
    "cells": {
     "just-solve|v0": {
      "spec": "v0",
@@ -645,6 +839,41 @@ const G = {
       "loc": 547.0
      }
     },
+    "just-solve|patched": {
+     "spec": "v3",
+     "runs": [
+      {
+       "fail": 0.0,
+       "erosion": 0.32132969033382264,
+       "verbosity": 0.20887447681262722,
+       "ast": 0.17790834815351247,
+       "cloned": 0.0,
+       "cost": 5.9128565,
+       "minutes": 19.661557116666664,
+       "loc": 466
+      },
+      {
+       "fail": 0.0,
+       "erosion": 0.4984945428396056,
+       "verbosity": 0.24687260532831665,
+       "ast": 0.21334024152949,
+       "cloned": 0.0,
+       "cost": 5.3367755,
+       "minutes": 18.963572399999997,
+       "loc": 572
+      }
+     ],
+     "mean": {
+      "fail": 0.0,
+      "erosion": 0.4099121165867141,
+      "verbosity": 0.22787354107047192,
+      "ast": 0.19562429484150123,
+      "cloned": 0.0,
+      "cost": 5.624816,
+      "minutes": 19.31256475833333,
+      "loc": 519.0
+     }
+    },
     "min12-ABDJKMN|v0": {
      "spec": "v0",
      "runs": [
@@ -678,6 +907,41 @@ const G = {
       "cost": 9.76463775,
       "minutes": 43.029271475,
       "loc": 2186.5
+     }
+    },
+    "min12-ABDJKMN|patched": {
+     "spec": "v3",
+     "runs": [
+      {
+       "fail": 0.0,
+       "erosion": 0.06001525306465173,
+       "verbosity": 0.5437900375698764,
+       "ast": 0.04376205929880825,
+       "cloned": 0.48903353103764713,
+       "cost": 10.8471985,
+       "minutes": 45.7042979,
+       "loc": 2688
+      },
+      {
+       "fail": 0.0,
+       "erosion": 0.02552699866252104,
+       "verbosity": 0.3256909658887898,
+       "ast": 0.012396229498373464,
+       "cloned": 0.3064079440751336,
+       "cost": 11.4383655,
+       "minutes": 54.4687795,
+       "loc": 2555
+      }
+     ],
+     "mean": {
+      "fail": 0.0,
+      "erosion": 0.04277112586358639,
+      "verbosity": 0.4347405017293331,
+      "ast": 0.028079144398590855,
+      "cloned": 0.39772073755639037,
+      "cost": 11.142782,
+      "minutes": 50.0865387,
+      "loc": 2621.5
      }
     },
     "min13-ABDJKMNT|v0": {
@@ -720,6 +984,17 @@ const G = {
    "minutes": 80.23857508055555,
    "loc": 3611.4166666666665
   },
+  "just-solve|patched": {
+   "n": 3,
+   "fail": 0.015343915343915363,
+   "erosion": 0.5851131572538402,
+   "verbosity": 0.33249849775667717,
+   "ast": 0.2707888283234066,
+   "cloned": 0.06459730064879558,
+   "cost": 11.716844666666667,
+   "minutes": 47.25546576111111,
+   "loc": 2387.3333333333335
+  },
   "min12-ABDJKMN|v0": {
    "n": 6,
    "fail": 0.055063178493059424,
@@ -731,16 +1006,27 @@ const G = {
    "minutes": 86.833536725,
    "loc": 5988.416666666667
   },
+  "min12-ABDJKMN|patched": {
+   "n": 3,
+   "fail": 0.004115226337448578,
+   "erosion": 0.14157148566835479,
+   "verbosity": 0.30322336535056293,
+   "ast": 0.06213937457769906,
+   "cloned": 0.23413596404263806,
+   "cost": 17.220003166666668,
+   "minutes": 61.954179519444445,
+   "loc": 4060.6666666666665
+  },
   "min13-ABDJKMNT|v0": {
-   "n": 4,
-   "fail": 0.04886935279342902,
-   "erosion": 0.008901444743339388,
-   "verbosity": 0.2298147109474317,
-   "ast": 0.046562304773415296,
-   "cloned": 0.16011902305853282,
-   "cost": 23.275710750000002,
-   "minutes": 86.98405180833333,
-   "loc": 3833.25
+   "n": 6,
+   "fail": 0.0793781125079478,
+   "erosion": 0.009453111099413143,
+   "verbosity": 0.2264954231769063,
+   "ast": 0.04280779511978736,
+   "cloned": 0.15473825146148332,
+   "cost": 27.484400500000003,
+   "minutes": 96.44646106666666,
+   "loc": 4255.166666666667
   }
  },
  "trajectory": {
@@ -791,6 +1077,44 @@ const G = {
      0.04237959168690072
     ]
    },
+   "anti_slop": {
+    "runs": 0,
+    "ckpts": [
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "erosion": [
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    "verbosity": [
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    "ast": [
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    "cloned": [
+     null,
+     null,
+     null,
+     null,
+     null
+    ]
+   },
    "min12-ABDJKMN": {
     "runs": 12,
     "ckpts": [
@@ -830,41 +1154,41 @@ const G = {
     ]
    },
    "min13-ABDJKMNT": {
-    "runs": 4,
+    "runs": 6,
     "ckpts": [
-     4,
-     5,
-     5,
-     5,
-     4
+     6,
+     7,
+     7,
+     7,
+     6
     ],
     "erosion": [
      0.0,
      0.0,
-     0.014927661957042149,
-     0.009686905889075186,
-     0.015550367626299336
+     0.010662615683601535,
+     0.01422842918095989,
+     0.016730895981133927
     ],
     "verbosity": [
-     0.22852885765255238,
-     0.22173159504801618,
-     0.21447681930885176,
-     0.2212588225069354,
-     0.22663629929452564
+     0.2211391166444847,
+     0.22285286000260449,
+     0.22563408622839515,
+     0.22204074949918667,
+     0.22531266335341804
     ],
     "ast": [
-     0.04637919228002476,
-     0.05147542111367824,
-     0.0483432889777706,
-     0.046213350101390674,
-     0.04190988748569742
+     0.04381784748678408,
+     0.04716410004523743,
+     0.04609238680532822,
+     0.04164194714247962,
+     0.04101001702656155
     ],
     "cloned": [
-     0.1594606237517019,
-     0.15250894615527147,
-     0.1415282633702653,
-     0.15146018758151653,
-     0.15717447406153778
+     0.14994083840008898,
+     0.15116636321494115,
+     0.14506249507950944,
+     0.1525231195031965,
+     0.15139510126348266
     ]
    }
   }
@@ -889,8 +1213,8 @@ const G = {
       }
      },
      "min13-ABDJKMNT": {
-      "n": 4,
-      "mean": 0.014605047386412842,
+      "n": 6,
+      "mean": 0.014720238450804968,
       "best": {
        "problem": "datagate",
        "share": 0.0
@@ -941,8 +1265,8 @@ const G = {
       }
      },
      "min13-ABDJKMNT": {
-      "n": 4,
-      "mean": 0.18872707279205614,
+      "n": 6,
+      "mean": 0.17275932476796507,
       "best": {
        "problem": "xjq",
        "share": 0.06566949025858827
@@ -993,8 +1317,8 @@ const G = {
       }
      },
      "min13-ABDJKMNT": {
-      "n": 4,
-      "mean": 10.59306592128518,
+      "n": 6,
+      "mean": 8.352673447806934,
       "best": {
        "problem": "mvvault",
        "share": 1.6714273462738445
@@ -1045,11 +1369,11 @@ const G = {
       }
      },
      "min13-ABDJKMNT": {
-      "n": 4,
-      "mean": 1.6589268937414832,
+      "n": 6,
+      "mean": 1.4436936086252175,
       "best": {
-       "problem": "datagate",
-       "share": 1.1136785640602433
+       "problem": "sith",
+       "share": 0.9133539954184072
       },
       "worst": {
        "problem": "xjq",
@@ -1063,12 +1387,13 @@ const G = {
  "impl": {
   "prompts": [
    "just-solve",
+   "anti_slop",
    "min12-ABDJKMN",
    "min13-ABDJKMNT"
   ],
   "problems": {
    "datagate": {
-    "patched": null,
+    "patched": "v2",
     "cells": {
      "just-solve|v0": {
       "spec": "v0",
@@ -1103,6 +1428,41 @@ const G = {
        "cost": 12.46395175,
        "minutes": 39.16659134166667,
        "loc": 1255.0
+      }
+     },
+     "just-solve|patched": {
+      "spec": "v2",
+      "runs": [
+       {
+        "fail": 0.012345679012345734,
+        "erosion": 0.4782470537261419,
+        "verbosity": 0.35179348091449486,
+        "ast": 0.32867853519766593,
+        "cloned": 0.04558372770606343,
+        "cost": 14.735848500000001,
+        "minutes": 72.01164566666667,
+        "loc": 1661
+       },
+       {
+        "fail": 0.032098765432098775,
+        "erosion": 0.323284594981086,
+        "verbosity": 0.3255070587066428,
+        "ast": 0.29968636268715215,
+        "cloned": 0.025748836181726176,
+        "cost": 12.195454000000002,
+        "minutes": 47.12074501666667,
+        "loc": 1286
+       }
+      ],
+      "mean": {
+       "fail": 0.022222222222222254,
+       "erosion": 0.40076582435361396,
+       "verbosity": 0.33865026981056884,
+       "ast": 0.31418244894240904,
+       "cloned": 0.035666281943894804,
+       "cost": 13.46565125,
+       "minutes": 59.56619534166667,
+       "loc": 1473.5
       }
      },
      "min12-ABDJKMN|v0": {
@@ -1140,6 +1500,41 @@ const G = {
        "loc": 976.5
       }
      },
+     "min12-ABDJKMN|patched": {
+      "spec": "v2",
+      "runs": [
+       {
+        "fail": 0.012345679012345734,
+        "erosion": 0.4158994382894415,
+        "verbosity": 0.16156539463550357,
+        "ast": 0.13630935538758152,
+        "cloned": 0.005890908082839616,
+        "cost": 19.6985145,
+        "minutes": 63.662107633333335,
+        "loc": 989
+       },
+       {
+        "fail": 0.012345679012345734,
+        "erosion": 0.238816537396235,
+        "verbosity": 0.31534996633976503,
+        "ast": 0.29319322571002837,
+        "cloned": 0.005678201188427383,
+        "cost": 18.231073000000002,
+        "minutes": 61.11643696666667,
+        "loc": 994
+       }
+      ],
+      "mean": {
+       "fail": 0.012345679012345734,
+       "erosion": 0.32735798784283826,
+       "verbosity": 0.2384576804876343,
+       "ast": 0.21475129054880493,
+       "cloned": 0.0057845546356335,
+       "cost": 18.964793750000002,
+       "minutes": 62.3892723,
+       "loc": 991.5
+      }
+     },
      "min13-ABDJKMNT|v0": {
       "spec": "v0",
       "runs": [
@@ -1168,7 +1563,7 @@ const G = {
     }
    },
    "file_merger": {
-    "patched": null,
+    "patched": "v6",
     "cells": {
      "just-solve|v0": {
       "spec": "v0",
@@ -1205,6 +1600,41 @@ const G = {
        "loc": 2705.5
       }
      },
+     "just-solve|patched": {
+      "spec": "v6",
+      "runs": [
+       {
+        "fail": 0.03401360544217691,
+        "erosion": 0.7366932642701074,
+        "verbosity": 0.31411799885611585,
+        "ast": 0.27109876052620757,
+        "cloned": 0.05505229887266843,
+        "cost": 18.1518415,
+        "minutes": 72.69540106666666,
+        "loc": 1969
+       },
+       {
+        "fail": 0.013605442176870763,
+        "erosion": 0.7541301791266111,
+        "verbosity": 0.2138935628525609,
+        "ast": 0.1814643313432209,
+        "cloned": 0.04434709413266051,
+        "cost": 13.968291999999998,
+        "minutes": 53.0798733,
+        "loc": 2072
+       }
+      ],
+      "mean": {
+       "fail": 0.023809523809523836,
+       "erosion": 0.7454117216983592,
+       "verbosity": 0.26400578085433835,
+       "ast": 0.22628154593471422,
+       "cloned": 0.04969969650266447,
+       "cost": 16.060066749999997,
+       "minutes": 62.88763718333333,
+       "loc": 2020.5
+      }
+     },
      "min12-ABDJKMN|v0": {
       "spec": "v0",
       "runs": [
@@ -1238,6 +1668,66 @@ const G = {
        "cost": 21.577523999999997,
        "minutes": 79.65044806666668,
        "loc": 1760.0
+      }
+     },
+     "min12-ABDJKMN|patched": {
+      "spec": "v6",
+      "runs": [
+       {
+        "fail": 0.0,
+        "erosion": 0.4620379427767024,
+        "verbosity": 0.22759283142351924,
+        "ast": 0.1812984852324804,
+        "cloned": 0.04482102861925659,
+        "cost": 21.1509635,
+        "minutes": 73.53623541666667,
+        "loc": 1828
+       },
+       {
+        "fail": 0.0,
+        "erosion": 0.5832733383210373,
+        "verbosity": 0.25833208494358384,
+        "ast": 0.20236476371341675,
+        "cloned": 0.04783922579895662,
+        "cost": 21.953903999999998,
+        "minutes": 73.2372197,
+        "loc": 1712
+       }
+      ],
+      "mean": {
+       "fail": 0.0,
+       "erosion": 0.5226556405488698,
+       "verbosity": 0.24296245818355156,
+       "ast": 0.19183162447294858,
+       "cloned": 0.046330127209106606,
+       "cost": 21.55243375,
+       "minutes": 73.38672755833333,
+       "loc": 1770.0
+      }
+     },
+     "min13-ABDJKMNT|v0": {
+      "spec": "v0",
+      "runs": [
+       {
+        "fail": 0.13605442176870752,
+        "erosion": 0.06183202855380589,
+        "verbosity": 0.1431019676759055,
+        "ast": 0.07187740920950757,
+        "cloned": 0.02488991632421054,
+        "cost": 22.5753375,
+        "minutes": 77.03426205000001,
+        "loc": 1227
+       }
+      ],
+      "mean": {
+       "fail": 0.13605442176870752,
+       "erosion": 0.06183202855380589,
+       "verbosity": 0.1431019676759055,
+       "ast": 0.07187740920950757,
+       "cloned": 0.02488991632421054,
+       "cost": 22.5753375,
+       "minutes": 77.03426205000001,
+       "loc": 1227.0
       }
      }
     }
@@ -1514,11 +2004,36 @@ const G = {
        "minutes": 135.74713705,
        "loc": 4319.5
       }
+     },
+     "min13-ABDJKMNT|v0": {
+      "spec": "v0",
+      "runs": [
+       {
+        "fail": 0.14473684210526316,
+        "erosion": 0.0,
+        "verbosity": 0.20131716514732423,
+        "ast": 0.08769229889161756,
+        "cloned": 0.009322557877441963,
+        "cost": 49.2282225,
+        "minutes": 153.70829711666664,
+        "loc": 3295
+       }
+      ],
+      "mean": {
+       "fail": 0.14473684210526316,
+       "erosion": 0.0,
+       "verbosity": 0.20131716514732423,
+       "ast": 0.08769229889161756,
+       "cloned": 0.009322557877441963,
+       "cost": 49.2282225,
+       "minutes": 153.70829711666664,
+       "loc": 3295.0
+      }
      }
     }
    },
    "xjq": {
-    "patched": null,
+    "patched": "v3",
     "cells": {
      "just-solve|v0": {
       "spec": "v0",
@@ -1555,6 +2070,41 @@ const G = {
        "loc": 547.0
       }
      },
+     "just-solve|patched": {
+      "spec": "v3",
+      "runs": [
+       {
+        "fail": 0.0,
+        "erosion": 0.32132969033382264,
+        "verbosity": 0.20887447681262722,
+        "ast": 0.17790834815351247,
+        "cloned": 0.0,
+        "cost": 5.9128565,
+        "minutes": 19.661557116666664,
+        "loc": 466
+       },
+       {
+        "fail": 0.0,
+        "erosion": 0.4984945428396056,
+        "verbosity": 0.24687260532831665,
+        "ast": 0.21334024152949,
+        "cloned": 0.0,
+        "cost": 5.3367755,
+        "minutes": 18.963572399999997,
+        "loc": 572
+       }
+      ],
+      "mean": {
+       "fail": 0.0,
+       "erosion": 0.4099121165867141,
+       "verbosity": 0.22787354107047192,
+       "ast": 0.19562429484150123,
+       "cloned": 0.0,
+       "cost": 5.624816,
+       "minutes": 19.31256475833333,
+       "loc": 519.0
+      }
+     },
      "min12-ABDJKMN|v0": {
       "spec": "v0",
       "runs": [
@@ -1588,6 +2138,41 @@ const G = {
        "cost": 9.76463775,
        "minutes": 43.029271475,
        "loc": 407.0
+      }
+     },
+     "min12-ABDJKMN|patched": {
+      "spec": "v3",
+      "runs": [
+       {
+        "fail": 0.0,
+        "erosion": 0.3389894724578508,
+        "verbosity": 0.27113401756628563,
+        "ast": 0.24745650238643918,
+        "cloned": 0.009195402298850575,
+        "cost": 10.8471985,
+        "minutes": 45.7042979,
+        "loc": 435
+       },
+       {
+        "fail": 0.0,
+        "erosion": 0.13255830862667645,
+        "verbosity": 0.08466547806063542,
+        "ast": 0.0689961239670501,
+        "cloned": 0.0,
+        "cost": 11.4383655,
+        "minutes": 54.4687795,
+        "loc": 416
+       }
+      ],
+      "mean": {
+       "fail": 0.0,
+       "erosion": 0.23577389054226364,
+       "verbosity": 0.17789974781346052,
+       "ast": 0.15822631317674463,
+       "cloned": 0.004597701149425287,
+       "cost": 11.142782,
+       "minutes": 50.0865387,
+       "loc": 425.5
       }
      },
      "min13-ABDJKMNT|v0": {
@@ -1630,6 +2215,17 @@ const G = {
     "minutes": 80.23857508055555,
     "loc": 2514.5
    },
+   "just-solve|patched": {
+    "n": 3,
+    "fail": 0.015343915343915363,
+    "erosion": 0.5186965542128957,
+    "verbosity": 0.27684319724512635,
+    "ast": 0.2453627632395415,
+    "cloned": 0.02845532614885309,
+    "cost": 11.716844666666667,
+    "minutes": 47.25546576111111,
+    "loc": 1337.6666666666667
+   },
    "min12-ABDJKMN|v0": {
     "n": 6,
     "fail": 0.055063178493059424,
@@ -1641,16 +2237,27 @@ const G = {
     "minutes": 86.833536725,
     "loc": 1851.5
    },
+   "min12-ABDJKMN|patched": {
+    "n": 3,
+    "fail": 0.004115226337448578,
+    "erosion": 0.36192917297799054,
+    "verbosity": 0.21977329549488211,
+    "ast": 0.1882697427328327,
+    "cloned": 0.018904127664721798,
+    "cost": 17.220003166666668,
+    "minutes": 61.954179519444445,
+    "loc": 1062.3333333333333
+   },
    "min13-ABDJKMNT|v0": {
-    "n": 4,
-    "fail": 0.04886935279342902,
-    "erosion": 0.032398300807250015,
-    "verbosity": 0.18354482346906784,
-    "ast": 0.13311899616933784,
-    "cloned": 0.013866750487400683,
-    "cost": 23.275710750000002,
-    "minutes": 86.98405180833333,
-    "loc": 1105.5
+    "n": 6,
+    "fail": 0.0793781125079478,
+    "erosion": 0.03190420529713433,
+    "verbosity": 0.17976640444991684,
+    "ast": 0.11534094879641275,
+    "cloned": 0.01494657935854254,
+    "cost": 27.484400500000003,
+    "minutes": 96.44646106666666,
+    "loc": 1490.6666666666667
    }
   },
   "trajectory": {
@@ -1701,6 +2308,44 @@ const G = {
       0.039681293089915616
      ]
     },
+    "anti_slop": {
+     "runs": 0,
+     "ckpts": [
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "erosion": [
+      null,
+      null,
+      null,
+      null,
+      null
+     ],
+     "verbosity": [
+      null,
+      null,
+      null,
+      null,
+      null
+     ],
+     "ast": [
+      null,
+      null,
+      null,
+      null,
+      null
+     ],
+     "cloned": [
+      null,
+      null,
+      null,
+      null,
+      null
+     ]
+    },
     "min12-ABDJKMN": {
      "runs": 12,
      "ckpts": [
@@ -1740,41 +2385,41 @@ const G = {
      ]
     },
     "min13-ABDJKMNT": {
-     "runs": 4,
+     "runs": 6,
      "ckpts": [
-      4,
-      5,
-      5,
-      5,
-      4
+      6,
+      7,
+      7,
+      7,
+      6
      ],
      "erosion": [
       0.0,
       0.0,
-      0.05928956911852775,
-      0.03550051118141907,
-      0.05197602886177847
+      0.042349692227519824,
+      0.0464642134360241,
+      0.051247548586210674
      ],
      "verbosity": [
-      0.17773516178679932,
-      0.18919639502698862,
-      0.20127836919465483,
-      0.17707035560615636,
-      0.17722216030407442
+      0.1695085598108976,
+      0.18689831063692225,
+      0.203217497461491,
+      0.17232225709948193,
+      0.1806246556399016
      ],
      "ast": [
-      0.12799930615298785,
-      0.14666482614986076,
-      0.14717894843641324,
-      0.12122798694660844,
-      0.11312782871477314
+      0.11085607549747079,
+      0.12806905085504752,
+      0.12938139374080782,
+      0.10645671093477893,
+      0.10684070593732121
      ],
      "cloned": [
-      0.014544633278753317,
-      0.018439829361521574,
-      0.014303248052403243,
-      0.013679870907382045,
-      0.010880616362424612
+      0.014093738265394616,
+      0.01916138053453267,
+      0.013175909547641204,
+      0.015025315605850173,
+      0.012201680554033987
      ]
     }
    }
@@ -1799,8 +2444,8 @@ const G = {
        }
       },
       "min13-ABDJKMNT": {
-       "n": 4,
-       "mean": 0.05922056752397848,
+       "n": 6,
+       "mean": 0.05368229996896907,
        "best": {
         "problem": "datagate",
         "share": 0.0
@@ -1851,8 +2496,8 @@ const G = {
        }
       },
       "min13-ABDJKMNT": {
-       "n": 4,
-       "mean": 0.3921095144982562,
+       "n": 6,
+       "mean": 0.3587003972535437,
        "best": {
         "problem": "xjq",
         "share": 0.2213571794637243
@@ -1903,15 +2548,15 @@ const G = {
        }
       },
       "min13-ABDJKMNT": {
-       "n": 4,
-       "mean": 0.3525902815008947,
+       "n": 6,
+       "mean": 0.40576392080598267,
        "best": {
         "problem": "xjq",
         "share": 0.0
        },
        "worst": {
-        "problem": "datagate",
-        "share": 0.5974946425649996
+        "problem": "file_merger",
+        "share": 0.795859433834933
        }
       }
      },
@@ -1955,11 +2600,11 @@ const G = {
        }
       },
       "min13-ABDJKMNT": {
-       "n": 4,
-       "mean": 0.6710195297473527,
+       "n": 6,
+       "mean": 0.6173240914115,
        "best": {
-        "problem": "datagate",
-        "share": 0.5888446215139442
+        "problem": "file_merger",
+        "share": 0.45352060617261136
        },
        "worst": {
         "problem": "mvvault",
@@ -1973,9 +2618,10 @@ const G = {
  }
 };
 const [JS, ...OTHERS] = G.prompts;
-const MIN = OTHERS[0];
+const MIN = G.prompts.includes("min12-ABDJKMN") ? "min12-ABDJKMN" : OTHERS[0];
 const PROMPTS = {
   "just-solve": { label: "just-solve", color: "var(--js)" },
+  "anti_slop": { label: "anti-slop", color: "var(--aslop)" },
   "min12-ABDJKMN": { label: "spectest", color: "var(--min)" },
   "min13-ABDJKMNT": { label: "spectest+antislop", color: "var(--anti)" },
 };
@@ -2032,7 +2678,9 @@ const PAPER = {
     "GPT 5.4": {"Baseline": [0.327, 0.332, 0.341, 0.318, 0.329], "Anti-Slop": [0.253, 0.238, 0.225, 0.24, 0.238], "Plan-First": [0.295, 0.306, 0.314, 0.292, 0.303]},
     "GPT 5.5": {"Baseline": [0.264, 0.31, 0.327, 0.34, 0.335], "Anti-Slop": [0.183, 0.199, 0.212, 0.211, 0.219], "Plan-First": [0.232, 0.259, 0.26, 0.26, 0.256]},
   },
-  color: { "Baseline": "var(--js)", "Anti-Slop": "var(--min)", "Plan-First": "var(--ink-3)" },
+  // The paper's lines wear the colour of their counterpart here: Baseline is just-solve,
+  // Anti-Slop is the same prompt as our anti-slop arm; Plan-First has none.
+  color: { "Baseline": "var(--js)", "Anti-Slop": "var(--aslop)", "Plan-First": "var(--ink-3)" },
 };
 const PAPER_MODELS = Object.keys(PAPER.erosion);
 const problems = Object.keys(G.problems);
@@ -2414,7 +3062,7 @@ function render() {
     }).join(", ");
     document.getElementById("trajectory-note").innerHTML =
       `<b>Reading.</b> Figure 5 of the paper's second revision (arXiv 2603.24755v2) is redrawn from its vector paths, one y axis for all three models instead of a range per panel: erosion on its top row, verbosity on the bottom (the share of lines flagged by ast-grep, the clone detector or the trivial-wrapper check, so it covers the next two rows). ` +
-      `Its Baseline prompt is just-solve; Anti-Slop is its quality prompt. Every paper erosion line climbs from Start to Final, and the paper reads that as prompting not slowing the decay. ` +
+      `Its Baseline prompt is just-solve and its Anti-Slop prompt is our anti-slop arm, each drawn in that arm's colour. Every paper erosion line climbs from Start to Final, and the paper reads that as prompting not slowing the decay. ` +
       `Our lines are the v0 runs from the headline, each checkpoint placed in the paper's phase (first is Start, last is Final, the rest split into thirds) and pooled over every run of the prompt. ` +
       `Erosion: ${ours("erosion")}, where the paper's Baseline lines climb ${esc(climb("erosion", "Baseline"))} and its Anti-Slop lines ${esc(climb("erosion", "Anti-Slop"))}. ` +
       `Verbosity: ${ours("verbosity")}, against paper Baseline climbs of ${esc(climb("verbosity", "Baseline"))} and Anti-Slop ${esc(climb("verbosity", "Anti-Slop"))}. ` +

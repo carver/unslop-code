@@ -4,7 +4,7 @@
     bin/grid [--json] [--prompts A,B] [--model opus-5] [--set dev|test|all]
 
 Rows are problems; the four cells are (prompt, spec) with spec v0 (the cached benchmark
-spec) and "patched", the highest spec version that BOTH prompts have a complete run on, so
+spec) and "patched", the highest spec version the baseline and another prompt both ran, so
 the two prompts are always compared on the same words. Every figure is one where lower is
 better: fail% is the share of hidden tests failed at the last checkpoint (1 - score), the
 four quality means are as bin/results reports them, cost is cc_$ per run, minutes the run's
@@ -15,8 +15,9 @@ cell (n says how many). --json prints the same structure for a page to draw from
 Problems default to the dev set of split.json, the six the experiment ran in full; --set test
 takes the test set as its runs land, --set all every problem with a run.
 
-Prompts default to the benchmark's just-solve, min12-ABDJKMN and min13-ABDJKMNT: the first is
-the baseline every share is taken against, the rest are compared to it (notes/uplift-grid.md).
+Prompts default to the benchmark's just-solve, its anti_slop, min12-ABDJKMN and min13-ABDJKMNT:
+the first is the baseline every share is taken against, the rest are compared to it
+(notes/uplift-grid.md).
 Runs are read the way bin/results reads them.
 
 The JSON also carries "trajectory": erosion per progress phase for each prompt's v0 runs, the
@@ -51,7 +52,7 @@ import scb_split  # noqa: E402
 METRICS = ("fail", "erosion", "verbosity", "ast", "cloned", "cost", "minutes", "loc")
 # Shares of the baseline are computed for these; the human panel covers the first three.
 RELATIVE_METRICS = ("erosion", "ast", "cloned", "loc")
-DEFAULT_PROMPTS = ("just-solve", "min12-ABDJKMN", "min13-ABDJKMNT")
+DEFAULT_PROMPTS = ("just-solve", "anti_slop", "min12-ABDJKMN", "min13-ABDJKMNT")
 PHASES = ("Start", "Early", "Mid", "Late", "Final")
 # The human reference: the Major tier (over 10k stars) of the panel in arXiv 2603.24755v1,
 # Table 7, rescored at HEAD by bin/quality-split --tree with the scb-check version the runs
@@ -86,12 +87,13 @@ def spec_number(spec):
 
 
 def patched_spec(cells, problem, prompts, model):
-    """The highest spec version every prompt has a complete run on, or None."""
-    versions = None
-    for prompt in prompts:
-        have = {spec for (p, pr, spec, m) in cells if p == problem and pr == prompt and m == model and spec != "v0"}
-        versions = have if versions is None else versions & have
-    return max(versions, key=spec_number) if versions else None
+    """The highest spec version the baseline (first prompt) and at least one other prompt both have
+    a complete run on, or None. A prompt without a run at that version has no patched cell."""
+    def versions(prompt):
+        return {spec for (p, pr, spec, m) in cells if p == problem and pr == prompt and m == model and spec != "v0"}
+    base = versions(prompts[0])
+    shared = {spec for prompt in prompts[1:] for spec in versions(prompt) & base}
+    return max(shared, key=spec_number) if shared else None
 
 
 def phase_of(idx, count):

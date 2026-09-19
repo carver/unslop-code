@@ -201,23 +201,25 @@ Reading:
 
 ### Which rules stopped firing
 
-Flagged lines per rule, implementation files only, per 1000 raw lines of implementation
-(so not on the ast% scale, which divides by scb-check's LOC). Hits and spans from
-`report/scb_hits.py`; the union row counts a line once however many rules flag it.
+`bin/ast-rules --prompts min12-ABDJKMN,min13-ABDJKMNT --problem mvvault` (and `rejector`):
+flagged lines per 1000 LOC, implementation files only, final checkpoint. Lines and LOC are
+counted as scb-check counts them (no blanks, comments or docstrings), so the first row is ast%
+times 1000 and the tool's union of all rules reproduces it: exactly for all four min12 runs,
+within 3 for the two min13 runs. A line under two rules counts in both rows.
 
 | rule | mvvault min13 | min12 a | min12 b | rejector min13 | min12 a | min12 b |
 |---|---|---|---|---|---|---|
-| all rules, union | 93 | 188 | 163 | 136 | 302 | 303 |
-| function-with-many-type-guards | 58 | 44 | 63 | 74 | 168 | 168 |
-| defensive-function-isinstance-heavy | 0 | 0 | 26 | 15 | 111 | 87 |
-| defensive-isinstance-raise-heavy | 0 | 13 | 16 | 0 | 55 | 81 |
-| defensive-validator-returnmix | 0 | 32 | 6 | 4 | 46 | 37 |
-| defensive-except-exception-heavy | 0 | 21 | 25 | 0 | 21 | 0 |
-| defensive-try-soup-function | 0 | 26 | 0 | 0 | 0 | 23 |
-| section-banner-comment | 0 | 9 | 10 | 0 | 13 | 0 |
-| isinstance-guard-raise | 12 | 11 | 17 | 14 | 19 | 23 |
-| defensive-validator-function | 52 | 0 | 0 | 71 | 0 | 0 |
-| defensive-fstring-raise-heavy | 14 | 0 | 0 | 48 | 0 | 0 |
+| scb-check ast | 132 | 235 | 199 | 188 | 339 | 344 |
+| function-with-many-type-guards | 78 | 57 | 80 | 99 | 196 | 187 |
+| defensive-function-isinstance-heavy | 0 | 0 | 33 | 17 | 125 | 94 |
+| defensive-isinstance-raise-heavy | 0 | 18 | 21 | 0 | 64 | 93 |
+| defensive-validator-returnmix | 0 | 36 | 8 | 5 | 49 | 42 |
+| defensive-except-exception-heavy | 0 | 27 | 30 | 0 | 25 | 0 |
+| defensive-try-soup-function | 0 | 36 | 0 | 0 | 0 | 26 |
+| isinstance-guard-raise | 20 | 16 | 23 | 22 | 24 | 29 |
+| defensive-validator-function | 70 | 0 | 0 | 96 | 0 | 0 |
+| defensive-fstring-raise-heavy | 20 | 0 | 0 | 62 | 0 | 0 |
+| rules under 5 (mvvault) or 15 (rejector) everywhere, summed | 14 | 37 | 30 | 76 | 110 | 96 |
 
 - The drop is the whole-function rules. Each flags every line of a function it judges
   defensive (broad excepts, try blocks stacked in one function, isinstance-then-raise runs,
@@ -227,21 +229,28 @@ Flagged lines per rule, implementation files only, per 1000 raw lines of impleme
 - The raw code agrees. mvvault: 25 `try:` against 38 and 32, one broad `except` against 11
   and 11, 20 `isinstance(` against 39 and 65. rejector: 12 `try:` against 25 and 36, 48
   `isinstance(` against 71 and 102.
-- Banner comments are gone, and comment lines with them (rejector 5 against 80 and 88; mvvault
-  50 against 90 and 62). mvvault's docstrings rose from about 80 to about 130, so
-  "documented appropriately" and "extra comments a human wouldn't add" both landed.
 - The single inline type check (`isinstance-guard-raise`) did not move. What is left of the
   type checking moved into dedicated validator functions, which trip two rules min12 never
   hit: `defensive-validator-function` and `defensive-fstring-raise-heavy`. On mvvault those
   validators are in `legacy.py` and `source.py`, the malformed v1/v2 entry and source-response
   checks the spec's error rows ask for. So part of what remains may be a floor the spec sets,
   and part is ast-grep naming the same checks differently once they are gathered in one place.
+  On rejector `function-with-many-type-guards` halved; on mvvault it did not move.
+- The long tail shrank too: the many small rules sum to 14 against 37 and 30 on mvvault, 76
+  against 110 and 96 on rejector.
+- Comments are not in it. `section-banner-comment` fires 22 to 30 times in three of the four
+  min12 runs' implementations and never in min13's, and comment lines fell (rejector 5 against 80 and 88; mvvault
+  50 against 90 and 62) while mvvault's docstrings rose from about 80 to about 130. So
+  "documented appropriately" and "extra comments a human wouldn't add" both landed, but a
+  comment is not a line of code to scb-check: those hits add nothing to ast%, and their going
+  away is none of the drop. An earlier reading of this run, by hit count, credited the banners
+  with the checkpoint-1 gap. By lines it is the same whole-function rules as at the end:
+  mvvault checkpoint 1 is 227 against 323 and 384, with except-exception-heavy (0 against 61
+  and 83), isinstance-raise-heavy, try-soup and validator-returnmix at zero and
+  function-isinstance-heavy halved.
 - Layout changed completely: a package of 27 files (mvvault) and 25 (rejector), none long,
   where every min12 and just-solve run wrote one file of 2300 to 3500 lines. "Group functions
-  into files" did that, and it probably explains the banner comments too: a single long file
-  gets section banners, a package has nowhere to put them.
-- Already visible at mvvault checkpoint 1 (0.227 against 0.323 and 0.384), where banners were
-  nearly the whole difference; the defensive rules separate later, as the code grows.
+  into files" did that.
 
 Open: one run per problem, two problems, both on the dev side. The twice bar needs a second
 run of each. Whether the validator floor is spec-driven would show on a problem with few error

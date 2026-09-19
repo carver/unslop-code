@@ -14,6 +14,7 @@ control is the dev6 sweep's just-solve run (`notes/dev6-opus5.md`).
 | min11-ABDFJKMN, repeat | `…min11-ABDFJKMN/20260908T0846` | same config as the first run | 38/39, 72/75, 104/108, 138/146, 169/186, 204/228 | complete 2026-09-08; 24 misses, 16 shared with the first run (one each from checkpoints 2 and 3, four from 4, three from 5, seven of checkpoint 6's own), eight its own (a parameter-metadata completion from checkpoint 1, one from 2, six from 5), while ten of the first run's passed (five checkpoint-4 regressions, five checkpoint-6 core cases). 0/6 strict, $49 (per checkpoint 6, 11, 8, 8, 8, 7), 209 min (checkpoint 5 alone 66). 115 registry entries all scored, Risk 10-55 (top: parameter description 55, namespace attributes type 55). Quality: erosion 0.401, verbosity 0.360, ast 0.082, cloned 0.275 |
 | min12-ABDJKMN | `…min12-ABDJKMN/20260915T0053` | the 444-word no-F prompt on v0, for the six-problem quality-uplift comparison; first of two | 37/39, 72/75, 104/108, 137/146, 171/186, 205/228 | complete 2026-09-15; 23 misses, 19 shared with the control (checkpoint 4's stub/goto, unresolved references, dataclass signatures; checkpoint 5's extract-function and extract-variable family; checkpoint 6's env find/list/info block) and four its own (the two checkpoint-1 completion-scope cases, partial-statement extract exit code, alias-backed rename); eighteen of the control's 37 passed, the names and search families at checkpoint 4 among them. Fourteen above the control, one above min11's best. 0/6 strict, $40 (per checkpoint 5, 8, 7, 7, 7, 7), 139 min. 130 entries all scored, Risk 0-55 (parameter description, runtime attribute completion types, interpreter-mode signatures 55). Quality: erosion 0.388, verbosity 0.308, ast 0.120, cloned 0.181 |
 | min12-ABDJKMN, repeat | `…min12-ABDJKMN/20260915T0719` | same config as the first run | 39/39, 74/75, 106/108, 139/146, 170/186, 204/228 | complete 2026-09-15; 24 misses, 18 shared with the first run (checkpoint 4's stub/goto, unresolved references, dataclass signatures; the extract family and alias rename at 5; the env list/info block at 6). Its own six: four more extract-function cases at checkpoint 5 (module level, multiple returns x2, param order), project-init merge and smart-sys-path at 6; it held the first run's checkpoint-1 completion pair, the env find pair and the partial-statement exit code. Checkpoint 1 strict, the first sith run to be. Thirteen above the control. 1/6 strict, $37 (per checkpoint 5, 6, 5, 7, 7, 8), 133 min. 118 entries all scored, Risk 10-55 (namespace attribute completion, parameter description 55; extract-function layout 50). Quality: erosion 0.361, verbosity 0.363, ast 0.152, cloned 0.196 |
+| min13-ABDJKMNT | `…min13-ABDJKMNT/20260919T0435` | min12 plus chunk T, the upstream anti-slop rule list (d902f32), on v0; first of two | 39/39, 74/75, 106/108, 129/146, 161/186, 195/228 | complete 2026-09-19; 33 misses: the 14 every v0 run shares (checkpoint 5's extract family, env find and list at 6, dataclass signatures), the checkpoint-4 names and search family of ten that both min12 runs passed and both just-solve runs lost, seven more shared with one or two of the other runs, and one of its own. Checkpoint 1 strict, the first strict sith checkpoint for a spectest prompt since min11. 1/6 strict, $49, 154 min. Quality: erosion 0.002, verbosity 0.253, ast 0.044, cloned 0.152; implementation only erosion 0.000, ast 0.078, cloned 0.008 |
 
 ## Test failure summaries
 
@@ -40,6 +41,16 @@ control is the dev6 sweep's just-solve run (`notes/dev6-opus5.md`).
     six moving (extract-function cases lost, completion scope and env find held). Pair: 205
     and 204 against the control's 191; erosion 0.388 and 0.361 against 0.673. Checkpoint 5's
     extract family is the sith miss class no v0 prompt clears.
+
+### min13-ABDJKMNT (min12 plus the anti-slop list)
+
+  - 195/228, between the min12 pair (205, 204) and the just-solve pair (191, 194). It kept
+    min12's misses and re-lost the checkpoint-4 names and search family of ten that min12
+    had won back from just-solve, so on sith the chunk T run scores like the bare prompt with
+    min12's quality and better. Implementation only: erosion 0.000 against min12's 0.580, ast
+    0.078 against 0.251, cloned 0.008 against 0.031, on 3295 implementation lines against
+    min12's 4320 per run. $49 and 154 min against min12's $39 and 136, the most expensive
+    min13 run so far. First of two.
 
 ### min11-ABDFJKMN
 

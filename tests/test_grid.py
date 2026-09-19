@@ -11,8 +11,11 @@ exec(compile(SCRIPT.read_text(), str(SCRIPT), "exec"), gr.__dict__)
 
 
 def run(score, erosion, cost=10.0, minutes=30.0, by_ckpt=None):
+    by_ckpt = by_ckpt or [erosion]
     return {"score": score, "passed": 0, "total": 0, "strict": 0, "ckpts": 1, "cost": cost, "minutes": minutes,
-            "erosion": erosion, "erosion_by_ckpt": by_ckpt or [erosion], "verbosity": 0.2, "ast": 0.1, "cloned": 0.05}
+            "erosion": erosion, "erosion_by_ckpt": by_ckpt, "verbosity": 0.2, "ast": 0.1, "cloned": 0.05,
+            "verbosity_by_ckpt": [0.2 for _ in by_ckpt], "cloned_by_ckpt": [0.05 for _ in by_ckpt],
+            "ast_by_ckpt": [v / 2 if v is not None else None for v in by_ckpt]}
 
 
 CELLS = {
@@ -92,14 +95,28 @@ def test_trajectory_pools_each_prompts_v0_checkpoints_by_phase():
     assert (
         m["ckpts"] == [2, 0, 0, 0, 1] and m["erosion"][2] is None
     )  # the None checkpoint is skipped, an empty phase is null
+    assert abs(js["ast"][0] - (0.1 + 0.3 + 0.7) / 6) < 1e-9  # every score gets its own phase means
+    assert all(abs(v - 0.2) < 1e-9 for v in js["verbosity"]) and abs(js["cloned"][4] - 0.05) < 1e-9
+
+
+def test_trajectory_leaves_a_metric_without_scores_null():
+    unsplit = run(0.9, 0.4, by_ckpt=[0.1, 0.3]) | {"verbosity_by_ckpt": [None, None]}
+    cells = {("xjq", "just-solve", "v0", "opus-5"): [unsplit]}
+    t = gr.trajectory(cells)["prompts"]["just-solve"]
+    assert t["ckpts"] == [1, 0, 0, 0, 1] and t["verbosity"] == [None] * 5 and t["erosion"][4] == 0.3
 
 
 REPOS = [
-    {"name": "flask", "all": {"erosion": 0.2, "ast": 0.05}, "impl": {"erosion": 0.3, "ast": 0.10}},
-    {"name": "salt", "all": {"erosion": 0.6, "ast": 0.15}, "impl": {"erosion": 0.7, "ast": 0.30}},
-    {"name": "django", "all": {"erosion": 0.3, "ast": 0.04}, "impl": {"erosion": 0.5, "ast": 0.12}},
-    {"name": "tqdm", "all": {"erosion": 0.5, "ast": 0.10}, "impl": {"erosion": 0.6, "ast": 0.18}},
-    {"name": "click", "all": {"erosion": 0.4, "ast": 0.06}, "impl": {"erosion": 0.4, "ast": 0.11}},
+    {"name": "flask", "all": {"erosion": 0.2, "ast": 0.05, "cloned": 0.05},
+     "impl": {"erosion": 0.3, "ast": 0.10, "cloned": 0.02}},
+    {"name": "salt", "all": {"erosion": 0.6, "ast": 0.15, "cloned": 0.05},
+     "impl": {"erosion": 0.7, "ast": 0.30, "cloned": 0.02}},
+    {"name": "django", "all": {"erosion": 0.3, "ast": 0.04, "cloned": 0.05},
+     "impl": {"erosion": 0.5, "ast": 0.12, "cloned": 0.02}},
+    {"name": "tqdm", "all": {"erosion": 0.5, "ast": 0.10, "cloned": 0.05},
+     "impl": {"erosion": 0.6, "ast": 0.18, "cloned": 0.02}},
+    {"name": "click", "all": {"erosion": 0.4, "ast": 0.06, "cloned": 0.05},
+     "impl": {"erosion": 0.4, "ast": 0.11, "cloned": 0.02}},
 ]
 
 
@@ -129,7 +146,8 @@ def test_impl_run_swaps_in_the_implementation_only_scores_checkpoint_by_checkpoi
     out = gr.impl_run(whole, split=lambda snapshot: {"impl": counts[snapshot]})
     assert out["erosion_by_ckpt"] == [0.2, 0.6] and abs(out["erosion"] - 0.4) < 1e-9
     assert abs(out["ast"] - 0.2) < 1e-9 and abs(out["cloned"] - 0.05) < 1e-9
-    assert out["verbosity"] is None  # not split, so not passed off as implementation-only
+    assert out["ast_by_ckpt"] == [0.3, 0.1] and out["cloned_by_ckpt"] == [0.1, 0.0]
+    assert out["verbosity"] is None and out["verbosity_by_ckpt"] == [None, None]  # not split, so not passed off
     assert out["score"] == 0.9 and out["cost"] == whole["cost"]
 
 

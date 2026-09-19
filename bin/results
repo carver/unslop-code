@@ -137,8 +137,11 @@ def collect(dirs, checkpoints=checkpoint_names):
                     "erosion": mean(r.get("erosion") for r in rows),
                     "erosion_by_ckpt": [r.get("erosion") for r in rows],
                     "verbosity": mean(r.get("verbosity") for r in rows),
+                    "verbosity_by_ckpt": [r.get("verbosity") for r in rows],
                     "ast": mean(r.get("ast_grep_pct") for r in rows),
+                    "ast_by_ckpt": [r.get("ast_grep_pct") for r in rows],
                     "cloned": mean(r.get("cloned_pct") for r in rows),
+                    "cloned_by_ckpt": [r.get("cloned_pct") for r in rows],
                     "snapshots": [str(run / problem / r["checkpoint"] / "snapshot") for r in rows],
                 }
             )

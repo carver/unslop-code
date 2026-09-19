@@ -54,9 +54,10 @@ PHASES = ("Start", "Early", "Mid", "Late", "Final")
 # Table 7, rescored at HEAD by bin/quality-split --tree with the scb-check version the runs
 # use (notes/quality-test-dilution.md). The paper's own table gives erosion 0.31, which the
 # rerun matches, and ast-grep 0.10, which it does not (0.063): another rule set, so the
-# paper's figure cannot sit beside ours.
+# paper's figure cannot sit beside ours. Its clone figure is 0.07 against the rerun's 0.10.
 HUMAN_SPLIT = HERE.parent / "report" / "human-split.json"
-HUMAN_METRICS = ("erosion", "ast")
+HUMAN_METRICS = ("erosion", "ast", "cloned")
+TRAJECTORY_METRICS = ("erosion", "verbosity", "ast", "cloned")
 
 
 def run_figures(run):
@@ -102,25 +103,29 @@ def phase_of(idx, count):
 
 
 def trajectory(cells, prompts=DEFAULT_PROMPTS, model="opus-5", spec="v0"):
-    """{"spec": spec, "phases": [...], "prompts": {prompt: {"runs": k, "ckpts": [per phase], "erosion": [per phase]}}}:
-    each prompt's checkpoints at that spec, pooled over its runs on every problem, meaned by phase."""
+    """{"spec": spec, "phases": [...], "prompts": {prompt: {"runs": k, "ckpts": [per phase],
+    "erosion": [per phase], "verbosity": [...], "ast": [...], "cloned": [...]}}}: each prompt's
+    checkpoints at that spec, pooled over its runs on every problem, meaned by phase. "ckpts"
+    counts the checkpoints with an erosion score; a metric with no scores (verbosity on an
+    implementation-only run) is null in every phase."""
     out = {"spec": spec, "phases": list(PHASES), "prompts": {}}
     for prompt in prompts:
-        pools = [[] for _ in PHASES]
+        pools = {metric: [[] for _ in PHASES] for metric in TRAJECTORY_METRICS}
         runs = 0
         for (_, pr, sp, m), summaries in cells.items():
             if pr != prompt or sp != spec or m != model:
                 continue
             for run in summaries:
                 runs += 1
-                by_ckpt = run["erosion_by_ckpt"]
-                for idx, erosion in enumerate(by_ckpt):
-                    if erosion is not None:
-                        pools[phase_of(idx, len(by_ckpt))].append(erosion)
+                count = len(run["erosion_by_ckpt"])
+                for metric in TRAJECTORY_METRICS:
+                    for idx, value in enumerate(run.get(f"{metric}_by_ckpt") or []):
+                        if value is not None:
+                            pools[metric][phase_of(idx, count)].append(value)
         out["prompts"][prompt] = {
             "runs": runs,
-            "ckpts": [len(x) for x in pools],
-            "erosion": [results.mean(x) for x in pools],
+            "ckpts": [len(x) for x in pools["erosion"]],
+            **{metric: [results.mean(x) for x in pools[metric]] for metric in TRAJECTORY_METRICS},
         }
     return out
 
@@ -189,8 +194,10 @@ def impl_run(run, split=scb_split.split_reports):
     """The run's summary with erosion, ast% and cloned% rescored on implementation files only,
     checkpoint by checkpoint, and meaned the way bin/results means the whole-snapshot scores."""
     by_ckpt = [scb_split.scores(split(snapshot)["impl"]) for snapshot in run["snapshots"]]
-    return run | {"erosion_by_ckpt": [c["erosion"] for c in by_ckpt], "verbosity": None,
-                  **{metric: results.mean([c[metric] for c in by_ckpt]) for metric in ("erosion", "ast", "cloned")}}
+    split_metrics = ("erosion", "ast", "cloned")
+    return run | {"verbosity": None, "verbosity_by_ckpt": [None for _ in by_ckpt],
+                  **{f"{metric}_by_ckpt": [c[metric] for c in by_ckpt] for metric in split_metrics},
+                  **{metric: results.mean([c[metric] for c in by_ckpt]) for metric in split_metrics}}
 
 
 def impl_cells(cells, prompts=DEFAULT_PROMPTS, model="opus-5", split=scb_split.split_reports):

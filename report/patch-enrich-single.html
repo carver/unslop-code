@@ -1,0 +1,208 @@
+<title>Patch: a single enrich=yes</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root {
+  color-scheme: light;
+  --bg: #eef0f3; --paper: #fafbfc; --ink: #1b1f27; --ink-2: #565c6b; --ink-3: #8a90a0; --rule: #d6dae1;
+  --accept: #1e6b4f; --accept-soft: #dcefe4; --reject: #a2452f; --reject-soft: #f7e2dc;
+  --del-soft: #f7e2dc; --add-soft: #dcefe4;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #15171b; --paper: #1c1f25; --ink: #e8eaef; --ink-2: #a3a9b6; --ink-3: #6f7583; --rule: #2e323a;
+    --accept: #7ccf9c; --accept-soft: #1e3d2b; --reject: #f0a08f; --reject-soft: #4a2622;
+    --del-soft: #4a2622; --add-soft: #1e3d2b;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #15171b; --paper: #1c1f25; --ink: #e8eaef; --ink-2: #a3a9b6; --ink-3: #6f7583; --rule: #2e323a;
+  --accept: #7ccf9c; --accept-soft: #1e3d2b; --reject: #f0a08f; --reject-soft: #4a2622;
+  --del-soft: #4a2622; --add-soft: #1e3d2b;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: "Familjen Grotesk", "Helvetica Neue", Arial, sans-serif; font-size: 16px; line-height: 1.5; padding-block: 40px 72px; padding-inline: 20px; }
+.wrap { max-width: 760px; margin: 0 auto; }
+.mono { font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; }
+.eyebrow { font-size: 12.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); margin: 0 0 10px; }
+h1 { font-size: 40px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.05; margin: 0 0 14px; text-wrap: balance; }
+.lede { font-size: 18px; color: var(--ink-2); max-width: 60ch; margin: 0 0 44px; text-wrap: pretty; }
+h2 { font-size: 22px; font-weight: 600; letter-spacing: -0.01em; margin: 48px 0 12px; padding-top: 16px; border-top: 2px solid var(--ink); text-wrap: balance; }
+p { margin: 0 0 14px; max-width: 66ch; }
+p.wide { max-width: none; }
+code { font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; font-size: 0.88em; }
+.spec { background: var(--paper); border: 1px solid var(--rule); padding: 14px 18px; margin: 0 0 16px; font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; font-size: 13.5px; line-height: 1.6; overflow-x: auto; white-space: pre; }
+.spec .hi { background: var(--reject-soft); box-shadow: 0 0 0 2px var(--reject-soft); }
+.spec .dim { color: var(--ink-3); }
+.readings { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin: 0 0 18px; }
+.reading { background: var(--paper); border: 1px solid var(--rule); border-top: 3px solid var(--c); padding: 14px 16px 12px; }
+.reading h3 { margin: 0 0 6px; font-size: 15px; font-weight: 600; color: var(--c); }
+.reading p { margin: 0 0 8px; font-size: 14.5px; color: var(--ink-2); }
+.reading p:last-child { margin: 0; }
+.reading .ex { font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; font-size: 12.5px; color: var(--ink); white-space: pre; overflow-x: auto; background: var(--bg); padding: 8px 10px; margin: 8px 0 0; }
+.entry { background: var(--paper); border: 1px solid var(--rule); margin: 0 0 18px; }
+.entry .head { display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: baseline; padding: 10px 18px; border-bottom: 1px solid var(--rule); font-size: 12.5px; color: var(--ink-3); }
+.entry .head b { color: var(--ink); font-weight: 600; font-size: 14px; }
+.entry .body { padding: 14px 18px 6px; font-size: 14.5px; }
+.entry h4 { margin: 12px 0 4px; font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); font-weight: 600; }
+.entry h4:first-child { margin-top: 0; }
+.entry blockquote { margin: 0 0 6px; padding: 6px 12px; border-left: 3px solid var(--rule); font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; font-size: 12.5px; line-height: 1.55; color: var(--ink-2); white-space: pre-wrap; }
+.entry ol { margin: 0 0 6px; padding-left: 22px; }
+.entry li { margin: 0 0 6px; }
+.entry p { margin: 0 0 8px; max-width: none; }
+.entry .pick { font-weight: 600; }
+.entry .risk { display: inline-block; font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; font-size: 12.5px; padding: 1px 8px; border: 1px solid var(--rule); border-radius: 12px; margin-right: 8px; }
+.entry.chose-first .head b::after { content: " · chose the first value"; color: var(--reject); font-weight: 500; }
+.entry.chose-off .head b::after { content: " · chose off"; color: var(--accept); font-weight: 500; }
+.resp { font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; font-size: 13px; background: var(--paper); border: 1px solid var(--rule); padding: 12px 16px; margin: 0 0 14px; white-space: pre-wrap; overflow-x: auto; }
+.resp .k { color: var(--ink-3); }
+.cascade { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0 24px; margin: 0 0 16px; font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; font-size: 12.5px; }
+.cascade div { padding: 4px 0; border-bottom: 1px solid var(--rule); color: var(--ink-2); }
+.cascade div b { color: var(--ink); font-weight: 500; }
+table { border-collapse: collapse; width: 100%; margin: 0 0 8px; font-size: 14px; }
+th, td { text-align: left; padding: 8px 10px 8px 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3); font-weight: 600; }
+td.num, th.num { text-align: right; font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; font-variant-numeric: tabular-nums; padding-right: 18px; }
+td .bad { color: var(--reject); font-weight: 600; } td .good { color: var(--accept); font-weight: 600; }
+.tablewrap { overflow-x: auto; margin: 0 0 12px; }
+.judge { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin: 0 0 16px; }
+.judge div { background: var(--paper); border: 1px solid var(--rule); padding: 14px 16px; }
+.judge .big { font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; font-size: 26px; font-weight: 500; letter-spacing: -0.02em; line-height: 1; margin: 0 0 6px; color: var(--accept); }
+.judge p { font-size: 13.5px; color: var(--ink-2); margin: 0; }
+.diff { background: var(--paper); border: 1px solid var(--rule); padding: 10px 16px 12px; margin: 0 0 16px; font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; font-size: 13px; line-height: 1.6; overflow-x: auto; }
+.diff .where { font-size: 11.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3); margin: 0 0 6px; }
+.diff .line { display: grid; grid-template-columns: 18px 1fr; gap: 6px; white-space: pre-wrap; }
+.diff .del .sign { color: var(--reject); } .diff .add .sign { color: var(--accept); }
+.diff mark { color: inherit; border-radius: 2px; padding: 0 2px; }
+.diff .add mark { background: var(--add-soft); font-weight: 500; }
+.foot { margin-top: 44px; padding-top: 14px; border-top: 1px solid var(--rule); font-size: 13px; color: var(--ink-3); max-width: none; }
+.foot code { color: var(--ink-2); }
+@media (max-width: 480px) { h1 { font-size: 32px; } }
+</style>
+<div class="wrap">
+  <p class="eyebrow">SCBench · datagate · spec patch 02</p>
+  <h1>Patch: a single enrich=yes</h1>
+  <p class="lede">One word added to one sentence of a benchmark spec, and what it did to the reading. A hidden test the reasoning prompts kept failing, the registry entries that argued for the first value, and twenty-two runs on the patched text without a miss.</p>
+
+  <h2>The sentence</h2>
+  <p>datagate is an HTTP service that fetches a remote CSV and serves it back as JSON. Checkpoint 7 of its spec adds optional enrichment: pass <code>enrich=yes</code> on <code>/convert</code> and the dataset gains a summary and per-column details. The trigger is two sentences long.</p>
+  <div class="spec">### Enrichment trigger
+
+<span class="hi">Only exact `enrich=yes` enables enrichment.</span>
+All other states keep enrichment off.
+Success response remains:
+
+{"ok": true, "endpoint": "/datasets/&lt;id&gt;"}</div>
+  <p>A query string can carry the same parameter twice. <code>?enrich=yes&amp;enrich=no</code> is a legal request, and the sentence says nothing about it. "Exact" is about the spelling of a value. Whether two values count as a state, and which state, is left to the reader.</p>
+
+  <h2>Two readings</h2>
+  <div class="readings">
+    <div class="reading" style="--c: var(--reject)">
+      <h3>The first value decides</h3>
+      <p>The sentence is an equality test on a value. Web frameworks hand back the first value of a repeated parameter, so <code>enrich=yes&amp;enrich=no</code> is <code>enrich=yes</code> and enrichment is on. The spec spells out a 400 for a repeated <code>force</code> and says nothing of the kind here, so a repeat is not an error either.</p>
+      <div class="ex">GET /convert?source=…&amp;enrich=yes&amp;enrich=no
+GET /datasets/&lt;id&gt;
+200 {…, "dataset_summary": {…}, "column_details": {…}}</div>
+    </div>
+    <div class="reading" style="--c: var(--accept)">
+      <h3>A repeat is another state</h3>
+      <p>"All other states keep enrichment off" is the operative clause. The request as sent is not <code>enrich=yes</code> alone, so it is one of the other states: the request succeeds and nothing is enriched, whatever order the values came in.</p>
+      <div class="ex">GET /convert?source=…&amp;enrich=yes&amp;enrich=no
+GET /datasets/&lt;id&gt;
+200 {"columns": […], "rows": […], "total": 1}</div>
+    </div>
+  </div>
+  <p>The hidden tests want the second. The reference implementation reads the whole list of values and enriches only when the list is exactly <code>["yes"]</code>. The first reading is the one an agent reaches by asking what the framework does.</p>
+
+  <h2>A run that chose the first value</h2>
+  <p>Every run of the spectest prompts writes an ambiguity registry before implementing: each unclear passage gets an entry with the spec text, the alternatives, a choice with reasons, and a self-rated Risk that the spec's author reads it the other way. This is entry T89 from the first min12 run on the unpatched spec, verbatim.</p>
+  <div class="entry chose-first">
+    <div class="head"><b>T89. What &quot;only exact <code>enrich=yes</code>&quot; does with a repeated <code>enrich</code> parameter</b><span class="mono">min12-ABDJKMN · spec v0 · 2026-09-09</span></div>
+    <div class="body">
+      <h4>Spec Text</h4>
+      <blockquote>Only exact `enrich=yes` enables enrichment.
+All other states keep enrichment off.</blockquote>
+      <h4>Alternatives</h4>
+      <ol>
+        <li>The first value decides: <code>?enrich=yes&amp;enrich=no</code> enables enrichment, the way <code>request.args.get(&quot;enrich&quot;) == &quot;yes&quot;</code> behaves.</li><li>Repetition is one of the &quot;other states&quot;: enrichment is on only when there is exactly one <code>enrich</code> value and it is <code>yes</code>.</li><li>A repeated <code>enrich</code> is HTTP 400, by analogy with <code>force</code>.</li>
+      </ol>
+      <h4>Choice</h4>
+      <p><span class="pick">Alternative 1.</span> The section is written entirely in terms of the parameter&#x27;s value, and the trigger sentence has the shape of a single equality test; the spec pointedly does <em>not</em> repeat the &quot;any additional value is HTTP 400&quot; rule it states explicitly for <code>force</code>, so 3 would be inventing an error. Given no such rule, the ordinary query-string reading takes the first value.</p>
+      <h4>Risk</h4>
+      <p><span class="risk">15</span>Most likely author reading if different: alternative 2 — repetition treated as &quot;some other state&quot; and therefore off.</p>
+    </div>
+  </div>
+  <p>The Risk line names the author's reading and rates it 15. The argument above it is careful: the section does speak only of values, the spec does give <code>force</code> a repeat rule and withholds one here, and the framework really does return the first value. What decided it in the end is the last sentence, "the ordinary query-string reading takes the first value". The library's default became the spec's meaning.</p>
+
+  <h2>What the test saw</h2>
+  <p>The hidden test <code>test_duplicate_enrich_params_do_not_enable_metadata</code> sends <code>enrich</code> twice, once as <code>yes</code> and once as <code>no</code>, in both orders, then reads the dataset back and expects neither <code>dataset_summary</code> nor <code>column_details</code>. The run above answered the yes-then-no case:</p>
+  <div class="resp"><span class="k">AssertionError:</span> assert 'dataset_summary' not in {'column_details': {'name': {…}, 'val': {…}}, 'columns': ['name', 'val'], 'dataset_summary': {'column_count': 2, 'filetype': 'csv', 'row_count': 1}, 'ok': True, …}</div>
+  <p>The no-then-yes case passes under either reading, since the first value there is <code>no</code>. So this choice costs exactly one test at the last checkpoint and nothing downstream: there is no cascade here, which is the opposite of the delimiter sentence. What makes it worth a page is who lost it.</p>
+
+  <h2>Every run, before and after</h2>
+  <p>The outcome of that test across every datagate run that reached checkpoint 7, by the spec version each run read. v1 is the five-sentence patch of 2026-09-02; v2 adds this patch and the delimiter patch.</p>
+  <div class="tablewrap"><table>
+    <tr><th>spec</th><th class="num">runs</th><th class="num">failed the test</th><th>registries with an entry on this question</th><th class="num">chose the first value</th></tr>
+    <tr><td>v0, unpatched</td><td class="num">16</td><td class="num"><span class="bad">8</span></td><td>9</td><td class="num">7</td></tr>
+    <tr><td>v1, five sentences</td><td class="num">20</td><td class="num"><span class="bad">4</span></td><td>12</td><td class="num">4</td></tr>
+    <tr><td>v2, with "a single"</td><td class="num">22</td><td class="num"><span class="good">0</span></td><td>20</td><td class="num">0</td></tr>
+  </table></div>
+  <p>Every registry that chose the first value failed the test, and every failure but one is a registry run; the exception is Sonnet 4.6 on the bare prompt. On Opus 5 the bare prompt passed every time it ran on the unpatched text: four just-solve runs and the anti-slop run. It never wrote the question down. It read the parameter list, compared, and moved on. The prompts that reason about a sentence are the ones a sentence can lead astray, and on the original text seven registries in nine went to the first value, at Risks between 12 and 25.</p>
+
+  <h2>The patch</h2>
+  <div class="diff">
+    <div class="where">datagate · checkpoint 7 · entered spec v2 · 2026-09-05</div>
+    <div class="line del"><span class="sign">−</span><span>Only exact `enrich=yes` enables enrichment.</span></div>
+    <div class="line add"><span class="sign">+</span><span>Only <mark>a single,</mark> exact `enrich=yes` enables enrichment.</span></div>
+  </div>
+  <p>One word, and an article to carry it. "Exact" already governs the spelling, so "single" can only be about how many times the parameter appears. It does not say what a second <code>enrich</code> does. It says a second one is not the trigger, which is all the test asks.</p>
+
+  <h2>The same question, after</h2>
+  <p>This is the corresponding entry from the same prompt on spec v2. The agent still sees the question and still names the framework's one-liner as what the author probably wrote. It reads "single" as a count and passes.</p>
+  <div class="entry chose-off">
+    <div class="head"><b>T79 — <code>enrich</code> supplied more than once, including <code>enrich=yes&amp;enrich=yes</code></b><span class="mono">min12-ABDJKMN · spec v2 · 2026-09-14</span></div>
+    <div class="body">
+      <h4>Spec Text</h4>
+      <blockquote>Only a <em>single</em>, exact `enrich=yes` enables enrichment.</blockquote>
+      <h4>Alternatives</h4>
+      <ol>
+        <li>&quot;Single&quot; counts occurrences: two <code>enrich</code> parameters keep enrichment off even when both read <code>yes</code>.</li><li>&quot;Single&quot; only stresses the exact spelling; a repeated parameter is resolved the way the web framework resolves it (first or last wins), so <code>enrich=yes&amp;enrich=yes</code> enriches.</li><li>Repetition is a 400, as it is for <code>force</code> (T61).</li>
+      </ol>
+      <h4>Choice</h4>
+      <p><span class="pick">Alternative 1.</span> The word &quot;single&quot; is doing work next to &quot;exact&quot; — exact already covers the spelling of the value, so &quot;single&quot; must be about how many times the parameter appears. Combined with &quot;all other states keep enrichment off&quot; (T78), the natural implementation reads the whole list of values and enriches only when it is exactly <code>[&quot;yes&quot;]</code>.</p>
+      <h4>Risk</h4>
+      <p><span class="risk">40</span>Author most likely prefers: <code>enrich=yes&amp;enrich=yes</code> (and <code>enrich=no&amp;enrich=yes</code>) enriching, because a one-line <code>request.args.get(&quot;enrich&quot;) == &quot;yes&quot;</code> sees only the first value and is the shortest way to implement &quot;exact <code>enrich=yes</code>&quot;.</p>
+    </div>
+  </div>
+  <p>The Risk went up, from 15 for the wrong answer to 40 for the right one. That is the honest direction. The patched sentence names a state without defining what it does, and the agent can see that a one-line implementation would disagree with it. Across the twenty v2 registries the Risk on this entry runs from 5 to 40, and none of them took the first value.</p>
+
+  <h2>The original text could be read right</h2>
+  <p>Two of the nine v0 registries chose off from the unpatched sentence. This is the second min11 run's entry, which lists first-value-wins as its third alternative and rejects it.</p>
+  <div class="entry chose-off">
+    <div class="head"><b>T102. What exactly counts as <code>enrich=yes</code></b><span class="mono">min11-ABDFJKMN · spec v0 · 2026-09-08</span></div>
+    <div class="body">
+      <h4>Spec Text</h4>
+      <blockquote>`/convert` supports optional ingestion enrichment with `enrich=yes`.
+
+Only exact `enrich=yes` enables enrichment.
+All other states keep enrichment off.</blockquote>
+      <h4>Alternatives</h4>
+      <ol>
+        <li>Enrichment is on only when <code>enrich</code> appears exactly once with the exact value <code>yes</code>; every other state — absent, <code>?enrich</code>, <code>enrich=</code>, <code>enrich=YES</code>, <code>enrich=Yes</code>, <code>enrich=1</code>, <code>enrich=true</code>, <code>enrich=yes%20</code>, and any repeat such as <code>enrich=yes&amp;enrich=yes</code> — leaves enrichment off, and none of them is an error.</li><li>Same, but a repeated <code>enrich</code> is <code>HTTP 400</code>, by analogy with <code>force</code>.</li><li>The first value wins, so <code>enrich=yes&amp;enrich=no</code> enriches.</li>
+      </ol>
+      <h4>Choice</h4>
+      <p><span class="pick">Reading 1.</span> &quot;Only exact&quot; rules out case folding and truthy synonyms, and &quot;All other states keep enrichment <em>off</em>&quot; names the consequence of every other state — it says the request still succeeds with enrichment off, not that it fails, so reading 2 is excluded. A repeat is one of those &quot;other states&quot;: the parameter as sent is not <code>enrich=yes</code> alone, so it does not clear the &quot;only exact&quot; bar, which also excludes reading 3. Unlike <code>force</code>, <code>enrich</code> is given no &quot;may appear at most once&quot; rule anywhere in the spec.</p>
+      <h4>Risk</h4>
+      <p><span class="risk">25</span>Most likely divergence: the author tests <code>params.get(&quot;enrich&quot;) == &quot;yes&quot;</code> on a single-value parse (or <code>&quot;yes&quot; in values</code>), so <code>enrich=yes&amp;enrich=yes</code> enriches instead of staying off.</p>
+    </div>
+  </div>
+  <p>The route is "all other states". Where T89 read the trigger sentence as an equality test and asked what the framework returns, T102 read the second sentence as the rule and asked whether a repeated parameter is <code>enrich=yes</code> alone. It is not, so it is another state, so it is off. The patch does not add that argument; it makes it the only one left.</p>
+
+  <h2>Reading</h2>
+  <p>A one-word patch moved the reasoning prompts from seven wrong in nine to none in twenty, on a sentence the bare prompt was already getting right. The word works by attaching to "exact", which every registry had already fastened on, and pointing it at count instead of spelling. Nothing about the state itself became clearer, and the agents' Risk numbers say so. That is what a good patch to a spec looks like from the inside: not a definition, a word placed where the reader is already looking, before the reasoning starts.</p>
+
+  <p class="foot">Sources in unslop-code-bench: <code>specs/datagate/v2/02-datagate-enrich-single.patch</code>; registries at <code>outputs/spectest/opus-5_2.1.251_high_min12-ABDJKMN/20260909T0313</code>, <code>…min12-ABDJKMN-specv2/20260914T1054</code> and <code>…min11-ABDFJKMN/20260908T2330</code>, <code>datagate/checkpoint_7/snapshot/AMBIGUITIES.md</code>; test outcomes from each run's <code>checkpoint_7/evaluation/report.json</code>, counted 2026-09-20 over every datagate run that reached checkpoint 7. A registry "has an entry" when one of its entries names a repeated <code>enrich</code>.</p>
+</div>
+
+</body></html>

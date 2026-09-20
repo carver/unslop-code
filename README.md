@@ -32,7 +32,7 @@ Some important entry points to understand and use the repository.
 - `report/` — every published page as plain HTML, so nothing depends on the claude.ai links:
   the baseline (`scbench-baseline.html`), the five datagate sentences (`five-sentences.html`),
   the uplift grid (`uplift-grid.html`), the spec patches per problem (`spec-patches.html`),
-  the delimiter patch (`patch-infer-delimiter.html`) and the min12 prompt rendered
+  the delimiter patch (`patch-infer-delimiter.html`), the enrich patch (`patch-enrich-single.html`) and the min12 prompt rendered
   (`min12-prompt.html`). The build scripts sit beside the pages they generate.
 - `notes/` — credential plumbing and incident log (`credential-setup.md`), control
   isolation audit, spec-delivery mechanism, per-run comparisons

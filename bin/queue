@@ -26,10 +26,13 @@
                                                        STRICT-RUN/EXTEND line of its log, and run_dir=<path>
                                                        last; run it in the background so the wake-up
                                                        carries the result and names the run directory
-    bin/queue kill <id> [--keep-paused]                stop a job and clean up after it: a queued job is
+    bin/queue kill <id> [--keep-paused] [--delete-run]  stop a job and clean up after it: a queued job is
                                                        removed; a running one is killed, its surviving
                                                        worker processes and agent container removed,
-                                                       and the queue resumed with the next job
+                                                       and the queue resumed with the next job;
+                                                       --delete-run also deletes the partial run dir
+                                                       the job's log names (a fresh run dir under
+                                                       outputs/ only, never a resumed one)
     bin/queue <anything else>                          passed to pueue as-is
 
 A config written by bin/run-config for a spec version carries SCBENCH_PROBLEMS_PATH in
@@ -43,6 +46,7 @@ import os
 import pathlib
 import re
 import shlex
+import shutil
 import signal
 import subprocess
 import sys
@@ -326,7 +330,16 @@ def wait_job(task_id):
     print(f"run_dir={run_dir}")
 
 
-def kill_job(task_id, keep_paused=False):
+def deletable_run_dir(run_dir, command, outputs):
+    """Whether a killed job's run dir may go: it must sit under outputs/ and the job must have
+    created it (`scb-extend --new`), so a resumed run's earlier checkpoints are never deleted."""
+    if run_dir is None or "--new" not in command:
+        return False
+    path = pathlib.Path(run_dir).resolve()
+    return outputs.resolve() in path.parents and path.is_dir()
+
+
+def kill_job(task_id, keep_paused=False, delete_run=False):
     """Stop one job without leaving a worker or an agent container behind.
 
     Killing only the pueue task leaves slop-code's spawned worker (it reparents to init) and
@@ -346,6 +359,8 @@ def kill_job(task_id, keep_paused=False):
         return
     if state != "Running":
         raise SystemExit(f"queue: task {task_id} is {state}; nothing to kill")
+    log = subprocess.run([PUEUE, "log", str(task_id), "--full"], capture_output=True, text=True).stdout
+    _, run_dir = job_result(log)
     others = [i for i, t in tasks.items() if i != str(task_id) and state_of(t) == "Running"]
     subprocess.run([PUEUE, "pause", "--wait"], check=True, capture_output=True)
     try:
@@ -372,6 +387,12 @@ def kill_job(task_id, keep_paused=False):
             for c in agent_containers(ps):
                 subprocess.run(["docker", "rm", "-f", c], check=True, capture_output=True)
                 print(f"removed agent container {c}")
+        if delete_run:
+            if deletable_run_dir(run_dir, task["command"], ROOT / "outputs"):
+                shutil.rmtree(run_dir)
+                print(f"deleted partial run dir {run_dir}")
+            else:
+                print(f"run dir not deleted: {run_dir or 'none named in the log'} (fresh runs under outputs/ only)")
     finally:
         if keep_paused:
             print(f"killed task {task_id}; queue left paused (pueue start to continue)")
@@ -415,13 +436,8 @@ def main():
         add_task(*plan(options.run_dir, options.n, options.problem))
     elif args[:1] == ["wait"] and len(args) == 2:
         wait_job(int(args[1]))
-    elif (
-        args[:1] == ["kill"]
-        and len(args) in (2, 3)
-        and args[3:] == []
-        and (len(args) == 2 or args[2] == "--keep-paused")
-    ):
-        kill_job(int(args[1]), keep_paused=len(args) == 3)
+    elif args[:1] == ["kill"] and len(args) >= 2 and set(args[2:]) <= {"--keep-paused", "--delete-run"}:
+        kill_job(int(args[1]), keep_paused="--keep-paused" in args, delete_run="--delete-run" in args)
     elif not args:
         subprocess.run([PUEUE, "status"], check=True)
     else:

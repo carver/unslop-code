@@ -80,6 +80,8 @@ prompt and `save_dir` relative to it, which is where `bin/queue` and `bin/scb-ex
     bin/queue-watch                          # event stream for a Monitor: checkpoint results, halts, DONE
                                              # lines and job status changes across the whole queue
     bin/ledger-row <run_dir>                 # after every run: the ledger row and failure summary to fill in
+    bin/run-recap <run_dir>                  # ledger-row, then the miss matrix against the problem's other runs
+                                             # at the same spec and the implementation-only quality table
     bin/reeval <run_dir> <problem> <ckpt> --tag T  # re-score one checkpoint under the current problem config; keeps the old evaluation as before-T
     bin/results [--write]                    # every complete run, one row per problem/prompt/spec -> notes/results.md
     bin/grid [--json]                        # the 2x2 uplift grid (just-solve vs min12, v0 vs patched), per problem
@@ -117,6 +119,7 @@ Project skills (`.claude/skills/`, all user-invoked) tie those together:
                              by blind judges, then a strict rerun
     /prompt-ladder           smallest prompt that strict-solves a patched spec, and where
                              code quality drops off
+    /watch-queue             follow the queue job by job: wait, recap, ledger, report, next
 
 ### Running the Benchmark
 

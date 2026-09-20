@@ -281,3 +281,14 @@ def test_job_result_takes_the_last_run_dir_and_strips_the_closing_paren():
 
 def test_job_result_without_driver_lines_names_no_run_dir():
     assert q.job_result("pueue: task 5 has no output\n") == ([], None)
+
+
+def test_deletable_run_dir_only_for_fresh_runs_under_outputs(tmp_path):
+    outputs = tmp_path / "outputs"
+    run = outputs / "spectest" / "x" / "20260101T0000"
+    run.mkdir(parents=True)
+    new = "env bin/scb-extend --new configs/runs/x.yaml xjq 5"
+    assert q.deletable_run_dir(str(run), new, outputs)
+    assert not q.deletable_run_dir(str(run), "env bin/scb-extend " + str(run) + " xjq 5", outputs)  # a resume
+    assert not q.deletable_run_dir(str(tmp_path / "elsewhere"), new, outputs)  # outside outputs/
+    assert not q.deletable_run_dir(None, new, outputs)  # the log named no run dir

@@ -1,0 +1,76 @@
+#!/usr/bin/env python3
+"""The after-run recap for one finished run, in one command.
+
+    bin/run-recap <run_dir>
+
+Prints, in order: what bin/ledger-row prints (the ledger row with WHAT CHANGED and CAUSES left
+for the reader, and the failure summary); the miss matrix of this run against every other
+complete run of the same problem at the same spec and model (bin/compare-runs), which says
+which misses are shared with which prompt; and, for a v0 run, the implementation-only quality
+table of the problem across every prompt that ran it (bin/quality-split), the erosion, ast% and
+cloned% figures every recap reports beside the whole-snapshot ones.
+"""
+import pathlib
+import subprocess
+import sys
+import types
+
+import yaml
+
+HERE = pathlib.Path(__file__).resolve().parent
+results = types.ModuleType("results")
+results.__file__ = str(HERE / "results")
+sys.modules["results"] = results
+exec(compile((HERE / "results").read_text(), str(HERE / "results"), "exec"), results.__dict__)
+
+PROMPT_ORDER = ("just-solve", "anti_slop", "min12-ABDJKMN", "min13-ABDJKMNT")
+
+
+def run_dir_of(summary):
+    """The run directory a bin/results summary came from: its snapshots sit at <run>/<problem>/<ckpt>/snapshot."""
+    return pathlib.Path(summary["snapshots"][0]).resolve().parents[2]
+
+
+def siblings(cells, problem, spec, model, run_dir):
+    """Run dirs of the other complete runs of `problem` at `spec` by `model`, prompts in PROMPT_ORDER
+    then alphabetical, oldest run first within a prompt."""
+    run_dir = pathlib.Path(run_dir).resolve()
+    rank = {prompt: i for i, prompt in enumerate(PROMPT_ORDER)}
+    out = []
+    for (p, prompt, sp, m), summaries in sorted(cells.items(), key=lambda kv: (rank.get(kv[0][1], len(rank)), kv[0][1])):
+        if (p, sp, m) != (problem, spec, model):
+            continue
+        out.extend(sorted(d for d in (run_dir_of(s) for s in summaries) if d != run_dir))
+    return out
+
+
+def prompts_at(cells, problem, spec, model):
+    """The prompts with a complete run of `problem` at `spec`, in PROMPT_ORDER then alphabetical."""
+    rank = {prompt: i for i, prompt in enumerate(PROMPT_ORDER)}
+    found = {prompt for (p, prompt, sp, m) in cells if (p, sp, m) == (problem, spec, model)}
+    return sorted(found, key=lambda prompt: (rank.get(prompt, len(rank)), prompt))
+
+
+def main():
+    run_dir = pathlib.Path(sys.argv[1]).resolve()
+    problems = yaml.safe_load((run_dir / "config.yaml").read_text())["problems"]
+    if len(problems) != 1:
+        raise SystemExit(f"run-recap: {run_dir} ran {problems}; one problem per recap")
+    problem = problems[0]
+    prompt, spec, model = results.cell_key(run_dir)
+    cells, _ = results.collect(results.run_dirs())
+    print(f"== {problem} · {prompt} · {spec} · {model}\n", flush=True)
+    subprocess.run([HERE / "ledger-row", str(run_dir)], check=True)
+    others = siblings(cells, problem, spec, model, run_dir)
+    print(f"\n== miss matrix against {len(others)} other {spec} run(s) of {problem}", flush=True)
+    subprocess.run([HERE / "compare-runs", str(run_dir), *map(str, others), "--problem", problem], check=True)
+    if spec == "v0":
+        prompts = prompts_at(cells, problem, spec, model)
+        print(f"\n== implementation-only quality, {problem}, final checkpoint, pooled per prompt", flush=True)
+        subprocess.run([HERE / "quality-split", "--prompts", ",".join(prompts), "--model", model, "--problem", problem], check=True)
+    else:
+        print(f"\n== implementation-only quality for {spec}: the ledger row's final clause (quality-split scores v0 runs only)")
+
+
+if __name__ == "__main__":
+    main()

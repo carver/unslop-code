@@ -28,6 +28,7 @@ The control is the dev6 sweep's just-solve run (`notes/dev6-opus5.md`).
 | just-solve on v6 | `…just-solve-specv6/20260910T1709` | the bare benchmark prompt on the eight-patch spec v6; first of two (checkpoints 1-3 before the harness outage, 4 after it, on the harness checkout) | 45/46, 84/86, 102/104, 142/147 | complete 2026-09-11; 5 misses against the v0 control's 31: bool_nonstandard_strict (ckpt 1, `1`/`true` mixed column), tsv_whitespace_values (ckpt 2), and at checkpoint 4 correct_aliases case1 and case2 plus nested_type_alias_with_parquet. The control's 17 checkpoint-2 misses (parquet, TSV, mixed inference) are gone; only two checkpoint-4 misses are shared with it. $18, 73 min |
 | just-solve on v6, repeat | `…just-solve-specv6/20260910T1926` | same config, second of two | 46/46, 85/86, 103/104, 145/147 | complete 2026-09-11; 2 misses: tsv_whitespace_values (ckpt 2, both runs) and partition_by_map_value (ckpt 4): this snapshot percent-encodes the column name too, `attrs%5B%22region%22%5D=east`, the reading v5's "Values use percent-encoding" was written against. Pair: 142 and 145 against the control's 116. $14, 53 min |
 | min13-ABDJKMNT on v6 (strict) | `…min13-ABDJKMNT-specv6/20260920T0545` | min12 plus chunk T on the patched spec, for the uplift grid; first of two | 46/46, 86/86, 104/104, 147/147 | complete 2026-09-20; strict on every checkpoint, like both min12 v6 runs; the TSV and mixed-format family min13 loses on v0 passed in full under the v6 sentences; 4/4 strict, $19, 66 min. Quality: erosion 0.000, verbosity 0.184, ast 0.033, cloned 0.124; final checkpoint, implementation only (36% of LOC): ast 0.129, erosion 0.000, cloned 0.000 |
+| min13-ABDJKMNT on v6, repeat | `…min13-ABDJKMNT-specv6/20260920T0700` | the same prompt and spec, second of two | 45/46, 85/86, 103/104, 145/147 | complete 2026-09-20; 2 misses, one cause: the run formats timestamps to whole seconds, the tests keep the source's microseconds (registry T8, which v6 leaves open); no other v6 run missed either test; 0/4 strict, $23, 71 min. Quality: erosion 0.003, verbosity 0.213, ast 0.038, cloned 0.144; final checkpoint, implementation only (34% of LOC): ast 0.130, erosion 0.041, cloned 0.014 |
 
 ## Test failure summaries
 
@@ -92,6 +93,15 @@ The control is the dev6 sweep's just-solve run (`notes/dev6-opus5.md`).
     tests on v0 passed in full, so on file_merger the v6 sentences close the min13 gap as
     well as the min12 one. Implementation only: erosion 0.000, ast 0.129, cloned 0.000.
     $19 and 66 min against min12's $22 and 73. First of two.
+
+  - repeat (145): two misses, type_parsing_edgecases at checkpoint 1 and
+    nested_timestamp_microseconds at checkpoint 4, and no other v6 run missed either. Both
+    come from one choice. v6 says nothing about sub-second precision (registry T8). This run
+    listed T8 in its AMBIGUITIES.md and picked whole seconds, `strftime('%Y-%m-%dT%H:%M:%SZ')`.
+    The first run listed the same question and kept the microseconds, which is what the tests
+    want. The checkpoint-1 miss regresses through all four checkpoints, so 0/4 strict against
+    the first run's 4/4. Pair 147 and 145 against min12's 147 and 147 and just-solve's 142
+    and 145. Implementation only: erosion 0.041, ast 0.130, cloned 0.014. $23 and 71 min.
 
 ### min11-ABDFJKMN
 

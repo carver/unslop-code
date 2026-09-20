@@ -10,8 +10,8 @@ def part(loc, ast_lines, erosion, cloned):
     return {"loc": loc, "ast_lines": ast_lines, "ast": ast_lines / loc, "erosion": erosion, "cloned": cloned}
 
 
-def row(name, prompt, impl, test, whole):
-    return {"name": name, "prompt": prompt, "runs": 2, "impl": impl, "test": test, "all": whole,
+def row(name, prompt, impl, test, whole, runs=2):
+    return {"name": name, "prompt": prompt, "runs": runs, "impl": impl, "test": test, "all": whole,
             "test_share": test["loc"] / (impl["loc"] + test["loc"])}
 
 
@@ -42,7 +42,7 @@ def test_the_note_gives_the_drops_in_share_and_in_absolute_flagged_lines():
     html = uplift_grid.split_section(ROWS, REPOS)
     assert "share falls 57%" in html  # whole snapshot, problem means: (0.20 + 0.26) / 2 to (0.05 + 0.15) / 2
     assert "it falls 25%" in html  # implementation files: (0.50 + 0.30) / 2 to (0.20 + 0.40) / 2
-    assert "implementation lines falls 40%</b> (400 to 240)" in html
+    assert "implementation lines per run falls 40%</b> (200 to 120)" in html
     assert "4.0 times the test code" in html
 
 
@@ -54,3 +54,36 @@ def test_the_human_row_is_the_mean_of_the_repositories():
     assert "<td>human, 2 repositories</td>" in html
     assert "2.0 times the human one" in html  # 0.30 against 0.15
     assert "0.45 against 0.45" in html  # erosion: the mean of 0.2 and 0.7, not sith's weight in the pooled 0.65
+
+
+def test_line_counts_are_per_run_so_a_prompt_with_fewer_runs_compares():
+    once = [r | {"prompt": "anti_slop"} for r in ROWS[:2]]
+    once.append(row("ALL", "anti_slop", part(500, 200, 0.44, 0.058), part(250, 25, 0.6, 0.06),
+                    part(750, 225, 0.27, 0.059), runs=1))
+    html = uplift_grid.split_section(ROWS + once, REPOS)
+    just_solve, anti_slop = (uplift_grid.prompt_row(ROWS + once, p) for p in ("just-solve", "anti_slop"))
+    assert (just_solve["runs"], anti_slop["runs"]) == (2, 1)
+    assert just_solve["impl"]["loc"] == anti_slop["impl"]["loc"] == 500
+    assert "anti-slop writes 1.0 times the test code" in html
+
+
+def test_a_prompts_test_share_is_the_mean_of_its_problems_as_the_human_one_is_of_repositories():
+    assert uplift_grid.prompt_row(ROWS, "just-solve")["test_share"] == (100 / 200 + 400 / 1300) / 2
+
+
+def test_the_test_share_panel_names_each_prompts_problems_and_the_human_spread():
+    panel = uplift_grid.test_share_panel(ROWS, REPOS)
+    assert list(panel["prompts"]) == ["just-solve", "min12-ABDJKMN"]
+    spectest = panel["prompts"]["min12-ABDJKMN"]
+    assert spectest["problems"] == {"xjq": 500 / 580, "sith": 1500 / 2220}
+    assert spectest["mean"] == (500 / 580 + 1500 / 2220) / 2
+    assert panel["human"] == {"n": 2, "mean": 0.625, "min": {"repo": "flask", "value": 0.5},
+                              "max": {"repo": "django", "value": 0.75}}
+
+
+def test_the_cloned_sentence_blames_the_tests_only_for_a_rise_the_implementation_does_not_share():
+    base = {"all": {"cloned": 0.04}, "impl": {"cloned": 0.04}}
+    rise = uplift_grid.cloned_sentence(base, {"all": {"cloned": 0.17}, "impl": {"cloned": 0.03}})
+    fall = uplift_grid.cloned_sentence(base, {"all": {"cloned": 0.03}, "impl": {"cloned": 0.006}})
+    assert rise == "The rise in cloned lines is all in the tests; implementation clones go from 0.040 to 0.030."
+    assert fall.startswith("Cloned lines go from 0.040 to 0.030 over the whole snapshot;")

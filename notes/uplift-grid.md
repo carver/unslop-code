@@ -132,6 +132,15 @@ Erosion / ast% and cost, as above:
   with a whisker from the lowest repo to the highest and a band for the middle half. Until
   2026-09-18 the bars were the paper's own Table 2 figures, 0.31 and 0.10; the rerun matches
   the first and not the second (another rule set), so the paper's 0.10 is named, not drawn.
+- **Page changes, 2026-09-20.** The along-the-run section keeps the paper's GPT 5.5 lines only,
+  the strongest of its three models, as four cards two to a row (GPT 5.3 Codex and GPT 5.4 are
+  still in `report/paper_figure5.py`). A new headline card gives test code as a share of all
+  lines at the final checkpoint, which does not follow the implementation-only switch:
+  just-solve 27%, anti-slop 31%, spectest 72%, spectest+antislop 67%, the human repositories
+  58%. The implementation-against-tests table has a row for every prompt, a runs column, and
+  line counts per run, so anti-slop's six runs compare with the others' twelve; its test share
+  is now the mean of the per-problem shares, as the human one is of repositories. Cards that
+  draw patched cells name a prompt that does not cover all three patched problems yet.
 - **Erosion along the run, against the paper's Figure 5.** The v2 paper (arXiv 2603.24755v2)
   says erosion rises in 77% of agent trajectories, 0.026 per checkpoint, and that quality
   prompts lower the starting point "but do not slow the degradation" (its Figure 5, top row:

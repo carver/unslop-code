@@ -38,9 +38,9 @@ a { color: var(--js); text-underline-offset: 2px; }
 .sw.fill { background: var(--c); }
 .sw.soft { opacity: 0.45; }
 .squares { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; }
-/* Trajectory rows keep three card widths even when a row holds two cards, so every panel draws at one size. */
-.squares.trio { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-@media (max-width: 860px) { .squares.trio { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); } }
+/* Seven lines to a trajectory card, so two cards to a row and one on a phone. */
+.squares.duo { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (max-width: 640px) { .squares.duo { grid-template-columns: minmax(0, 1fr); } }
 .card { background: var(--panel); border: 1px solid var(--rule); border-radius: 6px; padding: 14px 16px 12px; }
 .card h3 { margin: 0 0 2px; font-size: 15px; font-weight: 600; }
 .card .sub { margin: 0 0 8px; font-size: 12.5px; color: var(--ink-3); }
@@ -122,8 +122,8 @@ svg .hit { fill: transparent; }
       <span><i class="sw fill soft" style="--c:var(--aslop)"></i>paper Anti-Slop</span>
       <span><i class="sw fill soft" style="--c:var(--ink-3)"></i>paper Plan-First</span>
     </div>
-    <div id="trajectory"></div>
-    <p class="note" id="trajectory-note"></p>
+    <div class="squares duo" id="trajectory"></div>
+    <p class="note" id="trajectory-note" style="margin-top:12px"></p>
   </section>
 
   <section>
@@ -133,8 +133,8 @@ svg .hit { fill: transparent; }
 
   <section>
     <h2>Implementation files against test files</h2>
-    <p class="note" style="margin-bottom:10px">The final checkpoint of every v0 run, scored three ways: implementation files only, test files only, and the whole snapshot as the benchmark scores it. Each score is the mean of the six problems, every problem counting once, as every repository does in the human row. Line counts are sums over the twelve runs. Lower is better.</p>
-    <div class="tablewrap"><table><thead><tr><th rowspan="2">prompt</th><th rowspan="2">impl LOC</th><th rowspan="2">test LOC</th><th rowspan="2">test share</th><th colspan="3">ast-grep</th><th colspan="3">erosion</th><th colspan="3">cloned</th></tr><tr><th>impl</th><th>tests</th><th>all</th><th>impl</th><th>tests</th><th>all</th><th>impl</th><th>tests</th><th>all</th></tr></thead><tbody><tr><td>just-solve</td><td class="num">30,174</td><td class="num">13,163</td><td class="num">30%</td><td class="num">0.303</td><td class="num">0.108</td><td class="num">0.254</td><td class="num">0.563</td><td class="num">0.590</td><td class="num">0.625</td><td class="num">0.040</td><td class="num">0.053</td><td class="num">0.043</td></tr><tr><td>spectest</td><td class="num">22,218</td><td class="num">49,643</td><td class="num">69%</td><td class="num">0.250</td><td class="num">0.016</td><td class="num">0.085</td><td class="num">0.360</td><td class="num">0.011</td><td class="num">0.157</td><td class="num">0.030</td><td class="num">0.225</td><td class="num">0.169</td></tr><tr><td>human, 27 repositories</td><td class="num">-</td><td class="num">-</td><td class="num">58%</td><td class="num">0.124</td><td class="num">0.019</td><td class="num">0.063</td><td class="num">0.444</td><td class="num">0.164</td><td class="num">0.309</td><td class="num">0.079</td><td class="num">0.113</td><td class="num">0.100</td></tr></tbody></table></div><p class="note" style="margin-top:10px">scb-check scores the test files along with the implementation, and spectest writes 3.8 times the test code. Over the whole snapshot its ast-grep share falls 67%; in implementation files alone it falls 18%. spectest also writes 26% less implementation, so <b>the count of flagged implementation lines falls 38%</b> (9,412 to 5,870). Erosion has the same shape with more left over: down 75% over the whole snapshot and 36% in implementation files. The rise in cloned lines is all in the tests; implementation clones go from 0.040 to 0.030.</p><p class="note" style="margin-top:8px">The human row is the mean over 27 of the 28 Major-tier repositories (over 10k stars) in the paper's v1, Table 2, at HEAD, split by the same tool. Humans write tests too, 58% of their lines, so their whole-repository figures are diluted the same way. Implementation against implementation, spectest's ast-grep share is 2.0 times the human one, its erosion is 0.36 against 0.44, its cloned share is 0.030 against 0.079, and its tests are cloned 2.0 times as much as human tests. The human bars in the headline are this same rerun. v1's Table 2 gives 0.10 for ast-grep, which this scb-check version does not reproduce (0.063 here); its erosion mean, 0.31, it does (0.31).</p>
+    <p class="note" style="margin-bottom:10px">The final checkpoint of every v0 run, scored three ways: implementation files only, test files only, and the whole snapshot as the benchmark scores it. Each score is the mean of the six problems, every problem counting once, as every repository does in the human row. Line counts are per run, the mean over the runs column, so a prompt with one run per problem compares with one that has two. Lower is better.</p>
+    <div class="tablewrap"><table><thead><tr><th rowspan="2">prompt</th><th rowspan="2">runs</th><th rowspan="2">impl LOC per run</th><th rowspan="2">test LOC per run</th><th rowspan="2">test share</th><th colspan="3">ast-grep</th><th colspan="3">erosion</th><th colspan="3">cloned</th></tr><tr><th>impl</th><th>tests</th><th>all</th><th>impl</th><th>tests</th><th>all</th><th>impl</th><th>tests</th><th>all</th></tr></thead><tbody><tr><td>just-solve</td><td class="num">12</td><td class="num">2,514</td><td class="num">1,097</td><td class="num">27%</td><td class="num">0.303</td><td class="num">0.108</td><td class="num">0.254</td><td class="num">0.563</td><td class="num">0.590</td><td class="num">0.625</td><td class="num">0.040</td><td class="num">0.053</td><td class="num">0.043</td></tr><tr><td>anti-slop</td><td class="num">6</td><td class="num">1,372</td><td class="num">950</td><td class="num">31%</td><td class="num">0.116</td><td class="num">0.015</td><td class="num">0.086</td><td class="num">0.000</td><td class="num">0.010</td><td class="num">0.004</td><td class="num">0.009</td><td class="num">0.096</td><td class="num">0.033</td></tr><tr><td>spectest</td><td class="num">12</td><td class="num">1,852</td><td class="num">4,137</td><td class="num">72%</td><td class="num">0.250</td><td class="num">0.016</td><td class="num">0.085</td><td class="num">0.360</td><td class="num">0.011</td><td class="num">0.157</td><td class="num">0.030</td><td class="num">0.225</td><td class="num">0.169</td></tr><tr><td>spectest+antislop</td><td class="num">12</td><td class="num">1,468</td><td class="num">2,703</td><td class="num">67%</td><td class="num">0.106</td><td class="num">0.009</td><td class="num">0.041</td><td class="num">0.034</td><td class="num">0.002</td><td class="num">0.012</td><td class="num">0.011</td><td class="num">0.209</td><td class="num">0.143</td></tr><tr><td>human, 27 repositories</td><td class="num">-</td><td class="num">-</td><td class="num">-</td><td class="num">58%</td><td class="num">0.124</td><td class="num">0.019</td><td class="num">0.063</td><td class="num">0.444</td><td class="num">0.164</td><td class="num">0.309</td><td class="num">0.079</td><td class="num">0.113</td><td class="num">0.100</td></tr></tbody></table></div><p class="note" style="margin-top:10px">scb-check scores the test files along with the implementation, and anti-slop writes 0.9 times the test code. Over the whole snapshot its ast-grep share falls 66%; in implementation files alone it falls 62%. anti-slop also writes 45% less implementation, so <b>the count of flagged implementation lines per run falls 80%</b> (784 to 157). Erosion has the same shape with more left over: down 99% over the whole snapshot and 100% in implementation files. Cloned lines go from 0.043 to 0.033 over the whole snapshot; implementation clones go from 0.040 to 0.009.</p><p class="note" style="margin-top:8px">spectest writes 3.8 times the test code. Over the whole snapshot its ast-grep share falls 67%; in implementation files alone it falls 18%. spectest also writes 26% less implementation, so <b>the count of flagged implementation lines per run falls 38%</b> (784 to 489). Erosion has the same shape with more left over: down 75% over the whole snapshot and 36% in implementation files. The rise in cloned lines is all in the tests; implementation clones go from 0.040 to 0.030.</p><p class="note" style="margin-top:8px">spectest+antislop writes 2.5 times the test code. Over the whole snapshot its ast-grep share falls 84%; in implementation files alone it falls 65%. spectest+antislop also writes 42% less implementation, so <b>the count of flagged implementation lines per run falls 79%</b> (784 to 161). Erosion has the same shape with more left over: down 98% over the whole snapshot and 94% in implementation files. The rise in cloned lines is all in the tests; implementation clones go from 0.040 to 0.011.</p><p class="note" style="margin-top:8px">The human row is the mean over 27 of the 28 Major-tier repositories (over 10k stars) in the paper's v1, Table 2, at HEAD, split by the same tool. Humans write tests too, 58% of their lines, so their whole-repository figures are diluted the same way. Implementation against implementation, anti-slop's ast-grep share is 0.9 times the human one, its erosion is 0.00 against 0.44, its cloned share is 0.009 against 0.079, and its tests are cloned 0.8 times as much as human tests; spectest's ast-grep share is 2.0 times the human one, its erosion is 0.36 against 0.44, its cloned share is 0.030 against 0.079, and its tests are cloned 2.0 times as much as human tests; spectest+antislop's ast-grep share is 0.9 times the human one, its erosion is 0.03 against 0.44, its cloned share is 0.011 against 0.079, and its tests are cloned 1.8 times as much as human tests. The human bars in the headline are this same rerun. v1's Table 2 gives 0.10 for ast-grep, which this scb-check version does not reproduce (0.063 here); its erosion mean, 0.31, it does (0.31).</p>
     <p class="note" style="margin-top:8px">Per-problem rows, the rules that fire in tests and the same split on human repositories are in <span class="mono">notes/quality-test-dilution.md</span> in the repository.</p>
   </section>
 
@@ -1144,6 +1144,31 @@ const G = {
       "loc": 287.0
      }
     },
+    "anti_slop|patched": {
+     "spec": "v3",
+     "runs": [
+      {
+       "fail": 0.0,
+       "erosion": 0.0,
+       "verbosity": 0.26787005871142827,
+       "ast": 0.0865623347460028,
+       "cloned": 0.12371061661869413,
+       "cost": 5.7833775,
+       "minutes": 20.139886933333333,
+       "loc": 594
+      }
+     ],
+     "mean": {
+      "fail": 0.0,
+      "erosion": 0.0,
+      "verbosity": 0.26787005871142827,
+      "ast": 0.0865623347460028,
+      "cloned": 0.12371061661869413,
+      "cost": 5.7833775,
+      "minutes": 20.139886933333333,
+      "loc": 594.0
+     }
+    },
     "min12-ABDJKMN|v0": {
      "spec": "v0",
      "runs": [
@@ -1320,6 +1345,17 @@ const G = {
    "cost": 22.69866108333333,
    "minutes": 64.08337854722222,
    "loc": 2322.6666666666665
+  },
+  "anti_slop|patched": {
+   "n": 1,
+   "fail": 0.0,
+   "erosion": 0.0,
+   "verbosity": 0.26787005871142827,
+   "ast": 0.0865623347460028,
+   "cloned": 0.12371061661869413,
+   "cost": 5.7833775,
+   "minutes": 20.139886933333333,
+   "loc": 594.0
   },
   "min12-ABDJKMN|v0": {
    "n": 6,
@@ -2760,6 +2796,31 @@ const G = {
        "loc": 287.0
       }
      },
+     "anti_slop|patched": {
+      "spec": "v3",
+      "runs": [
+       {
+        "fail": 0.0,
+        "erosion": 0.0,
+        "verbosity": 0.21411191526959011,
+        "ast": 0.15539718895379928,
+        "cloned": 0.0,
+        "cost": 5.7833775,
+        "minutes": 20.139886933333333,
+        "loc": 304
+       }
+      ],
+      "mean": {
+       "fail": 0.0,
+       "erosion": 0.0,
+       "verbosity": 0.21411191526959011,
+       "ast": 0.15539718895379928,
+       "cloned": 0.0,
+       "cost": 5.7833775,
+       "minutes": 20.139886933333333,
+       "loc": 304.0
+      }
+     },
      "min12-ABDJKMN|v0": {
       "spec": "v0",
       "runs": [
@@ -2936,6 +2997,17 @@ const G = {
     "cost": 22.69866108333333,
     "minutes": 64.08337854722222,
     "loc": 1372.5
+   },
+   "anti_slop|patched": {
+    "n": 1,
+    "fail": 0.0,
+    "erosion": 0.0,
+    "verbosity": 0.21411191526959011,
+    "ast": 0.15539718895379928,
+    "cloned": 0.0,
+    "cost": 5.7833775,
+    "minutes": 20.139886933333333,
+    "loc": 304.0
    },
    "min12-ABDJKMN|v0": {
     "n": 6,
@@ -3387,6 +3459,8 @@ const G = {
   }
  }
 };
+// Test files' share of the final checkpoint's lines, from the split behind the table below.
+const TEST_SHARE = {"prompts": {"just-solve": {"mean": 0.271188096236006, "problems": {"datagate": 0.4821539096348257, "file_merger": 0.11944670463791701, "mvvault": 0.347318196775255, "rejector": 0.46220114219339853, "sith": 0.21600862417463954, "xjq": 0.0}}, "anti_slop": {"mean": 0.3120850443067763, "problems": {"datagate": 0.6132425742574258, "file_merger": 0.3435527502254283, "mvvault": 0.0, "rejector": 0.5829307568438004, "sith": 0.33278418451400327, "xjq": 0.0}}, "min12-ABDJKMN": {"mean": 0.7169203587238097, "problems": {"datagate": 0.7847222222222222, "file_merger": 0.6641221374045801, "mvvault": 0.7726897121608594, "rejector": 0.7305926825975428, "sith": 0.5355376344086021, "xjq": 0.813857763549051}}, "min13-ABDJKMNT": {"mean": 0.6726240055635183, "problems": {"datagate": 0.7342259721203228, "file_merger": 0.6502572660269782, "mvvault": 0.7326186179811061, "rejector": 0.6671949286846276, "sith": 0.5143983025159139, "xjq": 0.7370489460521615}}}, "human": {"n": 27, "mean": 0.5792103051512905, "min": {"repo": "jinja", "value": 0.42620614779127364}, "max": {"repo": "fastapi", "value": 0.7607925222052406}}};
 const [JS, ...OTHERS] = G.prompts;
 const MIN = G.prompts.includes("min12-ABDJKMN") ? "min12-ABDJKMN" : OTHERS[0];
 const PROMPTS = {
@@ -3434,25 +3508,17 @@ function setScope(impl) {
   };
 }
 // arXiv 2603.24755v2 Figure 5: mean structural erosion (top row) and verbosity (bottom row)
-// per progress phase for three prompts on three models. Read off the figure's vector paths by
-// report/paper_figure5.py, the axis gridlines anchoring the scale, so each value is good to
-// about 0.003.
+// per progress phase for three prompts, here for GPT 5.5 alone, the strongest of its three
+// models (report/paper_figure5.py reads all three). Read off the figure's vector paths, the
+// axis gridlines anchoring the scale, so each value is good to about 0.003.
+const PAPER_MODEL = "GPT 5.5";
 const PAPER = {
-  erosion: {
-    "GPT 5.3 Codex": {"Baseline": [0.569, 0.63, 0.648, 0.665, 0.699], "Anti-Slop": [0.353, 0.413, 0.443, 0.425, 0.48], "Plan-First": [0.43, 0.508, 0.582, 0.58, 0.627]},
-    "GPT 5.4": {"Baseline": [0.449, 0.489, 0.513, 0.52, 0.554], "Anti-Slop": [0.244, 0.249, 0.285, 0.274, 0.315], "Plan-First": [0.358, 0.374, 0.397, 0.409, 0.44]},
-    "GPT 5.5": {"Baseline": [0.398, 0.47, 0.522, 0.524, 0.554], "Anti-Slop": [0.15, 0.198, 0.21, 0.227, 0.259], "Plan-First": [0.199, 0.276, 0.311, 0.288, 0.345]},
-  },
-  verbosity: {
-    "GPT 5.3 Codex": {"Baseline": [0.404, 0.453, 0.476, 0.451, 0.49], "Anti-Slop": [0.264, 0.312, 0.331, 0.312, 0.332], "Plan-First": [0.334, 0.387, 0.429, 0.428, 0.419]},
-    "GPT 5.4": {"Baseline": [0.327, 0.332, 0.341, 0.318, 0.329], "Anti-Slop": [0.253, 0.238, 0.225, 0.24, 0.238], "Plan-First": [0.295, 0.306, 0.314, 0.292, 0.303]},
-    "GPT 5.5": {"Baseline": [0.264, 0.31, 0.327, 0.34, 0.335], "Anti-Slop": [0.183, 0.199, 0.212, 0.211, 0.219], "Plan-First": [0.232, 0.259, 0.26, 0.26, 0.256]},
-  },
+  erosion: {"Baseline": [0.398, 0.47, 0.522, 0.524, 0.554], "Anti-Slop": [0.15, 0.198, 0.21, 0.227, 0.259], "Plan-First": [0.199, 0.276, 0.311, 0.288, 0.345]},
+  verbosity: {"Baseline": [0.264, 0.31, 0.327, 0.34, 0.335], "Anti-Slop": [0.183, 0.199, 0.212, 0.211, 0.219], "Plan-First": [0.232, 0.259, 0.26, 0.26, 0.256]},
   // The paper's lines wear the colour of their counterpart here: Baseline is just-solve,
   // Anti-Slop is the same prompt as our anti-slop arm; Plan-First has none.
   color: { "Baseline": "var(--js)", "Anti-Slop": "var(--aslop)", "Plan-First": "var(--ink-3)" },
 };
-const PAPER_MODELS = Object.keys(PAPER.erosion);
 const problems = Object.keys(G.problems);
 const patched = problems.filter(p => G.problems[p].patched);
 const cell = (p, prompt, kind) => D.problems[p].cells[`${prompt}|${kind}`];
@@ -3468,12 +3534,15 @@ const partialNote = (set, kind = "v0") => {
     .map(pr => `${label(pr)} over ${have(set, pr, kind).length} so far`);
   return short.length ? `; ${short.join(", ")}` : "";
 };
+// A patched cell that covers one problem of three sits beside means over all three, so the
+// cards that draw patched cells say which prompts are short.
+const patchedNote = () => partialNote(patched, "patched").replace(/ so far/g, " patched so far");
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
 function signed(m, d) {
   const s = d < 0 ? "−" : "+";
   const v = Math.abs(d);
-  if (m.key === "fail") return s + (100 * v).toFixed(1) + " pt";
+  if (m.unit === "%") return s + (100 * v).toFixed(m.key === "fail" ? 1 : 0) + " pt";
   if (m.key === "cost") return s + "$" + v.toFixed(0);
   if (m.key === "minutes") return s + v.toFixed(0) + " min";
   return s + v.toFixed(2);
@@ -3516,7 +3585,7 @@ function square(m) {
   return `
   <div class="card">
     <h3>${esc(m.name)}</h3>
-    <p class="sub">rows: prompt · columns: spec${scopeSub(m)}</p>
+    <p class="sub">rows: prompt · columns: spec${patchedNote()}${scopeSub(m)}</p>
     <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(m.name)}, mean of ${set.join(", ")}: ${esc(summary)}">
       ${body}
       <text x="${W / 2}" y="${H - 8}" text-anchor="middle" style="fill:var(--ink-3);font-size:11.5px">all six problems at v0, top row to bottom: ${esc(six)}</text>
@@ -3587,17 +3656,18 @@ function spreadLabels(items, gap, lo, hi) {
   return items;
 }
 
-function trajectoryPanel(tm, model) {
-  // One card: the phases on x, `tm.key` on y. With a model, the paper's three prompts for that
-  // model sit faint under our two lines; without one, our two lines stand alone.
+function trajectoryPanel(tm) {
+  // One card: the phases on x, `tm.key` on y. Where the paper plots the metric, its three
+  // prompts on GPT 5.5 sit faint under our lines; elsewhere our lines stand alone.
   const T = D.trajectory, phases = T.phases;
-  const W = 340, left = 40, right = 104, top = 12, bottom = 30, H = 210, ymax = tm.max;
+  // Two cards to a row, so the drawing is as wide as half the page and its text stays at the cards' size.
+  const W = 510, left = 40, right = 112, top = 12, bottom = 30, H = 230, ymax = tm.max;
   const x = i => left + (i / (phases.length - 1)) * (W - left - right);
   const y = v => top + (1 - v / ymax) * (H - top - bottom);
   const series = [];
-  if (model)
-    for (const [name, vals] of Object.entries(PAPER[tm.key][model]))
-      series.push({ label: name, vals, color: PAPER.color[name], soft: true, tip: i => `paper v2 Figure 5, ${model}, ${name} prompt\n${phases[i]}: ${tm.name} ${tm.fmt(vals[i])}` });
+  if (tm.paper)
+    for (const [name, vals] of Object.entries(PAPER[tm.key]))
+      series.push({ label: name, vals, color: PAPER.color[name], soft: true, tip: i => `paper v2 Figure 5, ${PAPER_MODEL}, ${name} prompt\n${phases[i]}: ${tm.name} ${tm.fmt(vals[i])}` });
   for (const prompt of G.prompts) {
     const t = T.prompts[prompt], vals = t ? t[tm.key] : null;
     if (!vals || vals.every(v => v == null)) continue;
@@ -3618,10 +3688,10 @@ function trajectoryPanel(tm, model) {
   const ends = labels.map(({ s, ly }) => `<text x="${W - right + 8}" y="${ly + 4}" style="font-size:11.5px;${s.soft ? "fill:var(--ink-3)" : "fill:var(--ink);font-weight:500"}">${esc(s.label)}</text>`).join("");
   const summary = series.map(s => `${s.label} ${s.vals.map(v => v == null ? "–" : tm.fmt(v)).join(" ")}`).join("; ");
   const ours = implOnly() ? "this repo's prompts bold and implementation only" : "this repo's prompts bold";
-  const sub = model ? `the paper's three prompts faint, ${ours}` : `${ours}; the paper has no such figure`;
+  const sub = tm.paper ? `the paper's three prompts on ${PAPER_MODEL} faint, ${ours}` : `${ours}; the paper has no such figure`;
   return `
   <div class="card">
-    <h3>${esc(model || tm.name)}</h3>
+    <h3>${esc(tm.name)}</h3>
     <p class="sub">${esc(sub)}</p>
     <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(tm.name)} by phase Start to Final. ${esc(summary)}">
       ${grid}${xlab}
@@ -3631,15 +3701,6 @@ function trajectoryPanel(tm, model) {
   </div>`;
 }
 
-function trajectoryRows() {
-  // A row per paper metric, its three models across; the metrics the paper does not plot
-  // share one last row.
-  const row = (label, cards) => `<h3 class="rowlab">${esc(label)}</h3><div class="squares trio">${cards.join("")}</div>`;
-  const withPaper = TRAJECTORY.filter(tm => tm.paper), ours = TRAJECTORY.filter(tm => !tm.paper);
-  return withPaper.map(tm => row(`${tm.name} · over the paper's Figure 5`, PAPER_MODELS.map(model => trajectoryPanel(tm, model))))
-    .concat(row(`${ours.map(tm => tm.name).join(" and ")} · this repo only`, ours.map(tm => trajectoryPanel(tm, null))))
-    .join("");
-}
 
 const emptyCard = (title, why) => `
   <div class="card">
@@ -3800,6 +3861,21 @@ function locPanel() {
   </div>`;
 }
 
+// A share of all lines already, so the card has no just-solve line and no implementation-only
+// reading: with the test files left out it would be zero by construction.
+const TESTS = { key: "tests", name: "Test code", unit: "%", fmt: v => (100 * v).toFixed(0) + "%" };
+function testShareBars() {
+  const h = TEST_SHARE.human;
+  const items = G.prompts.filter(prompt => TEST_SHARE.prompts[prompt]).map(prompt => {
+    const t = TEST_SHARE.prompts[prompt];
+    return { label: label(prompt), v: t.mean, color: color(prompt), soft: true,
+      tip: `${label(prompt)} at v0, final checkpoint\n${Object.entries(t.problems).map(([p, v]) => `${p} ${TESTS.fmt(v)}`).join(", ")}` };
+  });
+  items.push({ label: "human, 10k+ stars", v: h.mean, color: "var(--ink-3)", soft: false,
+    tip: `The ${h.n} human repositories\nfrom ${h.min.repo} ${TESTS.fmt(h.min.value)} to ${h.max.repo} ${TESTS.fmt(h.max.value)}` });
+  return bars("Test code, share of all lines", "spec v0, final checkpoint, mean of the per-problem shares \u00b7 whole snapshot always", TESTS, items);
+}
+
 function shareReading() {
   const e = R.erosion, a = R.ast, c = R.cloned;
   const under = r => OTHERS.filter(pr => r.prompts[pr]).map(pr => `${esc(label(pr))} ${esc(share(r.prompts[pr].mean))}`).join(", ");
@@ -3809,7 +3885,7 @@ function shareReading() {
     <p class="reading">Each problem's value under a prompt is divided by its own just-solve value, and the bar is the mean of those ${e.n} shares. That weighs every problem the same, so it differs from dividing the two means in the row above. ` +
     `The human bar is the mean of ${e.human.n} repositories divided by each problem's just-solve value, averaged the same way. ` +
     `Erosion: ${under(e)}, the human repositories ${esc(share(e.human.mean))}. ast-grep: ${under(a)} against ${esc(share(a.human.mean))}. Cloned lines: ${under(c)} against ${esc(share(c.human.mean))}, the one score where the human repositories sit above just-solve. ` +
-    `Lines of code have no human bar: a count only means something against the same problem's just-solve, so that card and its per-problem twin show shares alone. ` +
+    `Lines of code have no human bar: a count only means something against the same problem's just-solve, so that card and its per-problem twin show shares alone. Test code is the share of a snapshot's lines that sit in test files, not a share of just-solve, and it does not follow the switch. ` +
     `Each prompt's whisker names the problems where it helped most and least. The human whisker runs from the lowest repository to the highest, and its thick part holds the middle half of them.</p>
   </div>`;
 }
@@ -3820,29 +3896,26 @@ function caseBars() {
   const it = (prompt, kind) => ({ label: `${label(prompt)}, ${kind}`, v: avg(patched, prompt, kind, m.key), color: color(prompt), soft: kind === "v0",
     tip: `${label(prompt)}, ${kind}${coverage(patched, prompt, kind)}\n${per(prompt, kind)}` });
   const items = ["v0", "patched"].flatMap(kind => G.prompts.map(prompt => it(prompt, kind))).filter(x => x.v != null);
-  return bars(items.length ? `Hidden tests failed, ${items.length} cases` : "Hidden tests failed", `mean of ${patched.join(", ")}${partialNote(patched)}`, m, items, 168);
+  return bars(items.length ? `Hidden tests failed, ${items.length} cases` : "Hidden tests failed", `mean of ${patched.join(", ")}${partialNote(patched)}${patchedNote()}`, m, items, 168);
 }
 
 function render() {
   document.getElementById("headline").innerHTML = [promptBars(M.erosion), promptBars(M.ast), promptBars(M.cloned), caseBars()].join("");
-  document.getElementById("headline-share").innerHTML = [shareBars(M.erosion), shareBars(M.ast), shareBars(M.cloned), locShareBars(), shareReading()].join("");
-  document.getElementById("trajectory").innerHTML = trajectoryRows();
+  document.getElementById("headline-share").innerHTML = [shareBars(M.erosion), shareBars(M.ast), shareBars(M.cloned), locShareBars(), testShareBars(), shareReading()].join("");
+  document.getElementById("trajectory").innerHTML = TRAJECTORY.map(trajectoryPanel).join("");
   {
     const T = D.trajectory, f = v => v.toFixed(2);
-    const climb = (row, prompt) => {
-      const d = PAPER_MODELS.map(model => { const v = PAPER[row][model][prompt]; return v[4] - v[0]; });
-      return `${f(Math.min(...d))} to ${f(Math.max(...d))}`;
-    };
+    const climb = (row, prompt) => { const v = PAPER[row][prompt]; return `${f(v[0])} to ${f(v[4])} (${signed(M.erosion, v[4] - v[0])})`; };
     const ours = key => G.prompts.filter(pr => T.prompts[pr] && T.prompts[pr][key][0] != null).map(pr => {
       const v = T.prompts[pr][key];
       return `${esc(label(pr))} ${esc(f(v[0]))} to ${esc(f(v[4]))} (${esc(signed(M.erosion, v[4] - v[0]))})`;
     }).join(", ");
     document.getElementById("trajectory-note").innerHTML =
-      `<b>Reading.</b> Figure 5 of the paper's second revision (arXiv 2603.24755v2) is redrawn from its vector paths, one y axis for all three models instead of a range per panel: erosion on its top row, verbosity on the bottom (the share of lines flagged by ast-grep, the clone detector or the trivial-wrapper check, so it covers the next two rows). ` +
-      `Its Baseline prompt is just-solve and its Anti-Slop prompt is our anti-slop arm, each drawn in that arm's colour. Every paper erosion line climbs from Start to Final, and the paper reads that as prompting not slowing the decay. ` +
+      `<b>Reading.</b> Figure 5 of the paper's second revision (arXiv 2603.24755v2) is redrawn from its vector paths for ${PAPER_MODEL}, the strongest of its three models: erosion on its top row, verbosity on the bottom (the share of lines flagged by ast-grep, the clone detector or the trivial-wrapper check, so it covers the two cards after it). ` +
+      `Its Baseline prompt is just-solve and its Anti-Slop prompt is our anti-slop arm, each drawn in that arm's colour. Every paper erosion line climbs from Start to Final, on all three of its models, and the paper reads that as prompting not slowing the decay. ` +
       `Our lines are the v0 runs from the headline, each checkpoint placed in the paper's phase (first is Start, last is Final, the rest split into thirds) and pooled over every run of the prompt. ` +
-      `Erosion: ${ours("erosion")}, where the paper's Baseline lines climb ${esc(climb("erosion", "Baseline"))} and its Anti-Slop lines ${esc(climb("erosion", "Anti-Slop"))}. ` +
-      `Verbosity: ${ours("verbosity")}, against paper Baseline climbs of ${esc(climb("verbosity", "Baseline"))} and Anti-Slop ${esc(climb("verbosity", "Anti-Slop"))}. ` +
+      `Erosion: ${ours("erosion")}, where the paper's Baseline goes ${esc(climb("erosion", "Baseline"))} and its Anti-Slop ${esc(climb("erosion", "Anti-Slop"))}. ` +
+      `Verbosity: ${ours("verbosity")}, against the paper's Baseline ${esc(climb("verbosity", "Baseline"))} and Anti-Slop ${esc(climb("verbosity", "Anti-Slop"))}. ` +
       `ast-grep and cloned lines have no paper figure: ${ours("ast")} for ast-grep, ${ours("cloned")} for cloned lines, the last being the test-file dilution, since the spectest prompts' tests are the cloned part. ` +
       `Two runs per problem and four to seven checkpoints, so read the wiggles as noise.` +
       (implOnly() ? ` The paper's lines score whole repositories, tests included; only our lines are implementation only.` : "");

@@ -156,6 +156,24 @@ Erosion / ast% and cost, as above:
   in both scopes, and spectest alone is at twice the human implementation figure. anti-slop has
   one run per problem until jobs 241-246 land. The implementation-against-tests table still
   reads against just-solve.
+- **Why anti-slop beats the paper's GPT 5.5 Anti-Slop line (0.00 against 0.15 to 0.26), a cut by
+  problem length (2026-09-20).** Not because Opus 5 writes cleaner code unprompted: its just-solve
+  erodes more than the paper's GPT 5.5 Baseline (0.56 to 0.61 against 0.40 to 0.55). Erosion is a
+  threshold score, the share of complexity mass in functions above cyclomatic complexity 10
+  (`harness/src/slop_code/metrics/checkpoint/mass.py`), and the shipped prompt's rules (no god
+  functions, heavy nesting, if/else ladders) aim at that line. Functions above CC 10, all
+  checkpoints of the v0 runs: just-solve 11.4%, spectest 8.1%, spectest+antislop 0.7%,
+  anti-slop 0.5%, with no pile-up under the line (0.6% of anti-slop's functions at CC 9 or 10,
+  93% at 5 or under). If long problems were what made the paper's line climb, ours should climb
+  on them too. They do not. Erosion by checkpoint under anti-slop: datagate, seven checkpoints,
+  0.000 at every one; mvvault, six, 0.000 at every one; sith, six, 0.056 at the first and 0.000
+  at the five after; xjq and file_merger 0.000 throughout; rejector, five, is the one that ends
+  above where it started, 0.000 for three checkpoints, then 0.033 and 0.025. spectest+antislop
+  has the same shape: 0.000 throughout on datagate and xjq, under 0.01 on mvvault and sith, and
+  rejector again the one climber, 0.000 to 0.043. So length is not it, and the reading left is
+  obedience to a rule list that maps onto a threshold. Not checked: the paper's agent and
+  effort for GPT, whether its runs used the prompt as the repo ships it today, and its problem
+  mix. One anti-slop run per problem until jobs 241-246 land.
 - **Erosion along the run, against the paper's Figure 5.** The v2 paper (arXiv 2603.24755v2)
   says erosion rises in 77% of agent trajectories, 0.026 per checkpoint, and that quality
   prompts lower the starting point "but do not slow the degradation" (its Figure 5, top row:

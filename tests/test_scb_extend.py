@@ -382,7 +382,7 @@ def test_quota_halts_before_retry_and_pauses_queue(tmp_path, monkeypatch):
     with pytest.raises(SystemExit) as error:
         ext.halt_on_quota(ck)
     assert error.value.code == 6
-    assert calls[0][1:] == ['pause', '--wait']
+    assert calls[0][1:] == ['pause', '--wait', '--all']  # every channel draws on the limit that was hit
     assert (ck / 'inference_result.json').exists()
 
 
@@ -400,3 +400,34 @@ def test_resume_narrows_to_its_problem_through_the_child_environment(tmp_path, m
     assert argv[1:] == ["run", "--resume", str(tmp_path / "run"), "--no-live-progress", "--stop-after-checkpoint", "3"]
     assert env["SCB_RESUME_ONLY_PROBLEM"] == "xjq"
     assert "SCB_RESUME_ONLY_PROBLEM" not in os.environ
+
+
+def pueue_task(group, start, end=None):
+    times = {"start": start} | ({"end": end} if end else {})
+    return {"group": group, "status": {"Done" if end else "Running": times}}
+
+
+def test_overlapping_names_the_other_channels_jobs_that_ran_during_the_checkpoint():
+    tasks = {
+        "1": pueue_task("default", "2026-09-20T10:00:00.572505675-07:00"),  # this run's own channel
+        "2": pueue_task("side", "2026-09-20T10:05:00.000000001-07:00", "2026-09-20T10:20:00-07:00"),  # inside
+        "3": pueue_task("side", "2026-09-20T09:00:00-07:00", "2026-09-20T09:30:00-07:00"),  # over before it began
+        "4": pueue_task("side", "2026-09-20T10:29:00-07:00"),  # still running at the end
+        "5": {"group": "side", "status": {"Queued": {"enqueued_at": "2026-09-20T09:00:00-07:00"}}},
+    }
+    since, until = "2026-09-20T17:01:00+00:00", "2026-09-20T17:30:00+00:00"
+    assert ext.overlapping(tasks, "default", since, until) == [2, 4]
+    assert ext.overlapping(tasks, "side", since, until) == [1]
+    assert ext.overlapping(tasks, None, since, until) == [1, 2, 4]  # run by hand, outside pueue: every job counts
+
+
+def test_a_checkpoint_another_channel_overlapped_is_no_measure_of_this_runs_cost():
+    records = [
+        rec(1, "before", 20),
+        rec(1, "after", 60) | {"shared": [7]},
+        rec(2, "before", 60),
+        rec(2, "after", 72),
+    ]
+    assert ext.window_costs(records) == [12]
+    assert ext.reserve(records) == 15.0
+    assert ext.reserve(records[:2], prior=[10]) == 12.5  # nothing of its own to go on: the problem's recent runs

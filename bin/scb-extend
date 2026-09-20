@@ -50,6 +50,7 @@ import time
 import yaml
 
 HERE = pathlib.Path(__file__).resolve().parent
+PUEUE = pathlib.Path.home() / ".local" / "bin" / "pueue"
 ROOT = HERE.parent  # run configs name their paths relative to it, so scb runs from it
 DEFAULT_RESERVE = 30.0
 RESET_SLACK_S = 90
@@ -100,9 +101,9 @@ def halt_on_quota(ckpt_dir):
     message = quota_error(ckpt_dir)
     if message is None:
         return
-    # Pause scheduling, without killing this task or touching its artifacts.
-    pueue = pathlib.Path.home() / ".local/bin/pueue"
-    result = subprocess.run([pueue, "pause", "--wait"], capture_output=True, text=True)
+    # Pause scheduling in every channel, since they share the one limit, without killing this
+    # task or touching its artifacts.
+    result = subprocess.run([PUEUE, "pause", "--wait", "--all"], capture_output=True, text=True)
     say(f"usage limit: {message}; halting with checkpoint preserved; queue pause exit={result.returncode}")
     if result.returncode:
         say(f"queue pause failed: {result.stderr.strip()}")
@@ -241,6 +242,38 @@ def outcome(problem_dir, n):
     return sum(d["pass_counts"].values()), sum(d["total_counts"].values()), bool(d.get("infrastructure_failure"))
 
 
+def pueue_time(text):
+    """A pueue timestamp as a datetime; pueue writes nanoseconds, which fromisoformat refuses."""
+    return datetime.datetime.fromisoformat(re.sub(r"(\.\d{6})\d+", r"\1", text))
+
+
+def overlapping(tasks, own_group, since, until):
+    """Ids of the pueue jobs in other channels that ran at any point between two readings
+    (`at` strings). `bin/queue add --group` runs a second channel on the same subscription, so
+    a checkpoint it overlapped moved the window by both jobs' spending. Without a channel of
+    its own (a run started by hand) every job counts."""
+    since, until = (datetime.datetime.fromisoformat(t) for t in (since, until))
+    ids = []
+    for task_id, task in tasks.items():
+        status = task["status"]
+        times = next(iter(status.values())) if isinstance(status, dict) else {}
+        if not times.get("start") or (own_group and (task.get("group") or "default") == own_group):
+            continue
+        start = pueue_time(times["start"])
+        end = pueue_time(times["end"]) if times.get("end") else until
+        if start <= until and end >= since:
+            ids.append(int(task_id))
+    return sorted(ids)
+
+
+def other_channel_jobs(since, until):
+    """overlapping() against the live queue; none when pueue cannot be asked."""
+    proc = subprocess.run([PUEUE, "status", "--json"], capture_output=True, text=True)
+    if proc.returncode != 0:
+        return []
+    return overlapping(json.loads(proc.stdout)["tasks"], os.environ.get("PUEUE_GROUP"), since, until)
+
+
 def window_id(resets_at):
     """The reset time to the nearest minute. Readings of one window report it with sub-second
     jitter, sometimes across a second boundary, so the raw string never pairs a before with its after."""
@@ -251,11 +284,13 @@ def window_id(resets_at):
 
 
 def window_costs(records):
-    """Points of the 5-hour window each finished checkpoint used, from before/after readings in the same window."""
+    """Points of the 5-hour window each finished checkpoint used, from before/after readings in the
+    same window. A checkpoint another channel's job overlapped (`shared`) measures both jobs and
+    is left out."""
     before = {}
     costs = []
     for r in records:
-        if not r.get("five_hour"):
+        if not r.get("five_hour") or r.get("shared"):
             continue
         wid = window_id(r["five_hour"].get("resets_at"))
         if wid is None:
@@ -345,6 +380,11 @@ def main():
 
     def record(n, phase):
         r = {"checkpoint": n, "phase": phase, **(usage() or {"five_hour": None})}
+        began = next((b.get("at") for b in reversed(records) if b["checkpoint"] == n and b["phase"] == "before"), None)
+        if phase == "after" and began and r.get("at"):
+            shared = other_channel_jobs(began, r["at"])
+            if shared:
+                r["shared"] = shared
         records.append(r)
         if log is not None:
             with log.open("a") as f:

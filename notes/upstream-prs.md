@@ -54,6 +54,21 @@ follow the spec (write TSV with `lineterminator="\n"`, write CSV by doubling) or
 should say what the fixtures do; our `specs/file_merger/v1` patches 01 and 03 take the second
 road for our runs. Two PRs' worth, both small.
 
+## Problem set: file_merger's `timestamp_microseconds` fixture tests nothing
+
+Found 2026-09-20 while chasing a sub-second miss (`notes/file_merger-runs.md`, min13 on v6,
+repeat). `tests/data/checkpoint_1/hidden/timestamp_microseconds.yaml` writes its CSV input and
+its expected `output.csv` as single-quoted scalars spread over four lines. YAML folds those
+line breaks into spaces, so both load as one line, `id,event_time 1,2024-… 2,… 3,…`: a header
+and no rows. Every run we have passes it, 24 of 24, including one whose output drops the
+microseconds (checked by running that snapshot on the intended rows: it prints
+`2024-07-01T12:00:00Z` three times). The intended rows are the only place the suite would
+test `.999999+00:00`. The fix is a block scalar (`content: |-`) on both strings, as
+`checkpoint_4/hidden/nested_timestamp_microseconds.yaml` already has. One other fixture has
+the same shape, `checkpoint_3/spec_errors/invalid_bytes_zero.yaml`, where only the exit code
+is checked. A scan of every problem's fixtures in the cache found no others. One small PR.
+Blocker: none; not opened yet.
+
 ## Problem set: mvvault's v1 tests only reroute `urllib.request.urlopen`
 
 The spec fixes a v1 vault's source URL at `https://media.example.com/channel/<source_id>`, a

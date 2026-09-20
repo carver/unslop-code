@@ -6,7 +6,7 @@ line-length = 120
 extend-include = [
   "bin/ast-rules", "bin/build-prompt", "bin/compare-runs", "bin/failures", "bin/fork-run", "bin/grid",
   "bin/judge-ambiguities", "bin/ledger-row", "bin/miss-report", "bin/miss-signatures", "bin/quality-split", "bin/queue", "bin/reeval",
-  "bin/registry-scores", "bin/results", "bin/run-config", "bin/run-recap", "bin/scb-extend", "bin/summarize",
+  "bin/registry-scores", "bin/results", "bin/run-config", "bin/run-recap", "bin/scb-extend", "bin/start-slot", "bin/summarize",
   "bin/test-history", "bin/usage",
 ]
 

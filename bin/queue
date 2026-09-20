@@ -19,6 +19,13 @@
                                                        succeeds, and fail unrun if it does not (pueue's
                                                        dependency). After an add-strict job that means
                                                        "only if every checkpoint was strict"
+    bin/queue add --group <name> <config.yaml> [n]     any adding command: queue the job in a second
+                                                       channel, a pueue group made on first use that runs
+                                                       one job at a time beside the main queue, with its
+                                                       own order and pause state (`pueue pause -g <name>`).
+                                                       --next, --before and move work inside a channel.
+                                                       A new channel starts running at once. Both
+                                                       channels draw on one subscription window
     bin/queue move <id> before <other-id>              reorder queued jobs so <id> runs right before
                                                        <other-id>, by rewriting every queued job's
                                                        priority; prints the resulting order
@@ -140,9 +147,43 @@ def tasks_now():
     return json.loads(reply)["tasks"]
 
 
+MAIN = "default"
+
+
+def group_of(task):
+    """The channel a task waits in: a pueue group, each with its own order, its own pause
+    state and one job at a time. A task without one is in the main channel."""
+    return task.get("group") or MAIN
+
+
+def channel(args):
+    """(group or None, the other args): `--group <name>` taken out of an adding command's args."""
+    args, rest, found = iter(args), [], []
+    for arg in args:
+        if arg != "--group":
+            rest.append(arg)
+            continue
+        name = next(args, "")
+        if not re.fullmatch(r"[A-Za-z0-9_-]+", name):
+            raise SystemExit("queue: --group takes a channel name of letters, digits, - and _")
+        found.append(name)
+    if len(found) > 1:
+        raise SystemExit("queue: one --group at most")
+    return (found[0] if found else None), rest
+
+
+def ensure_group(name):
+    """A pueue group of that name that runs one job at a time, made if it is not there yet."""
+    status = json.loads(subprocess.run([PUEUE, "status", "--json"], capture_output=True, text=True, check=True).stdout)
+    if name not in status["groups"]:
+        subprocess.run([PUEUE, "group", "add", name, "--parallel", "1"], check=True, capture_output=True)
+
+
 def solo_plan(tasks, task_id):
-    """The other queued task ids, the ones `solo` stashes so only task_id runs."""
-    return sorted(int(i) for i, t in tasks.items() if int(i) != task_id and state_of(t) == "Queued")
+    """The other queued task ids of the job's channel, the ones `solo` stashes so only task_id runs."""
+    group = group_of(tasks[str(task_id)])
+    return sorted(int(i) for i, t in tasks.items()
+                  if int(i) != task_id and state_of(t) == "Queued" and group_of(t) == group)
 
 
 def add_task(label, argv, env, extra=()):
@@ -164,11 +205,12 @@ def solo(task_id):
     if state_of(tasks.get(str(task_id), {})) != "Queued":
         raise SystemExit(f"queue: task {task_id} is not queued")
     others = [str(i) for i in solo_plan(tasks, task_id)]
+    group = ["--group", group_of(tasks[str(task_id)])]
     if others:
         subprocess.run([PUEUE, "stash", *others], check=True, capture_output=True)
-    subprocess.run([PUEUE, "start"], check=True, capture_output=True)
+    subprocess.run([PUEUE, "start", *group], check=True, capture_output=True)
     time.sleep(3)
-    subprocess.run([PUEUE, "pause", "--wait"], check=True, capture_output=True)
+    subprocess.run([PUEUE, "pause", "--wait", *group], check=True, capture_output=True)
     if others:
         subprocess.run([PUEUE, "enqueue", *others], check=True, capture_output=True)
     print(f"task {task_id} running alone; {len(others)} job(s) queued behind a paused group")
@@ -205,9 +247,9 @@ def resume_strict_job(run_dir, n=None, problem=None):
     return f"{label}-strict", [str(ROOT / "bin" / "scb-strict"), "--resume", *argv[1:]], env
 
 
-def next_priority(tasks):
-    """One above the highest priority of any queued task, so a new job runs before all of them."""
-    queued = [t.get("priority", 0) or 0 for t in tasks.values() if state_of(t) == "Queued"]
+def next_priority(tasks, group=MAIN):
+    """One above the highest priority of any task queued in the channel, so a new job runs before all of them."""
+    queued = [t.get("priority", 0) or 0 for t in tasks.values() if state_of(t) == "Queued" and group_of(t) == group]
     return max(queued, default=0) + 1
 
 
@@ -303,43 +345,67 @@ def set_priorities(want):
     subprocess.run([PUEUE, "edit", *map(str, want)], env=env, check=True, capture_output=True)
 
 
-def queued_order(tasks):
-    """Queued ids in the order pueue will start them: highest priority first, then lowest id."""
+def queued_order(tasks, group=MAIN):
+    """The channel's queued ids in the order pueue will start them: highest priority first, then lowest id."""
     return sorted(
-        (int(i) for i, t in tasks.items() if state_of(t) == "Queued"),
+        (int(i) for i, t in tasks.items() if state_of(t) == "Queued" and group_of(t) == group),
         key=lambda i: (-(tasks[str(i)].get("priority", 0) or 0), i),
     )
 
 
 def print_queue():
-    """The running job, then the queued ones in the order pueue will start them."""
+    """Per channel, the running job and then the queued ones in the order pueue will start them.
+    The channel is named only once there is more than the main one."""
     tasks = tasks_now()
-    running = sorted(int(i) for i, t in tasks.items() if state_of(t) == "Running")
-    for i in running + queued_order(tasks):
-        t = tasks[str(i)]
-        print(f"{i:>3} {state_of(t):<8} {t.get('label') or t['command'][:60]}")
+    groups = sorted({group_of(t) for t in tasks.values() if state_of(t) in ("Running", "Queued")},
+                    key=lambda g: (g != MAIN, g))
+    for group in groups:
+        if groups != [MAIN]:
+            print(f"[{group}]")
+        running = sorted(int(i) for i, t in tasks.items() if state_of(t) == "Running" and group_of(t) == group)
+        for i in running + queued_order(tasks, group):
+            t = tasks[str(i)]
+            print(f"{i:>3} {state_of(t):<8} {t.get('label') or t['command'][:60]}")
+
+
+def same_channel(tasks, task_id, other_id):
+    """The channel two tasks share; order only means something inside one."""
+    groups = {group_of(tasks.get(str(i), {})) for i in (task_id, other_id)}
+    if len(groups) != 1:
+        raise SystemExit(f"queue: tasks {task_id} and {other_id} are in different channels")
+    return groups.pop()
 
 
 def move_job(task_id, before_id):
-    order = moved_order(queued_order(tasks_now()), task_id, before_id)
+    tasks = tasks_now()
+    order = moved_order(queued_order(tasks, same_channel(tasks, task_id, before_id)), task_id, before_id)
     set_priorities(priorities_for(order))
     print_queue()
 
 
-def add_placed(job, where, before_id=None, after=None):
+def add_placed(job, where, before_id=None, after=None, group=None):
     """Enqueue `job` (label, argv, env) last, ahead of every queued job, or right before one. The
     last of these adds it stashed, so it cannot start while the priorities are rewritten. With
-    `after`, the job runs only if that job succeeds (see dependency)."""
-    waits = [] if after is None else ["--after", str(after)]
+    `after`, the job runs only if that job succeeds (see dependency). `group` names the channel,
+    made on first use; a job placed before another joins that one's channel."""
+    tasks = tasks_now()
+    if where == BEFORE:
+        target = tasks.get(str(before_id))
+        if target is None or state_of(target) != "Queued":
+            raise SystemExit(f"queue: task {before_id} is not queued")
+        if group not in (None, group_of(target)):
+            raise SystemExit(f"queue: task {before_id} is in channel {group_of(target)}, not {group}")
+        group = group_of(target)
+    group = group or MAIN
+    ensure_group(group)
+    extra = ["--group", group, *([] if after is None else ["--after", str(after)])]
     if where == LAST:
-        return add_task(*job, waits)
+        return add_task(*job, extra)
     if where == NEXT:
-        return add_task(*job, ["--priority", str(next_priority(tasks_now())), *waits])
-    if before_id not in queued_order(tasks_now()):
-        raise SystemExit(f"queue: task {before_id} is not queued")
-    new = add_task(*job, ["--stashed", *waits])
+        return add_task(*job, ["--priority", str(next_priority(tasks, group)), *extra])
+    new = add_task(*job, ["--stashed", *extra])
     try:
-        set_priorities(priorities_for(placed_order(queued_order(tasks_now()), new, before_id)))
+        set_priorities(priorities_for(placed_order(queued_order(tasks_now(), group), new, before_id)))
     finally:
         subprocess.run([PUEUE, "enqueue", str(new)], check=True, capture_output=True)
     print_queue()
@@ -375,6 +441,14 @@ def job_roots(command, table, self_pid):
 def agent_containers(ps_lines):
     """Container ids from `docker ps --format '{{.ID}} {{.Image}}'` lines whose image is a slop-code agent."""
     return [line.split()[0] for line in ps_lines if len(line.split()) > 1 and line.split()[1].startswith("slop-code:")]
+
+
+def job_containers(pids, table, running):
+    """The running containers (short ids) a job's processes name: slop-code drives its agent
+    through `docker exec <full id> …`, a child of the job. Between agent turns no such process
+    exists and the answer is empty."""
+    named = " ".join(args for pid, _, args in table if pid in pids and "docker exec" in args)
+    return [c for c in running if re.search(rf"\b{re.escape(c)}[0-9a-f]*\b", named)]
 
 
 def process_table():
@@ -435,8 +509,10 @@ def kill_job(task_id, keep_paused=False, delete_run=False):
     Killing only the pueue task leaves slop-code's spawned worker (it reparents to init) and
     the agent's docker container running, both still spending the subscription. The queue
     is paused while cleaning up so the next job cannot start a container that would then
-    look like an orphan; with one job at a time in the group, once the killed job's
-    processes are gone every agent container is an orphan."""
+    look like an orphan. The job's own container is the one its `docker exec` process names
+    (job_containers). When no process names one, every agent container is an orphan once the
+    job's processes are gone, but only if no other channel has a job running; otherwise they
+    are listed and left alone. Only the job's channel is paused and resumed."""
     status = json.loads(subprocess.run([PUEUE, "status", "--json"], capture_output=True, text=True, check=True).stdout)
     tasks = status["tasks"]
     task = tasks.get(str(task_id))
@@ -452,12 +528,16 @@ def kill_job(task_id, keep_paused=False, delete_run=False):
     log = subprocess.run([PUEUE, "log", str(task_id), "--full"], capture_output=True, text=True).stdout
     _, run_dir = job_result(log)
     others = [i for i, t in tasks.items() if i != str(task_id) and state_of(t) == "Running"]
-    subprocess.run([PUEUE, "pause", "--wait"], check=True, capture_output=True)
+    group = ["--group", group_of(task)]
+    subprocess.run([PUEUE, "pause", "--wait", *group], check=True, capture_output=True)
     try:
         table = process_table()
         pids = descendants(
             job_roots(task["command"], [(p, pp, a) for p, pp, a in table], os.getpid()), [(p, pp) for p, pp, _ in table]
         )
+        agents = agent_containers(subprocess.run(
+            ["docker", "ps", "--format", "{{.ID}} {{.Image}}"], capture_output=True, text=True).stdout.splitlines())
+        own = job_containers(pids, table, agents)
         subprocess.run([PUEUE, "kill", str(task_id)], check=True, capture_output=True)
         time.sleep(3)
         for sig in (signal.SIGTERM, signal.SIGKILL):
@@ -468,15 +548,12 @@ def kill_job(task_id, keep_paused=False, delete_run=False):
             if survivors:
                 print(f"{sig.name} to surviving job processes: {survivors}")
                 time.sleep(5)
-        if others:
-            print(f"tasks {others} still running; leaving containers alone")
-        else:
-            ps = subprocess.run(
-                ["docker", "ps", "--format", "{{.ID}} {{.Image}}"], capture_output=True, text=True
-            ).stdout.splitlines()
-            for c in agent_containers(ps):
-                subprocess.run(["docker", "rm", "-f", c], check=True, capture_output=True)
-                print(f"removed agent container {c}")
+        if not own and others:
+            print(f"tasks {others} still running and no process named this job's container; "
+                  f"left alone: {agents or 'none'} (docker rm -f the orphan by hand)")
+        for c in own or ([] if others else agents):
+            subprocess.run(["docker", "rm", "-f", c], check=True, capture_output=True)
+            print(f"removed agent container {c}")
         if delete_run:
             if deletable_run_dir(run_dir, task["command"], ROOT / "outputs"):
                 shutil.rmtree(run_dir)
@@ -487,7 +564,7 @@ def kill_job(task_id, keep_paused=False, delete_run=False):
         if keep_paused:
             print(f"killed task {task_id}; queue left paused (pueue start to continue)")
         else:
-            subprocess.run([PUEUE, "start"], check=True, capture_output=True)
+            subprocess.run([PUEUE, "start", *group], check=True, capture_output=True)
             print(f"killed task {task_id}; queue resumed")
 
 
@@ -498,13 +575,14 @@ def main():
         return
     args = sys.argv[1:]
     if args[:1] in (["add"], ["add-strict"]):
-        after, rest = dependency(args[1:])
+        group, rest = channel(args[1:])
+        after, rest = dependency(rest)
         where, rest = placement(rest)
         if len(rest) not in (1, 2):
-            raise SystemExit(f"usage: queue {args[0]} [--next | --before <id>] [--after <id>] "
+            raise SystemExit(f"usage: queue {args[0]} [--next | --before <id>] [--after <id>] [--group <name>] "
                              "<run-config.yaml> [n_checkpoints]")
         plan = strict_job if args[0] == "add-strict" else job_for
-        add_placed(plan(rest[0], int(rest[1]) if len(rest) > 1 else None), *where, after=after)
+        add_placed(plan(rest[0], int(rest[1]) if len(rest) > 1 else None), *where, after=after, group=group)
     elif args[:1] == ["solo"] and len(args) == 2:
         solo(int(args[1]))
     elif args[:1] == ["move"] and len(args) == 4 and args[2] == "before":
@@ -516,11 +594,12 @@ def main():
         parser.add_argument("run_dir")
         parser.add_argument("n", nargs="?", type=int)
         parser.add_argument("--problem")
-        after, rest = dependency(args[1:])
+        group, rest = channel(args[1:])
+        after, rest = dependency(rest)
         where, rest = placement(rest)
         options = parser.parse_args(rest)
         plan = resume_strict_job if args[0] == "resume-strict" else resume_job
-        add_placed(plan(options.run_dir, options.n, options.problem), *where, after=after)
+        add_placed(plan(options.run_dir, options.n, options.problem), *where, after=after, group=group)
     elif args[:1] == ["wait"] and len(args) == 2:
         wait_job(int(args[1]))
     elif args[:1] == ["kill"] and len(args) >= 2 and set(args[2:]) <= {"--keep-paused", "--delete-run"}:

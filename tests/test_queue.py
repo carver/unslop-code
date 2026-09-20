@@ -1,4 +1,5 @@
 """bin/queue: a run config becomes one scb-extend job with the right catalog."""
+import json
 import subprocess
 import sys
 import time
@@ -427,3 +428,77 @@ def test_a_job_added_after_a_successful_one_runs(private_queue, tmp_path):
     wait_until_settled([first, second])
 
     assert ran.exists()
+
+
+def test_channel_reads_the_group_wherever_it_sits():
+    assert q.channel(["--group", "side", "c.yaml"]) == ("side", ["c.yaml"])
+    assert q.channel(["c.yaml", "4", "--group", "spec-work"]) == ("spec-work", ["c.yaml", "4"])
+    assert q.channel(["--next", "c.yaml"]) == (None, ["--next", "c.yaml"])
+
+
+@pytest.mark.parametrize("args", [["--group"], ["--group", "two words"], ["--group", "a", "--group", "b", "c.yaml"]])
+def test_channel_rejects_a_missing_or_odd_name_and_two_flags(args):
+    with pytest.raises(SystemExit):
+        q.channel(args)
+
+
+def test_order_and_priority_are_read_within_one_channel():
+    tasks = {
+        "1": {"status": "Queued", "priority": 1, "group": "default"},
+        "2": {"status": "Queued", "priority": 9, "group": "side"},
+        "3": {"status": "Queued", "priority": 0},  # pueue's older state files carry no group: the default one
+        "4": {"status": "Queued", "priority": 2, "group": "side"},
+    }
+    assert q.queued_order(tasks) == [1, 3]
+    assert q.queued_order(tasks, "side") == [2, 4]
+    assert q.next_priority(tasks) == 2
+    assert q.next_priority(tasks, "side") == 10
+
+
+def test_a_jobs_containers_are_the_ones_its_docker_exec_processes_name():
+    mine, other = "83bbbe85fd46" + "a" * 52, "0123456789ab" + "b" * 52
+    table = [
+        (10, 1, "python3 bin/scb-extend --new configs/runs/x-opus5.yaml xjq 5"),
+        (11, 10, f"docker exec --workdir /workspace --env HOME=/tmp/agent_home {mine} claude -p hello"),
+        (20, 1, f"docker exec --workdir /workspace {other} claude -p hello"),
+    ]
+    assert q.job_containers({10, 11}, table, [mine[:12], other[:12]]) == [mine[:12]]
+    assert q.job_containers({10}, table, [mine[:12], other[:12]]) == []  # between agent turns: nothing names one
+
+
+def test_a_side_channel_runs_beside_the_main_one_and_keeps_its_own_order(private_queue):
+    q.ensure_group("side")  # a new pueue group starts unpaused; hold it while the order is built
+    subprocess.run([q.PUEUE, "pause", "--all"], check=True, capture_output=True)
+    main_job = q.add_task("main", ["sleep", "30"], {})
+    side_a = q.add_placed(("side-a", ["sleep", "30"], {}), q.LAST, group="side")
+    side_b = q.add_placed(("side-b", ["true"], {}), q.NEXT, group="side")
+    side_c = q.add_placed(("side-c", ["true"], {}), q.BEFORE, side_a)
+
+    tasks = q.tasks_now()
+    assert [tasks[str(i)]["group"] for i in (main_job, side_a, side_b, side_c)] == ["default", "side", "side", "side"]
+    assert q.queued_order(tasks, "side") == [side_b, side_c, side_a]
+    assert q.queued_order(tasks) == [main_job]
+
+    subprocess.run([q.PUEUE, "start", "--all"], check=True, capture_output=True)
+    for _ in range(100):
+        tasks = q.tasks_now()
+        if q.state_of(tasks[str(main_job)]) == q.state_of(tasks[str(side_a)]) == "Running":
+            break
+        time.sleep(0.1)
+    else:
+        pytest.fail("the two channels did not run side by side")
+    subprocess.run([q.PUEUE, "kill", str(main_job), str(side_a)], check=True, capture_output=True)
+
+
+def test_a_job_cannot_be_placed_before_one_in_another_channel(private_queue):
+    main_job = q.add_task("main", ["true"], {})
+    with pytest.raises(SystemExit, match="channel"):
+        q.add_placed(("side", ["true"], {}), q.BEFORE, main_job, group="side")
+    assert list(q.tasks_now()) == [str(main_job)]
+
+
+def test_a_new_channel_runs_one_job_at_a_time(private_queue):
+    q.ensure_group("side")
+    q.ensure_group("side")  # asking twice is fine
+    groups = json.loads(subprocess.run([q.PUEUE, "status", "--json"], capture_output=True, text=True).stdout)["groups"]
+    assert groups["side"]["parallel_tasks"] == 1

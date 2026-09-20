@@ -10,6 +10,7 @@ The control is the dev6 sweep's just-solve run (`notes/dev6-opus5.md`).
 |---|---|---|---|---|
 | just-solve control | `../dev6-opus5/opus-5_2.1.251_high_just-solve/20260830T0354` | benchmark's own prompt | 46/46, 69/86, 87/104, 116/147 | complete (dev6 sweep); 31 misses, 1/4 strict, $26. Quality: erosion 0.684, verbosity 0.196, ast 0.169, cloned 0.025 |
 | just-solve on v0, repeat | `…just-solve/20260914T1308` | benchmark's own prompt on the unpatched spec, a per-problem run; the second just-solve v0 replicate for the 2x2 uplift grid (the first is the dev6 control) | 46/46, 83/86, 101/104, 138/147 | complete 2026-09-14; 9 misses: header_only_file (checkpoint 1, carried to 4), cross_file_type_inference and jsonl_nulls_loose at 2, and at 4 the four nested core cases, partition_by_map_value and map_lookup_no_quotes. Eight of the nine are min12-ABDJKMN v0's eight, the sentences spec v1-v6 later fixed; header_only_file is new. The control's twenty parquet misses did not recur: 138 against 116, the parquet block is a toss for the bare prompt. 1/4 strict, $13, 45 min. Quality: erosion 0.752, verbosity 0.290, ast 0.272, cloned 0.032 |
+| anti-slop | `…anti_slop/20260919T2225` | the benchmark's upstream anti_slop prompt as shipped (the paper's Anti-Slop arm; chunk T is its rule list), on v0; first of two | 45/46, 83/86, 101/104, 138/147 | complete 2026-09-19; 9 misses: the eight spec sentences every v0 run misses plus one of its own (spec_correct/cross_family_coercion at 1); the checkpoint-2 TSV and mixed-format family that both min13 runs lost all passed; 0/4 strict, $21, 59 min. Quality: erosion 0.000, verbosity 0.117, ast 0.049, cloned 0.023; final checkpoint, implementation only (66% of LOC): ast 0.109, erosion 0.000, cloned 0.016 |
 | min11-ABDFJKMN | `…min11-ABDFJKMN/20260907T0941` | the 468-word min11 subset (twice strict on datagate v2); first of two | 46/46, 75/86, 93/104, 130/147 | complete 2026-09-07; 17 misses, 11 shared with the control (checkpoint 2: consensus type tie, cross-file type inference, five-file and four-format merges, loose JSONL nulls; checkpoint 4: five nested core cases and the unquoted map-lookup error), six its own (the TSV family: empty fields, gzip, whitespace values, unicode, plus auto_mix_union and consensus_inference); the control's twenty parquet misses all passed. 1/4 strict, $29 (per checkpoint 6, 8, 4, 11), 427 min of wall clock of which 314 was a laptop suspend (about 113 active). 78 registry entries all scored, Risk 0-55 (top: keep-string sort position 55, exit-code taxonomy 55, "majority of files" for consensus 55; TSV literal-tab detection 45). Quality: erosion 0.185, verbosity 0.215, ast 0.096, cloned 0.115 |
 | min11-ABDFJKMN, repeat | `…min11-ABDFJKMN/20260908T0504` | same config as the first run | 46/46, 75/86, 93/104, 131/147 | complete 2026-09-08; 16 misses, the first run's set minus one (the partition-by-map-value nested core case passed); 1/4 strict, $28 (per checkpoint 5, 9, 5, 9), 98 min. 64 registry entries all scored, Risk 0-55 (top: authoritative precedence order 55, consensus support and majority 50). Quality: erosion 0.243, verbosity 0.214, ast 0.069, cloned 0.133 |
 | min12-ABDJKMN | `…min12-ABDJKMN/20260909T0739` | min12-ABDFJKMN minus F (generator floor), 444 words; first of two | 46/46, 84/86, 102/104, 139/147 | complete 2026-09-09; 8 misses, all shared with the ABDFJKMN runs (cross-file type inference, loose JSONL nulls, the four nested core cases, the partition-by-map-value case, the unquoted map-lookup error); the nine checkpoint-2 misses the ABDFJKMN pair carried, the whole TSV family and the mixed-format merges, passed. 1/4 strict, $23 (per checkpoint 15, 25, 13, 22 min), 75 min. 68 registry entries all scored, Risk 0-45 (bool cell representation 45). Quality: erosion 0.189, verbosity 0.270, ast 0.115, cloned 0.148 |
@@ -41,6 +42,16 @@ The control is the dev6 sweep's just-solve run (`notes/dev6-opus5.md`).
     22-test swing on one block. The remaining nine are the min12 v0 miss list (the eight
     spec-sentence cases) plus header_only_file at checkpoint 1. The just-solve x v0 cell now
     reads 116 and 138, a range that spans the min12 v0 run's 139; the parquet toss dominates.
+
+### anti-slop (the upstream anti_slop prompt, 2026-09-20)
+
+  - 138/147, one under min12's 139 and eleven over min13's pair (127, 127): the eight spec
+    sentences plus one miss of its own, with the checkpoint-2 TSV and mixed-format family
+    intact. 1456 implementation lines and 762 of tests (just-solve 2706 and 367, min12 1760
+    and 3480, min13 1258 and 2338 per run); $21 and 59 min. Implementation only: erosion 0.000
+    (just-solve 0.725, min12 0.479, min13 0.050), ast 0.109 (0.279, 0.288, 0.117), cloned 0.016
+    (0.041, 0.049, 0.017). On file_merger the rule list alone equals min13's implementation
+    quality and beats its score; spectest on top of it cost the TSV family. First of two.
 
 ### min12-ABDJKMN (without F)
 

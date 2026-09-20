@@ -984,7 +984,8 @@ Risk 30-40) and both min12 runs took the looser reading and passed them. The fou
 prompts differ by ("with Red Green testing") have no mechanism that reaches a delimiter
 sentence, and a two-two split is one chance in eight on a fair coin, so the ledger's call stays
 "inert" with that caveat on record; v2's "if present" sentence settles the question where it
-matters. Quality was the better of the min11 pair (erosion 0.046). The queue drained at 08:19Z.
+matters (until 2026-09-20: one min13 v2 run in twenty-three chose the 400 anyway, see the
+min13 v2 repeat entry). Quality was the better of the min11 pair (erosion 0.046). The queue drained at 08:19Z.
 Queued 2026-09-09 08:40Z at the user's request: min12-ABDJKMN, the 444-word subset without F
 (the generator floor), on all six dev6 problems at v0, one pass in the order datagate, xjq,
 file_merger, mvvault, rejector, sith (jobs 103-108) and then the same again (109-114). The

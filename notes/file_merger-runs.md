@@ -275,6 +275,11 @@ front of the queue. Job 253 is the first; job 254 is the repeat, added with
 driver does only when all four checkpoints are strict. Job 251, anti-slop's first run on v6,
 was killed and its run directory deleted: no more v6 data is wanted. Job 252, its queued
 repeat, was removed for the same reason, so anti-slop has no file_merger run on a patched spec.
+Queued behind them at the user's call: just-solve on v7 twice (jobs 255, 256) and anti-slop on v7
+twice (257, 258), plain `bin/queue add`, each `--after 254`, so none runs unless both min13
+runs on v7 are strict; placed after the dev anti-slop jobs (241-250) and ahead of the test-set
+batch. With them v7 becomes file_merger's patched version on the grid for those three prompts;
+min12 has no v7 run queued.
 
 ## just-solve on v6 (2026-09-11)
 

@@ -29,6 +29,59 @@ erosion / ast% are the cell means of the quality scores (lower is better); $ is 
 | rejector | 0.637 / 0.214, $35 | 0.172 / 0.114, $28 | | |
 | sith | 0.626 / 0.274, $51 | 0.375 / 0.136, $39 | | |
 
+## Two more arms (2026-09-20)
+
+anti-slop is the benchmark's upstream `anti_slop` prompt as shipped, the paper's Anti-Slop arm.
+min13-ABDJKMNT is min12 with that prompt's rule list appended as chunk T; the page calls it
+spectest+antislop. min13 has two runs per cell. anti-slop has one run per problem at v0 so
+far; its second pass and its patched cells are jobs 241-252.
+
+| problem | anti-slop v0 | min13 v0 | min13 patched |
+|---|---|---|---|
+| datagate (v2) | 379 | 383, 385 | 393, 401 |
+| xjq (v3) | 155 | 162, 162 | 167, 167 |
+| file_merger (v6) | 138 | 127, 127 | 147, 145 |
+| mvvault | 213 | 215, 216 | |
+| rejector | 73 | 73, 74 | |
+| sith | 189 | 195, 211 | |
+
+Erosion / ast% and cost, as above:
+
+| problem | anti-slop v0 | min13 v0 | min13 patched |
+|---|---|---|---|
+| datagate | 0.000 / 0.055, $14 | 0.000 / 0.053, $18 | 0.003 / 0.053, $20 |
+| xjq | 0.000 / 0.136, $5 | 0.000 / 0.016, $11 | 0.016 / 0.025, $9 |
+| file_merger | 0.000 / 0.049, $21 | 0.021 / 0.036, $22 | 0.002 / 0.035, $21 |
+| mvvault | 0.000 / 0.222, $15 | 0.004 / 0.048, $29 | |
+| rejector | 0.012 / 0.100, $39 | 0.024 / 0.074, $33 | |
+| sith | 0.009 / 0.054, $42 | 0.001 / 0.036, $46 | |
+
+- **anti-slop removes erosion and buys no correctness.** Over six problems at v0 erosion goes
+  from just-solve's 0.58 to 0.003, and hidden tests failed stay where they were, 8.4% against
+  8.3%. ast-grep falls less far, 0.25 to 0.10, and barely moves on mvvault (0.222, 84% of its
+  just-solve). It writes the least code, 62% of just-solve's lines, and is the fastest arm at
+  64 minutes against 80, for the same $23. With the test files left out: erosion 0.002,
+  ast-grep 0.131, cloned 0.006 on 1373 implementation lines per run against just-solve's 2515.
+  One run per problem, so read the per-problem figures as single draws.
+- **min13 keeps min12's tests and takes anti-slop's erosion.** Erosion 0.008 against min12's
+  0.15, ast-grep 0.04 against 0.09, which is the lowest of the four arms, and cloned lines stay
+  at min12's level (0.15 against 0.17) because the clones are in the tests. With the test files
+  left out the gap to min12 is wider, not narrower: erosion 0.021 against 0.328, ast-grep 0.117
+  against 0.264, cloned 0.013 against 0.028, on 1468 lines against 1852. The 2026-09-18 split
+  put most of min12's gain down to its test files (implementation erosion 0.53 to 0.33,
+  ast-grep 0.30 to 0.26); chunk T cleans the implementation itself. On the patched
+  specs the same holds, erosion 0.030 and ast-grep 0.089 against min12's 0.362 and 0.188.
+- **min13 gives some score back at v0.** 7.5% of hidden tests failed against min12's 5.5% and
+  just-solve's 8.3%. The loss is file_merger's checkpoint-2 TSV and mixed-format family, twelve
+  tests in both runs (127, 127 against 139, 139), and about six on mvvault; datagate gains five
+  and sith is level. On the patched specs the gap nearly closes, 0.9% failed against 0.4%:
+  xjq is 167 twice, file_merger 147 and 145, datagate 393 and 401. The 145 is one open
+  question, sub-second timestamps (registry T8), which v6 never settled and the two min13
+  runs answered differently. Causes per run are in each problem's ledger.
+- **min13 is the dearest arm at v0**, $27 and 97 minutes against min12's $24 and 87, most of it
+  on sith (184 minutes) and mvvault (114). On the patched specs it is $17 and 53 minutes against
+  min12's $17 and 62.
+
 ## Reading
 
 - **Correctness comes from the spec, not the prompt.** On the three patched problems the

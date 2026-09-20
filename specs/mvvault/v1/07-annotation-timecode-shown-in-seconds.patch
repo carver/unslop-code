@@ -1,6 +1,6 @@
 mvvault: a rendered annotation shows its timecode in raw seconds (checkpoint 6)
 
-DRAFT for mvvault v1. Not applied, not judged, uncommitted; the user edits the wording.
+mvvault v1, 2026-09-20: the user's wording (88f31a1), no judge run.
 
 Sentence: "Read-after-write behavior | Later `GET` to same entry detail page reflects create,
 update, or delete result by visibly rendering stored annotations". test_post_create posts

@@ -1,6 +1,6 @@
 mvvault: a source metadata fetch failure says so in its message (checkpoint 1)
 
-DRAFT for mvvault v1. Not applied, not judged, uncommitted; the user edits the wording.
+mvvault v1, 2026-09-20: the user's wording (88f31a1), no judge run.
 
 Sentence: the error table's row "Source metadata fetch failure | stderr | non-zero | Error
 message; malformed source entries are included in this case", with "`sync` must fail as a source

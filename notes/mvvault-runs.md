@@ -96,3 +96,29 @@ existing snapshot with `bin/reeval`, and every later run scores it that way nati
   - first run (222): one better than the control. The two sync rejections and two of the
     later misses are the control's; the sync-v1 pair passed; the missing-vault route error
     is new. Erosion 0.059 against the control's 0.472.
+
+## Spec v1 (2026-09-20)
+
+Six sentences, the user's wording (88f31a1), no judge run; the misses they answer are grouped in
+`notes/mvvault-misses.md` and each patch's preamble carries its evidence.
+
+  - `01`, checkpoint 1: the fetch-failure row's Required Detail becomes "Message includes `Source
+    metadata fetch failure`". 0 of 11 runs passed the two tests it answers.
+  - `02`, checkpoint 1: the source request is "made with `urllib.request`". Not a reading: the
+    tests reroute the v1 source host by patching `urllib.request.urlopen`, and seven tests fell
+    together in the four runs that imported `requests`. The draft's second row, in checkpoint 3's
+    Download Rules, was cut; if a v1 run downloads with another client, try it.
+  - `03`, checkpoint 3: "A file matches if the name contains entry `id`, apart from partial
+    downloads". The spec says so itself, a checkpoint late (checkpoint_4.md:70).
+  - `04`, checkpoint 4: "the browser URL uses this host as given". Kept although opening `0.0.0.0`
+    is the worse program: the benchmark's mistake, so the agent should not pay for it.
+  - `05`, checkpoint 2: entries `sync` creates are "Written in v3 shape, with `annotations` as `[]`".
+  - `07`, checkpoint 6: a rendered annotation shows "each `timecode` as raw seconds".
+  - Dropped: `06`, a missing vault redirects to `/` with no query string. The spec already says
+    "Redirect to `/`"; the runs that failed it argued past those words.
+
+First run: min13-ABDJKMNT under bin/scb-strict, in the `specpatch` channel beside the main queue
+(`bin/queue add-strict --group specpatch`), so its minutes overlap other jobs and are not
+comparable; its `window_usage.jsonl` marks the shared checkpoints. The registry is the thing to
+read: whether the six sentences settle their questions, and whether `04` draws pushback.
+

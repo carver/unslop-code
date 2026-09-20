@@ -1,6 +1,6 @@
 mvvault: a media filename that contains the id means downloaded (checkpoint 3)
 
-DRAFT for mvvault v1. Not applied, not judged, uncommitted; the user edits the wording.
+mvvault v1, 2026-09-20: the user's wording (88f31a1), no judge run.
 
 The benchmark's mistake, not the agent's: the rule is needed at checkpoint 3 and written down
 at checkpoint 4. A checkpoint's agent sees only its own spec.

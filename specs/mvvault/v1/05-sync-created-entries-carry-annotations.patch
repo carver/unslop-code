@@ -1,6 +1,6 @@
 mvvault: an entry that sync creates carries annotations: [] (checkpoint 2)
 
-DRAFT for mvvault v1. Not applied, not judged, uncommitted; the user edits the wording.
+mvvault v1, 2026-09-20: the user's wording (88f31a1), no judge run.
 
 Sentences: the version table's "`3` | Native format | ... `removed`; `annotations`" and the two
 migration rows "`annotations` | Add `[]` to every entry". Nothing says what `sync` writes on an

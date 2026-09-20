@@ -1,6 +1,6 @@
 mvvault: the browser is opened at the bind host as given (checkpoint 4)
 
-DRAFT for mvvault v1. Not applied, not judged, uncommitted; the user edits the wording.
+mvvault v1, 2026-09-20: the user's wording (88f31a1), no judge run.
 
 Kept by the user's call (2026-09-20): this one is the benchmark's mistake, not the agent's, and
 an agent should not lose a test for making the better choice. That is the difference from

@@ -15,6 +15,10 @@
                                                        then enqueued; prints the resulting order.
                                                        --next and --before work on add-strict, resume
                                                        and resume-strict too
+    bin/queue add-strict --after <id> <config.yaml>    any adding command: run only if job <id>
+                                                       succeeds, and fail unrun if it does not (pueue's
+                                                       dependency). After an add-strict job that means
+                                                       "only if every checkpoint was strict"
     bin/queue move <id> before <other-id>              reorder queued jobs so <id> runs right before
                                                        <other-id>, by rewriting every queued job's
                                                        priority; prints the resulting order
@@ -251,6 +255,25 @@ def placement(args):
     return (found[0] if found else (LAST, None)), rest
 
 
+def dependency(args):
+    """(after_id or None, the other args): `--after <id>` taken out of an adding command's args.
+    pueue starts such a job only once job <id> has succeeded, and fails it unrun otherwise, so
+    a repeat queued after a strict run (exit 0 only when every checkpoint was strict) never
+    starts behind a halted one."""
+    args, rest, found = iter(args), [], []
+    for arg in args:
+        if arg != "--after":
+            rest.append(arg)
+            continue
+        target = next(args, "")
+        if not target.isdigit():
+            raise SystemExit("queue: --after takes a job id")
+        found.append(int(target))
+    if len(found) > 1:
+        raise SystemExit("queue: one --after at most")
+    return (found[0] if found else None), rest
+
+
 def priorities_for(order):
     """Descending priorities that make pueue run `order` first to last. None is 0, so a plain
     `add` still lands after every reordered job."""
@@ -303,16 +326,18 @@ def move_job(task_id, before_id):
     print_queue()
 
 
-def add_placed(job, where, before_id=None):
+def add_placed(job, where, before_id=None, after=None):
     """Enqueue `job` (label, argv, env) last, ahead of every queued job, or right before one. The
-    last of these adds it stashed, so it cannot start while the priorities are rewritten."""
+    last of these adds it stashed, so it cannot start while the priorities are rewritten. With
+    `after`, the job runs only if that job succeeds (see dependency)."""
+    waits = [] if after is None else ["--after", str(after)]
     if where == LAST:
-        return add_task(*job)
+        return add_task(*job, waits)
     if where == NEXT:
-        return add_task(*job, ["--priority", str(next_priority(tasks_now()))])
+        return add_task(*job, ["--priority", str(next_priority(tasks_now())), *waits])
     if before_id not in queued_order(tasks_now()):
         raise SystemExit(f"queue: task {before_id} is not queued")
-    new = add_task(*job, ["--stashed"])
+    new = add_task(*job, ["--stashed", *waits])
     try:
         set_priorities(priorities_for(placed_order(queued_order(tasks_now()), new, before_id)))
     finally:
@@ -473,11 +498,13 @@ def main():
         return
     args = sys.argv[1:]
     if args[:1] in (["add"], ["add-strict"]):
-        where, rest = placement(args[1:])
+        after, rest = dependency(args[1:])
+        where, rest = placement(rest)
         if len(rest) not in (1, 2):
-            raise SystemExit(f"usage: queue {args[0]} [--next | --before <id>] <run-config.yaml> [n_checkpoints]")
+            raise SystemExit(f"usage: queue {args[0]} [--next | --before <id>] [--after <id>] "
+                             "<run-config.yaml> [n_checkpoints]")
         plan = strict_job if args[0] == "add-strict" else job_for
-        add_placed(plan(rest[0], int(rest[1]) if len(rest) > 1 else None), *where)
+        add_placed(plan(rest[0], int(rest[1]) if len(rest) > 1 else None), *where, after=after)
     elif args[:1] == ["solo"] and len(args) == 2:
         solo(int(args[1]))
     elif args[:1] == ["move"] and len(args) == 4 and args[2] == "before":
@@ -489,10 +516,11 @@ def main():
         parser.add_argument("run_dir")
         parser.add_argument("n", nargs="?", type=int)
         parser.add_argument("--problem")
-        where, rest = placement(args[1:])
+        after, rest = dependency(args[1:])
+        where, rest = placement(rest)
         options = parser.parse_args(rest)
         plan = resume_strict_job if args[0] == "resume-strict" else resume_job
-        add_placed(plan(options.run_dir, options.n, options.problem), *where)
+        add_placed(plan(options.run_dir, options.n, options.problem), *where, after=after)
     elif args[:1] == ["wait"] and len(args) == 2:
         wait_job(int(args[1]))
     elif args[:1] == ["kill"] and len(args) >= 2 and set(args[2:]) <= {"--keep-paused", "--delete-run"}:

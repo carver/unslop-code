@@ -381,3 +381,49 @@ def test_add_next_runs_ahead_of_a_reordered_queue(private_queue):
     new = q.add_placed(("new", ["true"], {}), q.NEXT)
 
     assert q.queued_order(q.tasks_now()) == [new, b, a]
+
+
+def test_dependency_reads_after_wherever_it_sits():
+    assert q.dependency(["--after", "26", "c.yaml"]) == (26, ["c.yaml"])
+    assert q.dependency(["c.yaml", "4", "--after", "26"]) == (26, ["c.yaml", "4"])
+    assert q.dependency(["--next", "c.yaml"]) == (None, ["--next", "c.yaml"])
+
+
+@pytest.mark.parametrize("args", [["--after"], ["--after", "c.yaml"], ["--after", "1", "--after", "2", "c.yaml"]])
+def test_dependency_rejects_a_missing_id_and_two_flags(args):
+    with pytest.raises(SystemExit):
+        q.dependency(args)
+
+
+def wait_until_settled(ids):
+    for _ in range(100):
+        tasks = q.tasks_now()
+        if all(q.state_of(tasks[str(i)]) == "Done" for i in ids):
+            return tasks
+        time.sleep(0.1)
+    pytest.fail(f"tasks {ids} did not finish")
+
+
+def test_a_job_added_after_a_failed_one_never_runs_and_the_queue_moves_on(private_queue, tmp_path):
+    ran = tmp_path / "ran"
+    failing = q.add_task("halts", ["false"], {})
+    dependent = q.add_placed(("repeat", ["touch", str(ran)], {}), q.LAST, after=failing)
+    behind = q.add_task("behind", ["true"], {})
+
+    subprocess.run([q.PUEUE, "start"], check=True, capture_output=True)
+    tasks = wait_until_settled([failing, dependent, behind])
+
+    assert not ran.exists()
+    assert "DependencyFailed" in str(tasks[str(dependent)]["status"])
+    assert "Success" in str(tasks[str(behind)]["status"])
+
+
+def test_a_job_added_after_a_successful_one_runs(private_queue, tmp_path):
+    ran = tmp_path / "ran"
+    first = q.add_task("strict", ["true"], {})
+    second = q.add_placed(("repeat", ["touch", str(ran)], {}), q.NEXT, after=first)
+
+    subprocess.run([q.PUEUE, "start"], check=True, capture_output=True)
+    wait_until_settled([first, second])
+
+    assert ran.exists()

@@ -228,3 +228,26 @@ def test_only_keeps_the_named_problems_cells():
     kept = gr.only(CELLS, {"sith"})
     assert kept and {key[0] for key in kept} == {"sith"}
     assert gr.only(CELLS, None) == CELLS
+
+
+def test_a_newer_patched_version_leaves_no_older_patched_run_in_the_grid():
+    # file_merger moving from v6 to v7: min12 has only v6 runs, so it loses its patched cell
+    # and no v6 figure reaches a cell, a mean or the drawn set.
+    v6, v7 = 0.111, 0.777
+    cells = {
+        ("file_merger", "just-solve", "v0", "opus-5"): [run(0.8, 0.6)],
+        ("file_merger", "just-solve", "v6", "opus-5"): [run(0.97, v6)],
+        ("file_merger", "just-solve", "v7", "opus-5"): [run(0.98, v7)],
+        ("file_merger", "min12-ABDJKMN", "v0", "opus-5"): [run(0.9, 0.2)],
+        ("file_merger", "min12-ABDJKMN", "v6", "opus-5"): [run(1.0, v6)],
+        ("file_merger", "min13-ABDJKMNT", "v6", "opus-5"): [run(0.99, v6)],
+        ("file_merger", "min13-ABDJKMNT", "v7", "opus-5"): [run(1.0, v7)],
+    }
+    g = gr.grid(cells)
+    entry = g["problems"]["file_merger"]
+    assert entry["patched"] == "v7"
+    assert "min12-ABDJKMN|patched" not in entry["cells"]
+    assert {c["spec"] for key, c in entry["cells"].items() if key.endswith("|patched")} == {"v7"}
+    assert "min12-ABDJKMN|patched" not in g["means"]
+    assert g["means"]["min13-ABDJKMNT|patched"]["erosion"] == v7
+    assert {key[2] for key in gr.drawn_cells(cells, gr.DEFAULT_PROMPTS, "opus-5")} == {"v0", "v7"}

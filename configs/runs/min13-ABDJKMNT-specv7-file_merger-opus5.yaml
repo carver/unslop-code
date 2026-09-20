@@ -1,0 +1,16 @@
+# min13-ABDJKMNT-specv7 on file_merger, against spec v7, specs/file_merger/v7/ built by bin/spec-patch. Written by bin/run-config.
+# Same agent, model and thinking as every spectest run. Paths are relative to the repo
+# root, which bin/queue and bin/scb-extend run from.
+#
+#   SCBENCH_PROBLEMS_PATH=$PWD/specs/file_merger/v7/problems bin/scb-extend --new configs/runs/min13-ABDJKMNT-specv7-file_merger-opus5.yaml file_merger 4
+agent: configs/agents/claude_code-2.1.251.yaml
+environment: docker-python3.12-uv
+prompt: configs/prompts/min13-ABDJKMNT.jinja
+model:
+  provider: claude_code_oauth
+  name: opus-5
+thinking: high
+problems:
+  - file_merger
+save_dir: outputs
+save_template: spectest/${model.name}_${agent.version}_${thinking}_min13-ABDJKMNT-specv7/${now:%Y%m%dT%H%M}

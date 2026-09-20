@@ -269,7 +269,11 @@ pass type_parsing_edgecases, so a strict run on v7 shows the sentence does no ha
 string of them would show the coin gone. The sentence takes no side on trailing zeros
 (`.5Z` against `.500000Z`), which no fixture tests. The upstream fixture meant to cover this,
 hidden/timestamp_microseconds, loads as a header with no rows (`notes/upstream-prs.md`).
-No run queued yet.
+Queued 2026-09-20 at the user's call: min13-ABDJKMNT on v7 twice under bin/scb-strict, at the
+front of the queue. Job 253 is the first; job 254 is the repeat, added with
+`bin/queue add-strict --after 253`, so pueue starts it only if 253 exits 0, which the strict
+driver does only when all four checkpoints are strict. Job 251, anti-slop's first run on v6,
+was killed and its run directory deleted: no more v6 data is wanted.
 
 ## just-solve on v6 (2026-09-11)
 

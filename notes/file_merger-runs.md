@@ -30,6 +30,7 @@ The control is the dev6 sweep's just-solve run (`notes/dev6-opus5.md`).
 | min13-ABDJKMNT on v6 (strict) | `…min13-ABDJKMNT-specv6/20260920T0545` | min12 plus chunk T on the patched spec, for the uplift grid; first of two | 46/46, 86/86, 104/104, 147/147 | complete 2026-09-20; strict on every checkpoint, like both min12 v6 runs; the TSV and mixed-format family min13 loses on v0 passed in full under the v6 sentences; 4/4 strict, $19, 66 min. Quality: erosion 0.000, verbosity 0.184, ast 0.033, cloned 0.124; final checkpoint, implementation only (36% of LOC): ast 0.129, erosion 0.000, cloned 0.000 |
 | min13-ABDJKMNT on v6, repeat | `…min13-ABDJKMNT-specv6/20260920T0700` | the same prompt and spec, second of two | 45/46, 85/86, 103/104, 145/147 | complete 2026-09-20; 2 misses, one cause: the run formats timestamps to whole seconds, the tests keep the source's microseconds (registry T8, which v6 leaves open); no other v6 run missed either test; 0/4 strict, $23, 71 min. Quality: erosion 0.003, verbosity 0.213, ast 0.038, cloned 0.144; final checkpoint, implementation only (34% of LOC): ast 0.130, erosion 0.041, cloned 0.014 |
 | min13-ABDJKMNT on v7 (strict) | `…min13-ABDJKMNT-specv7/20260920T0949` | min13 on v7 under bin/scb-strict: v6 plus the checkpoint-1 sentence "keeping fractional seconds"; first of two, the repeat runs only if this one is strict | 46/46, 86/86, 104/104, 147/147 | complete 2026-09-20; no misses, strict on every checkpoint; both sub-second tests pass, and the registry no longer weighs dropping the fraction, only how many digits to print; 4/4 strict, $26, 79 min. Quality: erosion 0.005, verbosity 0.199, ast 0.035, cloned 0.143; final checkpoint, implementation only (40% of LOC): ast 0.126, erosion 0.055, cloned 0.019 |
+| min13-ABDJKMNT on v7, repeat (strict) | `…min13-ABDJKMNT-specv7/20260920T1114` | same config as the first run; second of two, started by pueue once job 253 exited 0 | 46/46, 86/86, 104/104, 147/147 | complete 2026-09-20; no misses, strict on every checkpoint again, so min13 is strict twice on v7; its registry asks the first run's question, how many digits, and answers it the same way; 4/4 strict, $26, 81 min. Quality: erosion 0.000, verbosity 0.195, ast 0.028, cloned 0.135; final checkpoint, implementation only (32% of LOC): ast 0.124, erosion 0.000, cloned 0.019 |
 
 ## Test failure summaries
 
@@ -116,6 +117,14 @@ The control is the dev6 sweep's just-solve run (`notes/dev6-opus5.md`).
     `.5` prints `.500000Z` here and `.5Z` there. Harmless today; a miss if upstream ever adds
     such a fixture. Implementation only: erosion 0.055, ast 0.126, cloned 0.019. $26 and 79
     min against the v6 pair's $19 and $23, 66 and 71 min. First of two.
+  - repeat (147): strict throughout again. Pair 147 and 147, 4/4 and 4/4: min13 is strict twice
+    on v7, where its v6 pair was 4/4 and 0/4. Its entry T8, "Fractional-second digits in
+    normalized timestamps", is the first run's T9 over again: "'Keeping fractional seconds'
+    asks that the fraction not be dropped", six digits chosen over the source's count, Risk
+    35, and it names the fixture that would flip it (`.123`). Two of two read the sentence as
+    settling the v6 question and both landed on the untested side of the digits one.
+    Implementation only: erosion 0.000, ast 0.124, cloned 0.019. $26 and 81 min. With job 254
+    exiting 0, jobs 255-260 (just-solve, anti-slop and min12 pairs on v7) will run.
 
 ### min11-ABDFJKMN
 

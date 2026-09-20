@@ -213,8 +213,17 @@ handling and one lenient-parsing cluster that flips between runs. Erosion 0.535 
     although the run read the v2 catalog (same SCBENCH_PROBLEMS_PATH as the first run) and
     its registry weighed cp1252; the charset-honored pair at 4 came back too. The whitespace
     class passed in full. Pair: 401 and 393. Implementation only: erosion 0.179, ast 0.085,
-    cloned 0.000; $18 and 54 min. Worth reading its checkpoint-1 transcript before the paper
-    claims the v2 sentences settle those families under every prompt.
+    cloned 0.000; $18 and 54 min. CAUSE (read 2026-09-20): one choice, the delimiter cascade
+    from report/patch-infer-delimiter.html. All six checkpoint-1 failures are the same 400,
+    "content is not tabular: no ',', ';' or tab delimiter found", on single-column fixtures;
+    the charset pair and export charset at 4 are the rest of the eleven-test cascade. Its
+    registry entry T6 quotes the patched sentence, "Delimiter must be inferred from input,
+    if present", lists the single-column reading as alternative 1, and still chooses the 400
+    because csv.Sniffer raises on undelimited text and "a non-tabular fixture is far more
+    likely to be an HTML error page than a one-column CSV"; Risk 35, naming the exact fixture
+    that flips it. First of 21 v2 registries to choose the 400 (the patch page's table said 20
+    of 20 accepted); the two words concede a delimiter-free file exists and this run read
+    past them. The latin1 family is not in play: those tests never reached the decoder.
 
 ### min12-ABDJKMN on spec v2
 

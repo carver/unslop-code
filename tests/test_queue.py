@@ -1,8 +1,11 @@
 """bin/queue: a run config becomes one scb-extend job with the right catalog."""
+import subprocess
 import sys
+import time
 import types
 
 import pytest
+import yaml
 from pathlib import Path
 
 SCRIPT = Path(__file__).resolve().parent.parent / "bin" / "queue"
@@ -123,6 +126,30 @@ def test_moved_order_places_the_job_right_before_the_target():
     assert q.moved_order([25, 26, 27, 28], 27, 27) == [25, 26, 27, 28]
     with pytest.raises(SystemExit):
         q.moved_order([25, 26], 27, 25)
+
+
+def test_placed_order_puts_the_new_job_right_before_the_target():
+    assert q.placed_order([25, 26, 27], 30, 26) == [25, 30, 26, 27]
+    assert q.placed_order([25, 26, 27], 30, 25) == [30, 25, 26, 27]
+
+
+def test_placed_order_leads_the_queue_when_the_target_started_meanwhile():
+    # One job runs at a time, so a target that left the queue took every job ahead of it along.
+    assert q.placed_order([27, 28], 30, 26) == [30, 27, 28]
+    assert q.placed_order([], 30, 26) == [30]
+
+
+def test_placement_reads_the_flag_wherever_it_sits():
+    assert q.placement(["--before", "26", "c.yaml", "4"]) == ((q.BEFORE, 26), ["c.yaml", "4"])
+    assert q.placement(["c.yaml", "--before", "26"]) == ((q.BEFORE, 26), ["c.yaml"])
+    assert q.placement(["--next", "c.yaml"]) == ((q.NEXT, None), ["c.yaml"])
+    assert q.placement(["run_dir", "--problem", "xjq"]) == ((q.LAST, None), ["run_dir", "--problem", "xjq"])
+
+
+@pytest.mark.parametrize("args", [["--before"], ["--before", "c.yaml"], ["--next", "--before", "26", "c.yaml"]])
+def test_placement_rejects_a_missing_id_and_two_flags(args):
+    with pytest.raises(SystemExit):
+        q.placement(args)
 
 
 def test_priorities_run_the_order_first_to_last_and_leave_zero_free():
@@ -292,3 +319,65 @@ def test_deletable_run_dir_only_for_fresh_runs_under_outputs(tmp_path):
     assert not q.deletable_run_dir(str(run), "env bin/scb-extend " + str(run) + " xjq 5", outputs)  # a resume
     assert not q.deletable_run_dir(str(tmp_path / "elsewhere"), new, outputs)  # outside outputs/
     assert not q.deletable_run_dir(None, new, outputs)  # the log named no run dir
+
+
+PUEUED = Path.home() / ".local" / "bin" / "pueued"
+
+
+@pytest.fixture
+def private_queue(tmp_path, monkeypatch):
+    """A pueue daemon of this test's own, paused so nothing starts; bin/queue finds it through
+    PUEUE_CONFIG_PATH and the session's real queue is never touched."""
+    if not (PUEUED.exists() and q.PUEUE.exists()):
+        pytest.skip("pueue is not installed")
+    home = tmp_path / "pueue"
+    home.mkdir()
+    config = tmp_path / "pueue.yml"
+    config.write_text(yaml.safe_dump({"shared": {
+        "pueue_directory": str(home), "runtime_directory": str(home),
+        "use_unix_socket": True, "unix_socket_path": str(home / "pueue.socket"),
+    }}))
+    monkeypatch.setenv("PUEUE_CONFIG_PATH", str(config))
+    daemon = subprocess.Popen([PUEUED], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    try:
+        for _ in range(50):
+            if subprocess.run([q.PUEUE, "pause"], capture_output=True).returncode == 0:
+                break
+            time.sleep(0.1)
+        else:
+            pytest.fail("the private pueue daemon did not come up")
+        yield
+    finally:
+        daemon.terminate()
+        daemon.wait(timeout=10)
+
+
+def test_add_before_lands_between_its_neighbours_and_leaves_nothing_stashed(private_queue, capsys):
+    first, target, last = (q.add_task(name, ["true"], {}) for name in ("first", "target", "last"))
+
+    new = q.add_placed(("new", ["true"], {}), q.BEFORE, target)
+
+    tasks = q.tasks_now()
+    assert q.queued_order(tasks) == [first, new, target, last]
+    assert {q.state_of(t) for t in tasks.values()} == {"Queued"}
+    order = ((first, "first"), (new, "new"), (target, "target"), (last, "last"))
+    printed = [f"{i:>3} Queued   {label}" for i, label in order]
+    assert capsys.readouterr().out.splitlines()[-4:] == printed
+
+
+def test_add_before_a_job_that_is_not_queued_adds_nothing(private_queue):
+    only = q.add_task("only", ["true"], {})
+
+    with pytest.raises(SystemExit, match="not queued"):
+        q.add_placed(("new", ["true"], {}), q.BEFORE, only + 5)
+
+    assert list(q.tasks_now()) == [str(only)]
+
+
+def test_add_next_runs_ahead_of_a_reordered_queue(private_queue):
+    a, b = q.add_task("a", ["true"], {}), q.add_task("b", ["true"], {})
+    q.move_job(b, a)
+
+    new = q.add_placed(("new", ["true"], {}), q.NEXT)
+
+    assert q.queued_order(q.tasks_now()) == [new, b, a]

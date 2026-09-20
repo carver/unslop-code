@@ -10,6 +10,11 @@
                                                        with several problems names one with --problem)
     bin/queue add --next <config.yaml> [n_checkpoints]  the same, but ahead of every queued job
                                                        (pueue priority one above the highest queued)
+    bin/queue add --before <id> <config.yaml> [n]      the same, but right before queued job <id>: added
+                                                       stashed, every queued job's priority rewritten,
+                                                       then enqueued; prints the resulting order.
+                                                       --next and --before work on add-strict, resume
+                                                       and resume-strict too
     bin/queue move <id> before <other-id>              reorder queued jobs so <id> runs right before
                                                        <other-id>, by rewriting every queued job's
                                                        priority; prints the resulting order
@@ -125,6 +130,12 @@ def added_id(pueue_reply):
     return int(m.group(1))
 
 
+def tasks_now():
+    """pueue's task table, {id as a string: task}."""
+    reply = subprocess.run([PUEUE, "status", "--json"], capture_output=True, text=True, check=True).stdout
+    return json.loads(reply)["tasks"]
+
+
 def solo_plan(tasks, task_id):
     """The other queued task ids, the ones `solo` stashes so only task_id runs."""
     return sorted(int(i) for i, t in tasks.items() if int(i) != task_id and state_of(t) == "Queued")
@@ -145,8 +156,7 @@ def add_task(label, argv, env, extra=()):
 
 
 def solo(task_id):
-    status = subprocess.run([PUEUE, "status", "--json"], capture_output=True, text=True, check=True).stdout
-    tasks = json.loads(status)["tasks"]
+    tasks = tasks_now()
     if state_of(tasks.get(str(task_id), {})) != "Queued":
         raise SystemExit(f"queue: task {task_id} is not queued")
     others = [str(i) for i in solo_plan(tasks, task_id)]
@@ -209,6 +219,38 @@ def moved_order(order, moving, before):
     return order
 
 
+def placed_order(order, new, before):
+    """`order` with the not yet queued `new` right before `before`. A `before` that has left the
+    queue started meanwhile, and one job runs at a time, so everything ahead of it is gone too
+    and `new` leads what is left."""
+    order = list(order)
+    order.insert(order.index(before) if before in order else 0, new)
+    return order
+
+
+LAST, NEXT, BEFORE = "last", "next", "before"
+
+
+def placement(args):
+    """((where, before_id), the other args): `--next` or `--before <id>` taken out of an adding
+    command's args, wherever it sits. Without either the job goes last."""
+    rest, found = [], []
+    args = iter(args)
+    for arg in args:
+        if arg == "--next":
+            found.append((NEXT, None))
+        elif arg == "--before":
+            target = next(args, "")
+            if not target.isdigit():
+                raise SystemExit("queue: --before takes the id of a queued job")
+            found.append((BEFORE, int(target)))
+        else:
+            rest.append(arg)
+    if len(found) > 1:
+        raise SystemExit("queue: one of --next and --before, not both")
+    return (found[0] if found else (LAST, None)), rest
+
+
 def priorities_for(order):
     """Descending priorities that make pueue run `order` first to last. None is 0, so a plain
     `add` still lands after every reordered job."""
@@ -246,14 +288,37 @@ def queued_order(tasks):
     )
 
 
+def print_queue():
+    """The running job, then the queued ones in the order pueue will start them."""
+    tasks = tasks_now()
+    running = sorted(int(i) for i, t in tasks.items() if state_of(t) == "Running")
+    for i in running + queued_order(tasks):
+        t = tasks[str(i)]
+        print(f"{i:>3} {state_of(t):<8} {t.get('label') or t['command'][:60]}")
+
+
 def move_job(task_id, before_id):
-    status = json.loads(subprocess.run([PUEUE, "status", "--json"], capture_output=True, text=True, check=True).stdout)
-    order = moved_order(queued_order(status["tasks"]), task_id, before_id)
+    order = moved_order(queued_order(tasks_now()), task_id, before_id)
     set_priorities(priorities_for(order))
-    status = json.loads(subprocess.run([PUEUE, "status", "--json"], capture_output=True, text=True, check=True).stdout)
-    for i, t in sorted(status["tasks"].items(), key=lambda kv: int(kv[0])):
-        if state_of(t) in ("Running", "Queued"):
-            print(f"{i:>3} {state_of(t):<8} {t.get('label') or t['command'][:60]}")
+    print_queue()
+
+
+def add_placed(job, where, before_id=None):
+    """Enqueue `job` (label, argv, env) last, ahead of every queued job, or right before one. The
+    last of these adds it stashed, so it cannot start while the priorities are rewritten."""
+    if where == LAST:
+        return add_task(*job)
+    if where == NEXT:
+        return add_task(*job, ["--priority", str(next_priority(tasks_now()))])
+    if before_id not in queued_order(tasks_now()):
+        raise SystemExit(f"queue: task {before_id} is not queued")
+    new = add_task(*job, ["--stashed"])
+    try:
+        set_priorities(priorities_for(placed_order(queued_order(tasks_now()), new, before_id)))
+    finally:
+        subprocess.run([PUEUE, "enqueue", str(new)], check=True, capture_output=True)
+    print_queue()
+    return new
 
 
 def state_of(task):
@@ -407,19 +472,12 @@ def main():
         path.write_text(rewrite_priorities(path.read_text(), json.loads(os.environ["QUEUE_EDIT_PRIORITIES"])))
         return
     args = sys.argv[1:]
-    if args and args[0] == "add":
-        first = args[1:2] == ["--next"]
-        rest = args[2:] if first else args[1:]
-        label, argv, env = job_for(rest[0], int(rest[1]) if len(rest) > 1 else None)
-        extra = []
-        if first:
-            tasks = json.loads(
-                subprocess.run([PUEUE, "status", "--json"], capture_output=True, text=True, check=True).stdout
-            )["tasks"]
-            extra = ["--priority", str(next_priority(tasks))]
-        add_task(label, argv, env, extra)
-    elif args[:1] == ["add-strict"] and len(args) in (2, 3):
-        add_task(*strict_job(args[1], int(args[2]) if len(args) > 2 else None))
+    if args[:1] in (["add"], ["add-strict"]):
+        where, rest = placement(args[1:])
+        if len(rest) not in (1, 2):
+            raise SystemExit(f"usage: queue {args[0]} [--next | --before <id>] <run-config.yaml> [n_checkpoints]")
+        plan = strict_job if args[0] == "add-strict" else job_for
+        add_placed(plan(rest[0], int(rest[1]) if len(rest) > 1 else None), *where)
     elif args[:1] == ["solo"] and len(args) == 2:
         solo(int(args[1]))
     elif args[:1] == ["move"] and len(args) == 4 and args[2] == "before":
@@ -431,9 +489,10 @@ def main():
         parser.add_argument("run_dir")
         parser.add_argument("n", nargs="?", type=int)
         parser.add_argument("--problem")
-        options = parser.parse_args(args[1:])
+        where, rest = placement(args[1:])
+        options = parser.parse_args(rest)
         plan = resume_strict_job if args[0] == "resume-strict" else resume_job
-        add_task(*plan(options.run_dir, options.n, options.problem))
+        add_placed(plan(options.run_dir, options.n, options.problem), *where)
     elif args[:1] == ["wait"] and len(args) == 2:
         wait_job(int(args[1]))
     elif args[:1] == ["kill"] and len(args) >= 2 and set(args[2:]) <= {"--keep-paused", "--delete-run"}:

@@ -53,5 +53,6 @@ rebuild, a republish) fires on the wake of its last job.
   `pueue start` after the reset.
 - A job to cut short: `bin/queue kill <id> --delete-run` when nothing in it is worth keeping,
   `bin/queue kill <id>` then `bin/queue resume <run_dir>` to continue from its next checkpoint.
-- Order changes: `bin/queue add --next <config>` puts a job first; `bin/queue move <id> before
-  <other>` reorders by rewriting priorities.
+- Order changes: `bin/queue add --next <config>` puts a job first; `bin/queue add --before <id>
+  <config>` puts it right before a queued job; `bin/queue move <id> before <other>` reorders by
+  rewriting priorities. `resume` takes `--next` and `--before` too.

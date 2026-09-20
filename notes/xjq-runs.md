@@ -10,6 +10,7 @@ is the dev6 sweep's just-solve run (`notes/dev6-opus5.md`).
 |---|---|---|---|---|
 | just-solve control | `../dev6-opus5/opus-5_2.1.251_high_just-solve/20260830T0354` | benchmark's own prompt | 23/23, 48/51, 92/96, 117/122, 160/167 | complete (dev6 sweep); 7 misses, 1/5 strict, $6. Quality: erosion 0.366, verbosity 0.253, ast 0.238, cloned 0.000 |
 | just-solve on v0, repeat | `…just-solve/20260914T1248` | benchmark's own prompt on the unpatched spec, a per-problem run; the second just-solve v0 replicate for the 2x2 uplift grid (the first is the dev6 control) | 23/23, 48/51, 92/96, 117/122, 160/167 | complete 2026-09-14; 7 misses, the control's seven test for test (the text-all joining family from checkpoint 2 on, first_with_text_all at 4, first_match_only and the mixed-pipe-path extraction at 5); 1/5 strict, $4, 15 min. Quality: erosion 0.386, verbosity 0.170, ast 0.130, cloned 0.020 |
+| anti-slop | `…anti_slop/20260919T2102` | the benchmark's upstream anti_slop prompt as shipped (the paper's Anti-Slop arm; chunk T is its rule list), on v0; first of two | 23/23, 48/51, 93/96, 115/122, 155/167 | complete 2026-09-19; 12 misses: the six text-all readings both just-solve runs miss, plus six of its own that no just-solve run missed (xpath multiple nodes default to first at 1, carried to 4 and 5; css without text returns first node at 2; css grouped selectors on json input at 3; json flag with css selector and the xpath union pair at 5); 1/5 strict, $5, 16 min. Quality: erosion 0.000, verbosity 0.204, ast 0.136, cloned 0.000; final checkpoint, implementation only (100% of LOC): ast 0.122, erosion 0.000, cloned 0.000 |
 | v11 | `…spectest-v11/20260907T0137` | full v11 (`spectest-v11.jinja`); first of two | 23/23, 47/51, 91/96, 116/122, 160/167 | complete 2026-09-07; 7 misses, six shared with the control (the `--text-all` family: joining multiple elements with newlines, deeply nested whitespace, `::text` first-match-only, `first` with `--text-all`, the empty-string JSON element) plus whitespace-only element as empty output; the control's mixed-pipe-path miss passed. 1/5 strict, $73, 137 min. 49 registry entries all scored, Risk 0-45 (top: non-node-set results 45, mixed `::text` comma lists 40, "immediate text content" 40; whitespace-only text results 25). Quality: erosion 0.080, verbosity 0.228, ast 0.050, cloned 0.156 |
 | v11, repeat | `…spectest-v11/20260907T0401` | same config as the first run | 23/23, 47/51, 91/96, 116/122, 160/167 | complete 2026-09-07; the first run's seven misses, test for test, at every checkpoint; 1/5 strict, $134 (per checkpoint $2, 21, 3, 103, 4), 165 min. 53 registry entries all scored, Risk 0-45 (top: pretty-print 45, whitespace-only text results 45, exported text normalisation 40). Quality: erosion 0.051, verbosity 0.287, ast 0.059, cloned 0.206 |
 | min11-ABDFJKMN | `…min11-ABDFJKMN/20260907T0654` | the 468-word min11 subset (twice strict on datagate v2); first of two | 23/23, 47/51, 91/96, 116/122, 160/167 | complete 2026-09-07; the v11 runs' seven misses, test for test; 1/5 strict, $14 (per checkpoint 2, 3, 2, 3, 3), 69 min; checkpoints 3-5 ran with Monitor disallowed. 51 registry entries all scored, Risk 0-45 (top: non-node XPath results 45, whitespace-only descendant text nodes 45). Quality: erosion 0.050, verbosity 0.355, ast 0.067, cloned 0.283 |
@@ -44,6 +45,15 @@ is the dev6 sweep's just-solve run (`notes/dev6-opus5.md`).
   - 160/167, the control's seven misses exactly, checkpoint for checkpoint: the v0 reading of
     `--text-all` is not a coin for the bare prompt. $4 and 15 min. Second replicate of the
     grid's just-solve x v0 cell.
+
+### anti-slop (the upstream anti_slop prompt, 2026-09-20)
+
+  - 155/167, five below just-solve's 160 and 160: the six shared text-all misses plus six of
+    its own, all xpath and css selector edge cases. The smallest xjq implementation of any
+    prompt, 287 lines against just-solve's 547 and min13's 368, with no tests at all; $5 and
+    16 min. Implementation only: erosion 0.000 (just-solve 0.427, min12 0.234, min13 0.000),
+    ast 0.122 (0.203, 0.149, 0.053), cloned 0.000. So on xjq the rule list alone gets the
+    erosion; spectest on top of it buys the ast-grep half and seven tests. First of two.
 
 ### v11
 

@@ -32,6 +32,7 @@ is the dev6 sweep's just-solve run (`notes/dev6-opus5.md`).
 | min12-ABDJKMN on v3 (strict), repeat | `…min12-ABDJKMN-specv3/20260914T1744` | same config as the first run | 23/23, 51/51, 96/96, 122/122, 167/167 | complete 2026-09-14; 0 misses, 5/5 strict, $11 (per checkpoint 1, 3, 2, 2, 3), 54 min. min12-ABDJKMN is twice strict on xjq v3, the grid's min12 x v3 cell complete. 54 entries, 49 scored, Risk 0-45 (top: blank lines from whitespace-only text nodes 45, "no added pretty-print formatting" 45). Quality: erosion 0.026, verbosity 0.326, ast 0.012, cloned 0.306; one 134 KB test_xjq.py against a 21 KB xjq.py |
 | min13-ABDJKMNT on v3 | `…min13-ABDJKMNT-specv3/20260919T1819` | min12 plus chunk T on the patched spec, for the uplift grid; first of two | 23/23, 51/51, 96/96, 122/122, 167/167 | complete 2026-09-19; strict on every checkpoint, like both min12 v3 runs and both just-solve v3 runs; 5/5 strict, $9, 32 min. Quality: erosion 0.032, verbosity 0.439, ast 0.033, cloned 0.372; final checkpoint, implementation only (22% of LOC): ast 0.096, erosion 0.000, cloned 0.000 |
 | min13-ABDJKMNT on v3, repeat | `…min13-ABDJKMNT-specv3/20260919T1859` | same config as the first run; second of two | 23/23, 51/51, 96/96, 122/122, 167/167 | complete 2026-09-19; strict on every checkpoint again; 5/5 strict, $10, 39 min. Quality: erosion 0.000, verbosity 0.279, ast 0.016, cloned 0.257; final checkpoint, implementation only (26% of LOC): ast 0.046, erosion 0.000, cloned 0.000 |
+| anti-slop on v3 | `…anti_slop-specv3/20260920T0821` | the upstream anti_slop prompt on the patched spec, for the uplift grid; first of two | 23/23, 51/51, 96/96, 122/122, 167/167 | complete 2026-09-20; no misses, strict on every checkpoint like the other eight v3 runs; this run wrote a 388-line test file, the v0 anti-slop run wrote none, which is where cloned 0.124 comes from; 5/5 strict, $6, 20 min. Quality: erosion 0.000, verbosity 0.268, ast 0.087, cloned 0.124; final checkpoint, implementation only (51% of LOC): ast 0.115, erosion 0.000, cloned 0.000 |
 
 ## Test failure summaries
 
@@ -135,6 +136,15 @@ testing", 464 words). Compare with the min11 pair (160 and 160, $14 and $17).
   - repeat (167): strict again, $10 and 39 min. Implementation only: erosion 0.000, ast 0.046,
     cloned 0.000. Pair: 167 and 167, as min12's and just-solve's v3 pairs; the patched cell
     of the uplift grid for xjq is complete for all three prompts.
+
+### anti-slop on spec v3
+
+  - first run (167): no misses, strict throughout. All nine v3 runs of xjq now score 167,
+    whatever the prompt, so the v3 sentences carry the score here and the prompt does not.
+    $6 and 20 min, just-solve's price ($6, $5) and about half of min13's ($9, $10).
+    Implementation only: erosion 0.000, ast 0.115, cloned 0.000. It wrote a 388-line
+    test_xjq.py, which the v0 anti-slop run did not, and the whole-snapshot cloned 0.124 is
+    that file. First of two.
 
 ### min12-ABDJKMN on v0, repeat (2026-09-14)
 

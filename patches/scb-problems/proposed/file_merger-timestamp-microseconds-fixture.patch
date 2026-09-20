@@ -1,0 +1,46 @@
+file_merger: the timestamp_microseconds fixture loads as a header with no rows
+
+PROPOSED upstream, not applied here. install.py applies patches/scb-problems/*.patch to the
+problem cache; this folder is outside that glob on purpose, because applying it would change
+what every later file_merger run is scored on.
+
+tests/data/checkpoint_1/hidden/timestamp_microseconds.yaml writes its CSV input and its
+expected output.csv as single-quoted scalars spread over four lines. YAML folds the line
+breaks of a quoted scalar into spaces, so both load as the single line
+`id,event_time 1,2024-07-01T12:00:00.123456Z 2,... 3,...`: a header and no rows, which any
+implementation passes. 24 of our 24 runs pass it, one of them (min13-ABDJKMNT on v6,
+20260920T0700) with a formatter that drops microseconds; run on the intended rows, its
+snapshot prints `2024-07-01T12:00:00Z` three times. The reference solution run on the intended
+rows prints exactly the intended output, so the block-scalar form below passes for it.
+
+--- a/file_merger/tests/data/checkpoint_1/hidden/timestamp_microseconds.yaml
++++ b/file_merger/tests/data/checkpoint_1/hidden/timestamp_microseconds.yaml
+@@ -1,10 +1,11 @@
+ case:
+   arguments: --output output.csv --key id --schema schema.json data.csv
+   input_files:
+-    - content: 'id,event_time
+-1,2024-07-01T12:00:00.123456Z
+-2,2024-07-01T12:00:00.000001Z
+-3,2024-07-01T12:00:00.999999+00:00'
++    - content: |-
++        id,event_time
++        1,2024-07-01T12:00:00.123456Z
++        2,2024-07-01T12:00:00.000001Z
++        3,2024-07-01T12:00:00.999999+00:00
+       file_type: text
+       path: data.csv
+     - content:
+@@ -19,7 +20,8 @@
+ expected:
+   status_code: 0
+   files:
+-    output.csv: 'id,event_time
+-1,2024-07-01T12:00:00.123456Z
+-2,2024-07-01T12:00:00.000001Z
+-3,2024-07-01T12:00:00.999999Z'
++    output.csv: |-
++      id,event_time
++      1,2024-07-01T12:00:00.123456Z
++      2,2024-07-01T12:00:00.000001Z
++      3,2024-07-01T12:00:00.999999Z

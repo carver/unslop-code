@@ -67,7 +67,16 @@ test `.999999+00:00`. The fix is a block scalar (`content: |-`) on both strings,
 `checkpoint_4/hidden/nested_timestamp_microseconds.yaml` already has. One other fixture has
 the same shape, `checkpoint_3/spec_errors/invalid_bytes_zero.yaml`, where only the exit code
 is checked. A scan of every problem's fixtures in the cache found no others. One small PR.
-Blocker: none; not opened yet.
+
+Proposal: `patches/scb-problems/proposed/file_merger-timestamp-microseconds-fixture.patch`,
+both strings as block scalars, evidence in its preamble. It dry-runs clean against the cache,
+the patched file loads as a header and three rows, and the reference solution run on those
+rows prints the expected output exactly. It sits in `proposed/` because `install.py` applies
+every `patches/scb-problems/*.patch` to the cache, and applying this one would change what
+later file_merger runs are scored on: the sub-second coin would cost three tests, not two.
+Our runs are scored as the tests stand. Blocker: none; not opened yet. The spec side of the
+same question is drafted, uncommitted, as
+`specs/drafts/file_merger-09-timestamp-keeps-fraction.patch`.
 
 ## Problem set: mvvault's v1 tests only reroute `urllib.request.urlopen`
 

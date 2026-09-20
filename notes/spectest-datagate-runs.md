@@ -9,6 +9,7 @@ tests passed / total at each checkpoint (regressions included), from each checkp
 | just-solve control | `../dev6-opus5/opus-5_2.1.251_high_just-solve/20260830T0354` | benchmark's own prompt | 42/50, 111/122, 160/174, 211/233, 249/276, 326/353, 377/405 | complete (dev6 sweep); 28 misses, nothing recovered once missed: 8 at ckpt 1 (v3's six plus two whitespace-preservation tests), rowid trio, 3 whitespace tests at ckpt 3, the 8 charset tests at ckpt 4, `force` variants at ckpt 5, mixed-numeric at ckpt 7 |
 | just-solve on v0, repeat | `…just-solve/20260914T1154` | benchmark's own prompt on the unpatched spec, a per-problem run; the second just-solve v0 replicate for the 2x2 uplift grid (the first is the dev6 control) | 43/50, 112/122, 163/174, 214/233, 252/276, 329/353, 380/405 | complete 2026-09-14; 25 misses, the control's 28 minus three whitespace tests (test_preserves_whitespace at checkpoint 1 and the exact-match pair at checkpoint 3 passed; header/time whitespace and header_no_trim still fail): v3's six at checkpoint 1, rowid trio, the eight charset tests, the five force variants, mixed-numeric at checkpoint 7. Nothing recovered once missed. 0/7 strict, $10, 34 min. Quality: erosion 0.450, verbosity 0.341, ast 0.292, cloned 0.061 |
 | anti-slop on v0 | `…anti_slop/20260919T2123` | the benchmark's upstream anti_slop prompt as shipped (the paper's Anti-Slop arm; chunk T is its rule list); first of two | 42/50, 111/122, 160/174, 213/233, 251/276, 328/353, 379/405 | complete 2026-09-19; 26 misses: the just-solve repeat's 21 (the five spec-sentence families, the checkpoint-7 pair, the spreadsheet-invalid-charset four, two whitespace tests) plus five of its own (three more whitespace tests, the corrupt-xls rejection pair); all eight whitespace-class tests lost; 0/7 strict, $14, 42 min. Quality: erosion 0.000, verbosity 0.130, ast 0.055, cloned 0.048; final checkpoint, implementation only (39% of LOC): ast 0.077, erosion 0.000, cloned 0.013 |
+| anti-slop on v0, repeat | `…anti_slop/20260920T1305` | same config as the first run; second of two | 42/50, 111/122, 160/174, 215/233, 253/276, 330/353, 381/405 | complete 2026-09-20; 24 misses, every one of them among the first run's 26 (`bin/failures`: 24 shared of 24); the two it passed are the corrupt-xls rejection pair; 0/7 strict, $11, 49 min. Quality: erosion 0.000, verbosity 0.149, ast 0.078, cloned 0.047; final checkpoint, implementation only (41% of LOC): ast 0.111, erosion 0.000, cloned 0.011 |
 | v1 | `opus-5_…_spectest/20260831T1136` | first spec-test prompt | 44/50 | ckpt 1 only |
 | v2 | `…spectest-v2/20260831T1519` | testing section tweaks | 44/50 | ckpt 1 only; agent pkill self-match |
 | v3 | `…spectest-v3/20260831T1647` | | 44/50, 113/122, 165/174, 216/233, 254/276, 331/353, 382/405 | complete (ckpts 2-7 added 2026-09-02 via `bin/scb-extend`); 23 misses: the 6 from ckpt 1 carried all the way, rowid trio, 8 charset tests at ckpt 4, `force` variants at ckpt 5, one mixed-numeric test at ckpt 7 |
@@ -154,6 +155,11 @@ machinery did not move the score.
     (just-solve 0.388, min12 0.120, min13 0.000), ast 0.077 (0.357, 0.252, 0.097), cloned
     0.013 (0.045, 0.017, 0.006). On datagate the rule list alone matches min13's implementation
     quality; spectest on top buys four to six tests. First of two.
+  - repeat (381): two above the first run and the same misses otherwise, 24 shared of 24; the
+    corrupt-xls rejection pair passed this time. Pair 379 and 381 against just-solve's 377 and
+    380, min12's 381 and 376, min13's 383 and 385: at v0 the four prompts sit within nine
+    tests of each other on datagate and anti-slop's two runs are as alike as its xjq pair
+    was. Implementation only: erosion 0.000, ast 0.111, cloned 0.011. $11 and 49 min.
 
 ### anti-slop on spec v2
 

@@ -228,6 +228,13 @@ const mean = xs => xs.reduce((a, b) => a + b, 0) / xs.length;
 const have = (set, prompt, kind) => set.filter(p => cell(p, prompt, kind));
 const avg = (set, prompt, kind, key) => { const s = have(set, prompt, kind); return s.length ? mean(s.map(p => cell(p, prompt, kind).mean[key])) : null; };
 const coverage = (set, prompt, kind) => { const n = have(set, prompt, kind).length; return n === set.length ? "" : ` (${n} of ${set.length} problems)`; };
+// A caption clause naming the prompts that have not run every problem in `set` yet, so a bar
+// over one problem is not read as a bar over six.
+const partialNote = (set, kind = "v0") => {
+  const short = G.prompts.filter(pr => { const n = have(set, pr, kind).length; return n && n < set.length; })
+    .map(pr => `${label(pr)} over ${have(set, pr, kind).length} so far`);
+  return short.length ? `; ${short.join(", ")}` : "";
+};
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
 function signed(m, d) {
@@ -442,7 +449,7 @@ function promptBars(m) {
   const human = HUMAN[m.key];
   const items = G.prompts.map(prompt => ({ label: label(prompt), v: avg(problems, prompt, "v0", m.key), color: color(prompt), soft: true,
     tip: `${label(prompt)} at v0${coverage(problems, prompt, "v0")}\n${per(prompt)}` })).filter(it => it.v != null);
-  return bars(`${m.name}, by prompt`, `spec v0, mean of all six problems${scopeSub(m)}`, m, [
+  return bars(`${m.name}, by prompt`, `spec v0, mean of all six problems${partialNote(problems)}${scopeSub(m)}`, m, [
     ...items,
     ...(human ? [{ label: human.label, v: human.v, color: "var(--ink-3)", soft: false, tip: human.tip }] : []),
   ]);
@@ -451,7 +458,7 @@ function promptBars(m) {
 const share = v => (100 * v).toFixed(0) + "%";
 const change = v => (v < 1 ? "\u2212" : "+") + (100 * Math.abs(v - 1)).toFixed(0) + "%";
 
-function shareBars(m, r = R[m.key], human = HUMAN[m.key], sub = `spec v0, mean of the per-problem shares${scopeSub(m)}`) {
+function shareBars(m, r = R[m.key], human = HUMAN[m.key], sub = `spec v0, mean of the per-problem shares${partialNote(problems)}${scopeSub(m)}`) {
   // Each bar is a mean of per-problem shares of just-solve, which sits at the 100% line. Under
   // each prompt's bar a whisker runs from its best problem to its worst, so the card stays this
   // size however many problems the mean covers; the human block closes the card.
@@ -580,7 +587,7 @@ function caseBars() {
   const it = (prompt, kind) => ({ label: `${label(prompt)}, ${kind}`, v: avg(patched, prompt, kind, m.key), color: color(prompt), soft: kind === "v0",
     tip: `${label(prompt)}, ${kind}${coverage(patched, prompt, kind)}\n${per(prompt, kind)}` });
   const items = ["v0", "patched"].flatMap(kind => G.prompts.map(prompt => it(prompt, kind))).filter(x => x.v != null);
-  return bars(items.length ? `Hidden tests failed, ${items.length} cases` : "Hidden tests failed", `mean of ${patched.join(", ")}`, m, items, 168);
+  return bars(items.length ? `Hidden tests failed, ${items.length} cases` : "Hidden tests failed", `mean of ${patched.join(", ")}${partialNote(patched)}`, m, items, 168);
 }
 
 function render() {

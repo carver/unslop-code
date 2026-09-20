@@ -36,8 +36,9 @@ def siblings(cells, problem, spec, model, run_dir):
     then alphabetical, oldest run first within a prompt."""
     run_dir = pathlib.Path(run_dir).resolve()
     rank = {prompt: i for i, prompt in enumerate(PROMPT_ORDER)}
+    ordered = sorted(cells.items(), key=lambda kv: (rank.get(kv[0][1], len(rank)), kv[0][1]))
     out = []
-    for (p, prompt, sp, m), summaries in sorted(cells.items(), key=lambda kv: (rank.get(kv[0][1], len(rank)), kv[0][1])):
+    for (p, _prompt, sp, m), summaries in ordered:
         if (p, sp, m) != (problem, spec, model):
             continue
         out.extend(sorted(d for d in (run_dir_of(s) for s in summaries) if d != run_dir))
@@ -67,9 +68,11 @@ def main():
     if spec == "v0":
         prompts = prompts_at(cells, problem, spec, model)
         print(f"\n== implementation-only quality, {problem}, final checkpoint, pooled per prompt", flush=True)
-        subprocess.run([HERE / "quality-split", "--prompts", ",".join(prompts), "--model", model, "--problem", problem], check=True)
+        command = [HERE / "quality-split", "--prompts", ",".join(prompts), "--model", model, "--problem", problem]
+        subprocess.run(command, check=True)
     else:
-        print(f"\n== implementation-only quality for {spec}: the ledger row's final clause (quality-split scores v0 runs only)")
+        print(f"\n== implementation-only quality for {spec}: see the ledger row's final clause "
+              "(quality-split scores v0 runs only)")
 
 
 if __name__ == "__main__":

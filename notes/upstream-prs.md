@@ -162,3 +162,16 @@ Monitor events never reach a `claude -p` session, so an agent that arms Monitor 
 no-op turns ($103 checkpoint, `notes/xjq-runs.md`). Our fix is `disallowed_tools: [Monitor]`
 in the agent config; upstream could default it. Related: `CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=0`
 is what keeps background sub-agents alive past the parent's turn (README of the agent config).
+
+## Harness: CITATION.cff fails schema validation
+
+`CITATION.cff` sets top-level `type: article`. CFF 1.2.0 allows only `software` or `dataset`
+there, so `uvx cffconvert@2.0.0 --validate` in the checkout fails on `instance['type']: 'article'`.
+Still so on upstream main c2a53b4 (2026-09-18); the line came in with 6e5a5e9 (2026-03-27). GitHub does show
+its "Cite this repository" button for the repo, and we have not checked what the button
+exports. The tools that validate first are the risk: cffconvert, and Zenodo when it reads the
+file at release time. The fix keeps everything they wrote. Top level becomes `type: software`
+with the repo URL, and the paper's fields (authors, title, arXiv URL, the Zenodo DOI if it is
+the paper's) move under `preferred-citation:` with `type: article`, which is the CFF way to say
+"cite the paper, not the code". Found 2026-09-19 while writing our own cff. Nothing blocks it:
+a one-file PR via the fork, validated with cffconvert before and after.

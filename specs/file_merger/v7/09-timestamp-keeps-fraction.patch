@@ -1,6 +1,7 @@
 file_merger: a timestamp keeps the fraction its source had (checkpoint 1)
 
-DRAFT for a possible v7, as patch 09 after v6's eight. Not applied, not judged, not committed.
+The user's wording, "keeping fractional seconds" (the draft said "keeping any fractional
+seconds"), no judge run. 2026-09-20.
 
 Sentence: "`timestamp` normalized to UTC with `Z` (e.g., `2024-07-01T12:00:00Z`); if source
 lacked zone, treat as UTC", under Deterministic Dialect Details. The only other words on the

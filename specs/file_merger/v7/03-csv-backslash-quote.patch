@@ -1,0 +1,21 @@
+file_merger: a backslash-escaped quote inside a quoted CSV field (checkpoint 1)
+
+Sentence: "escape character defaults to doubling the quote (`\"\"`), overrideable via flags".
+The checkpoint-4 fixtures that put JSON in CSV cells escape the inner quotes with backslashes
+(`"{\"name\":\"ok\"}"`), which RFC 4180 doubling never produces. The min11-ABDFJKMN runs read
+those cells as broken JSON and nulled the whole row's nested columns; the reference solution
+sniffs the file for `\"` and, finding it, reads with backslash as the escape character.
+Tests: correct_aliases/case1, correct_nested/case1, correct_nested/case5, correct_nested/case8
+(checkpoint 4).
+
+--- a/file_merger/checkpoint_1.md
++++ b/file_merger/checkpoint_1.md
+@@ -30,7 +30,7 @@
+
+ - All inputs are UTF-8, RFC-4180 compliant, with a **header row**
+ - Delimiter is comma (`,`); line ending `\n`
+-- Quote character defaults to `"`; escape character defaults to doubling the quote (`""`), overrideable via flags
++- Quote character defaults to `"`; escape character defaults to doubling the quote (`""`) and accepts backslash-escapes (`\"`), overrideable via flags
+ - No multiline fields will be present in tests
+
+ **Output**

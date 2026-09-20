@@ -1,0 +1,24 @@
+file_merger: percent-encoding applies to the partition value, not the column name (checkpoint 3)
+
+Sentence: "Apply percent-encoding of UTF-8 bytes for characters outside `[A-Za-z0-9._-]`;
+space → `%20`; `/` encoded as `%2F`", a sub-bullet of the `<col1>=<val1>/...` segment line. It
+names no half. Every checkpoint-3 column name is inside the safe set, so the two readings are
+byte-identical until checkpoint 4, where a field path such as `attrs["region"]` is a partition
+column. Test correct_partition_nested/partition_by_map_value expects the directory
+`attrs["region"]=east`; the reference's encode_partition_value is applied to the value only.
+Three runs registered the question and all chose both halves and failed: min12-ABDJKMN on v0
+(T44, Risk 15), min11-ABDFJKMN's first run (T47, Risk 20), min12-ABDJKMN on v4 (T46, Risk 10,
+"encoding of the name half is untested in all likelihood"). Two runs never registered it,
+encoded the value only, and passed (min11 repeat, min12 on v3).
+
+--- a/file_merger/checkpoint_3.md
++++ b/file_merger/checkpoint_3.md
+@@ -47,7 +47,7 @@
+ - Emit directory tree inside `--output` using Hive-style segments:
+   `<col1>=<val1>/<col2>=<val2>/.../`
+   - Values derived after casting to resolved schema types
+-  - Apply percent-encoding of UTF-8 bytes for characters outside `[A-Za-z0-9._-]`; space → `%20`; `/` encoded as `%2F`
++  - Values use percent-encoding of UTF-8 bytes for characters outside `[A-Za-z0-9._-]`; space → `%20`; `/` encoded as `%2F`
+   - Null (missing) partition values use literal `_null`
+ - Within each partition directory, write CSV files named sequentially:
+   `part-00000.csv`, `part-00001.csv`, … (zero-padded width 5)

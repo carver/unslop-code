@@ -256,6 +256,21 @@ Recovered 02:06Z 2026-09-11: runs now read a pinned, patched checkout at `harnes
 `python3 install.py` (50dd146), so the development clone can move freely. Job 147 resumes the
 partial just-solve run at checkpoint 4; job 148 is the second just-solve run, queued behind it.
 
+## Spec v7 (2026-09-20)
+
+v6 plus `09-timestamp-keeps-fraction.patch`: the timestamp bullet under Deterministic Dialect
+Details at checkpoint 1 reads "normalized to UTC with `Z` (e.g., `2024-07-01T12:00:00Z`),
+keeping fractional seconds", the user's wording (ceb1259, shortened from the draft's "keeping
+any fractional seconds"), no judge run. It answers min13-ABDJKMNT's v6 repeat (145/147), whose
+registry T8 read the heading and the whole-second example as one fixed shape and dropped the
+microseconds; the pitch and both runs' entries are in the patch's preamble. The v6 spec and
+v7 differ in that one line. Unlike patches 01 to 08 this is a rare coin: 22 of 24 runs already
+pass type_parsing_edgecases, so a strict run on v7 shows the sentence does no harm, and only a
+string of them would show the coin gone. The sentence takes no side on trailing zeros
+(`.5Z` against `.500000Z`), which no fixture tests. The upstream fixture meant to cover this,
+hidden/timestamp_microseconds, loads as a header with no rows (`notes/upstream-prs.md`).
+No run queued yet.
+
 ## just-solve on v6 (2026-09-11)
 
 The spec's effect on the bare prompt. First run (job 145 for checkpoints 1-3, job 147 for

@@ -27,5 +27,6 @@ paths still resolve.
 | file_merger | v4 | v3 plus `06-alias-cycle-at-load.patch`, "detect cycles proactively → error 2" (the user's wording; ten of ten blind judges, choose and rule variants: an unused cycle exits 2, `outputs/judge/file_merger-v4`). 2026-09-10. |
 | file_merger | v5 | v4 plus `07-partition-encode-value-only.patch`, checkpoint 3: "Values use percent-encoding of UTF-8 bytes..." in place of "Apply percent-encoding..." (the user's wording, no judge run: the three runs that registered the question all encoded the column name too and failed at checkpoint 4). 2026-09-10. |
 | file_merger | v6 | v5 plus `08-map-key-unquoted-is-error.patch`, checkpoint 4: "Map lookups with `["key"]` read value by exact key; quotes are required" (the user's wording, no judge run). 2026-09-10. |
+| file_merger | v7 | v6 plus `09-timestamp-keeps-fraction.patch`, checkpoint 1: "`timestamp` normalized to UTC with `Z` (e.g., `2024-07-01T12:00:00Z`), keeping fractional seconds" (the user's wording, no judge run). A rare coin, not a shared reading: one opus run of 21 dropped the fraction, min13-ABDJKMNT on v6, 145/147. 2026-09-20. |
 
 `drafts/` holds patches that were proposed and not adopted as written.

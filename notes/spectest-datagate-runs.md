@@ -8,6 +8,7 @@ tests passed / total at each checkpoint (regressions included), from each checkp
 |---|---|---|---|---|
 | just-solve control | `../dev6-opus5/opus-5_2.1.251_high_just-solve/20260830T0354` | benchmark's own prompt | 42/50, 111/122, 160/174, 211/233, 249/276, 326/353, 377/405 | complete (dev6 sweep); 28 misses, nothing recovered once missed: 8 at ckpt 1 (v3's six plus two whitespace-preservation tests), rowid trio, 3 whitespace tests at ckpt 3, the 8 charset tests at ckpt 4, `force` variants at ckpt 5, mixed-numeric at ckpt 7 |
 | just-solve on v0, repeat | `…just-solve/20260914T1154` | benchmark's own prompt on the unpatched spec, a per-problem run; the second just-solve v0 replicate for the 2x2 uplift grid (the first is the dev6 control) | 43/50, 112/122, 163/174, 214/233, 252/276, 329/353, 380/405 | complete 2026-09-14; 25 misses, the control's 28 minus three whitespace tests (test_preserves_whitespace at checkpoint 1 and the exact-match pair at checkpoint 3 passed; header/time whitespace and header_no_trim still fail): v3's six at checkpoint 1, rowid trio, the eight charset tests, the five force variants, mixed-numeric at checkpoint 7. Nothing recovered once missed. 0/7 strict, $10, 34 min. Quality: erosion 0.450, verbosity 0.341, ast 0.292, cloned 0.061 |
+| anti-slop on v0 | `…anti_slop/20260919T2123` | the benchmark's upstream anti_slop prompt as shipped (the paper's Anti-Slop arm; chunk T is its rule list); first of two | 42/50, 111/122, 160/174, 213/233, 251/276, 328/353, 379/405 | complete 2026-09-19; 26 misses: the just-solve repeat's 21 (the five spec-sentence families, the checkpoint-7 pair, the spreadsheet-invalid-charset four, two whitespace tests) plus five of its own (three more whitespace tests, the corrupt-xls rejection pair); all eight whitespace-class tests lost; 0/7 strict, $14, 42 min. Quality: erosion 0.000, verbosity 0.130, ast 0.055, cloned 0.048; final checkpoint, implementation only (39% of LOC): ast 0.077, erosion 0.000, cloned 0.013 |
 | v1 | `opus-5_…_spectest/20260831T1136` | first spec-test prompt | 44/50 | ckpt 1 only |
 | v2 | `…spectest-v2/20260831T1519` | testing section tweaks | 44/50 | ckpt 1 only; agent pkill self-match |
 | v3 | `…spectest-v3/20260831T1647` | | 44/50, 113/122, 165/174, 216/233, 254/276, 331/353, 382/405 | complete (ckpts 2-7 added 2026-09-02 via `bin/scb-extend`); 23 misses: the 6 from ckpt 1 carried all the way, rowid trio, 8 charset tests at ckpt 4, `force` variants at ckpt 5, one mixed-numeric test at ckpt 7 |
@@ -141,6 +142,16 @@ calls, the v7 turn-ending rule biting).
 
 One better than v7's 391. The v4 prompt sits on the same plateau as v7; the v5 to v7
 machinery did not move the score.
+
+### anti-slop on v0 (the upstream anti_slop prompt, 2026-09-20)
+
+  - 379/405, inside just-solve's 377 and 380: the repeat's 21 misses plus the rest of the
+    whitespace class and the corrupt-xls pair. Unlike its xjq run it wrote tests, 991 lines
+    to 625 of implementation, the smallest datagate implementation of any prompt (just-solve
+    1255, min12 977, min13 725 per run). $14 and 42 min. Implementation only: erosion 0.000
+    (just-solve 0.388, min12 0.120, min13 0.000), ast 0.077 (0.357, 0.252, 0.097), cloned
+    0.013 (0.045, 0.017, 0.006). On datagate the rule list alone matches min13's implementation
+    quality; spectest on top buys four to six tests. First of two.
 
 ### just-solve-disambiguated (patched spec), two runs
 

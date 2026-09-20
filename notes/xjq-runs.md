@@ -29,6 +29,7 @@ is the dev6 sweep's just-solve run (`notes/dev6-opus5.md`).
 | just-solve on v3, repeat | `…just-solve-specv3/20260909T1314` | same config as the first run | 23/23, 51/51, 96/96, 122/122, 167/167 | complete 2026-09-09; 0 misses, 5/5 strict, $5 (per checkpoint 2, 6, 3, 3, 5 min), 19 min. just-solve is twice strict on xjq v3. Quality: erosion 0.498, verbosity 0.247, ast 0.213, cloned 0.000 |
 | min12-ABDJKMN on v3 (strict) | `…min12-ABDJKMN-specv3/20260914T1103` | the 444-word no-F prompt on spec v3, strict, the min12 arm of the 2x2 uplift grid (jobs 149-158); first of two | 23/23, 51/51, 96/96, 122/122, 167/167 | complete 2026-09-14; 0 misses, 5/5 strict, $11 (per checkpoint 6, 10, 7, 11, 11 min), 46 min. Against the same prompt on v0: the seven text_all/first misses gone, nothing new. The first ABDJKMN run strict on xjq. 51 registry entries, 51 scored, Risk 0-45 (top: boolean XPath result 45; numeric XPath result and "all descendant text nodes" 40). Quality: erosion 0.060, verbosity 0.544, ast 0.044, cloned 0.489, the cloned and verbosity figures the worst on xjq (ABDFJKMN on v3: 0.254 and 0.309); four test files of 12-17 KB against a 21 KB xjq.py |
 | min12-ABDJKMN on v3 (strict), repeat | `…min12-ABDJKMN-specv3/20260914T1744` | same config as the first run | 23/23, 51/51, 96/96, 122/122, 167/167 | complete 2026-09-14; 0 misses, 5/5 strict, $11 (per checkpoint 1, 3, 2, 2, 3), 54 min. min12-ABDJKMN is twice strict on xjq v3, the grid's min12 x v3 cell complete. 54 entries, 49 scored, Risk 0-45 (top: blank lines from whitespace-only text nodes 45, "no added pretty-print formatting" 45). Quality: erosion 0.026, verbosity 0.326, ast 0.012, cloned 0.306; one 134 KB test_xjq.py against a 21 KB xjq.py |
+| min13-ABDJKMNT on v3 | `…min13-ABDJKMNT-specv3/20260919T1819` | min12 plus chunk T on the patched spec, for the uplift grid; first of two | 23/23, 51/51, 96/96, 122/122, 167/167 | complete 2026-09-19; strict on every checkpoint, like both min12 v3 runs and both just-solve v3 runs; 5/5 strict, $9, 32 min. Quality: erosion 0.032, verbosity 0.439, ast 0.033, cloned 0.372; final checkpoint, implementation only (22% of LOC): ast 0.096, erosion 0.000, cloned 0.000 |
 
 ## Test failure summaries
 
@@ -114,6 +115,12 @@ testing", 464 words). Compare with the min11 pair (160 and 160, $14 and $17).
     the no-F prompt as they did for ABDFJKMN and just-solve. Quality is the odd part: cloned
     0.489 and verbosity 0.544 against 0.254 and 0.309 for ABDFJKMN on the same spec; the test
     files are the bulk of the snapshot. First of two; the repeat is job 158.
+
+### min13-ABDJKMNT on spec v3
+
+  - first run (167): strict throughout, as every v3 run is; $9 and 32 min against min12's
+    $11 and 50. Implementation only: erosion 0.000, ast 0.096, cloned 0.000. Cloned 0.372 and
+    verbosity 0.439 over the whole snapshot are the test files again. First of two.
 
 ### min12-ABDJKMN on v0, repeat (2026-09-14)
 

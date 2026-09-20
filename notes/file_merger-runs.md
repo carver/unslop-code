@@ -29,6 +29,7 @@ The control is the dev6 sweep's just-solve run (`notes/dev6-opus5.md`).
 | just-solve on v6, repeat | `…just-solve-specv6/20260910T1926` | same config, second of two | 46/46, 85/86, 103/104, 145/147 | complete 2026-09-11; 2 misses: tsv_whitespace_values (ckpt 2, both runs) and partition_by_map_value (ckpt 4): this snapshot percent-encodes the column name too, `attrs%5B%22region%22%5D=east`, the reading v5's "Values use percent-encoding" was written against. Pair: 142 and 145 against the control's 116. $14, 53 min |
 | min13-ABDJKMNT on v6 (strict) | `…min13-ABDJKMNT-specv6/20260920T0545` | min12 plus chunk T on the patched spec, for the uplift grid; first of two | 46/46, 86/86, 104/104, 147/147 | complete 2026-09-20; strict on every checkpoint, like both min12 v6 runs; the TSV and mixed-format family min13 loses on v0 passed in full under the v6 sentences; 4/4 strict, $19, 66 min. Quality: erosion 0.000, verbosity 0.184, ast 0.033, cloned 0.124; final checkpoint, implementation only (36% of LOC): ast 0.129, erosion 0.000, cloned 0.000 |
 | min13-ABDJKMNT on v6, repeat | `…min13-ABDJKMNT-specv6/20260920T0700` | the same prompt and spec, second of two | 45/46, 85/86, 103/104, 145/147 | complete 2026-09-20; 2 misses, one cause: the run formats timestamps to whole seconds, the tests keep the source's microseconds (registry T8, which v6 leaves open); no other v6 run missed either test; 0/4 strict, $23, 71 min. Quality: erosion 0.003, verbosity 0.213, ast 0.038, cloned 0.144; final checkpoint, implementation only (34% of LOC): ast 0.130, erosion 0.041, cloned 0.014 |
+| min13-ABDJKMNT on v7 (strict) | `…min13-ABDJKMNT-specv7/20260920T0949` | min13 on v7 under bin/scb-strict: v6 plus the checkpoint-1 sentence "keeping fractional seconds"; first of two, the repeat runs only if this one is strict | 46/46, 86/86, 104/104, 147/147 | complete 2026-09-20; no misses, strict on every checkpoint; both sub-second tests pass, and the registry no longer weighs dropping the fraction, only how many digits to print; 4/4 strict, $26, 79 min. Quality: erosion 0.005, verbosity 0.199, ast 0.035, cloned 0.143; final checkpoint, implementation only (40% of LOC): ast 0.126, erosion 0.055, cloned 0.019 |
 
 ## Test failure summaries
 
@@ -102,6 +103,19 @@ The control is the dev6 sweep's just-solve run (`notes/dev6-opus5.md`).
     want. The checkpoint-1 miss regresses through all four checkpoints, so 0/4 strict against
     the first run's 4/4. Pair 147 and 145 against min12's 147 and 147 and just-solve's 142
     and 145. Implementation only: erosion 0.041, ast 0.130, cloned 0.014. $23 and 71 min.
+
+### min13-ABDJKMNT on spec v7
+
+  - first run (147): strict throughout under bin/scb-strict, so job 254, the repeat queued
+    `--after 253`, started by itself. The new sentence moved the question. v6's runs asked
+    whether to drop the fraction (T8, T10); this run's entry, T9 "Rendering of fractional
+    seconds", quotes "keeping fractional seconds", takes keeping as settled ("reads as 'do
+    not truncate them'") and asks only how many digits: six whenever the fraction is not zero,
+    or the source's own count. It chose six, Risk 35. That is the reading no fixture tests
+    (none has a trailing zero), and it is not the reference's, which trims trailing zeros, so
+    `.5` prints `.500000Z` here and `.5Z` there. Harmless today; a miss if upstream ever adds
+    such a fixture. Implementation only: erosion 0.055, ast 0.126, cloned 0.019. $26 and 79
+    min against the v6 pair's $19 and $23, 66 and 71 min. First of two.
 
 ### min11-ABDFJKMN
 

@@ -1,0 +1,100 @@
+#!/usr/bin/env python3
+"""Cut a release that Zenodo archives and gives a DOI: stamp CITATION.cff, commit, tag, push, release.
+    bin/release v0.2.0 [--dry-run] [--zenodo-enabled]
+Writes the version and today's date into CITATION.cff, validates the file (an invalid one makes
+Zenodo skip the release without telling anyone), commits that file alone, tags the commit, pushes
+main with the tag, and creates the GitHub release with generated notes. Pushing main publishes
+every local commit on it. Other uncommitted work in the tree stays where it is, staged or not.
+Refuses before changing anything if: the version is not vX.Y.Z, the tag exists here or on origin,
+the branch is not main, CITATION.cff has uncommitted edits, or origin/main has commits this clone
+lacks. Zenodo archives only releases made after the repository is switched on at
+zenodo.org/account/settings/github, and nothing here can see that switch. So until CITATION.cff
+carries a doi, which proves an earlier release got through, pass --zenodo-enabled to say it is on.
+If a step fails after the commit, the error lists the commands left to run by hand.
+--dry-run runs the checks, then prints the stamped lines and the commands.
+"""
+import argparse
+import datetime
+import pathlib
+import re
+import shlex
+import subprocess
+
+ROOT = pathlib.Path(__file__).resolve().parent.parent
+CFF = "CITATION.cff"
+VALIDATE = ["uvx", "cffconvert@2.0.0", "--validate"]
+STAMPED = re.compile(r"^(?:version|date-released):.*\n", re.MULTILINE)
+
+
+def stamp(text, version, released):
+    """The cff text with its top-level version and date-released set, placed before authors."""
+    lines = f'version: "{version.removeprefix("v")}"\ndate-released: {released}\n'
+    stamped, found = re.subn(r"^authors:", lines + "authors:", STAMPED.sub("", text), count=1, flags=re.MULTILINE)
+    if not found:
+        raise SystemExit(f"release: {CFF} has no top-level authors key to put the version before")
+    return stamped
+
+
+def git(*args):
+    return subprocess.run(["git", *args], cwd=ROOT, check=True, capture_output=True, text=True).stdout.strip()
+
+
+def refuse_unless_ready(version, text, zenodo_enabled):
+    if not re.fullmatch(r"v\d+\.\d+\.\d+", version):
+        raise SystemExit(f"release: the version is vX.Y.Z, such as v0.2.0, not {version}")
+    if git("branch", "--show-current") != "main":
+        raise SystemExit("release: releases are cut on main")
+    if git("status", "--porcelain", "--", CFF):
+        raise SystemExit(f"release: {CFF} has uncommitted edits; commit or drop them first")
+    if git("tag", "--list", version) or git("ls-remote", "--tags", "origin", f"refs/tags/{version}"):
+        raise SystemExit(f"release: tag {version} already exists")
+    git("fetch", "--quiet", "origin", "main")
+    if subprocess.run(["git", "merge-base", "--is-ancestor", "origin/main", "HEAD"], cwd=ROOT).returncode:
+        raise SystemExit("release: origin/main has commits this clone lacks; pull first")
+    if not re.search(r"^doi:", text, re.MULTILINE) and not zenodo_enabled:
+        raise SystemExit(
+            f"release: {CFF} has no doi, so this looks like the first release. Switch the repository on at "
+            "zenodo.org/account/settings/github, then pass --zenodo-enabled"
+        )
+
+
+def steps(version):
+    return [
+        ["git", "commit", "--quiet", "-m", f"Release {version}", "--", CFF],
+        ["git", "tag", "-a", version, "-m", f"Release {version}"],
+        ["git", "push", "--quiet", "--atomic", "origin", "main", version],
+        ["gh", "release", "create", version, "--verify-tag", "--generate-notes", "--title", version],
+    ]
+
+
+def release(version, today, zenodo_enabled=False, dry_run=False):
+    path = ROOT / CFF
+    before = path.read_text()
+    refuse_unless_ready(version, before, zenodo_enabled)
+    after = stamp(before, version, today)
+    if dry_run:
+        print("".join(STAMPED.findall(after)) + "\n".join(shlex.join(step) for step in steps(version)))
+        return
+    path.write_text(after)
+    if subprocess.run(VALIDATE, cwd=ROOT).returncode:
+        path.write_text(before)
+        raise SystemExit(f"release: the stamped {CFF} does not validate; restored it")
+    todo = steps(version)
+    while todo:
+        if subprocess.run(todo[0], cwd=ROOT).returncode:
+            rest = "\n".join("    " + shlex.join(step) for step in todo)
+            raise SystemExit(f"release: a step failed. Fix the cause, then finish with:\n{rest}")
+        todo.pop(0)
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument("version", help="the tag to cut, such as v0.2.0")
+    parser.add_argument("--dry-run", action="store_true", help="check, then print the plan")
+    parser.add_argument("--zenodo-enabled", action="store_true", help="the Zenodo switch for this repository is on")
+    args = parser.parse_args(argv)
+    release(args.version, datetime.date.today().isoformat(), args.zenodo_enabled, args.dry_run)
+
+
+if __name__ == "__main__":
+    main()

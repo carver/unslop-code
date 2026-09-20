@@ -91,6 +91,8 @@ prompt and `save_dir` relative to it, which is where `bin/queue` and `bin/scb-ex
                                              # also the pre-commit hook, once install.py has pointed git at .githooks/
     bin/queue add-strict configs/runs/<name>.yaml  # enqueue it under bin/scb-strict: halts at the first non-strict checkpoint
     bin/queue solo <id>                      # run one queued job while the rest wait (stash, start, pause --wait, re-queue)
+    bin/release vX.Y.Z [--dry-run]           # stamp CITATION.cff, commit it alone, tag, push main, create the GitHub
+                                             # release that Zenodo archives; first time needs --zenodo-enabled
     bin/build-prompt BEG                     # configs/prompts/min4-BEG.jinja from the chunks in
                                              # configs/prompts/min4-chunks/ (--list for the index)
 

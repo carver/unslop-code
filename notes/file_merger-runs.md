@@ -27,6 +27,7 @@ The control is the dev6 sweep's just-solve run (`notes/dev6-opus5.md`).
 | min12-ABDJKMN on v6, fresh (strict) | `…min12-ABDJKMN-specv6/20260910T1510` | min12-ABDJKMN on spec v6 under bin/scb-strict, a fresh run from checkpoint 1; first of two | 46/46, 86/86, 104/104, 147/147 | complete 2026-09-10, 0 misses: the first fresh full strict run on file_merger, on the eight-patch v6 spec. Every sentence of v1-v6 held in one run. $22, 73 min |
 | just-solve on v6 | `…just-solve-specv6/20260910T1709` | the bare benchmark prompt on the eight-patch spec v6; first of two (checkpoints 1-3 before the harness outage, 4 after it, on the harness checkout) | 45/46, 84/86, 102/104, 142/147 | complete 2026-09-11; 5 misses against the v0 control's 31: bool_nonstandard_strict (ckpt 1, `1`/`true` mixed column), tsv_whitespace_values (ckpt 2), and at checkpoint 4 correct_aliases case1 and case2 plus nested_type_alias_with_parquet. The control's 17 checkpoint-2 misses (parquet, TSV, mixed inference) are gone; only two checkpoint-4 misses are shared with it. $18, 73 min |
 | just-solve on v6, repeat | `…just-solve-specv6/20260910T1926` | same config, second of two | 46/46, 85/86, 103/104, 145/147 | complete 2026-09-11; 2 misses: tsv_whitespace_values (ckpt 2, both runs) and partition_by_map_value (ckpt 4): this snapshot percent-encodes the column name too, `attrs%5B%22region%22%5D=east`, the reading v5's "Values use percent-encoding" was written against. Pair: 142 and 145 against the control's 116. $14, 53 min |
+| min13-ABDJKMNT on v6 (strict) | `…min13-ABDJKMNT-specv6/20260920T0545` | min12 plus chunk T on the patched spec, for the uplift grid; first of two | 46/46, 86/86, 104/104, 147/147 | complete 2026-09-20; strict on every checkpoint, like both min12 v6 runs; the TSV and mixed-format family min13 loses on v0 passed in full under the v6 sentences; 4/4 strict, $19, 66 min. Quality: erosion 0.000, verbosity 0.184, ast 0.033, cloned 0.124; final checkpoint, implementation only (36% of LOC): ast 0.129, erosion 0.000, cloned 0.000 |
 
 ## Test failure summaries
 
@@ -83,6 +84,14 @@ The control is the dev6 sweep's just-solve run (`notes/dev6-opus5.md`).
     pair 127 and 127 against min12's 139 and 139 and just-solve's 116 and 138. Implementation
     only over the pair: erosion 0.050 against min12's 0.479, ast 0.117 against 0.288, cloned
     0.017 against 0.049, on 1258 implementation lines per run against 1760. $22 and 69 min.
+
+### min13-ABDJKMNT on spec v6
+
+  - first run (147): strict throughout, as both min12 v6 runs were and neither just-solve v6
+    run was (142, 145). The checkpoint-2 TSV and mixed-format family that costs min13 twelve
+    tests on v0 passed in full, so on file_merger the v6 sentences close the min13 gap as
+    well as the min12 one. Implementation only: erosion 0.000, ast 0.129, cloned 0.000.
+    $19 and 66 min against min12's $22 and 73. First of two.
 
 ### min11-ABDFJKMN
 

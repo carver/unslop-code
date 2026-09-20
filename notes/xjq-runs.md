@@ -34,6 +34,7 @@ is the dev6 sweep's just-solve run (`notes/dev6-opus5.md`).
 | min13-ABDJKMNT on v3 | `…min13-ABDJKMNT-specv3/20260919T1819` | min12 plus chunk T on the patched spec, for the uplift grid; first of two | 23/23, 51/51, 96/96, 122/122, 167/167 | complete 2026-09-19; strict on every checkpoint, like both min12 v3 runs and both just-solve v3 runs; 5/5 strict, $9, 32 min. Quality: erosion 0.032, verbosity 0.439, ast 0.033, cloned 0.372; final checkpoint, implementation only (22% of LOC): ast 0.096, erosion 0.000, cloned 0.000 |
 | min13-ABDJKMNT on v3, repeat | `…min13-ABDJKMNT-specv3/20260919T1859` | same config as the first run; second of two | 23/23, 51/51, 96/96, 122/122, 167/167 | complete 2026-09-19; strict on every checkpoint again; 5/5 strict, $10, 39 min. Quality: erosion 0.000, verbosity 0.279, ast 0.016, cloned 0.257; final checkpoint, implementation only (26% of LOC): ast 0.046, erosion 0.000, cloned 0.000 |
 | anti-slop on v3 | `…anti_slop-specv3/20260920T0821` | the upstream anti_slop prompt on the patched spec, for the uplift grid; first of two | 23/23, 51/51, 96/96, 122/122, 167/167 | complete 2026-09-20; no misses, strict on every checkpoint like the other eight v3 runs; this run wrote a 388-line test file, the v0 anti-slop run wrote none, which is where cloned 0.124 comes from; 5/5 strict, $6, 20 min. Quality: erosion 0.000, verbosity 0.268, ast 0.087, cloned 0.124; final checkpoint, implementation only (51% of LOC): ast 0.115, erosion 0.000, cloned 0.000 |
+| anti-slop on v3, repeat | `…anti_slop-specv3/20260920T1413` | same config as the first run; second of two | 23/23, 51/51, 96/96, 122/122, 167/167 | complete 2026-09-20; no misses, strict on every checkpoint again, so anti-slop is 167 and 167 on v3; it wrote tests again; 5/5 strict, $5, 19 min. Quality: erosion 0.000, verbosity 0.184, ast 0.094, cloned 0.044; final checkpoint, implementation only (50% of LOC): ast 0.129, erosion 0.000, cloned 0.000 |
 
 ## Test failure summaries
 
@@ -152,6 +153,10 @@ testing", 464 words). Compare with the min11 pair (160 and 160, $14 and $17).
     Implementation only: erosion 0.000, ast 0.115, cloned 0.000. It wrote a 388-line
     test_xjq.py, which the v0 anti-slop run did not, and the whole-snapshot cloned 0.124 is
     that file. First of two.
+  - repeat (167): strict throughout again. Pair 167 and 167, the same as just-solve, min12 and
+    min13 on v3: all ten v3 runs of xjq score 167. At v0 anti-slop was 155 twice, five to
+    seven behind the others, so on xjq its whole gap was the spec's. Implementation only:
+    erosion 0.000, ast 0.129, cloned 0.000. $5 and 19 min. No other channel overlapped it.
 
 ### min12-ABDJKMN on v0, repeat (2026-09-14)
 

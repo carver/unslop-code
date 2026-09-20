@@ -53,6 +53,12 @@ rebuild, a republish) fires on the wake of its last job.
   `pueue start` after the reset.
 - A job to cut short: `bin/queue kill <id> --delete-run` when nothing in it is worth keeping,
   `bin/queue kill <id>` then `bin/queue resume <run_dir>` to continue from its next checkpoint.
+- A second channel: `bin/queue add --group <name> <config>` runs a job beside the main queue (one
+  per channel, a pueue group made on first use, running at once). Arm one `bin/queue wait` per
+  running job, one background call each. `bin/queue` lists the channels under `[name]` headings;
+  `pueue pause -g <name>` and `pueue start -g <name>` hold and release one. A run whose
+  `window_usage.jsonl` has `shared` readings overlapped another channel: say so beside its
+  minutes, which are not comparable.
 - Order changes: `bin/queue add --next <config>` puts a job first; `bin/queue add --before <id>
   <config>` puts it right before a queued job; `bin/queue move <id> before <other>` reorders by
   rewriting priorities. `resume` takes `--next` and `--before` too.

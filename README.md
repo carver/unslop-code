@@ -96,8 +96,18 @@ prompt and `save_dir` relative to it, which is where `bin/queue` and `bin/scb-ex
     bin/build-prompt BEG                     # configs/prompts/min4-BEG.jinja from the chunks in
                                              # configs/prompts/min4-chunks/ (--list for the index)
 
-Queueing runs: one at a time, never in parallel (the 5h window and per-checkpoint window
-accounting both break). `bin/queue add configs/runs/<name>.yaml` enqueues a run behind
+Queueing runs: the main queue runs one at a time. A second channel can run beside it:
+`bin/queue add --group <name> <config>` (any adding command) puts the job in a pueue group of
+that name, made on first use, one job at a time, with its own order and pause state, so work on
+a new spec does not wait behind the main queue. Both channels spend one subscription: two jobs
+take about 60% of a 5-hour window (one takes 18 to 34%), and the weekly limit runs out twice as
+fast, so a channel buys latency, not runs. What keeps it safe: `bin/start-slot` holds a fresh
+run back when another run of its config started under two minutes ago (run directories are
+named to the minute); `bin/scb-extend` marks a checkpoint another channel overlapped as
+`shared` and leaves it out of its window-cost estimate; a usage limit pauses every channel;
+`bin/queue kill` pauses only the job's channel and removes only the container its own
+`docker exec` names. Never raise a group's parallel limit (`pueue parallel 0` is unlimited).
+Wall-clock minutes of runs that overlapped another channel are slower and not comparable. `bin/queue add configs/runs/<name>.yaml` enqueues a run behind
 whatever is queued; `bin/queue` shows status, `bin/queue log <id>` a job's output,
 `bin/queue kill <id>` stops one and cleans up after it: a queued job is removed; a running
 one is killed along with the slop-code worker that outlives it and the agent container it

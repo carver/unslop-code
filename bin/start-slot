@@ -1,0 +1,61 @@
+#!/usr/bin/env python3
+"""Hold a fresh run back until no other run of its config started within the last two minutes.
+
+    bin/start-slot <run-config.yaml>     # returns once the slot is this caller's
+
+A run directory is named by its config and the minute it started
+(`save_template: …/${now:%Y%m%dT%H%M}`), so two fresh runs of one config that start in the
+same minute write into one directory. With one queue that cannot happen. With two channels
+(`bin/queue add --group`) it can, the first time both reach the same config at once. The
+drivers call this just before they launch checkpoint 1; resumes name their directory and need
+no slot. The gap is two minutes, not one, because scb takes some seconds to reach the line
+that reads the clock, and a start at :59 must not land beside one at :01 of the next minute.
+
+The last start of each config is a file under ~/.cache/scbench/start-slots/ (outside outputs/,
+which the result tools walk), read and written under one lock, so the callers queue up behind
+each other.
+"""
+import fcntl
+import os
+import pathlib
+import sys
+import time
+
+GAP_S = 120
+
+
+def wait_seconds(last, now, gap):
+    """Seconds still to wait after a start at `last`; none for no earlier start or a clock that went backwards."""
+    if last is None or now < last:
+        return 0
+    return max(0, gap - (now - last))
+
+
+def last_start(directory, config_name):
+    path = pathlib.Path(directory) / config_name
+    return float(path.read_text()) if path.exists() else None
+
+
+def claim(directory, config_name, gap=GAP_S, now=time.time, sleep=time.sleep):
+    """Wait the gap out under the lock, then record this start. Holding the lock while asleep is
+    the point: a third caller must wait for the second one's start, not only the first's."""
+    directory = pathlib.Path(directory)
+    directory.mkdir(parents=True, exist_ok=True)
+    with (directory / ".lock").open("w") as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        wait = wait_seconds(last_start(directory, config_name), now(), gap)
+        if wait:
+            print(f"START-SLOT: another run of {config_name} started under {gap}s ago; waiting {wait:.0f}s", flush=True)
+            sleep(wait)
+        (directory / config_name).write_text(repr(now()))
+
+
+def main():
+    if len(sys.argv) != 2:
+        raise SystemExit("usage: start-slot <run-config.yaml>")
+    directory = os.environ.get("START_SLOT_DIR") or pathlib.Path.home() / ".cache" / "scbench" / "start-slots"
+    claim(directory, pathlib.Path(sys.argv[1]).name, gap=float(os.environ.get("START_SLOT_GAP", GAP_S)))
+
+
+if __name__ == "__main__":
+    main()

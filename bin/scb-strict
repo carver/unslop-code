@@ -25,6 +25,7 @@ fi
 for n in $(seq "$first" "$total"); do
   echo "STRICT-RUN: starting checkpoint_$n $(date -u +%H:%M:%SZ)"
   if [ -z "$run_dir" ]; then
+    "$here/start-slot" "$config" || exit 4  # a run of this config started this minute would share the directory
     first_log=$(mktemp)
     "$here/scb" run --config "$config" --no-live-progress --stop-after-checkpoint "$n" 2>&1 | tee "$first_log"
     status=${PIPESTATUS[0]}

@@ -211,7 +211,10 @@ def resume_command(run_dir, problem, n):
 
 
 def start_run(config):
-    """Run checkpoint 1 of a fresh run from a config; stream scb's output and return (run_dir, returncode)."""
+    """Run checkpoint 1 of a fresh run from a config; stream scb's output and return (run_dir, returncode).
+    bin/start-slot first: another channel's run of the same config, started this minute, would
+    share the run directory."""
+    subprocess.run([HERE / "start-slot", str(config)], check=True)
     proc = subprocess.Popen(
         [launcher(), "run", "--config", str(config), "--no-live-progress", "--stop-after-checkpoint", "1"],
         cwd=ROOT,

@@ -27,8 +27,16 @@ def tool_json(name, *args):
     return subprocess.run([ROOT / "bin" / name, "--json", *args], capture_output=True, text=True, check=True).stdout
 
 
-def drop(before, after):
-    return f"{round(100 * (1 - after / before))}%"
+# The section reads the quality prompts against the benchmark's own, as the quality charts do;
+# just-solve is left out of it.
+SPLIT_BASE = "anti_slop"
+SPLIT_PROMPTS = [prompt for prompt in PROMPT_LABELS if prompt != "just-solve"]
+
+
+def moved(before, after):
+    """A count against the baseline's, in words: "20% less", "7% more"."""
+    change = round(100 * (after / before - 1))
+    return f"{abs(change)}% {'less' if change < 0 else 'more'}"
 
 
 def human_mean(repos):
@@ -83,12 +91,15 @@ def cloned_sentence(base, new):
 
 
 def split_section(rows, repos):
-    """The row of each prompt that has runs and the human mean as a table, and the reading of it:
-    a paragraph per prompt after the baseline, then the human paragraph."""
+    """The row of each quality prompt that has runs and the human mean as a table, and the reading
+    of it: a paragraph per prompt after the baseline, then the human paragraph. The paragraphs
+    set values side by side and take no ratio of a score: anti-slop's erosion and cloned lines
+    are zero on some problems."""
     have = {r["prompt"] for r in rows}
-    pooled = {prompt: prompt_row(rows, prompt) for prompt in PROMPT_LABELS if prompt in have}
-    base, human = pooled["just-solve"], human_mean(repos)
-    others = [prompt for prompt in pooled if prompt != "just-solve"]
+    pooled = {prompt: prompt_row(rows, prompt) for prompt in SPLIT_PROMPTS if prompt in have}
+    base, human = pooled[SPLIT_BASE], human_mean(repos)
+    base_name = PROMPT_LABELS[SPLIT_BASE]
+    others = [prompt for prompt in pooled if prompt != SPLIT_BASE]
     head = "".join(f'<th colspan="3">{label}</th>' for _, label in SCORES)
     sub = "".join(f"<th>{label}</th>" for _ in SCORES for _, label in PARTS)
     body = ""
@@ -111,14 +122,14 @@ def split_section(rows, repos):
         lead = ("scb-check scores the test files along with the implementation, and " if prompt == others[0]
                 else "")
         note += (f'<p class="note" style="margin-top:{10 if prompt == others[0] else 8}px">{lead}{name} writes '
-                 f'{new["test"]["loc"] / base["test"]["loc"]:.1f} times the test code. Over the whole snapshot its '
-                 f'ast-grep share falls {drop(base["all"]["ast"], new["all"]["ast"])}; in implementation files alone '
-                 f'it falls {drop(base["impl"]["ast"], new["impl"]["ast"])}. {name} also writes '
-                 f'{drop(base["impl"]["loc"], new["impl"]["loc"])} less implementation, so <b>the count of flagged '
-                 f'implementation lines per run falls {drop(base["impl"]["ast_lines"], new["impl"]["ast_lines"])}</b> '
-                 f'({base["impl"]["ast_lines"]:,} to {new["impl"]["ast_lines"]:,}). Erosion has the same shape with '
-                 f'more left over: down {drop(base["all"]["erosion"], new["all"]["erosion"])} over the whole snapshot '
-                 f'and {drop(base["impl"]["erosion"], new["impl"]["erosion"])} in implementation files. '
+                 f'{new["test"]["loc"] / base["test"]["loc"]:.1f} times the test code {base_name} does. ast-grep is '
+                 f'{base["all"]["ast"]:.3f} under {base_name} and {new["all"]["ast"]:.3f} under {name} over the '
+                 f'whole snapshot; in implementation files alone, {base["impl"]["ast"]:.3f} and '
+                 f'{new["impl"]["ast"]:.3f}. {name} writes {moved(base["impl"]["loc"], new["impl"]["loc"])} '
+                 f'implementation, and <b>flagged implementation lines per run go from '
+                 f'{base["impl"]["ast_lines"]:,} to {new["impl"]["ast_lines"]:,}</b>. Erosion is '
+                 f'{base["all"]["erosion"]:.3f} and {new["all"]["erosion"]:.3f} over the whole snapshot, '
+                 f'{base["impl"]["erosion"]:.3f} and {new["impl"]["erosion"]:.3f} in implementation files. '
                  f'{cloned_sentence(base, new)}</p>')
     against = "; ".join(
         f'{PROMPT_LABELS[prompt]}\'s ast-grep share is '
@@ -126,7 +137,7 @@ def split_section(rows, repos):
         f'{pooled[prompt]["impl"]["erosion"]:.2f} against {human["impl"]["erosion"]:.2f}, its cloned share is '
         f'{pooled[prompt]["impl"]["cloned"]:.3f} against {human["impl"]["cloned"]:.3f}, and its tests are cloned '
         f'{pooled[prompt]["test"]["cloned"] / human["test"]["cloned"]:.1f} times as much as human tests'
-        for prompt in others)
+        for prompt in pooled)
     note += (f'<p class="note" style="margin-top:8px">The human row is the mean over {len(repos)} of the 28 Major-tier '
              f'repositories (over 10k stars) in the paper\'s v1, Table 2, at HEAD, split by the same tool. '
              f'Humans write tests too, '

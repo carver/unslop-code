@@ -154,8 +154,13 @@ Erosion / ast% and cost, as above:
   lines 28%, 173%, 149%. Implementation only: erosion 0%, 74%, 5%; ast-grep 106%, 213%, 95%;
   cloned 8%, 35%, 16%. So spectest+antislop is the one prompt under the human mean on ast-grep
   in both scopes, and spectest alone is at twice the human implementation figure. anti-slop has
-  one run per problem until jobs 241-246 land. The implementation-against-tests table still
-  reads against just-solve.
+  one run per problem until jobs 241-246 land. The implementation-against-tests table follows
+  suit: no just-solve row, and its paragraphs set each prompt beside anti-slop in values, never
+  as a ratio of a score, since anti-slop's implementation erosion is 0.000. Read that way the
+  test dilution is plain: spectest's ast-grep equals anti-slop's over the whole snapshot (0.085
+  against 0.086) and is twice it in implementation files (0.250 against 0.116), with 489
+  flagged implementation lines per run against 157; spectest+antislop is level with anti-slop
+  in implementation files (0.106, 161 lines) and half of it over the whole snapshot (0.041).
 - **Why anti-slop beats the paper's GPT 5.5 Anti-Slop line (0.00 against 0.15 to 0.26), a cut by
   problem length (2026-09-20).** Not because Opus 5 writes cleaner code unprompted: its just-solve
   erodes more than the paper's GPT 5.5 Baseline (0.56 to 0.61 against 0.40 to 0.55). Erosion is a

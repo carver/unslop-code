@@ -1,0 +1,34 @@
+file_merger: a timestamp keeps the fraction its source had (checkpoint 1)
+
+DRAFT for a possible v7, as patch 09 after v6's eight. Not applied, not judged, not committed.
+
+Sentence: "`timestamp` normalized to UTC with `Z` (e.g., `2024-07-01T12:00:00Z`); if source
+lacked zone, treat as UTC", under Deterministic Dialect Details. The only other words on the
+format are "ISO-8601 format" (line 86), and ISO 8601 allows a fraction without asking for one.
+Tests spec_correct/type_parsing_edgecases (checkpoint 1) and hidden/nested_timestamp_microseconds
+(checkpoint 4) expect `.123456Z`, `.654321Z` and `.000001Z` kept; the reference appends the
+microseconds, trailing zeros trimmed, when they are not zero. No fixture has a trailing zero,
+so trimmed against six digits is untested and this sentence takes no side.
+
+min13-ABDJKMNT on v6, repeat (20260920T0700) chose whole seconds: registry T8, Risk 35,
+"'Deterministic Dialect Details' asks for one fixed output shape, and the worked example shows
+exactly seconds precision". Its first run (20260920T0545) asked the same question, T10, Risk 25,
+and kept the fraction: "Dropping data the source carried seems worse than keeping it." History:
+type_parsing_edgecases 22 pass of 24 runs, nested_timestamp_microseconds 19 of 21 reached; the
+two failures are this run and sonnet-4.6 just-solve. A rare coin, not a shared reading. The
+checkpoint-4 miss comes from the checkpoint-1 formatter, so checkpoint 4 needs no copy.
+
+Over-correction to avoid: wording that reads as "always print six digits", which would turn
+`12:00:00Z` into `12:00:00.000000Z` and fail every whole-second fixture.
+
+--- a/file_merger/checkpoint_1.md
++++ b/file_merger/checkpoint_1.md
+@@ -99,7 +99,7 @@
+ - Output delimiter `,`, quote `"`; escape by doubling quotes; `\n` line endings; header row first
+ - Temporal outputs:
+   - `date` stays `YYYY-MM-DD`
+-  - `timestamp` normalized to UTC with `Z` (e.g., `2024-07-01T12:00:00Z`); if source lacked zone, treat as UTC
++  - `timestamp` normalized to UTC with `Z` (e.g., `2024-07-01T12:00:00Z`), keeping fractional seconds; if source lacked zone, treat as UTC
+ 
+ **Performance & Memory**
+ 

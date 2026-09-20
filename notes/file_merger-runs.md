@@ -279,7 +279,8 @@ Queued behind them at the user's call: just-solve on v7 twice (jobs 255, 256) an
 twice (257, 258), plain `bin/queue add`, each `--after 254`, so none runs unless both min13
 runs on v7 are strict; placed after the dev anti-slop jobs (241-250) and ahead of the test-set
 batch. With them v7 becomes file_merger's patched version on the grid for those three prompts;
-min12 has no v7 run queued.
+min12-ABDJKMN on v7 twice (259, 260) follows them on the same terms, so all four prompts get a
+v7 pair.
 
 ## just-solve on v6 (2026-09-11)
 

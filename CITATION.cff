@@ -1,0 +1,45 @@
+cff-version: 1.2.0
+message: "If you use this work, please cite it as below."
+title: "Unslop Code"
+type: software
+authors:
+  - family-names: Carver
+    given-names: Jason
+repository-code: "https://github.com/carver/unslop-code"
+url: "https://github.com/carver/unslop-code"
+license: GPL-3.0-or-later
+keywords:
+  - coding-agents
+  - code-quality
+  - prompt-engineering
+  - benchmark
+  - slop-code-bench
+abstract: >-
+  Prompts and measurements for getting coding agents to write better code,
+  scored against SlopCodeBench. Holds the prompt experiments, the run ledgers
+  for each problem, and the quality numbers split between implementation and
+  test code.
+references:
+  - type: article
+    title: "SlopCodeBench: Measuring Code Erosion Under Iterative Specification Refinement"
+    authors:
+      - family-names: Orlanski
+        given-names: Gabriel
+      - family-names: Roy
+        given-names: Devjeet
+      - family-names: Yun
+        given-names: Alexander
+      - family-names: Shin
+        given-names: Changho
+      - family-names: Gu
+        given-names: Alex
+      - family-names: Ge
+        given-names: Albert
+      - family-names: Adila
+        given-names: Dyah
+      - family-names: Albarghouthi
+        given-names: Aws
+      - family-names: Sala
+        given-names: Frederic
+    url: "https://arxiv.org/abs/2603.24755"
+    repository-code: "https://github.com/SprocketLab/slop-code-bench"

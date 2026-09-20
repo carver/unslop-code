@@ -202,6 +202,14 @@ Two levers, measured in both orders on the six dev problems with Opus 5, two run
   agent trims it anyway, and when asked afterwards concedes the spec gives no license. Left
   in as a benchmark failure (datagate diary, 2026-09-14).
 
+## How to cite
+
+Use GitHub's "Cite this repository" button, which reads `CITATION.cff` and exports APA or
+BibTeX. No DOI yet, so cite the commit hash you read. The numbers here change week to week.
+
+If you use the benchmark itself, cite the
+[SlopCodeBench paper](https://arxiv.org/abs/2603.24755) too.
+
 ## License
 
 GPL-3.0-or-later; the text is in `LICENSE`. Copyright 2026 Jason Carver.

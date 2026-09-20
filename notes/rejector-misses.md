@@ -3,7 +3,7 @@
 Step 1 and the first half of step 2 of `/solve-one-problem`, from the nine opus-5 runs on the
 unpatched spec (just-solve 73 and 76, anti-slop 73, min11 74 and 76, min12 75 and 76, min13 74
 and 73, of 79). Eleven tests fail somewhere; the score gap between prompts is inside the bare
-prompt's own spread. Counts are over those nine runs. Drafts for 1 to 6 sit uncommitted in
+prompt's own spread. Counts are over those nine runs unless said. Drafts for 1 to 8 sit uncommitted in
 `specs/drafts/`, each with its evidence; nothing is built.
 
 ## Readings
@@ -37,16 +37,33 @@ prompt's own spread. Counts are over those nine runs. Drafts for 1 to 6 sit unco
 the spec's own sentence, a misleading example). 4 is a literal phrase the spec never gives, the
 same kind as mvvault's fetch-failure message.
 
-## Open: `test_tpm_gate`
+## Not the spec: `test_tpm_gate` is a missed wake-up (chased 2026-09-20)
 
-4 pass, 5 fail, by timeout: `--tpm 50`, two requests that each reserve 31 tokens, a 10-second
-limit. The second request can only go once the first reply has turned its reservation of 31 into
-the actual 10. The failing runs wait out the 60-second window instead. It is not the registered
-question: min12's repeat (T86) and min13's second run (T84, Risk 35) both chose "the reservation
-is replaced by the actual usage", the tests' reading, and min12's repeat still timed out. Needs
-the limiter code of a failing run read, or `bin/askrun`. No draft.
+4 pass, 5 fail of the nine opus runs, by timeout: `--tpm 50`, two requests that each reserve 31
+tokens, a 10-second limit. The second request may go as soon as the first reply turns its
+reservation of 31 into the actual 10. Every run reads the spec that way: min12's repeat T86, min13
+T84 and T85 all chose "the reservation is replaced by the actual usage". The failing runs then do
+not act on it. Their limiter works out how long until the blocking entry slides out of the
+60-second window and sleeps that long: min12 20260915T0516 `gate()` ends in `await
+asyncio.sleep(min(wait, WINDOW_SECONDS))`, min13 20260918T2129 and anti-slop in `await
+asyncio.sleep(delay)`, and `settle()` rewrites the entry without waking anyone. The passing runs
+wake the waiter when a reply frees room: min13 20260919T1228 sets an `asyncio.Event` in
+`record()` and waits on it with the delay as a timeout ("Sleep until the window slides, or until
+a response frees space"), min12 20260914T2312 uses a `threading.Condition` with `notify_all()`.
+A bug in the agent's code, not a reading; by the user's rule it gets no sentence. A tester's own
+test would catch it only if it ran the limiter against a slow reply, which none did.
 
-## Singles
+## Two more readings (looked at again 2026-09-20; first filed as one-run noise)
 
-`test_costs` (min13's first run: 0.011 against 0.01, a rounding of money) and
-`test_llm_judge_pass` (min13's repeat). One run each; noise until they recur.
+7. **Money is not rounded to cents.** The cost example prints two decimals (`12.45`, `4.50`) and
+   no sentence gives a precision. `test_costs` has five small calls and wants `cost["prompt"]`
+   between 0.011 and 0.012; min13 20260918T2129 printed 0.01. 10 pass, 2 fail over all twelve runs.
+   Registered in every spectest run at Risk 35 to 45; this run's T89 chose two decimals and called
+   it "a coin-flip with real consequences". The same misleading example as reading 6.
+8. **Under `llm_judge`, `extracted_answer` is the text taken from the judge's reply.**
+   `test_llm_judge_pass` wants `extracted_answer == "8"` beside `judge_score == 8`; min13
+   20260919T1228 printed null. 9 pass, 3 fail over all twelve runs. Its T22, Risk 40, chose null
+   because "Part 2 introduces `judge_score` precisely because the judge's value needed a home" and
+   named the tests' reading as the likely alternative.
+
+Drafts 07 and 08 in `specs/drafts/` answer them.

@@ -1,0 +1,65 @@
+mvvault: a media filename that contains the id means downloaded (checkpoint 3)
+
+DRAFT for mvvault v1. Not applied, not judged, uncommitted; the user edits the wording.
+
+The benchmark's mistake, not the agent's: the rule is needed at checkpoint 3 and written down
+at checkpoint 4. A checkpoint's agent sees only its own spec.
+
+What it is about. Checkpoint 3 adds a download phase to `sync`, which must not fetch media it
+already has. The whole rule for "already has" is one row: "Candidate selection | Only entries
+without a corresponding media file in `<vault>/media/` are candidates". "Corresponding" is not
+defined; the nearest hint is another table's Filename Rule, "Filename contains entry `id`",
+which says how to name a download, not how to recognise one.
+
+The test. test_skip_downloaded_candidate plants `media/archive-already_ep-copy.bin` for the entry
+`already_ep` (the id in the middle of a name this tool would never write) and wants no request
+for `/media/already_ep`. The reference: `entry_id in path.name and not
+path.name.endswith(".part")`. 1 pass, 10 fail over every mvvault run; the pass is sonnet-4.6's
+just-solve. The runs look for `<id>.<ext>` and fetch again.
+
+The rule in the author's own words, later. checkpoint_4.md:70 "Downloaded state (v2/v3) | Entry
+counts as downloaded when a media filename in `<vault>/media/` contains entry `id`", and
+checkpoint_5.md:37 "A downloaded media file counts as matching the entry when a saved filename in
+`<vault>/media/` contains the entry `id`". The sentence below borrows that wording for the row
+that needed it first.
+
+Why the runs chose otherwise. min13-ABDJKMNT 20260918T1850, T29 "What counts as a 'corresponding
+media file', and what a partial artifact is", Risk 30, lists the tests' reading as alternative 2
+("Any filename containing the entry id counts, so `e1.part` blocks `e1`") and rejects it for the
+row below: "Partial artifacts | Stale partial-download artifacts must not block a later
+successful download". Its choice, name minus extension equals the id with `.part` skipped, makes
+the two rows cohere and is stricter than the tests. The same run's checkpoint-4 entry (T41,
+Risk 25) quotes the checkpoint-4 line and takes plain substring matching for the listing badge;
+by then its download code was written. min11 20260907T1659 T32 asks the checkpoint-3 question too
+(Risk 30) and also matches on the id stem; min12's T46 and T47 and min13's repeat T41 ask it of
+the checkpoint-4 line (Risk 18 to 25) and there take the substring, `.part` excluded, because
+"the spec says 'contains', not 'is named'". Given the word "contains" the testers read it the
+tests' way; checkpoint 3 withholds the word.
+
+Was the Filename Rule enough? It is the one place checkpoint 3 says "contains", and the inference
+is there to be made: if a conforming tool may write any name that contains the id, a conforming
+tool must recognise any such name. No run made it. Every registry that quotes the row reads it
+as a rule for the writer: min13-ABDJKMNT 20260919T1041 T26 "Local filename for a downloaded
+asset", Risk 10, picks `<entry_id>.<extension>` because "it satisfies 'contains entry `id`'" and
+adds that "the wording 'contains' suggests their own tests assert containment", of the name it
+writes, not of the names it must recognise; min12 20260915T0327 T23 calls it "the single stated
+filename requirement". Five spectest runs, none carried the word across to the candidate row.
+So: inferable by a sharp reader, across two tables and against the partial-artifacts row, and
+in practice not inferred.
+
+Over-correction to avoid: plain substring matching with no exception turns the partial-artifacts
+row into a new miss, since a stale partial file's name contains the id too. Hence the
+parenthesis. The reference's partial suffix is `.part`; the sentence does not name one, because
+the spec does not.
+
+--- a/mvvault/checkpoint_3.md
++++ b/mvvault/checkpoint_3.md
+@@ -41,7 +41,7 @@
+ 
+ | Rule Area | Required Behavior |
+ |---|---|
+-| Candidate selection | Only entries without a corresponding media file in `<vault>/media/` are candidates |
++| Candidate selection | Only entries without a corresponding media file in `<vault>/media/` are candidates; A file matches if the name contains entry `id`, apart from partial downloads  |
+ | Candidate order | Catalog order within category |
+ | Per-category limit | Download first `N` candidates in candidate order |
+ | Omitted limit | No limit for that category |

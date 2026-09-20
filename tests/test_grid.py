@@ -251,3 +251,38 @@ def test_a_newer_patched_version_leaves_no_older_patched_run_in_the_grid():
     assert "min12-ABDJKMN|patched" not in g["means"]
     assert g["means"]["min13-ABDJKMNT|patched"]["erosion"] == v7
     assert {key[2] for key in gr.drawn_cells(cells, gr.DEFAULT_PROMPTS, "opus-5")} == {"v0", "v7"}
+
+
+def quality_cells():
+    def cell(ast):
+        return [run(0.9, 0.1) | {"ast": ast}]
+    return {
+        ("xjq", "just-solve", "v0", "opus-5"): cell(0.40), ("sith", "just-solve", "v0", "opus-5"): cell(0.20),
+        ("xjq", "anti_slop", "v0", "opus-5"): cell(0.10), ("sith", "anti_slop", "v0", "opus-5"): cell(0.05),
+        ("xjq", "min12-ABDJKMN", "v0", "opus-5"): cell(0.05),
+    }
+
+
+def test_quality_shares_are_of_the_human_mean_and_leave_the_first_prompt_out():
+    panel = gr.human_panel(REPOS, "all")
+    quality = gr.grid(quality_cells(), human=panel)["human_relative"]
+    assert (quality["spec"], quality["baseline"]) == ("v0", "human")
+    assert list(quality["metrics"]) == list(gr.HUMAN_METRICS)
+    ast, human_ast = quality["metrics"]["ast"], panel["ast"]["mean"]
+    assert list(ast["prompts"]) == ["anti_slop", "min12-ABDJKMN"]
+    anti = ast["prompts"]["anti_slop"]
+    assert anti["n"] == 2 and abs(anti["mean"] - (0.10 + 0.05) / 2 / human_ast) < 1e-9
+    assert (anti["best"]["problem"], anti["worst"]["problem"]) == ("sith", "xjq")
+    assert ast["prompts"]["min12-ABDJKMN"]["n"] == 1  # a prompt's shares cover the problems it ran
+
+
+def test_the_human_repositories_sit_at_one_with_their_spread_on_the_same_scale():
+    panel = gr.human_panel(REPOS, "all")
+    human = gr.grid(quality_cells(), human=panel)["human_relative"]["metrics"]["erosion"]["human"]
+    assert human["mean"] == 1.0 and human["value"] == panel["erosion"]["mean"]
+    assert abs(human["max"]["share"] - panel["erosion"]["max"]["value"] / panel["erosion"]["mean"]) < 1e-9
+    assert human["min"]["share"] <= human["q1"]["share"] <= 1.0 <= human["q3"]["share"] <= human["max"]["share"]
+
+
+def test_no_human_shares_without_a_human_panel():
+    assert "human_relative" not in gr.grid(quality_cells())

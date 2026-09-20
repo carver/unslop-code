@@ -84,7 +84,7 @@ svg .hit { fill: transparent; }
 <div class="wrap">
   <header>
     <h1>Unslop Results on Slop Code Bench</h1>
-    <p class="lede">Use two strategies on six problems: tweak the spec if ambiguous, and use a new prompt, "spectest". Two more arms: anti-slop, the benchmark's own quality prompt, and spectest+antislop, which adds that prompt's rules to spectest. Every figure is lower-is-better. Two runs per problem, using Claude Opus 5.</p>
+    <p class="lede">Use two strategies on six problems: tweak the spec if ambiguous, and use a new prompt, "spectest". Two more arms: anti-slop, the benchmark's own quality prompt, and spectest+antislop, which adds that prompt's rules to spectest. Every figure is lower-is-better. Two runs per problem, using Claude Opus 5. The quality charts compare the three quality prompts with each other and with popular human repositories; just-solve, the benchmark's default prompt, stays on the charts where it is the control: failed tests, cost, time and code size.</p>
     <p class="lede" style="margin-top:8px">The <b style="color:var(--ink);font-weight:600">spectest</b> prompt replaces the benchmark's default, just-solve. Spectest guides the agent to write tests from the spec before implementing. The agent splits the spec into phrases, writes a test for each one, and logs every ambiguity. <a href="min12-prompt.html">This spectest</a> is my 12th version. In the code, it's called <span class="mono" style="font-size:13.5px">min12-ABDJKMN</span>. Version 12 was split into chunks A to S, and then trimmed. The remaining bits are: A and B are shell tool hygiene, D writes tests from the spec, J and K log ambiguities, M and N speed up execution by running focused tests. <b style="color:var(--ink);font-weight:600">anti-slop</b> is the benchmark's upstream <span class="mono" style="font-size:13.5px">anti_slop</span> prompt as shipped, the paper's Anti-Slop arm, so the paper's faint Anti-Slop lines below are its counterpart. <b style="color:var(--ink);font-weight:600">spectest+antislop</b> (min13-ABDJKMNT) is spectest with one chunk appended, T: that prompt's rule list, unchanged. anti-slop against just-solve is the paper's own comparison; spectest+antislop against anti-slop is what writing tests first adds on top of the rules.</p>
   </header>
 
@@ -114,11 +114,9 @@ svg .hit { fill: transparent; }
   <section>
     <h2>Quality along the run</h2>
     <div class="legend" style="margin-bottom:12px">
-      <span><i class="sw fill" style="--c:var(--js)"></i>just-solve, this repo</span>
       <span><i class="sw fill" style="--c:var(--aslop)"></i>anti-slop, this repo</span>
       <span><i class="sw fill" style="--c:var(--min)"></i>spectest, this repo</span>
       <span><i class="sw fill" style="--c:var(--anti)"></i>spectest+antislop, this repo</span>
-      <span><i class="sw fill soft" style="--c:var(--js)"></i>paper Baseline</span>
       <span><i class="sw fill soft" style="--c:var(--aslop)"></i>paper Anti-Slop</span>
       <span><i class="sw fill soft" style="--c:var(--ink-3)"></i>paper Plan-First</span>
     </div>
@@ -164,12 +162,19 @@ const PROMPTS = {
   "min12-ABDJKMN": { label: "spectest", color: "var(--min)" },
   "min13-ABDJKMNT": { label: "spectest+antislop", color: "var(--anti)" },
 };
+// The quality charts (erosion, ast-grep, cloned lines, verbosity) leave the bare prompt out: at
+// 0.58 erosion it set a scale on which the three prompts that matter were unreadable, and
+// anti-slop, the benchmark's own quality prompt, is the stronger reference. just-solve stays
+// wherever it is the control: failed tests, the spec-against-prompt squares, cost, time, code size.
+const QUALITY_PROMPTS = G.prompts.filter(prompt => prompt !== JS);
+const QUALITY_KEYS = new Set(["erosion", "verbosity", "ast", "cloned"]);
+const drawnPrompts = m => QUALITY_KEYS.has(m.key) ? QUALITY_PROMPTS : G.prompts;
 const label = prompt => (PROMPTS[prompt] || { label: prompt }).label;
 const color = prompt => (PROMPTS[prompt] || { color: "var(--ink-3)" }).color;
 const METRICS = [
   { key: "fail", name: "Hidden tests failed", unit: "%", fmt: v => (100 * v).toFixed(1) + "%", max: 0.17, ticks: [0, 0.05, 0.10, 0.15], tick: v => (100 * v).toFixed(0) + "%" },
-  { key: "erosion", name: "Erosion", unit: "", fmt: v => v.toFixed(2), max: 0.8, ticks: [0, 0.2, 0.4, 0.6, 0.8], tick: v => v.toFixed(1) },
-  { key: "ast", name: "ast-grep smells", unit: "", fmt: v => v.toFixed(2), max: 0.5, ticks: [0, 0.1, 0.2, 0.3, 0.4, 0.5], tick: v => v.toFixed(1) },
+  { key: "erosion", name: "Erosion", unit: "", fmt: v => v.toFixed(2), max: 0.8, ticks: [0, 0.2, 0.4, 0.6, 0.8], tick: v => v.toFixed(1), maxes: [0.05, 0.4] },
+  { key: "ast", name: "ast-grep smells", unit: "", fmt: v => v.toFixed(2), max: 0.5, ticks: [0, 0.1, 0.2, 0.3, 0.4, 0.5], tick: v => v.toFixed(1), maxes: [0.15, 0.3] },
   { key: "cloned", name: "Cloned lines", unit: "", fmt: v => v.toFixed(2), max: 0.5, ticks: [0, 0.1, 0.2, 0.3, 0.4, 0.5], tick: v => v.toFixed(1), maxes: [0.1, 0.5] },
   { key: "cost", name: "Cost per run", unit: "$", fmt: v => "$" + v.toFixed(0), max: 55, ticks: [0, 10, 20, 30, 40, 50], tick: v => "$" + v },
   { key: "minutes", name: "Wall clock per run", unit: "min", fmt: v => v.toFixed(0) + " min", max: 170, ticks: [0, 40, 80, 120, 160], tick: v => v + "m" },
@@ -179,9 +184,9 @@ const M = Object.fromEntries(METRICS.map(m => [m.key, m]));
 // The rows of the along-the-run section: the paper's Figure 5 has erosion and verbosity, so
 // those two carry its lines; ast-grep and cloned lines are ours alone.
 const TRAJECTORY = [
-  { key: "erosion", name: "Erosion", fmt: M.erosion.fmt, max: 0.8, ticks: [0, 0.2, 0.4, 0.6, 0.8], paper: true },
-  { key: "verbosity", name: "Verbosity", fmt: v => v.toFixed(2), max: 0.6, ticks: [0, 0.2, 0.4, 0.6], paper: true },
-  { key: "ast", name: "ast-grep smells", fmt: M.ast.fmt, max: 0.5, ticks: [0, 0.1, 0.2, 0.3, 0.4, 0.5], paper: false },
+  { key: "erosion", name: "Erosion", fmt: M.erosion.fmt, max: 0.4, ticks: [0, 0.1, 0.2, 0.3, 0.4], paper: true },
+  { key: "verbosity", name: "Verbosity", fmt: v => v.toFixed(2), max: 0.4, ticks: [0, 0.1, 0.2, 0.3, 0.4], paper: true },
+  { key: "ast", name: "ast-grep smells", fmt: M.ast.fmt, max: 0.3, ticks: [0, 0.1, 0.2, 0.3], paper: false },
   { key: "cloned", name: "Cloned lines", fmt: M.cloned.fmt, max: 0.3, ticks: [0, 0.1, 0.2, 0.3], paper: false },
 ];
 // The human values come from bin/grid (HUMAN there carries the citation), so the absolute bars
@@ -210,10 +215,12 @@ const PAPER_MODEL = "GPT 5.5";
 const PAPER = {
   erosion: {"Baseline": [0.398, 0.47, 0.522, 0.524, 0.554], "Anti-Slop": [0.15, 0.198, 0.21, 0.227, 0.259], "Plan-First": [0.199, 0.276, 0.311, 0.288, 0.345]},
   verbosity: {"Baseline": [0.264, 0.31, 0.327, 0.34, 0.335], "Anti-Slop": [0.183, 0.199, 0.212, 0.211, 0.219], "Plan-First": [0.232, 0.259, 0.26, 0.26, 0.256]},
-  // The paper's lines wear the colour of their counterpart here: Baseline is just-solve,
+  // The paper's lines wear the colour of their counterpart here. Its Baseline is just-solve,
+  // so it leaves the cards with just-solve (PAPER_DRAWN); the note still quotes its climb.
   // Anti-Slop is the same prompt as our anti-slop arm; Plan-First has none.
   color: { "Baseline": "var(--js)", "Anti-Slop": "var(--aslop)", "Plan-First": "var(--ink-3)" },
 };
+const PAPER_DRAWN = ["Anti-Slop", "Plan-First"];
 const problems = Object.keys(G.problems);
 const patched = problems.filter(p => G.problems[p].patched);
 const cell = (p, prompt, kind) => D.problems[p].cells[`${prompt}|${kind}`];
@@ -301,14 +308,14 @@ function panelAxis(m, values) {
 
 function panel(m) {
   const W = 340, left = 88, right = 14, top = 10, rowH = 30, H = top + rowH * problems.length + 34;
-  const drawn = problems.flatMap(p => G.prompts.flatMap(pr => ["v0", "patched"].map(k => cell(p, pr, k)))).filter(Boolean).map(c => c.mean[m.key]);
+  const drawn = problems.flatMap(p => drawnPrompts(m).flatMap(pr => ["v0", "patched"].map(k => cell(p, pr, k)))).filter(Boolean).map(c => c.mean[m.key]);
   const axis = panelAxis(m, drawn);
   const x = v => left + (Math.min(v, axis.max) / axis.max) * (W - left - right);
   const marks = [];
   const rows = problems.map((p, i) => {
     const y = top + rowH * i + rowH / 2;
     const pts = [];
-    for (const prompt of G.prompts) {
+    for (const prompt of drawnPrompts(m)) {
       for (const kind of ["v0", "patched"]) {
         const c = cell(p, prompt, kind);
         if (c) pts.push({ v: c.mean[m.key], color: color(prompt), fill: kind === "patched", prompt: label(prompt), kind, runs: c.runs.map(r => r[m.key]), spec: c.spec });
@@ -361,9 +368,9 @@ function trajectoryPanel(tm) {
   const y = v => top + (1 - v / ymax) * (H - top - bottom);
   const series = [];
   if (tm.paper)
-    for (const [name, vals] of Object.entries(PAPER[tm.key]))
+    for (const [name, vals] of PAPER_DRAWN.map(name => [name, PAPER[tm.key][name]]))
       series.push({ label: name, vals, color: PAPER.color[name], soft: true, tip: i => `paper v2 Figure 5, ${PAPER_MODEL}, ${name} prompt\n${phases[i]}: ${tm.name} ${tm.fmt(vals[i])}` });
-  for (const prompt of G.prompts) {
+  for (const prompt of QUALITY_PROMPTS) {
     const t = T.prompts[prompt], vals = t ? t[tm.key] : null;
     if (!vals || vals.every(v => v == null)) continue;
     series.push({ label: label(prompt), vals, color: color(prompt), soft: false, tip: i => `${label(prompt)} at ${T.spec}, ${t.runs} runs\n${phases[i]}: ${tm.name} ${tm.fmt(vals[i])} over ${t.ckpts[i]} checkpoints` });
@@ -383,7 +390,7 @@ function trajectoryPanel(tm) {
   const ends = labels.map(({ s, ly }) => `<text x="${W - right + 8}" y="${ly + 4}" style="font-size:11.5px;${s.soft ? "fill:var(--ink-3)" : "fill:var(--ink);font-weight:500"}">${esc(s.label)}</text>`).join("");
   const summary = series.map(s => `${s.label} ${s.vals.map(v => v == null ? "–" : tm.fmt(v)).join(" ")}`).join("; ");
   const ours = implOnly() ? "this repo's prompts bold and implementation only" : "this repo's prompts bold";
-  const sub = tm.paper ? `the paper's three prompts on ${PAPER_MODEL} faint, ${ours}` : `${ours}; the paper has no such figure`;
+  const sub = tm.paper ? `the paper's quality prompts on ${PAPER_MODEL} faint, ${ours}` : `${ours}; the paper has no such figure`;
   return `
   <div class="card">
     <h3>${esc(tm.name)}</h3>
@@ -436,7 +443,7 @@ function bars(title, sub, m, items, left = 132) {
 function promptBars(m) {
   const per = prompt => have(problems, prompt, "v0").map(p => `${p} ${m.fmt(cell(p, prompt, "v0").mean[m.key])}`).join(", ");
   const human = HUMAN[m.key];
-  const items = G.prompts.map(prompt => ({ label: label(prompt), v: avg(problems, prompt, "v0", m.key), color: color(prompt), soft: true,
+  const items = drawnPrompts(m).map(prompt => ({ label: label(prompt), v: avg(problems, prompt, "v0", m.key), color: color(prompt), soft: true,
     tip: `${label(prompt)} at v0${coverage(problems, prompt, "v0")}\n${per(prompt)}` })).filter(it => it.v != null);
   return bars(`${m.name}, by prompt`, `spec v0, mean of all six problems${partialNote(problems)}${scopeSub(m)}`, m, [
     ...items,
@@ -447,12 +454,14 @@ function promptBars(m) {
 const share = v => (100 * v).toFixed(0) + "%";
 const change = v => (v < 1 ? "\u2212" : "+") + (100 * Math.abs(v - 1)).toFixed(0) + "%";
 
-function shareBars(m, r = R[m.key], human = HUMAN[m.key], sub = `spec v0, mean of the per-problem shares${partialNote(problems)}${scopeSub(m)}`) {
-  // Each bar is a mean of per-problem shares of just-solve, which sits at the 100% line. Under
+const JUST_SOLVE_BASE = { name: "just-solve", color: "var(--js)" };
+const HUMAN_BASE = { name: "human repos", color: "var(--ink-3)" };
+function shareBars(m, r = R[m.key], human = HUMAN[m.key], sub = `spec v0, mean of the per-problem shares${partialNote(problems)}${scopeSub(m)}`, base = JUST_SOLVE_BASE) {
+  // Each bar is a mean of per-problem shares of the base, which sits at the 100% line. Under
   // each prompt's bar a whisker runs from its best problem to its worst, so the card stays this
   // size however many problems the mean covers; the human block closes the card.
   const h = r.human;
-  const blocks = OTHERS.filter(pr => r.prompts[pr]).map(pr => ({ prompt: pr, s: r.prompts[pr] }));
+  const blocks = G.prompts.filter(pr => r.prompts[pr]).map(pr => ({ prompt: pr, s: r.prompts[pr] }));
   const W = 320, left = 132, right = 104, top = 22, barH = 22, blockH = 72;
   const maxV = Math.max(1, ...blocks.map(b => b.s.worst.share), human ? h.max.share : 1);
   const x = v => left + (v / maxV) * (W - left - right);
@@ -465,7 +474,7 @@ function shareBars(m, r = R[m.key], human = HUMAN[m.key], sub = `spec v0, mean o
   const lab = (text, y) => `<text class="lab" x="${left - 10}" y="${y + barH / 2 + 4}" text-anchor="end" style="font-size:12.5px">${esc(text)}</text>`;
   const promptBlocks = blocks.map(({ prompt, s }, i) => {
     const yBar = top + 6 + blockH * i, yWhisk = yBar + barH + 10, c = color(prompt), name = label(prompt);
-    const meanTip = `${name} at v0, mean over ${s.n} problems of ${name} / just-solve\n${share(s.mean)} of just-solve (${change(s.mean)})`;
+    const meanTip = `${name} at v0, mean over ${s.n} problems of ${name} / ${base.name}\n${share(s.mean)} of ${base.name} (${change(s.mean)})`;
     const rangeTip = `${name}'s best and worst problem\nbest: ${s.best.problem} ${share(s.best.share)} (${change(s.best.share)})\nworst: ${s.worst.problem} ${share(s.worst.share)} (${change(s.worst.share)})`;
     return lab(name, yBar) +
       `<rect x="${left}" y="${yBar}" width="${Math.max(2, x(s.mean) - left)}" height="${barH}" rx="3" style="fill:${c};opacity:0.45" data-tip="${esc(meanTip)}"></rect>` +
@@ -478,8 +487,8 @@ function shareBars(m, r = R[m.key], human = HUMAN[m.key], sub = `spec v0, mean o
   const summary = blocks.map(({ prompt, s }) => `${label(prompt)} ${share(s.mean)}, from ${s.best.problem} ${share(s.best.share)} to ${s.worst.problem} ${share(s.worst.share)}`).join("; ");
   let humanBlock = "", humanSummary = "";
   if (human) {
-    const humanTip = `${human.tip}\nmean over ${r.n} problems of ${m.fmt(human.v)} / just-solve: ${share(h.mean)} (${change(h.mean)})`;
-    const spreadTip = `The ${h.n} human repositories, as shares of just-solve\nlowest: ${h.min.repo} ${m.fmt(h.min.value)} (${share(h.min.share)})\nmiddle half: ${m.fmt(h.q1.value)} to ${m.fmt(h.q3.value)} (${share(h.q1.share)} to ${share(h.q3.share)})\nhighest: ${h.max.repo} ${m.fmt(h.max.value)} (${share(h.max.share)})`;
+    const humanTip = `${human.tip}\n${base === HUMAN_BASE ? "the 100% line is this mean" : `mean over ${r.n} problems of ${m.fmt(human.v)} / ${base.name}: ${share(h.mean)} (${change(h.mean)})`}`;
+    const spreadTip = `The ${h.n} human repositories, as shares of ${base === HUMAN_BASE ? "their own mean" : base.name}\nlowest: ${h.min.repo} ${m.fmt(h.min.value)} (${share(h.min.share)})\nmiddle half: ${m.fmt(h.q1.value)} to ${m.fmt(h.q3.value)} (${share(h.q1.share)} to ${share(h.q3.share)})\nhighest: ${h.max.repo} ${m.fmt(h.max.value)} (${share(h.max.share)})`;
     humanSummary = `; ${human.label} ${share(h.mean)}, from ${h.min.repo} ${share(h.min.share)} to ${h.max.repo} ${share(h.max.share)}`;
     humanBlock = lab(human.label, yHuman) +
       `<rect x="${left}" y="${yHuman}" width="${Math.max(2, x(h.mean) - left)}" height="${barH}" rx="3" style="fill:var(--ink-3)" data-tip="${esc(humanTip)}"></rect>` +
@@ -492,12 +501,12 @@ function shareBars(m, r = R[m.key], human = HUMAN[m.key], sub = `spec v0, mean o
   }
   return `
   <div class="card">
-    <h3>${esc(m.name)}, share of just-solve</h3>
+    <h3>${esc(m.name)}, share of ${esc(base.name)}</h3>
     <p class="sub">${esc(sub)}</p>
-    <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(m.name)} as a share of just-solve: ${esc(summary + humanSummary)}">
+    <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(m.name)} as a share of ${esc(base.name)}: ${esc(summary + humanSummary)}">
       <line class="axis" x1="${left}" y1="${top}" x2="${left}" y2="${H - 4}"></line>
-      <line x1="${x(1)}" y1="${top}" x2="${x(1)}" y2="${H - 4}" style="stroke:var(--js);stroke-width:1.5;stroke-dasharray:3 3"></line>
-      <text x="${x(1)}" y="${top - 8}" text-anchor="middle" style="font-size:11.5px">just-solve, 100%</text>
+      <line x1="${x(1)}" y1="${top}" x2="${x(1)}" y2="${H - 4}" style="stroke:${base.color};stroke-width:1.5;stroke-dasharray:3 3"></line>
+      <text x="${x(1)}" y="${top - 8}" text-anchor="middle" style="font-size:11.5px">${esc(base.name)}, 100%</text>
       ${promptBlocks}
       ${humanBlock}
     </svg>
@@ -571,17 +580,25 @@ function testShareBars() {
   return bars("Test code, share of all lines", "spec v0, final checkpoint, mean of the per-problem shares \u00b7 whole snapshot always", TESTS, items);
 }
 
+function humanShareBars(m) {
+  // The quality scores as shares of the human repositories' mean, one figure per score and well
+  // above zero, where the benchmark's own prompts are not: anti-slop's erosion and cloned lines
+  // are 0.000 on some problems, and a share of that is noise.
+  return shareBars(m, D.human_relative.metrics[m.key], HUMAN[m.key],
+    `spec v0, each problem over the human mean ${m.fmt(HUMAN[m.key].v)}, then averaged${partialNote(problems)}${scopeSub(m)}`, HUMAN_BASE);
+}
+
 function shareReading() {
-  const e = R.erosion, a = R.ast, c = R.cloned;
-  const under = r => OTHERS.filter(pr => r.prompts[pr]).map(pr => `${esc(label(pr))} ${esc(share(r.prompts[pr].mean))}`).join(", ");
+  const H = D.human_relative.metrics, e = H.erosion, a = H.ast, c = H.cloned;
+  const under = r => QUALITY_PROMPTS.filter(pr => r.prompts[pr]).map(pr => `${esc(label(pr))} ${esc(share(r.prompts[pr].mean))}`).join(", ");
   return `
   <div class="card">
     <h3>Reading the shares</h3>
-    <p class="reading">Each problem's value under a prompt is divided by its own just-solve value, and the bar is the mean of those ${e.n} shares. That weighs every problem the same, so it differs from dividing the two means in the row above. ` +
-    `The human bar is the mean of ${e.human.n} repositories divided by each problem's just-solve value, averaged the same way. ` +
-    `Erosion: ${under(e)}, the human repositories ${esc(share(e.human.mean))}. ast-grep: ${under(a)} against ${esc(share(a.human.mean))}. Cloned lines: ${under(c)} against ${esc(share(c.human.mean))}, the one score where the human repositories sit above just-solve. ` +
-    `Lines of code have no human bar: a count only means something against the same problem's just-solve, so that card and its per-problem twin show shares alone. Test code is the share of a snapshot's lines that sit in test files, not a share of just-solve, and it does not follow the switch. ` +
-    `Each prompt's whisker names the problems where it helped most and least. The human whisker runs from the lowest repository to the highest, and its thick part holds the middle half of them.</p>
+    <p class="reading">The three quality cards put each problem's value over the mean of the ${e.human.n} human repositories, then average the problems, so 100% is the score of popular human code and every problem weighs the same. ` +
+    `Erosion: ${under(e)}. ast-grep: ${under(a)}. Cloned lines: ${under(c)}. ` +
+    `just-solve is not drawn on the quality charts: its erosion alone is ${esc(share(avg(problems, JS, "v0", "erosion") / e.human.value))} of the human mean, a scale on which the other prompts could not be told apart. The benchmark's own anti-slop prompt is the reference to beat, and it could not be the divisor, since its erosion and cloned lines are 0.00 on some problems. ` +
+    `Lines of code are different: a count only means something against the same problem's just-solve, so that card and its per-problem twin stay shares of just-solve. Test code is the share of a snapshot's lines that sit in test files, and it does not follow the switch. ` +
+    `Each prompt's whisker names the problems where it did best and worst. The human whisker runs from the lowest repository to the highest, and its thick part holds the middle half of them.</p>
   </div>`;
 }
 
@@ -596,18 +613,18 @@ function caseBars() {
 
 function render() {
   document.getElementById("headline").innerHTML = [promptBars(M.erosion), promptBars(M.ast), promptBars(M.cloned), caseBars()].join("");
-  document.getElementById("headline-share").innerHTML = [shareBars(M.erosion), shareBars(M.ast), shareBars(M.cloned), locShareBars(), testShareBars(), shareReading()].join("");
+  document.getElementById("headline-share").innerHTML = [humanShareBars(M.erosion), humanShareBars(M.ast), humanShareBars(M.cloned), locShareBars(), testShareBars(), shareReading()].join("");
   document.getElementById("trajectory").innerHTML = TRAJECTORY.map(trajectoryPanel).join("");
   {
     const T = D.trajectory, f = v => v.toFixed(2);
     const climb = (row, prompt) => { const v = PAPER[row][prompt]; return `${f(v[0])} to ${f(v[4])} (${signed(M.erosion, v[4] - v[0])})`; };
-    const ours = key => G.prompts.filter(pr => T.prompts[pr] && T.prompts[pr][key][0] != null).map(pr => {
+    const ours = key => QUALITY_PROMPTS.filter(pr => T.prompts[pr] && T.prompts[pr][key][0] != null).map(pr => {
       const v = T.prompts[pr][key];
       return `${esc(label(pr))} ${esc(f(v[0]))} to ${esc(f(v[4]))} (${esc(signed(M.erosion, v[4] - v[0]))})`;
     }).join(", ");
     document.getElementById("trajectory-note").innerHTML =
       `<b>Reading.</b> Figure 5 of the paper's second revision (arXiv 2603.24755v2) is redrawn from its vector paths for ${PAPER_MODEL}, the strongest of its three models: erosion on its top row, verbosity on the bottom (the share of lines flagged by ast-grep, the clone detector or the trivial-wrapper check, so it covers the two cards after it). ` +
-      `Its Baseline prompt is just-solve and its Anti-Slop prompt is our anti-slop arm, each drawn in that arm's colour. Every paper erosion line climbs from Start to Final, on all three of its models, and the paper reads that as prompting not slowing the decay. ` +
+      `Its Anti-Slop prompt is our anti-slop arm, drawn in that arm's colour, and Plan-First has no counterpart here. Its Baseline prompt is just-solve; neither is drawn, since they sit far above the rest, but the Baseline figures are quoted below. Every paper erosion line climbs from Start to Final, on all three of its models, and the paper reads that as prompting not slowing the decay. ` +
       `Our lines are the v0 runs from the headline, each checkpoint placed in the paper's phase (first is Start, last is Final, the rest split into thirds) and pooled over every run of the prompt. ` +
       `Erosion: ${ours("erosion")}, where the paper's Baseline goes ${esc(climb("erosion", "Baseline"))} and its Anti-Slop ${esc(climb("erosion", "Anti-Slop"))}. ` +
       `Verbosity: ${ours("verbosity")}, against the paper's Baseline ${esc(climb("verbosity", "Baseline"))} and Anti-Slop ${esc(climb("verbosity", "Anti-Slop"))}. ` +

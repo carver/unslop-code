@@ -195,6 +195,33 @@ def relative(g, human=None):
     return out
 
 
+def human_relative(g, human):
+    """relative()'s shape with the human repositories as the baseline: a share is a prompt's v0
+    cell mean over the human mean of the metric, averaged over the problems the prompt ran, with
+    its best and worst problem named. The human mean is one figure, not one per problem, and
+    well above zero on every quality score, which the benchmark's own prompts are not
+    (anti-slop's erosion and cloned lines are 0.000 on some problems), so every share is
+    defined. The first prompt, the reference this one replaces on the quality charts, is left
+    out. The human block puts the repositories' spread on the same scale, their mean at 1."""
+    out = {"spec": "v0", "baseline": "human", "metrics": {}}
+    for metric in HUMAN_METRICS:
+        base = human[metric]["mean"]
+        prompts = {}
+        for prompt in g["prompts"][1:]:
+            share = {problem: entry["cells"][f"{prompt}|v0"]["mean"][metric] / base
+                     for problem, entry in g["problems"].items() if f"{prompt}|v0" in entry["cells"]
+                     and entry["cells"][f"{prompt}|v0"]["mean"][metric] is not None}
+            if share:
+                best, worst = min(share, key=share.get), max(share, key=share.get)
+                prompts[prompt] = {"n": len(share), "mean": results.mean(list(share.values())),
+                                   "best": {"problem": best, "share": share[best]},
+                                   "worst": {"problem": worst, "share": share[worst]}}
+        if prompts:
+            out["metrics"][metric] = {"n": len(g["problems"]), "prompts": prompts,
+                                      "human": human_shares(human[metric], [base]) | {"mean": 1.0}}
+    return out
+
+
 def cell_means(runs):
     return {k: results.mean([r[k] for r in runs]) for k in METRICS}
 
@@ -252,6 +279,8 @@ def grid(cells, prompts=DEFAULT_PROMPTS, model="opus-5", human=None):
                 out["means"][key] = {"n": len(means), **cell_means(means)}
     out["trajectory"] = trajectory(cells, prompts, model)
     out["relative"] = relative(out, human)
+    if human:
+        out["human_relative"] = human_relative(out, human)
     return out
 
 

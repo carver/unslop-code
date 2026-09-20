@@ -141,6 +141,21 @@ Erosion / ast% and cost, as above:
   line counts per run, so anti-slop's six runs compare with the others' twelve; its test share
   is now the mean of the per-problem shares, as the human one is of repositories. Cards that
   draw patched cells name a prompt that does not cover all three patched problems yet.
+- **Quality charts without just-solve, shares of the human mean (2026-09-20).** just-solve is
+  off the erosion, ast-grep, cloned and verbosity charts (headline bars, the four along-the-run
+  cards with the paper's Baseline line, the per-problem panels): at 0.58 erosion it set a scale
+  on which the three quality prompts could not be told apart, and anti-slop is the stronger
+  reference. It stays where it is the control: failed tests, the spec-against-prompt squares,
+  cost, wall clock and code size. The three share cards now divide by the mean of the 27 human
+  repositories (`human_relative` in `bin/grid --json`), the user's call over my first plan of
+  dividing by anti-slop, which cannot work: anti-slop's erosion is 0.000 on four problems and
+  its cloned lines 0.000 on xjq and 0.005 on mvvault. Whole snapshot, anti-slop, spectest,
+  spectest+antislop: erosion 1%, 47%, 3% of the human mean; ast-grep 162%, 144%, 69%; cloned
+  lines 28%, 173%, 149%. Implementation only: erosion 0%, 74%, 5%; ast-grep 106%, 213%, 95%;
+  cloned 8%, 35%, 16%. So spectest+antislop is the one prompt under the human mean on ast-grep
+  in both scopes, and spectest alone is at twice the human implementation figure. anti-slop has
+  one run per problem until jobs 241-246 land. The implementation-against-tests table still
+  reads against just-solve.
 - **Erosion along the run, against the paper's Figure 5.** The v2 paper (arXiv 2603.24755v2)
   says erosion rises in 77% of agent trajectories, 0.026 per checkpoint, and that quality
   prompts lower the starting point "but do not slow the degradation" (its Figure 5, top row:

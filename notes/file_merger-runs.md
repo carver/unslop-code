@@ -273,7 +273,8 @@ Queued 2026-09-20 at the user's call: min13-ABDJKMNT on v7 twice under bin/scb-s
 front of the queue. Job 253 is the first; job 254 is the repeat, added with
 `bin/queue add-strict --after 253`, so pueue starts it only if 253 exits 0, which the strict
 driver does only when all four checkpoints are strict. Job 251, anti-slop's first run on v6,
-was killed and its run directory deleted: no more v6 data is wanted.
+was killed and its run directory deleted: no more v6 data is wanted. Job 252, its queued
+repeat, was removed for the same reason, so anti-slop has no file_merger run on a patched spec.
 
 ## just-solve on v6 (2026-09-11)
 

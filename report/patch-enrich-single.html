@@ -1,4 +1,4 @@
-<title>Patch: a single enrich=yes</title>
+<title>Patch: only exact enrich=yes</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
 :root {
@@ -76,13 +76,14 @@ td .bad { color: var(--reject); font-weight: 600; } td .good { color: var(--acce
 .diff .del .sign { color: var(--reject); } .diff .add .sign { color: var(--accept); }
 .diff mark { color: inherit; border-radius: 2px; padding: 0 2px; }
 .diff .add mark { background: var(--add-soft); font-weight: 500; }
+h2 + .subhead { margin: -6px 0 14px; font-size: 15px; color: var(--ink-2); }
 .foot { margin-top: 44px; padding-top: 14px; border-top: 1px solid var(--rule); font-size: 13px; color: var(--ink-3); max-width: none; }
 .foot code { color: var(--ink-2); }
 @media (max-width: 480px) { h1 { font-size: 32px; } }
 </style>
 <div class="wrap">
   <p class="eyebrow">SCBench · datagate · spec patch 02</p>
-  <h1>Patch: a single enrich=yes</h1>
+  <h1>Patch: only exact enrich=yes</h1>
   <p class="lede">One word added to one sentence of a benchmark spec, and what it did to the reading. A hidden test the reasoning prompts kept failing, the registry entries that argued for the first value, and twenty-two runs on the patched text without a miss.</p>
 
   <h2>The sentence</h2>
@@ -115,7 +116,8 @@ GET /datasets/&lt;id&gt;
   </div>
   <p>The hidden tests want the second. The reference implementation reads the whole list of values and enriches only when the list is exactly <code>["yes"]</code>. The first reading is the one an agent reaches by asking what the framework does.</p>
 
-  <h2>A run that chose the first value</h2>
+  <h2>Ambiguity analysis</h2>
+  <p class="subhead">A run that chose the first value</p>
   <p>Every run of the spectest prompts writes an ambiguity registry before implementing: each unclear passage gets an entry with the spec text, the alternatives, a choice with reasons, and a self-rated Risk that the spec's author reads it the other way. This is entry T89 from the first min12 run on the unpatched spec, verbatim.</p>
   <div class="entry chose-first">
     <div class="head"><b>T89. What &quot;only exact <code>enrich=yes</code>&quot; does with a repeated <code>enrich</code> parameter</b><span class="mono">min12-ABDJKMN · spec v0 · 2026-09-09</span></div>
@@ -141,11 +143,10 @@ All other states keep enrichment off.</blockquote>
   <p>The no-then-yes case passes under either reading, since the first value there is <code>no</code>. So this choice costs exactly one test at the last checkpoint and nothing downstream: there is no cascade here, which is the opposite of the delimiter sentence. What makes it worth a page is who lost it.</p>
 
   <h2>Every run, before and after</h2>
-  <p>The outcome of that test across every datagate run that reached checkpoint 7, by the spec version each run read. v1 is the five-sentence patch of 2026-09-02; v2 adds this patch and the delimiter patch.</p>
+  <p>The outcome of that test across every datagate run that reached checkpoint 7, on the shipped sentence and on the patched one. The patched spec, v2, also carries the five-sentence patch and the delimiter patch, which touch other checkpoints.</p>
   <div class="tablewrap"><table>
     <tr><th>spec</th><th class="num">runs</th><th class="num">failed the test</th><th>registries with an entry on this question</th><th class="num">chose the first value</th></tr>
     <tr><td>v0, unpatched</td><td class="num">16</td><td class="num"><span class="bad">8</span></td><td>9</td><td class="num">7</td></tr>
-    <tr><td>v1, five sentences</td><td class="num">20</td><td class="num"><span class="bad">4</span></td><td>12</td><td class="num">4</td></tr>
     <tr><td>v2, with "a single"</td><td class="num">22</td><td class="num"><span class="good">0</span></td><td>20</td><td class="num">0</td></tr>
   </table></div>
   <p>Every registry that chose the first value failed the test, and every failure but one is a registry run; the exception is Sonnet 4.6 on the bare prompt. On Opus 5 the bare prompt passed every time it ran on the unpatched text: four just-solve runs and the anti-slop run. It never wrote the question down. It read the parameter list, compared, and moved on. The prompts that reason about a sentence are the ones a sentence can lead astray, and on the original text seven registries in nine went to the first value, at Risks between 12 and 25.</p>

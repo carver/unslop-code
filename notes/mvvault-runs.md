@@ -23,6 +23,7 @@ existing snapshot with `bin/reeval`, and every later run scores it that way nati
 | min13-ABDJKMNT, repeat | `…min13-ABDJKMNT/20260919T1041` | same config as the first run; second of two | 35/37, 60/67, 106/115, 145/155, 175/185, 216/227 | complete 2026-09-19; 11 misses: the first run's twelve minus missing vault route at checkpoint 4, which passed; the two new-to-any-run misses of the first run (post create at 6) shrink to one; 0/6 strict, $24, 88 min. Quality: erosion 0.000, verbosity 0.135, ast 0.048, cloned 0.049; final checkpoint, implementation only (26% of LOC): ast 0.119, erosion 0.000, cloned 0.009 |
 | min13-ABDJKMNT | `…min13-ABDJKMNT/20260918T1850` | min12 plus chunk T, the upstream anti-slop rule list (d902f32); first of the min13 pair, rejector next | 35/37, 60/67, 106/115, 144/155, 174/185, 215/227 | complete 2026-09-18; 12 misses: ten shared with the just-solve repeat (the checkpoint-1 pair, the five-test v1 auto-migration block at 2, skip-downloaded and download URL at 3, sync links at 4) plus two no other run missed (missing vault route at 4, post create at 6); serve custom addr passed, which every other opus-5 run missed. 0/6 strict, $33, 140 min. Quality: erosion 0.007, verbosity 0.159, ast 0.048, cloned 0.075 |
 | min13-ABDJKMNT on v1 (strict) | `…min13-ABDJKMNT-specv1/20260920T1529` | min13 on spec v1 (six sentences) under bin/scb-strict, in the specpatch channel beside the main queue; first of two | 37/37, 67/67, 115/115, 155/155, 185/185, 227/227 | complete 2026-09-20; no misses, strict on every checkpoint, the first strict mvvault run of any prompt (best before: 223); urllib for every request; 6/6 strict, $25, 93 min, overlapped by main-queue jobs throughout, so the minutes are not comparable. Quality: erosion 0.000, verbosity 0.144, ast 0.038, cloned 0.067; final checkpoint, implementation only (27% of LOC): ast 0.103, erosion 0.000, cloned 0.007 |
+| min13-ABDJKMNT on v1, repeat (halted at the last checkpoint) | `…min13-ABDJKMNT-specv1/20260920T1737` | same config as the first run, under bin/scb-strict in the specpatch channel; second of two | 37/37, 67/67, 115/115, 155/155, 185/185, 225/227 | complete 2026-09-20 (the halt came after checkpoint 6, the last); 2 misses, test_migration_atomic for a v1 and a v2 catalog: an annotation POST to a vault whose legacy entry lacks `width` answers 303 where the test wants 500; 5/6 strict, $28, 93 min, overlapped by the main queue, so the minutes are not comparable. Quality: erosion 0.000, verbosity 0.146, ast 0.058, cloned 0.056; final checkpoint, implementation only (28% of LOC): ast 0.154, erosion 0.000, cloned 0.007 |
 
 ## Test failure summaries
 
@@ -145,3 +146,19 @@ the repeat is strict too: just-solve on v1 twice (263, 264) and anti-slop twice 
 plain `bin/queue add` in the main queue, after file_merger's v7 pairs and ahead of the test-set
 batch. No min12 pair, the user's call (267 and 268 were queued and removed unrun), so on the
 grid mvvault's patched cells are just-solve, anti-slop and spectest+antislop.
+
+Repeat on v1 (job 262, 2026-09-20): 225/227, strict through checkpoint 5 and two misses at 6, so
+v1 is strict once, not twice, and jobs 263 to 266 (the just-solve and anti-slop pairs, `--after
+262`) failed unrun as designed. All six sentences held again. The two misses are one bug, not a
+reading: test_migration_atomic posts an annotation to a v1 and a v2 vault whose one entry lacks
+`width` and wants HTTP 500 with the catalog untouched (checkpoint_6.md:135, "Migration failure
+during auto-migration | HTTP `500`"). The run's registry chose the strict side twice: T20,
+Risk 30, "A legacy entry must satisfy its documented schema: the four static fields", and T68
+keeps 500 for "failures raised while converting a catalog whose version was recognized". Its
+viewer does not do what they say: `viewer/edits.py` `_migrated` calls `upgrade_catalog` and
+answers 500 only if that raises, and the schema check lives in the loader the `migrate` command
+runs afterwards, so the malformed entry is converted, annotated and redirected (303). The first
+v1 run validates on both paths and passed. min12's first v0 run and two just-solve runs of other
+models failed the same pair (10 pass, 3 fail before this run). The agent's bug, so no sentence
+by the user's rule; if one is wanted, line 135 could name the case: "Migration failure during
+auto-migration, malformed v1 or v2 entry data included".

@@ -21,6 +21,8 @@ is backgrounded. Until it wakes, other work is fine; polling the job is not.
 
 On wake: `bin/run-recap <run_dir>`. It prints the ledger row with WHAT CHANGED and CAUSES left
 open, the failure summary, the miss matrix against the problem's other runs at the same spec,
+the registry entries that share words with each miss (candidates to read, ranked by word
+overlap and often wrong at the top; a just-solve or anti-slop run has no registry and says so),
 and for a v0 run the implementation-only quality table across prompts. Done when it has printed.
 
 ## 3. Ledger

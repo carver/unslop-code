@@ -71,7 +71,8 @@ prompt and `save_dir` relative to it, which is where `bin/queue` and `bin/scb-ex
                                              # (--spec vN reads specs/<problem>/vN/problems; default v0)
     bin/compare-runs <run_dir>...            # runs side by side: scores, cost, quality, miss matrix
     bin/registry-scores <run_dir> [--grep X] # a run's AMBIGUITIES.md Differs scores: spread, top entries,
-                                             # the Choice and Differs text of matching entries
+                                             # the Choice and Differs text of matching entries;
+                                             # --misses: the entries sharing words with each failing test
     python3 -m pytest                        # the bin tools' tests; GitHub Actions runs them on every PR
     bin/fork-run <run_dir> --spec vN --keep k  # copy a run keeping checkpoints 1..k, pointed at spec vN;
                                              # --queue continues it with bin/queue resume-strict <copy>
@@ -83,7 +84,8 @@ prompt and `save_dir` relative to it, which is where `bin/queue` and `bin/scb-ex
                                              # lines and job status changes across the whole queue
     bin/ledger-row <run_dir>                 # after every run: the ledger row and failure summary to fill in
     bin/run-recap <run_dir>                  # ledger-row, then the miss matrix against the problem's other runs
-                                             # at the same spec and the implementation-only quality table
+                                             # at the same spec, the registry entries near each miss
+                                             # and the implementation-only quality table
     bin/reeval <run_dir> <problem> <ckpt> --tag T  # re-score one checkpoint under the current problem config; keeps the old evaluation as before-T
     bin/results [--write]                    # every complete run, one row per problem/prompt/spec -> notes/results.md
     bin/grid [--json]                        # the 2x2 uplift grid (just-solve vs min12, v0 vs patched), per problem

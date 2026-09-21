@@ -6,7 +6,9 @@
 Prints, in order: what bin/ledger-row prints (the ledger row with WHAT CHANGED and CAUSES left
 for the reader, and the failure summary); the miss matrix of this run against every other
 complete run of the same problem at the same spec and model (bin/compare-runs), which says
-which misses are shared with which prompt; and, for a v0 run, the implementation-only quality
+which misses are shared with which prompt; the registry entries that share words with each miss
+(bin/registry-scores --misses), candidates to read before calling a miss noise, or one line
+saying the prompt kept no registry; and, for a v0 run, the implementation-only quality
 table of the problem across every prompt that ran it (bin/quality-split), the erosion, ast% and
 cloned% figures every recap reports beside the whole-snapshot ones.
 """
@@ -65,6 +67,8 @@ def main():
     others = siblings(cells, problem, spec, model, run_dir)
     print(f"\n== miss matrix against {len(others)} other {spec} run(s) of {problem}", flush=True)
     subprocess.run([HERE / "compare-runs", str(run_dir), *map(str, others), "--problem", problem], check=True)
+    print("\n== registry entries near each miss (candidates by shared words, read them before citing)", flush=True)
+    subprocess.run([HERE / "registry-scores", str(run_dir), "--misses"], check=False)  # exits 1 without a registry
     if spec == "v0":
         prompts = prompts_at(cells, problem, spec, model)
         print(f"\n== implementation-only quality, {problem}, final checkpoint, pooled per prompt", flush=True)

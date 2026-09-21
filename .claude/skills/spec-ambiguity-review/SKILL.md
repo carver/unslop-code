@@ -32,7 +32,9 @@ artifacts) or "noise" (flips between runs, like a detector on a tiny sample).
 
 - **Noise needs the registry's word for it.** A test that failed in one run only is not noise until
   that run's registry has been read: `bin/registry-scores <run> --grep <words from the spec line>
-  --full`. rejector's two "one-run" misses were both Risk 40 entries where the run chose the other
+  --full`. `bin/registry-scores <run> --misses` (also in the recap) lists candidate entries per
+  miss from the test id's words; it says where to start reading, the grep on the spec line's
+  own words settles it. rejector's two "one-run" misses were both Risk 40 entries where the run chose the other
   side knowingly. A rare coin gets a sentence like any other reading.
 - **Read the later checkpoints for the rule.** Three times the spec stated the hidden reading one
   to three checkpoints after it was first needed (mvvault's "filename contains entry `id`" at

@@ -27,6 +27,7 @@ existing snapshot with `bin/reeval`, and every later run scores it that way nati
 | min13-ABDJKMNT on v1, repeat (halted at the last checkpoint) | `…min13-ABDJKMNT-specv1/20260920T1737` | same config as the first run, under bin/scb-strict in the specpatch channel; second of two | 37/37, 67/67, 115/115, 155/155, 185/185, 225/227 | complete 2026-09-20 (the halt came after checkpoint 6, the last); 2 misses, test_migration_atomic for a v1 and a v2 catalog: an annotation POST to a vault whose legacy entry lacks `width` answers 303 where the test wants 500; 5/6 strict, $28, 93 min, overlapped by the main queue, so the minutes are not comparable. Quality: erosion 0.000, verbosity 0.146, ast 0.058, cloned 0.056; final checkpoint, implementation only (28% of LOC): ast 0.154, erosion 0.000, cloned 0.007 |
 | anti-slop on v1 | `…anti_slop-specv1/20260921T0531` | the upstream anti_slop prompt on spec v1, a baseline for the grid's patched cell; first of two | 37/37, 67/67, 115/115, 154/155, 180/185, 222/227 | complete 2026-09-21; 5 misses: the missing-vault redirect carries `?missing=`, the reading draft 06 would have settled (one test at 4), the nonexistent-vault landing page lacks "not found" on the detail and static routes (two at 5), and a literal `../..` in a static route is redirected, 303, where the tests want 403 or 404 (two at 5); urllib throughout, so the seven-test v1 block passed; test_migration_atomic passed; 3/6 strict, $22, 94 min. Quality: erosion 0.018, verbosity 0.176, ast 0.080, cloned 0.031; final checkpoint, implementation only (39% of LOC): ast 0.142, erosion 0.036, cloned 0.000 |
 | anti-slop on v1, repeat | `…anti_slop-specv1/20260921T0719` | same config as the first run; second of two | 37/37, 67/67, 115/115, 154/155, 182/185, 224/227 | complete 2026-09-21; 3 misses, all on the missing-vault redirect: `?missing=` in the Location (one test at 4) and a landing notice that reads "No vault named 'x' here." where the tests look for the words "not found" (two at 5); the first run's two path-traversal misses passed; urllib throughout; test_migration_atomic passed; 3/6 strict, $25, 90 min. Quality: erosion 0.000, verbosity 0.182, ast 0.099, cloned 0.014; final checkpoint, implementation only (50% of LOC): ast 0.138, erosion 0.000, cloned 0.010 |
+| just-solve on v1 | `…just-solve-specv1/20260921T0904` | benchmark's own prompt on spec v1, a baseline for the grid's patched cell; first of two | 37/37, 66/67, 114/115, 154/155, 184/185, 226/227 | complete 2026-09-21; 1 miss, test_sync_v2_absent_entry_gets_removed_true_after_migration from checkpoint 2 on: the run gives the migration and the sync that triggered it one timestamp, so the sync's `true` overwrites the migration's `false` and the history reads [True] where the test wants [False, True]; the agent's bug, new to opus-5 (15 pass, 1 fail before, the fail sonnet's just-solve); urllib throughout; the missing-vault redirect and test_migration_atomic passed; no tests written; 1/6 strict, $16, 49 min. Quality: erosion 0.378, verbosity 0.382, ast 0.352, cloned 0.026; final checkpoint, implementation only (100% of LOC): ast 0.271, erosion 0.247, cloned 0.037 |
 
 ## Test failure summaries
 
@@ -42,6 +43,16 @@ existing snapshot with `bin/reeval`, and every later run scores it that way nati
   - 214/227, seven below the control: the control's six plus a checkpoint-2 v1 auto-migration
     block of four, sync links and the detail-route error pair. Cell: 221 and 214 against
     min12's 220 and 223; erosion 0.472 and 0.569 against 0.046 and 0.074.
+
+### just-solve on v1 (2026-09-21)
+
+  - 226/227, from 221 and 214 on v0, and the highest of the six just-solve runs on this problem
+    (sonnet 206, fable 213 and 220). `urllib.request` at every request site, as v1 asks. It also
+    sent the missing vault to a bare `/` and wrote "not found" on the landing page, the two
+    places anti-slop lost on v1, with no v1 sentence about either. The one miss is its own: migration and the sync that triggers it
+    share a timestamp, so `removed` reads [True] and not [False, True]. No tests and 3254
+    implementation lines; $16 and 49 min. Implementation only: erosion 0.247, ast 0.271,
+    cloned 0.037. First of two.
 
 ### anti-slop (the upstream anti_slop prompt, 2026-09-20)
 
@@ -234,3 +245,15 @@ page says the vault was `not found`". Pitched to the user and declined (2026-09-
 says "Redirect to `/`", an author may mean `/` literally without having to insist on it, and a
 run that adds a query string has made the wrong call; that failure comes first and eclipses the
 wording check. `06` stays out and v1 stands; these are the agent's misses. test_migration_atomic: passed in both anti-slop runs.
+
+just-solve on v1, first run (job 275, 2026-09-21): 226/227, from 221 and 214 on v0. One miss,
+test_sync_v2_absent_entry_gets_removed_true_after_migration, failing from checkpoint 2 to 6:
+`removed` comes back as [True] where the test wants [False, True]. Traced in the snapshot:
+`apply_migration_stamp` and `mark_removed` are handed the same stamp, "so migration and the
+operation that triggered it agree on one timestamp" in the code's own words. Both writes land on
+one key and the sync's `true` replaces the migration's `false`. checkpoint_2.md:164 asks for a
+"single history entry with value `false`" from migration, and the sync's transition comes after
+it, so this is the agent's bug and no reading of the spec. 15 pass, 1 fail before this run; the
+one earlier fail is sonnet's just-solve, with the same assertion. The missing-vault redirect
+passed (bare `/`, "not found" on the page) and so did test_migration_atomic. urllib throughout,
+no tests written.

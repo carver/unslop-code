@@ -44,8 +44,9 @@ control is the dev6 sweep's just-solve run (`notes/dev6-opus5.md`).
     implementation erosion and matches min13's ast-grep and clones, with the bare prompt's
     score or below. First of two.
   - repeat (202): thirteen above the first run, and the thirteen are one block. The first run
-    lost the checkpoint-4 names and search families, ten tests, with three more beside them;
-    this run passed them, as both min12 runs do and neither just-solve run does. Pair 189 and
+    lost the checkpoint-4 names and search families, ten tests, and five others; this run
+    passed all fifteen and lost two new ones. min12 passes the names and search block in both
+    its runs and just-solve in neither. Pair 189 and
     202 against just-solve's 191 and 194, min12's 205 and 204, min13's 195 and 211: the widest
     pair on the problem after min13's, so sith's prompt differences sit inside one block's
     coin. Implementation only over the pair: erosion 0.007, ast 0.075, cloned 0.016 on 2757

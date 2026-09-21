@@ -18,6 +18,7 @@ The control is the dev6 sweep's just-solve run (`notes/dev6-opus5.md`).
 | min13-ABDJKMNT | `…min13-ABDJKMNT/20260918T2129` | min12-ABDJKMN plus chunk T, upstream's anti-slop rules as the whole Implement section; one sample run for the ast question | 20/21, 33/34, 49/50, 64/67, 74/79 | complete 2026-09-18; 5 misses: dry run and the TPM gate (the control's, and both min12 runs'); retries from checkpoint 1, where the run made four HTTP calls and the test wants three and a null output (its own T2, Risk 45, named the author's reading); agentic max iterations (`passed` is null, the test wants false; the first min12 run missed it too); costs, 0.011 against a 0.01 ceiling. First-number extraction failed at checkpoint 4 only. The backward-compat single-task case passed; both min12 runs missed it. 0/5 strict, $33, 107 min. 104 entries all scored, Risk 10-55. Quality: erosion 0.028, verbosity 0.214, ast 0.074, cloned 0.104; implementation only, ast 0.188 against min12's 0.339 and 0.344, erosion 0.172 against 0.608 and 0.539 |
 | min13-ABDJKMNT, repeat | `…min13-ABDJKMNT/20260919T1228` | same config as the first run; second of two | 20/21, 31/34, 46/50, 62/67, 73/79 | complete 2026-09-19; 6 misses: three shared with the first run (max retries at 1, agentic max iterations at 4, dry run at 5) and three of its own (backward-compat single task and llm judge pass at 2, invalid icl file at 3); the first run's own three (first-number extract, costs, tpm gate) passed; 0/5 strict, $34, 114 min. Quality: erosion 0.019, verbosity 0.127, ast 0.075, cloned 0.031; final checkpoint, implementation only (35% of LOC): ast 0.170, erosion 0.102, cloned 0.021 |
 | min13-ABDJKMNT | `…min13-ABDJKMNT/20260918T2129` | min12 plus chunk T, the upstream anti-slop rule list (d902f32); second of the min13 pair, after mvvault | 20/21, 33/34, 49/50, 64/67, 74/79 | complete 2026-09-18; 6 misses: five that at least one other opus-5 run missed (max-retries at 1, first-number extract at 2, agentic max iterations at 4, dry run and tpm gate at 5) plus test_costs at 5, which no other run missed. 0/5 strict, $33, 107 min. Quality: erosion 0.028, verbosity 0.214, ast 0.074, cloned 0.104 |
+| min13-ABDJKMNT on v1 (halted at the last checkpoint) | `…min13-ABDJKMNT-specv1/20260920T1926` | min13 on spec v1 (eight sentences) under bin/scb-strict in the specpatch channel; first of two | 21/21, 34/34, 50/50, 67/67, 78/79 | complete 2026-09-20 (the halt came after checkpoint 5, the last); 1 miss, test_tpm_gate, by the 10-second timeout: the limiter sleeps until the window slides and no reply wakes it; every other test passes, the best rejector run of any prompt (best before: 76); 4/5 strict, $33, 95 min, overlapped by the main queue, so the minutes are not comparable. Quality: erosion 0.018, verbosity 0.178, ast 0.070, cloned 0.080; final checkpoint, implementation only (33% of LOC): ast 0.192, erosion 0.030, cloned 0.022 |
 
 ## Test failure summaries
 
@@ -130,3 +131,20 @@ only if both strict runs are strict. test_tpm_gate is at checkpoint 5, the last,
 agent's bug (4 of 9 pass), so a halt there is expected; the point of the first run is to see that
 the TPM gate is the only miss left. The baselines are then re-queued by hand.
 
+First run on v1 (job 267, 2026-09-20): 78/79, strict through checkpoint 4, from 73 and 74 on v0.
+The one miss is the one expected. test_tpm_gate times out: `taskrunner/limits.py:124` ends its
+wait in `await asyncio.sleep(wait)` with nothing to wake it when a reply frees room, the same
+missed wake-up as the failing v0 runs, and the registry again read the spec the tests' way (T66,
+Risk 25, the reservation is replaced by the actual usage). Jobs 268 to 272 (the strict repeat and
+the anti-slop and just-solve pairs, each `--after`) failed unrun as designed. Sentence by
+sentence, from the registry (79 entries):
+
+  - `01` held: test_api_failure_after_max_retries passes and no entry asks how many calls a
+    failing request gets, the Risk 40 to 45 question of every v0 run.
+  - `02`, `03`, `04`, `05` held and drew no entry. test_first_number_extract passed; `03` cannot
+    close that race, so one pass proves little.
+  - `06` held: test_dry_run passes, the first pass by any run; the only dry-run entry left is
+    about summing across tasks (T76).
+  - `07` held: T67, Risk 30, reads "at least four" as a floor and reports more.
+  - `08` held: the remaining `extracted_answer` entries are about `contains`, `regex` and
+    `script`, not the judge.

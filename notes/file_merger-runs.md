@@ -35,6 +35,7 @@ The control is the dev6 sweep's just-solve run (`notes/dev6-opus5.md`).
 | anti-slop on v7 | `…anti_slop-specv7/20260920T1550` | the upstream anti_slop prompt on v7, for the uplift grid and the solve-rate comparison with min13; first of two | 46/46, 86/86, 104/104, 146/147 | complete 2026-09-20; 1 miss, partition_by_map_value at checkpoint 4: the directory is named with the column name percent-encoded too, the reading v5's sentence "Values use percent-encoding" was written against; both sub-second tests pass; 3/4 strict, $23, 68 min, overlapped throughout by the specpatch channel's job 261, so the minutes are not comparable. Quality: erosion 0.000, verbosity 0.144, ast 0.055, cloned 0.055; final checkpoint, implementation only (51% of LOC): ast 0.127, erosion 0.000, cloned 0.020 |
 | anti-slop on v7, repeat | `…anti_slop-specv7/20260920T1705` | same config as the first run; second of two | 46/46, 86/86, 104/104, 147/147 | complete 2026-09-20; no misses, strict on every checkpoint; partition_by_map_value passed this time; 4/4 strict, $17, 43 min, overlapped by the specpatch channel, so the minutes are not comparable. Quality: erosion 0.013, verbosity 0.143, ast 0.086, cloned 0.031; final checkpoint, implementation only (63% of LOC): ast 0.119, erosion 0.000, cloned 0.007 |
 | just-solve on v7 (strict) | `…just-solve-specv7/20260921T0037` | the benchmark's own prompt on v7, the control for the grid's patched cell; first of two | 46/46, 86/86, 104/104, 147/147 | complete 2026-09-21; no misses, strict on every checkpoint, which neither just-solve run on v6 was (142 and 145, 0/4 and 1/4); 4/4 strict, $15, 57 min. Quality: erosion 0.637, verbosity 0.295, ast 0.141, cloned 0.160; final checkpoint, implementation only (53% of LOC): ast 0.341, erosion 0.756, cloned 0.072 |
+| just-solve on v7, repeat | `…just-solve-specv7/20260921T0139` | same config as the first run; second of two | 46/46, 86/86, 104/104, 144/147 | complete 2026-09-21; 3 misses, the checkpoint-4 alias family (correct_aliases case1 and case2, nested_type_alias_with_parquet): exit 3 where the tests want 0, the same three just-solve's first v6 run lost; 3/4 strict, $19, 68 min. Quality: erosion 0.467, verbosity 0.248, ast 0.165, cloned 0.072; final checkpoint, implementation only (63% of LOC): ast 0.366, erosion 0.636, cloned 0.063 |
 
 ## Test failure summaries
 
@@ -158,6 +159,12 @@ The control is the dev6 sweep's just-solve run (`notes/dev6-opus5.md`).
     both have runs there), so the v6 cells leave the page. The spec carries the score for the
     bare prompt too; the quality does not move: implementation erosion 0.756 and ast 0.341
     against min13's 0.055 and 0.000, 0.126 and 0.124 on v7. $15 and 57 min. First of two.
+  - repeat (144): the alias family at checkpoint 4, three tests with one failure (exit 3, a
+    key that does not resolve to a primitive, where the tests expect success). It is an old
+    one: correct_aliases/case1 stands at 13 pass, 15 fail over every file_merger run, and
+    just-solve's first v6 run and min13's first v0 run lost the same three. No v1 to v7
+    sentence is aimed at it; the cause has not been traced. Pair 147 and 144 against 142 and
+    145 on v6. Implementation only: erosion 0.636, ast 0.366, cloned 0.063. $19 and 68 min.
 
 ### min11-ABDFJKMN
 

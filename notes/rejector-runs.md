@@ -20,6 +20,7 @@ The control is the dev6 sweep's just-solve run (`notes/dev6-opus5.md`).
 | min13-ABDJKMNT, repeat | `…min13-ABDJKMNT/20260919T1228` | same config as the first run; second of two | 20/21, 31/34, 46/50, 62/67, 73/79 | complete 2026-09-19; 6 misses: three shared with the first run (max retries at 1, agentic max iterations at 4, dry run at 5) and three of its own (backward-compat single task and llm judge pass at 2, invalid icl file at 3); the first run's own three (first-number extract, costs, tpm gate) passed; 0/5 strict, $34, 114 min. Quality: erosion 0.019, verbosity 0.127, ast 0.075, cloned 0.031; final checkpoint, implementation only (35% of LOC): ast 0.170, erosion 0.102, cloned 0.021 |
 | min13-ABDJKMNT | `…min13-ABDJKMNT/20260918T2129` | min12 plus chunk T, the upstream anti-slop rule list (d902f32); second of the min13 pair, after mvvault | 20/21, 33/34, 49/50, 64/67, 74/79 | complete 2026-09-18; 6 misses: five that at least one other opus-5 run missed (max-retries at 1, first-number extract at 2, agentic max iterations at 4, dry run and tpm gate at 5) plus test_costs at 5, which no other run missed. 0/5 strict, $33, 107 min. Quality: erosion 0.028, verbosity 0.214, ast 0.074, cloned 0.104 |
 | min13-ABDJKMNT on v1 (halted at the last checkpoint) | `…min13-ABDJKMNT-specv1/20260920T1926` | min13 on spec v1 (eight sentences) under bin/scb-strict in the specpatch channel; first of two | 21/21, 34/34, 50/50, 67/67, 78/79 | complete 2026-09-20 (the halt came after checkpoint 5, the last); 1 miss, test_tpm_gate, by the 10-second timeout: the limiter sleeps until the window slides and no reply wakes it; every other test passes, the best rejector run of any prompt (best before: 76); 4/5 strict, $33, 95 min, overlapped by the main queue, so the minutes are not comparable. Quality: erosion 0.018, verbosity 0.178, ast 0.070, cloned 0.080; final checkpoint, implementation only (33% of LOC): ast 0.192, erosion 0.030, cloned 0.022 |
+| min13-ABDJKMNT on v1, repeat (halted at the last checkpoint) | `…min13-ABDJKMNT-specv1/20260920T2113` | same config as the first run, under bin/scb-strict in the specpatch channel; second of two | 21/21, 34/34, 50/50, 67/67, 78/79 | complete 2026-09-20; 1 miss, test_tpm_gate again by the 10-second timeout, the same missed wake-up (`rejlib/ratelimit.py:107`, `await asyncio.sleep(wait)`); every other test passes; 4/5 strict, $40, 119 min, overlapped by the main queue, so the minutes are not comparable. Quality: erosion 0.046, verbosity 0.141, ast 0.064, cloned 0.033; final checkpoint, implementation only (32% of LOC): ast 0.116, erosion 0.026, cloned 0.019 |
 
 ## Test failure summaries
 
@@ -167,3 +168,20 @@ strict driver runs all five checkpoints, since the TPM gate is in the last) and,
 queue ahead of the test-set batch, anti-slop on v1 twice (280, 281) and just-solve on v1 twice
 (282, 283). No min12 pair on rejector.
 
+Repeat on v1 (job 279, 2026-09-20): 78/79 again, the same single miss for the same reason, so the
+pair is 78 and 78 against 74 and 73 on v0, and the eight sentences are two for two. The TPM gate
+is now 0 for 2 under min13 on v1 and 4 of 9 over the v0 runs: both v1 limiters sleep out the
+window, and both registries chose "replaced by the actual usage" (T66; T71, Risk 30). Two entries
+of this run's registry (92 entries) are worth keeping:
+
+  - T20, "What 'send requests in input order' constrains", Risk 20, is patch `03` read back to
+    us. It dispatches rows in input order and says why that cannot be more: "with several
+    connections opening at once, TCP setup alone can let row 1's request land before row 0's,
+    which is true of any concurrent client including one built to this spec", and a fixture that
+    wants arrival order "would be satisfied only by a client that effectively serialises sending
+    - which contradicts the throughput requirement". That is the race in test_first_number_extract,
+    named by the tester; it passed in both v1 runs all the same.
+  - T85, "Rounding of the dry-run estimates", Risk 40, shows `06`'s looser wording leaving a
+    question open while still landing right: it quotes "prefer precision over rounding", rounds
+    token totals once to whole numbers, keeps six decimals of cost and does not round
+    `est_time_minutes`. test_dry_run passed.

@@ -162,3 +162,20 @@ v1 run passed the pair; how its viewer path validates was not read. min12's firs
 models failed the same pair (10 pass, 3 fail before this run). The agent's bug, so no sentence
 by the user's rule; if one is wanted, line 135 could name the case: "Migration failure during
 auto-migration, malformed v1 or v2 entry data included".
+
+Why the run's own tests did not catch it (read 2026-09-20). Its tests are written per spec phrase,
+and the phrase "Migration failure during auto-migration | HTTP `500`" has two, in
+`tests/test_annotation_errors.py`: a v1 catalog with no `source_id`, and an entry whose `views`
+is the string "many". Both break the conversion itself, so `upgrade_catalog` raises and the
+viewer answers 500. The hidden test's defect, a missing `width`, does not break the conversion:
+run against the snapshot, `upgrade_catalog` succeeds on it, and on `width="wide"` too. Those
+defects are caught only by the schema check in the loader, which the `migrate` command runs and
+the viewer path does not. The phrase "Malformed v1 or v2 entry data" has its tests as well
+(`tests/test_version_errors.py`: a non-epoch key, a non-ISO key, a mistyped static field, an
+entry that is not an object), every one through `run_cli("migrate", …)`. So each phrase was tested
+through the path its own checkpoint introduced, with defects that path rejects, and no test
+carried checkpoint 2's malformed entries to checkpoint 6's route. The checkpoint-6 agent sees only
+checkpoint 6's spec, where "migration failure" is not defined, and T68 defined it as a failure
+"raised while converting". A phrase-per-test suite checks that each sentence holds somewhere; it
+does not check that one rule holds on every path that reaches it.
+

@@ -230,5 +230,7 @@ over:
     above: its wording is "vault x does not exist".
 
 So draft `06` comes back stronger than it left: "Redirect to `/` with no query string; the landing
-page says the vault was `not found`". Pitched to the user; v1 has runs against it now, so the
-sentence would make a v2. test_migration_atomic: passed in both anti-slop runs.
+page says the vault was `not found`". Pitched to the user and declined (2026-09-21): the spec
+says "Redirect to `/`", an author may mean `/` literally without having to insist on it, and a
+run that adds a query string has made the wrong call; that failure comes first and eclipses the
+wording check. `06` stays out and v1 stands; these are the agent's misses. test_migration_atomic: passed in both anti-slop runs.

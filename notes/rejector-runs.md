@@ -148,3 +148,10 @@ sentence, from the registry (79 entries):
   - `07` held: T67, Risk 30, reads "at least four" as a floor and reports more.
   - `08` held: the remaining `extracted_answer` entries are about `contains`, `regex` and
     `script`, not the judge.
+
+With the TPM gate the only miss, the condition the user set for the baselines, the rest was
+re-queued 2026-09-20 without dependencies: the strict repeat (job 279, specpatch channel; the
+strict driver runs all five checkpoints, since the TPM gate is in the last) and, in the main
+queue ahead of the test-set batch, anti-slop on v1 twice (280, 281) and just-solve on v1 twice
+(282, 283). No min12 pair on rejector.
+

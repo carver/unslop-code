@@ -29,6 +29,7 @@ existing snapshot with `bin/reeval`, and every later run scores it that way nati
 | anti-slop on v1, repeat | `…anti_slop-specv1/20260921T0719` | same config as the first run; second of two | 37/37, 67/67, 115/115, 154/155, 182/185, 224/227 | complete 2026-09-21; 3 misses, all on the missing-vault redirect: `?missing=` in the Location (one test at 4) and a landing notice that reads "No vault named 'x' here." where the tests look for the words "not found" (two at 5); the first run's two path-traversal misses passed; urllib throughout; test_migration_atomic passed; 3/6 strict, $25, 90 min. Quality: erosion 0.000, verbosity 0.182, ast 0.099, cloned 0.014; final checkpoint, implementation only (50% of LOC): ast 0.138, erosion 0.000, cloned 0.010 |
 | just-solve on v1 | `…just-solve-specv1/20260921T0904` | benchmark's own prompt on spec v1, a baseline for the grid's patched cell; first of two | 37/37, 66/67, 114/115, 154/155, 184/185, 226/227 | complete 2026-09-21; 1 miss, test_sync_v2_absent_entry_gets_removed_true_after_migration from checkpoint 2 on: the run gives the migration and the sync that triggered it one timestamp, so the sync's `true` overwrites the migration's `false` and the history reads [True] where the test wants [False, True]; the agent's bug, new to opus-5 (15 pass, 1 fail before, the fail sonnet's just-solve); urllib throughout; the missing-vault redirect and test_migration_atomic passed; no tests written; 1/6 strict, $16, 49 min. Quality: erosion 0.378, verbosity 0.382, ast 0.352, cloned 0.026; final checkpoint, implementation only (100% of LOC): ast 0.271, erosion 0.247, cloned 0.037 |
 | just-solve on v1, repeat | `…just-solve-specv1/20260921T1008` | same config as the first run; second of two | 37/37, 67/67, 113/115, 153/155, 181/185, 223/227 | complete 2026-09-21; 4 misses, none traced (a baseline): the two digest grouping tests from checkpoint 3 (test_digest_v1_entries_group, test_digest_v2_groups) and the two literal `../..` path-traversal cases at checkpoint 5, the same failure as anti-slop's first v1 run; the first run's one miss passed; test_migration_atomic passed; 2/6 strict, $14, 44 min. Quality: erosion 0.289, verbosity 0.402, ast 0.359, cloned 0.036; final checkpoint, implementation only (100% of LOC): ast 0.278, erosion 0.306, cloned 0.037 |
+| min12-ABDJKMN on v1 | `…min12-ABDJKMN-specv1/20260921T1106` | min12 on spec v1, for the grid's patched cell and the user's question whether min12 misses test_migration_atomic more or less than min13; first of two | 37/37, 67/67, 115/115, 154/155, 184/185, 224/227 | complete 2026-09-21; 3 misses, both readings the registry carries: test_missing_vault_route (T46, Risk 35, chose `/?missing=<name>` and wrote that a test asserting the bare `/` would fail; dropped draft `06`) and test_migration_atomic x2 (T15, Risk 40, "missing fields tolerated", so an entry without `width` migrates and the viewer answers 302 where the test wants 500); all six v1 sentences held; 3/6 strict, $25, 89 min. Quality: erosion 0.075, verbosity 0.200, ast 0.098, cloned 0.066; final checkpoint, implementation only (26% of LOC): ast 0.235, erosion 0.102, cloned 0.048 |
 
 ## Test failure summaries
 
@@ -86,6 +87,13 @@ existing snapshot with `bin/reeval`, and every later run scores it that way nati
   - repeat (223): the four misses every opus-5 run shares and nothing else; the first run's
     three extras (v3-shape, the migration pair) passed. Pair: 220 and 223 against the control's
     221; erosion 0.046 and 0.074 against 0.472. On mvvault the prompt is quality, not score.
+  - on v1 (224): from 220 and 223 on v0, level with anti-slop's 222 and 224 and under min13's 227
+    and 225. Three misses and both are choices its registry made knowingly. T46, Risk 35, sent
+    the missing vault to `/?missing=<name>` while noting that "a test asserting `Location == "/"`
+    exactly would fail against the query string". T15, Risk 40, read "malformed v1 or v2 entry
+    data" as wrong types only, "with missing fields tolerated", so test_migration_atomic's entry
+    without `width` is migrated and redirected (302) where the test wants 500. $25 and 89 min.
+    Implementation only (26% of lines): erosion 0.102, ast 0.235, cloned 0.048. First of two.
 
 ### min13-ABDJKMNT (min12 plus the anti-slop list)
 
@@ -270,3 +278,25 @@ v0. A baseline, so the misses are named and not traced: test_digest_v1_entries_g
 test_digest_v2_groups from checkpoint 3 on, and the two literal `../..` path-traversal cases at
 checkpoint 5 that anti-slop's first v1 run also failed. test_migration_atomic passed, so it has
 passed in all four baseline runs on v1. The just-solve pair is in; min12's pair (277, 278) is next.
+
+min12 on v1, first run (job 277, 2026-09-21): 224/227, from 220 and 223 on v0. All six v1 sentences
+held. The three misses are two readings, and the run's registry has both:
+
+  - test_missing_vault_route: T46, Risk 35, "What the vault-not-found redirect carries". It chose
+    `/?missing=<name>` with a cookie fallback, reasoning that a test client keeps no cookies, and
+    its Risk line names the assertion that then failed: "a test asserting `Location == "/"` exactly
+    would fail against the query string". This is dropped draft `06`, declined twice; min12 joins
+    anti-slop (four of four) and min13 (one of four) on the query-string road. Not re-pitched.
+  - test_migration_atomic, both cases: T15, Risk 40, "What counts as 'malformed v1 or v2 entry
+    data'" (checkpoint_2.md:158). It chose type validation "with missing fields tolerated (a v1
+    entry lacking `preview` is migrated without it rather than rejected) ... not inventing a
+    presence requirement the migration tables never state". The test's entry lacks `width` and
+    wants HTTP 500; the run migrates it and redirects, 302. Its Risk text bet the other way, that
+    the author is looser still. This is a reading, where min13's repeat on v1 was a bug: that run
+    chose the strict side (T20, T68) and its viewer skipped the check.
+
+The question gets asked. The three other registries read for it carry the same line at Risk 30 to
+40 (min12 on v0: T15 at 30 and T14 at 40; min13's first v1 run: T19 at 30) and all three chose
+strict; this run is the only one of the four to choose tolerant. On the user's question:
+min12 has now missed test_migration_atomic in two runs of three (v0 first run through a cause not
+read, this one through T15) and min13 in one of four (a bug). History: 15 pass, 4 fail.

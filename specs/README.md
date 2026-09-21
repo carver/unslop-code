@@ -32,3 +32,10 @@ paths still resolve.
 | rejector | v1 | Eight sentences from `notes/rejector-misses.md`, the user's wording (e81b2a7), no judge run: `01` "retry it up to 3 total requests" (reworded before any run, 0fbd0e3); `02` a single-task config's summary "keeps its previous keys and has no `tasks` object"; `03` "Send requests in input order", checkpoint 5's own rule moved to checkpoint 1 (the mock serves replies first come, first served, so the test stays a race); `04` "malformed line errors include `not valid JSON`"; `05` `result.passed` is `null` "except when `max_iterations` was reached, where it is `false`" (the test contradicted the spec); `06` the dry run's minutes "prefer precision over rounding" and `07` costs "to at least four decimal places" (the examples print one and two decimals); `08` under `llm_judge`, `extracted_answer` is the text `extract` took from the judge's reply. Not patched: `test_tpm_gate`, a missed wake-up in the agent's limiter. 2026-09-20. |
 
 `drafts/` holds patches that were proposed and not adopted as written.
+
+Two files describe the patches for `bin/patch-risk` and the spec-patches page. `patch-tests.json` names
+the hidden tests each patch answers (per hunk where a patch has several), from the patch headers and
+`notes/critical-ambiguities.md`. `patch-entries.json` records, for each run that read a line unpatched and
+failed those tests, which entry of its registry asked the line's question, or null when none did. Those
+picks were made by reading the entries (2026-09-21, one Sonnet agent per problem, spot-checked by hand);
+a new patch or run shows up under `bin/patch-risk <problem> --candidates` until its pick is recorded.

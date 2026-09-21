@@ -1,0 +1,42 @@
+{
+ "problems": {
+  "datagate": {
+   "blurb": "An HTTP service that ingests remote CSV files and serves them back as JSON. Seven checkpoints.",
+   "titles": {
+    "01-datagate-clarified.patch": "Encoding fallback, rowid origin, upload charset, spreadsheet charset, force value",
+    "02-datagate-enrich-single.patch": "Enrichment needs exactly one enrich=yes",
+    "03-datagate-delimiter-if-present.patch": "Delimiter inference only when a delimiter is present"
+   }
+  },
+  "file_merger": {
+   "blurb": "A command-line tool that merges CSV, TSV, JSONL and Parquet inputs into one schema-resolved CSV. Four checkpoints.",
+   "titles": {
+    "01-tsv-crlf.patch": "TSV lines may end in CRLF",
+    "02-authoritative-typed-sources.patch": "JSONL ranks equal to CSV under the authoritative strategy",
+    "03-csv-backslash-quote.patch": "CSV accepts backslash-escaped quotes",
+    "04-map-key-quoted.patch": "Map keys in field paths are double-quoted",
+    "05-infer-by-cast-rules.patch": "Inference uses the casting rules",
+    "06-alias-cycle-at-load.patch": "Alias cycles are detected when the alias file loads",
+    "07-partition-encode-value-only.patch": "Percent-encoding applies to the partition value only",
+    "08-map-key-unquoted-is-error.patch": "An unquoted map key is a syntax error"
+   }
+  },
+  "xjq": {
+   "blurb": "A command-line XPath and CSS query tool for XML and HTML, with JSON conversion. Five checkpoints.",
+   "titles": {
+    "01-text-flags-per-element.patch": "Text flags yield one result per matched element",
+    "02-no-trailing-newline.patch": "No trailing newline after the last text result",
+    "03-empty-string-text.patch": "The empty string keeps an empty text node",
+    "04-union-mixed-results-as-text.patch": "A union with mixed result types is written as text"
+   }
+  },
+  "mvvault": {
+   "blurb": "A command-line tool that keeps local vaults of media-platform metadata, tracks field history by sync timestamp, and serves a web viewer. Six checkpoints.",
+   "titles": {}
+  },
+  "rejector": {
+   "blurb": "A command-line tool that sends prompts from a YAML task config to a chat completions API under rate limits, with sampling, judging and agentic loops. Five checkpoints.",
+   "titles": {}
+  }
+ }
+}

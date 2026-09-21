@@ -4,8 +4,9 @@
 <run> is a run folder (outputs/<group>/<family>/<stamp>) or one problem inside it. Reads each
 checkpoint_N/evaluation/stdout.txt and matches the needle against the titles in pytest's FAILURES
 and ERRORS blocks, e.g. `TestErrors.test_missing_vault_route` or `test_cases[errors/alias_cycle]`.
-Later checkpoints rerun earlier tests, so one test can show under several checkpoints. --full
-prints the whole section (traceback, captured output) instead of the E lines.
+Later checkpoints rerun earlier tests; a failure that prints the same lines again is shown once,
+with the checkpoints that repeat it named. --full prints the whole section (traceback, captured
+output) instead of the E lines.
 """
 import argparse
 import pathlib
@@ -32,20 +33,38 @@ def failure_sections(text):
     return sections
 
 
+def checkpoint_order(stdout):
+    """Sort key of a checkpoint's stdout.txt: problem, then checkpoint number (10 after 9)."""
+    checkpoint = stdout.parent.parent
+    number = checkpoint.name.rpartition("_")[2]
+    return checkpoint.parent.name, int(number) if number.isdigit() else -1, checkpoint.name
+
+
 def run_failures(run):
-    """[(problem/checkpoint, title, body lines)] over every checkpoint of the run, in order."""
-    stdouts = sorted(run.glob("checkpoint_*/evaluation/stdout.txt")) or sorted(
-        run.glob("*/checkpoint_*/evaluation/stdout.txt")
-    )
+    """[(problem, checkpoint, title, body lines)] over every checkpoint of the run, in order."""
+    pattern = "checkpoint_*/evaluation/stdout.txt"
+    stdouts = list(run.glob(pattern)) or list(run.glob(f"*/{pattern}"))
     if not stdouts:
         raise SystemExit(f"test-failure: no checkpoint_*/evaluation/stdout.txt under {run}")
     failures = []
-    for stdout in stdouts:
+    for stdout in sorted(stdouts, key=checkpoint_order):
         checkpoint = stdout.parent.parent
-        label = f"{checkpoint.parent.name}/{checkpoint.name}"
         for title, body in failure_sections(stdout.read_text(errors="replace")):
-            failures.append((label, title, body))
+            failures.append((checkpoint.parent.name, checkpoint.name, title, body))
     return failures
+
+
+def folded(failures):
+    """[(problem, first checkpoint, title, lines, checkpoints that repeat it)]: a failure printing the
+    same lines at a later checkpoint joins its first showing."""
+    first = {}
+    for problem, checkpoint, title, lines in failures:
+        key = (problem, title, tuple(lines))
+        if key in first:
+            first[key][4].append(checkpoint)
+        else:
+            first[key] = (problem, checkpoint, title, lines, [])
+    return list(first.values())
 
 
 def main(argv=None):
@@ -57,15 +76,19 @@ def main(argv=None):
     parser.add_argument("--full", action="store_true", help="the whole section, not only its E lines")
     args = parser.parse_args(argv)
     failures = run_failures(args.run)
-    matches = [failure for failure in failures if args.needle in failure[1]]
+    matches = [failure for failure in failures if args.needle in failure[2]]
     if not matches:
-        titles = sorted({title for _, title, _ in failures})
+        titles = sorted({title for _, _, title, _ in failures})
         listing = "".join(f"\n  {title}" for title in titles) or " none"
         raise SystemExit(f"test-failure: no failure matching {args.needle!r}; the run's failures:{listing}")
-    for label, title, body in matches:
-        print(f"{label} {title}")
-        shown = body if args.full else [line for line in body if line.startswith("E  ")][: args.lines]
-        for line in shown:
+    def shown(body):
+        return body if args.full else [line for line in body if line.startswith("E  ")][: args.lines]
+
+    matches = [(problem, checkpoint, title, shown(body)) for problem, checkpoint, title, body in matches]
+    for problem, checkpoint, title, lines, repeats in folded(matches):
+        again = f" (the same at {', '.join(repeats)})" if repeats else ""
+        print(f"{problem}/{checkpoint} {title}{again}")
+        for line in lines:
             print(line[: args.width])
 
 

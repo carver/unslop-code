@@ -125,3 +125,28 @@ def test_every_section_written_into_a_failures_block_is_read_back(seed):
         text += f"___ {title} ___\n" + "".join(line + "\n" for line in body)
     text += "==== 1 failed in 1s ====\n"
     assert mod.failure_sections(text) == sections
+
+
+def test_a_failure_repeated_unchanged_in_later_checkpoints_prints_once(tmp_path, capsys):
+    run = make_run(tmp_path)
+    for checkpoint in ("checkpoint_6", "checkpoint_7"):
+        evaluation = run / "mvvault" / checkpoint / "evaluation"
+        evaluation.mkdir(parents=True)
+        changed = STDOUT.replace("404 == 302", "500 == 302") if checkpoint == "checkpoint_7" else STDOUT
+        (evaluation / "stdout.txt").write_text(changed)
+    mod.main([str(run), "missing_vault", "--lines", "1"])
+    assert capsys.readouterr().out.splitlines() == [
+        "mvvault/checkpoint_5 TestErrors.test_missing_vault_route (the same at checkpoint_6)",
+        "E       assert 404 == 302",
+        "mvvault/checkpoint_7 TestErrors.test_missing_vault_route",
+        "E       assert 500 == 302",
+    ]
+
+
+def test_checkpoint_10_comes_after_checkpoint_9(tmp_path):
+    run = tmp_path / "run"
+    for n in (10, 9):
+        evaluation = run / "mvvault" / f"checkpoint_{n}" / "evaluation"
+        evaluation.mkdir(parents=True)
+        (evaluation / "stdout.txt").write_text(STDOUT)
+    assert [checkpoint for _, checkpoint, _, _ in mod.run_failures(run)][::2] == ["checkpoint_9", "checkpoint_10"]

@@ -194,7 +194,7 @@ Two levers, measured in both orders on the six dev problems with Opus 5, two run
 (`notes/uplift-grid.md`, `bin/grid` for the table, the published grid linked there):
 
 - **Correctness comes from the spec.** Rewriting the ambiguous sentences (datagate v2, xjq v3,
-  file_merger v6) takes hidden-test failures from 8% to under 2% for either prompt. The prompt
+  file_merger v7) takes hidden-test failures from 8% to about 1% for every prompt. The prompt
   alone barely moves them at v0: 8.3% to 5.5% over six problems, most of that on sith.
 - **Code quality comes from the prompt.** The 444-word min12 prompt cuts the harness's erosion
   score from 0.58 to 0.15 averaged over six problems, and ast-grep smells from 0.25 to 0.09;

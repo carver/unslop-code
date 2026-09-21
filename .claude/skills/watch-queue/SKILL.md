@@ -47,6 +47,18 @@ cloned% and lines per run. Done when the table has both scopes.
 `bin/queue` for the running job's id; back to step 1. A trigger named in memory (a page
 rebuild, a republish) fires on the wake of its last job.
 
+## Traps
+
+- Every Bash result through `tail`, `cut -c1-N` or `jq`: pueue's table and pytest's `E` lines are
+  thousands of characters wide. `cd` into a snapshot before grepping it, so paths stay short.
+- The grid has one patched version per problem, and it flips when the first just-solve run on the
+  new version lands. Do not rebuild or republish while a version's pairs are half in; rebuild when
+  the last pair lands, then fix the hand-written version mentions (`notes/uplift-grid.md`,
+  `README.md`, `report/spec-patches.html`).
+- The pre-commit hook lints the whole tree, other sessions' untracked files included. A commit
+  blocked by someone else's file waits; never `--no-verify`, never edit their file.
+- A one-run miss is not noise until the run's registry says so (`/spec-ambiguity-review`).
+
 ## When it stops
 
 - Usage halt: `scb-extend` pauses the queue on a usage limit; `bin/usage` shows the windows,

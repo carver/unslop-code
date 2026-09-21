@@ -12,11 +12,23 @@ strict-solving prompt is. datagate is the worked example: `notes/spectest-dataga
 Stop after step 5; the user reviews before the next problem.
 
 Every run goes through `bin/run-config` for the config and `bin/queue add <config>` for the
-launch: one run at a time, behind whatever is queued, with a monitor on the queue. The
+launch: one run at a time per channel, behind whatever is queued, with a wait armed on each running
+job. Spec work goes in the side channel so it does not wait behind the main queue: `bin/queue
+add-strict --group specpatch <config>`, its repeat with `--after <id>` (it runs only if the first
+is strict), and the other prompts' pairs in the main queue `--after` the repeat. When a strict run
+halts on a miss the user rules the agent's bug, the dependents have failed unrun: re-queue them
+with plain `bin/queue add`. The
 driver underneath waits out the 5-hour window and API overloads on its own. After every
 run, before anything else, the ledger ritual in `/prompt-ladder` ("After every run"):
 `bin/ledger-row <run_dir>`, then the row, the failure-summary entry, and for ladder runs
 the ladder section.
+
+A dev problem that already has v0 runs of several prompts needs no new baseline: the miss matrix
+in `bin/run-recap <latest run>` covers every run at that spec, and `bin/test-history <problem>
+<test>` says how often each miss happens. Write the grouped misses to `notes/<problem>-misses.md`,
+draft one patch per sentence into `specs/drafts/<problem>-NN-<slug>.patch` UNCOMMITTED with the
+evidence in its preamble, and stop: the user edits and commits them on the host, then the folder
+`specs/<problem>/v1/` is built from what they kept (`git mv`, `bin/spec-patch`).
 
 ## 1. Baseline pair
 
@@ -53,8 +65,9 @@ problems at a glance. It is generated, never edited; the reading goes in the led
 
 ## Reference
 
-- Current best generalized prompt: `configs/prompts/spectest-v8A-no-libs-no-subagent.jinja`.
-  Update this line when a smaller prompt holds a strict solve on two problems.
+- Current best generalized prompt: `min13-ABDJKMNT` (spectest plus the upstream anti-slop rule list), the
+  prompt the user runs new specs with since 2026-09-20; `min12-ABDJKMN` is spectest without the rules.
+  Update this line when the user's choice changes.
 - Ledger row: version, run dir, what changed, per-checkpoint scores, how it ended and
   which tests it missed, grouped by the sentence or behavior they share.
 - `bin/summarize <run>` for one run; `bin/compare-runs` for several; `bin/failures a b`

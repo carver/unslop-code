@@ -36,6 +36,8 @@ The control is the dev6 sweep's just-solve run (`notes/dev6-opus5.md`).
 | anti-slop on v7, repeat | `…anti_slop-specv7/20260920T1705` | same config as the first run; second of two | 46/46, 86/86, 104/104, 147/147 | complete 2026-09-20; no misses, strict on every checkpoint; partition_by_map_value passed this time; 4/4 strict, $17, 43 min, overlapped by the specpatch channel, so the minutes are not comparable. Quality: erosion 0.013, verbosity 0.143, ast 0.086, cloned 0.031; final checkpoint, implementation only (63% of LOC): ast 0.119, erosion 0.000, cloned 0.007 |
 | just-solve on v7 (strict) | `…just-solve-specv7/20260921T0037` | the benchmark's own prompt on v7, the control for the grid's patched cell; first of two | 46/46, 86/86, 104/104, 147/147 | complete 2026-09-21; no misses, strict on every checkpoint, which neither just-solve run on v6 was (142 and 145, 0/4 and 1/4); 4/4 strict, $15, 57 min. Quality: erosion 0.637, verbosity 0.295, ast 0.141, cloned 0.160; final checkpoint, implementation only (53% of LOC): ast 0.341, erosion 0.756, cloned 0.072 |
 | just-solve on v7, repeat | `…just-solve-specv7/20260921T0139` | same config as the first run; second of two | 46/46, 86/86, 104/104, 144/147 | complete 2026-09-21; 3 misses, the checkpoint-4 alias family (correct_aliases case1 and case2, nested_type_alias_with_parquet): exit 3 where the tests want 0, the same three just-solve's first v6 run lost; 3/4 strict, $19, 68 min. Quality: erosion 0.467, verbosity 0.248, ast 0.165, cloned 0.072; final checkpoint, implementation only (63% of LOC): ast 0.366, erosion 0.636, cloned 0.063 |
+| min12-ABDJKMN on v7 | `…min12-ABDJKMN-specv7/20260921T0252` | spectest (min12) on v7, for the grid's patched cell; first of two | 46/46, 85/86, 103/104, 146/147 | complete 2026-09-21; 1 miss, hidden/header_only_file, a checkpoint-1 test it passed at checkpoint 1 and lost from checkpoint 2 on: a file with a header and no rows no longer adds its `extra` column to the output; both sub-second tests pass; 1/4 strict, $25, 81 min. Quality: erosion 0.268, verbosity 0.271, ast 0.058, cloned 0.209; final checkpoint, implementation only (26% of LOC): ast 0.266, erosion 0.638, cloned 0.043 |
+| min12-ABDJKMN on v7, repeat | `…min12-ABDJKMN-specv7/20260921T0419` | same config as the first run; second of two | 46/46, 86/86, 104/104, 144/147 | complete 2026-09-21; 3 misses, the checkpoint-4 alias family again (correct_aliases case1 and case2, nested_type_alias_with_parquet): `ERR 3 unknown nested type` on a schema that writes `{"list": {"element": …}}`; the first run's header-only miss passed; 3/4 strict, $19, 66 min. Quality: erosion 0.163, verbosity 0.276, ast 0.080, cloned 0.190; final checkpoint, implementation only (35% of LOC): ast 0.298, erosion 0.493, cloned 0.036 |
 
 ## Test failure summaries
 
@@ -165,6 +167,28 @@ The control is the dev6 sweep's just-solve run (`notes/dev6-opus5.md`).
     just-solve's first v6 run and min13's first v0 run lost the same three. No v1 to v7
     sentence is aimed at it; the cause has not been traced. Pair 147 and 144 against 142 and
     145 on v6. Implementation only: erosion 0.636, ast 0.366, cloned 0.063. $19 and 68 min.
+
+### min12-ABDJKMN on spec v7
+
+  - first run (146): one miss, and it is a regression, not a reading. hidden/header_only_file
+    merges a file that has only a header; its `extra` column must still appear, as null. The
+    run passed it at checkpoint 1 and lost it at checkpoint 2, when the schema work went in,
+    and carried the miss to the end, which is why only one checkpoint of four is strict on a
+    score of 146. 30 pass, 2 fail over every file_merger run (the other is just-solve's v0
+    repeat). The v7 sentence held: both sub-second tests pass. min12 was 147 and 147 on v6.
+    Implementation only: erosion 0.638, ast 0.266, cloned 0.043. $25 and 81 min. First of two.
+  - repeat (144): the alias family, and this time traced. The three fixtures' schema writes a
+    nested column as `{"list": {"element": {"struct": …}}}`, an object whose key is `list`.
+    checkpoint_4.md gives the object forms `struct`, `array` and `map`, and lists `list<T>`→
+    `array<T>` among the built-in aliases "accepted anywhere type is expected", in its string
+    spelling only. The failing runs take the alias as a string (`list<int>`) and reject the
+    object key: `ERR 3 unknown nested type`, exit 3 where the tests want 0. A reading, open
+    since v0 and never patched: correct_aliases/case1 stands at 13 pass, 15 fail over every
+    file_merger run, and on v7 it took just-solve's repeat and this run, one of two each,
+    while min13 and anti-slop passed it four times of four. No registry of the three v7
+    spectest runs read carries the question. Candidate for a v8: "`list<T>`→`array<T>`, as
+    the object key `list` too". Pair 146 and 144 against 147 and 147 on v6. Implementation
+    only: erosion 0.493, ast 0.298, cloned 0.036. $19 and 66 min.
 
 ### min11-ABDFJKMN
 

@@ -2,11 +2,13 @@
 """Risk (v10) or Differs (v9) scores of a run's AMBIGUITIES.md: count, spread, the top entries,
 and any entry matching a pattern.
 
-Usage: bin/registry-scores <run_dir> [checkpoint_N] [--grep REGEX] [--top N]
+Usage: bin/registry-scores <run_dir> [checkpoint_N] [--grep REGEX] [--full] [--top N]
 Reads <run_dir>/<problem>/checkpoint_N/snapshot/AMBIGUITIES.md (last checkpoint by default) and
 accepts every entry style seen so far (### Differs sections, ### Risk: N headings, **Differs** — N and
 **Differs** N lines, Risk spelled the same ways). --grep prints the Choice and Risk text of entries
-whose heading matches, which is how a known flip is checked.
+whose heading, quoted spec text or id (`^T8$`) matches, which is how a known flip is checked;
+with --full it prints those entries whole, verbatim, which is what a spec pitch quotes. A run
+that kept no registry (just-solve, anti-slop) says so and exits 1.
 """
 
 import collections
@@ -30,6 +32,7 @@ def entries(text):
         out.append(
             {
                 "id": h.group(1),
+                "text": e,
                 "head": h.group(0)[3:].strip(),
                 "score": int(d.group(1)) if d else None,
                 "choice": re.sub(r"\s+", " ", c.group(1)).strip() if c else "",
@@ -46,6 +49,22 @@ def registry(run_dir, checkpoint=None):
     return ck / "snapshot" / "AMBIGUITIES.md"
 
 
+def matching(rows, pattern):
+    """Entries whose id, heading or quoted spec lines match; the quote is where a sentence's
+    own words are, and headings paraphrase them."""
+    def haystack(row):
+        quoted = " ".join(line for line in row["text"].splitlines() if line.startswith(">"))
+        return f"{row['head']} {quoted}"
+    return [r for r in rows if re.search(pattern, r["id"], re.I) or re.search(pattern, haystack(r), re.I)]
+
+
+def registry_text(run_dir, checkpoint=None):
+    path = registry(run_dir, checkpoint)
+    if not path.exists():
+        raise SystemExit(f"registry-scores: no AMBIGUITIES.md in {path.parent} (this prompt keeps no registry)")
+    return path, path.read_text()
+
+
 def main():
     args = sys.argv[1:]
     grep = args[args.index("--grep") + 1] if "--grep" in args else None
@@ -53,8 +72,8 @@ def main():
     pos = [a for i, a in enumerate(args) if not a.startswith("--") and (i == 0 or not args[i - 1].startswith("--"))]
     if not pos:
         raise SystemExit(__doc__)
-    path = registry(pos[0], pos[1] if len(pos) > 1 else None)
-    rows = entries(path.read_text())
+    path, text = registry_text(pos[0], pos[1] if len(pos) > 1 else None)
+    rows = entries(text)
     scored = [r for r in rows if r["score"] is not None]
     by_decade = dict(sorted(collections.Counter((r["score"] // 10) * 10 for r in scored).items()))
     print(
@@ -64,8 +83,10 @@ def main():
     for r in sorted(scored, key=lambda r: -r["score"])[:top]:
         print(f"  {r['score']:>3}  {r['head'][:90]}")
     if grep:
-        for r in rows:
-            if re.search(grep, r["head"], re.I):
+        for r in matching(rows, grep):
+            if "--full" in args:
+                print(f"\n{r['text'].rstrip()}")
+            else:
                 print(
                     f"\n[{r['id']}] {r['head'][:100]} | Risk {r['score']}\n"
                     f"  Choice: {r['choice'][:400]}\n  Risk: {r['differs'][:300]}"

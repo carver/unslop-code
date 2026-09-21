@@ -48,3 +48,45 @@ def test_choice_and_differs_text_survive_each_style():
     assert by_id["T3"]["differs"].startswith("10 — the exact id")
     assert by_id["T4"]["choice"] == "Option (2)."
     assert by_id["T4"]["differs"].startswith("25 the author's fixture")
+
+
+FULL = """# Registry
+
+## T1. How many calls a failing request gets
+
+### Spec Text
+> retry it up to 3 times
+
+### Choice
+Four calls.
+
+### Risk: 45
+Three in all.
+
+## T2. Rounding of money
+
+### Spec Text
+> "total": 12.45
+
+### Choice
+Two decimals.
+
+### Risk: 40
+The raw float.
+"""
+
+
+def test_an_entry_keeps_its_whole_text_and_matches_on_the_spec_quote_too():
+    rows = rs.entries(FULL)
+    assert rows[0]["text"].startswith("## T1. How many calls") and rows[0]["text"].rstrip().endswith("Three in all.")
+    assert [r["id"] for r in rs.matching(rows, "retry it up to")] == ["T1"]  # only in the quoted spec text
+    assert [r["id"] for r in rs.matching(rows, "money")] == ["T2"]
+    assert [r["id"] for r in rs.matching(rows, "^T2$")] == ["T2"]  # an id selects its entry
+
+
+def test_a_run_that_kept_no_registry_is_said_plainly(tmp_path, capsys):
+    (tmp_path / "xjq" / "checkpoint_1" / "snapshot").mkdir(parents=True)
+    import pytest
+    with pytest.raises(SystemExit) as stop:
+        rs.registry_text(tmp_path)
+    assert "no AMBIGUITIES.md" in str(stop.value)

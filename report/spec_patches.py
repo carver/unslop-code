@@ -215,10 +215,12 @@ def step_path(points):
     return f"M{points[0][0]},{points[0][1]}" + moves(points[1:], points[0])
 
 
-def chart(title, series, points, x_domain, y_max, x_ticks, y_ticks, x_label, tips, reference=None, height=CHART_H):
+def chart(title, series, points, x_domain, y_max, x_ticks, y_ticks, x_label, tips, reference=None,
+          size=(CHART_W, CHART_H)):
     """One single-series line chart. `points` are (x value, y percent); `x_domain` runs left to right
     and may descend; `tips` has one hover text per point; `reference` is a second, muted line."""
-    (x0, x1), plot_w, plot_h = x_domain, CHART_W - LEFT - RIGHT, height - TOP - BOTTOM
+    (x0, x1), (width, height) = x_domain, size
+    plot_w, plot_h = width - LEFT - RIGHT, height - TOP - BOTTOM
 
     def sx(value):
         return round(LEFT + plot_w * (value - x0) / (x1 - x0), 1)
@@ -226,7 +228,7 @@ def chart(title, series, points, x_domain, y_max, x_ticks, y_ticks, x_label, tip
     def sy(value):
         return round(TOP + plot_h * (1 - value / y_max), 1)
 
-    grid = "".join(f'<line class="grid" x1="{LEFT}" y1="{sy(t)}" x2="{CHART_W - RIGHT}" y2="{sy(t)}"/>'
+    grid = "".join(f'<line class="grid" x1="{LEFT}" y1="{sy(t)}" x2="{width - RIGHT}" y2="{sy(t)}"/>'
                    f'<text class="tick" x="{LEFT - 6}" y="{sy(t) + 3}" text-anchor="end">{t}%</text>' for t in y_ticks)
     xs = "".join(f'<text class="tick" x="{sx(t)}" y="{height - BOTTOM + 14}" text-anchor="middle">{t}</text>'
                  for t in x_ticks)
@@ -238,7 +240,7 @@ def chart(title, series, points, x_domain, y_max, x_ticks, y_ticks, x_label, tip
     hover = json.dumps([[sx(x), sy(y), tip] for (x, y), tip in zip(points, tips, strict=True)],
                        ensure_ascii=False)
     return (f'<figure class="chart" data-points="{html.escape(hover)}"><figcaption>{html.escape(title)}</figcaption>'
-            f'<svg viewBox="0 0 {CHART_W} {height}" role="img" aria-label="{html.escape(title)}">{grid}{xs}'
+            f'<svg viewBox="0 0 {width} {height}" role="img" aria-label="{html.escape(title)}">{grid}{xs}'
             f'<text class="tick" x="{LEFT + plot_w / 2}" y="{height - 2}" text-anchor="middle">{x_label}</text>'
             f'{extra}<path class="series {series}" d="{line}"/>'
             f'<line class="cross" x1="0" y1="{TOP}" x2="0" y2="{height - BOTTOM}" visibility="hidden"/>'
@@ -263,14 +265,26 @@ BANDS = (("b1", "spec bugs addressed"), ("b3", "spec bugs still unfound"), ("b2"
 STACK_H = 300
 
 
-def stacked_chart(title, levels, x_domain, x_ticks, x_label, tips):
+def nice_step(top, most=5):
+    """The smallest of 1, 2, 2.5 and 5 times a power of ten that covers `top` in at most `most` steps."""
+    power = 10 ** (len(str(int(top))) - 2) if top >= 10 else 1
+    return next(step * scale for scale in (power, power * 10, power * 100) for step in (1, 2, 2.5, 5)
+                if top / (step * scale) <= most)
+
+
+def legend():
+    return "".join(f'<span><i class="key-swatch {name}"></i>{label}</span>' for name, label in reversed(BANDS))
+
+
+def stacked_chart(title, levels, x_domain, x_ticks, x_label, tips, size=(CHART_W, STACK_H), y_max=None, key=True):
     """Three stacked, stepped bands over a descending Risk axis. `levels` are (risk, [band values
-    bottom to top])."""
-    (x0, x1), plot_w, plot_h = x_domain, CHART_W - LEFT - RIGHT, STACK_H - TOP - BOTTOM
-    y_max = max(sum(values) for _, values in levels)
-    unit = 10 ** (len(str(int(y_max))) - 1)
+    bottom to top]). `y_max` fixes the scale, for charts that are compared; `key` draws the legend."""
+    (x0, x1), (width, height) = x_domain, size
+    plot_w, plot_h = width - LEFT - RIGHT, height - TOP - BOTTOM
+    y_max = y_max or max(sum(values) for _, values in levels)
+    unit = nice_step(y_max)
     y_max = unit * -(-y_max // unit)
-    y_ticks = [unit * i for i in range(int(y_max // unit) + 1)]
+    y_ticks = [unit * i for i in range(round(y_max / unit) + 1)]
 
     def sx(value):
         return round(LEFT + plot_w * (value - x0) / (x1 - x0), 1)
@@ -278,22 +292,21 @@ def stacked_chart(title, levels, x_domain, x_ticks, x_label, tips):
     def sy(value):
         return round(TOP + plot_h * (1 - value / y_max), 1)
 
-    grid = "".join(f'<line class="grid" x1="{LEFT}" y1="{sy(t)}" x2="{CHART_W - RIGHT}" y2="{sy(t)}"/>'
+    grid = "".join(f'<line class="grid" x1="{LEFT}" y1="{sy(t)}" x2="{width - RIGHT}" y2="{sy(t)}"/>'
                    f'<text class="tick" x="{LEFT - 6}" y="{sy(t) + 3}" text-anchor="end">{t:g}</text>' for t in y_ticks)
-    xs = "".join(f'<text class="tick" x="{sx(t)}" y="{STACK_H - BOTTOM + 14}" text-anchor="middle">{t}</text>'
+    xs = "".join(f'<text class="tick" x="{sx(t)}" y="{height - BOTTOM + 14}" text-anchor="middle">{t}</text>'
                  for t in x_ticks)
     edges = [[(risk, sum(values[:k])) for risk, values in levels] for k in range(len(BANDS) + 1)]
     edges = [[(sx(x), sy(y)) for x, y in stepped(edge)] for edge in edges]
     bands = "".join(f'<path class="band {name}" d="{band_path(edges[k + 1], edges[k])}"/>'
                     for k, (name, _) in enumerate(BANDS))
-    key = "".join(f'<span><i class="key-swatch {name}"></i>{label}</span>' for name, label in reversed(BANDS))
     hover = json.dumps([[sx(risk), sy(values[0]), tip] for (risk, values), tip in zip(levels, tips, strict=True)],
                        ensure_ascii=False)
     return (f'<figure class="chart" data-points="{html.escape(hover)}"><figcaption>{html.escape(title)}</figcaption>'
-            f'<div class="key">{key}</div>'
-            f'<svg viewBox="0 0 {CHART_W} {STACK_H}" role="img" aria-label="{html.escape(title)}">{grid}{xs}'
-            f'<text class="tick" x="{LEFT + plot_w / 2}" y="{STACK_H - 2}" text-anchor="middle">{x_label}</text>'
-            f'{bands}<line class="cross" x1="0" y1="{TOP}" x2="0" y2="{STACK_H - BOTTOM}" visibility="hidden"/>'
+            f'{f"""<div class="key">{legend()}</div>""" if key else ""}'
+            f'<svg viewBox="0 0 {width} {height}" role="img" aria-label="{html.escape(title)}">{grid}{xs}'
+            f'<text class="tick" x="{LEFT + plot_w / 2}" y="{height - 2}" text-anchor="middle">{x_label}</text>'
+            f'{bands}<line class="cross" x1="0" y1="{TOP}" x2="0" y2="{height - BOTTOM}" visibility="hidden"/>'
             f'<circle class="dot b1" r="4" cx="0" cy="0" visibility="hidden"/></svg>'
             f'<div class="tip" hidden></div></figure>')
 
@@ -302,21 +315,65 @@ def percent(part, whole):
     return 100 * part / whole if whole else 0
 
 
+def stack_series(curve):
+    """(levels for stacked_chart, hover texts): per-run averages at each Risk level."""
+    runs = curve["runs"]
+    levels = [(r["risk"], [r["found"] / runs, r["remaining"] / runs, (r["addressed"] - r["hits"]) / runs])
+              for r in curve["thresholds"]]
+    tips = [f"Risk ≥ {risk}, per run: {found:.1f} bugs addressed, {left:.1f} still unfound, "
+            f"{none:.1f} changes that fix no known bug" for risk, (found, left, none) in levels]
+    return levels, tips
+
+
+def gain_series(curve):
+    """(points, hover texts, the share of bugs a whole registry finds) for the gain chart."""
+    ceiling = curve["gain"][-1][1]
+    tips = [f"Top {p}% of a registry by Risk: {100 * share:.0f}% of its bugs found "
+            f"({p * ceiling:.0f}% in random order)" for p, share in curve["gain"]]
+    return [(p, 100 * share) for p, share in curve["gain"]], tips, ceiling
+
+
+def risk_axis(curves):
+    """(highest Risk on the axis, its ticks), shared by every chart of `curves`."""
+    high = 5 * -(-max(row["risk"] for curve in curves for row in curve["thresholds"]) // 5)
+    return high, list(range(high, -1, -10))
+
+
+DIFFICULTY_ORDER = ("Easy", "Medium", "Hard")
+SMALL = (300, 190)
+
+
+def problem_section(curves, difficulty):
+    """One card per problem, easiest first: the same two charts as the pooled pair, on shared scales."""
+    high, x_ticks = risk_axis(curves.values())
+    y_max = max(sum(values) for curve in curves.values() for _, values in stack_series(curve)[0])
+    cards = []
+    for problem in sorted(curves, key=lambda p: (DIFFICULTY_ORDER.index(difficulty[p]), p)):
+        curve = curves[problem]
+        levels, stack_tips = stack_series(curve)
+        gain, gain_tips, ceiling = gain_series(curve)
+        label = (f'<span class="mono">{problem}</span> {difficulty[problem]} · {count(curve["runs"], "run")} · '
+                 f'{count(curve["bugs"], "bug")}')
+        cards.append(
+            f'<div class="card"><h3>{label}</h3>'
+            + stacked_chart("Spec changes per run", levels, (high, 0), x_ticks, "clarify entries at or above this Risk",
+                            stack_tips, size=SMALL, y_max=y_max, key=False)
+            + chart("Bugs found, reading from the top", "s1", gain, (0, 100), 100, (0, 50, 100), (0, 50, 100),
+                    "% of the registry read", gain_tips, reference=((0, 0), (100, 100 * ceiling)), size=SMALL)
+            + "</div>")
+    return (f'<section id="risk-by-problem"><h2 class="plain">The same, problem by problem</h2>'
+            f'<p class="risk-key">Easiest first, by the benchmark\'s own difficulty label. Every left chart shares one '
+            f'scale and so does every right chart, so heights compare across problems. Few runs and few bugs each: '
+            f'read the shapes, not the steps.</p><div class="key shared">{legend()}</div>'
+            f'<div class="cards">{"".join(cards)}</div></section>')
+
+
 def chart_section(curve):
     """The pooled charts at the top of the page, from bin/patch-risk's curve()."""
     rows, instances = curve["thresholds"], curve["bug_instances"]
-    top = max(row["risk"] for row in rows)
-    high = 5 * -(-top // 5)
-    x_ticks = [t for t in range(high, -1, -10)]
-    runs = curve["runs"]
-    levels = [(r["risk"], [r["found"] / runs, r["remaining"] / runs, (r["addressed"] - r["hits"]) / runs])
-              for r in rows]
-    stack_tips = [f"Risk ≥ {risk}, per run: {found:.1f} bugs addressed, {left:.1f} still unfound, "
-                  f"{none:.1f} changes that fix no known bug" for risk, (found, left, none) in levels]
-    ceiling = curve["gain"][-1][1]
-    gain = [(p, 100 * share) for p, share in curve["gain"]]
-    gain_tips = [f"Top {p}% of a registry by Risk: {100 * share:.0f}% of its bugs found "
-                 f"({p * ceiling:.0f}% in random order)" for p, share in curve["gain"]]
+    high, x_ticks = risk_axis([curve])
+    levels, stack_tips = stack_series(curve)
+    gain, gain_tips, ceiling = gain_series(curve)
     floor = rows[-1]["remaining"]
     table = "".join(f"<tr><td>{r['risk']}</td><td>{r['addressed']}</td><td>{r['hits']}</td>"
                     f"<td>{percent(r['hits'], r['addressed']):.1f}%</td><td>{r['remaining']}</td></tr>"
@@ -337,7 +394,7 @@ asked the question.</p>
                "clarify every entry at or above this Risk", stack_tips)}
 {chart("Bugs found reading a registry from its highest Risk down", "s1", gain, (0, 100), 100, (0, 25, 50, 75, 100),
        (0, 25, 50, 75, 100), "% of the run's registry read (dashed: random order)", gain_tips,
-       reference=((0, 0), (100, 100 * ceiling)), height=STACK_H)}
+       reference=((0, 0), (100, 100 * ceiling)), size=(CHART_W, STACK_H))}
 </div>
 <p class="risk-key">Left: averages per run, in spec changes. The two lower bands always add up to the run's bugs;
 the top band is every other entry clarified. It is an upper bound on waste: an entry counts as a bug only if it is
@@ -395,6 +452,9 @@ def build():
         sections.append(f'<section id="{problem}"><h2><span class="mono">{problem}</span> <span class="ver">{version}'
                         f'</span></h2><p class="blurb">{blurb}</p>{"".join(articles)}</section>')
     dev = split["dev"]
+    by_problem = {problem: patch_risk.curve([problem], SPECS, ROOT / "outputs") for problem in files}
+    rated = (line.split(",") for line in (ROOT / "problems.csv").read_text().splitlines()[1:])
+    difficulty = {name: level for name, level, *_ in rated}
     unpatched = [p for p in dev if p not in files]
     rest = f" {' and '.join(unpatched)} {'has' if len(unpatched) == 1 else 'have'} no patches." if unpatched else ""
     lede = (f"Every change made to a benchmark spec so far: {total} patches across {NUMBER_WORDS[len(files)]} of the "
@@ -405,6 +465,7 @@ def build():
             f"{rest} Risk scores: <span class=\"mono\">bin/patch-risk</span>.")
     body = (f'<div class="wrap"><h1>SCBench Spec Patches</h1><p class="lede">{lede}</p>'
             f'{chart_section(patch_risk.curve(list(files), SPECS, ROOT / "outputs"))}'
+            f'{problem_section(by_problem, difficulty)}'
             f'<nav class="toc">{"".join(toc)}</nav>{"".join(sections)}<p class="foot">{foot}</p></div>'
             f"{SCRIPT}")
     return (HERE / "spec-patches.template.html").read_text() + "</style>\n" + body + "\n"

@@ -118,3 +118,21 @@ def test_the_page_has_no_toggle_and_shows_every_risk_block():
     assert "show-risk" not in page and '<div class="risk" hidden>' not in page
     assert page.count('<div class="risk">') == page.count('<div class="hunk">') >= 34
     assert page.index('id="risk-charts"') < page.index('<nav class="toc">')
+
+
+def test_the_per_problem_section_is_one_card_per_problem_in_order_of_difficulty_on_shared_scales():
+    other = {**CURVE, "runs": 1, "thresholds": [
+        {"risk": 40, "addressed": 9, "hits": 1, "found": 1, "remaining": 1},
+        {"risk": 0, "addressed": 20, "hits": 1, "found": 1, "remaining": 1}]}
+    section = sp.problem_section({"rejector": CURVE, "xjq": other}, {"rejector": "Hard", "xjq": "Easy"})
+    assert section.index("xjq") < section.index("rejector")  # Easy before Hard
+    assert "xjq</span> Easy · 1 run · 2 bugs" in section and "rejector</span> Hard · 2 runs · 2 bugs" in section
+    assert section.count('<div class="card">') == 2 and section.count("<svg") == 4
+    assert section.count('class="key-swatch') == 3  # one shared legend, not one per chart
+    # both stacked charts share the y scale of the tallest: xjq's 20 entries per run
+    tops = __import__("re").findall(r'<text class="tick" x="[\d.]+" y="([\d.]+)" text-anchor="end">20</text>', section)
+    assert len(tops) == 2 and tops[0] == tops[1]
+
+
+def test_nice_step_keeps_the_axis_close_to_the_data():
+    assert [sp.nice_step(top) for top in (4.7, 20, 76, 108, 260)] == [1, 5, 20, 25, 100]

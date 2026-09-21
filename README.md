@@ -77,6 +77,8 @@ prompt and `save_dir` relative to it, which is where `bin/queue` and `bin/scb-ex
                                              # --queue continues it with bin/queue resume-strict <copy>
     bin/queue resume-strict <run_dir>        # continue a run under bin/scb-strict: halt at the first non-strict checkpoint
     bin/test-history <problem> <test>        # pass, fail or not reached, in every run of the problem, oldest first
+    bin/test-failure <run_dir> <test>        # the assertion lines pytest printed for a failing test, per checkpoint;
+                                             # --full for the whole section
     bin/queue-watch                          # event stream for a Monitor: checkpoint results, halts, DONE
                                              # lines and job status changes across the whole queue
     bin/ledger-row <run_dir>                 # after every run: the ledger row and failure summary to fill in

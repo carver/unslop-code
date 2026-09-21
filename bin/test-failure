@@ -1,0 +1,73 @@
+#!/usr/bin/env python3
+"""What pytest printed for one failing test of a run: its assertion (E) lines, per checkpoint.
+    bin/test-failure <run> <substring-of-test-title> [--lines N] [--width N] [--full]
+<run> is a run folder (outputs/<group>/<family>/<stamp>) or one problem inside it. Reads each
+checkpoint_N/evaluation/stdout.txt and matches the needle against the titles in pytest's FAILURES
+and ERRORS blocks, e.g. `TestErrors.test_missing_vault_route` or `test_cases[errors/alias_cycle]`.
+Later checkpoints rerun earlier tests, so one test can show under several checkpoints. --full
+prints the whole section (traceback, captured output) instead of the E lines.
+"""
+import argparse
+import pathlib
+import re
+
+BANNER = re.compile(r"^=+ (.+) =+$")
+TITLE = re.compile(r"^_+ (.+) _+$")
+FAILURE_BLOCKS = {"FAILURES", "ERRORS"}
+
+
+def failure_sections(text):
+    """[(title, body lines)] for every titled section inside pytest's FAILURES and ERRORS blocks."""
+    sections = []
+    in_block = False
+    for line in text.splitlines():
+        if banner := BANNER.match(line):
+            in_block = banner.group(1) in FAILURE_BLOCKS
+        elif not in_block:
+            continue
+        elif title := TITLE.match(line):
+            sections.append((title.group(1), []))
+        elif sections:
+            sections[-1][1].append(line)
+    return sections
+
+
+def run_failures(run):
+    """[(problem/checkpoint, title, body lines)] over every checkpoint of the run, in order."""
+    stdouts = sorted(run.glob("checkpoint_*/evaluation/stdout.txt")) or sorted(
+        run.glob("*/checkpoint_*/evaluation/stdout.txt")
+    )
+    if not stdouts:
+        raise SystemExit(f"test-failure: no checkpoint_*/evaluation/stdout.txt under {run}")
+    failures = []
+    for stdout in stdouts:
+        checkpoint = stdout.parent.parent
+        label = f"{checkpoint.parent.name}/{checkpoint.name}"
+        for title, body in failure_sections(stdout.read_text(errors="replace")):
+            failures.append((label, title, body))
+    return failures
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument("run", type=pathlib.Path, help="run folder, or one problem folder inside it")
+    parser.add_argument("needle", help="substring of the failure's title, e.g. missing_vault")
+    parser.add_argument("--lines", type=int, default=6, help="E lines per failure (default 6)")
+    parser.add_argument("--width", type=int, default=240, help="cut each line here (default 240)")
+    parser.add_argument("--full", action="store_true", help="the whole section, not only its E lines")
+    args = parser.parse_args(argv)
+    failures = run_failures(args.run)
+    matches = [failure for failure in failures if args.needle in failure[1]]
+    if not matches:
+        titles = sorted({title for _, title, _ in failures})
+        listing = "".join(f"\n  {title}" for title in titles) or " none"
+        raise SystemExit(f"test-failure: no failure matching {args.needle!r}; the run's failures:{listing}")
+    for label, title, body in matches:
+        print(f"{label} {title}")
+        shown = body if args.full else [line for line in body if line.startswith("E  ")][: args.lines]
+        for line in shown:
+            print(line[: args.width])
+
+
+if __name__ == "__main__":
+    main()

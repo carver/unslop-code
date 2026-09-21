@@ -62,8 +62,8 @@ ledger has the table, the matrix, and both minima named.
     bin/ledger-row <run_dir>
 
 gives the table row and the failure-summary entry for `notes/<problem>-runs.md`. Fill in
-what changed and the cause of each miss (the checkpoint's `evaluation/stdout.txt`,
-`bin/miss-report`, `bin/askrun`), put the row in the run table and the entry under "Test
+what changed and the cause of each miss (`bin/test-failure <run_dir> <test>` for its assertion
+lines out of the checkpoint's `evaluation/stdout.txt`, `bin/miss-report`, `bin/askrun`), put the row in the run table and the entry under "Test
 failure summaries", and for a ladder run refresh the ladder section with
 `bin/compare-runs <runs...> --md`. `bin/ledger-row` ends by running `bin/results --write`,
 so `notes/results.md` goes into the same commit. Commit. Done when all three are in the ledger

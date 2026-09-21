@@ -3,6 +3,8 @@
 The user's question, asked before the last runs landed. Both prompts now have two runs on each
 of the three patched specs (xjq v3, datagate v2, file_merger v7; jobs 247 to 258 and min13's
 earlier pairs). Answer: the gap points the expected way and is noise at this size.
+mvvault v1 joined on 2026-09-21 and is in its own section below: the gap grows to 0.57 points,
+one-sided p 0.069.
 
 ## By run
 
@@ -49,6 +51,37 @@ on v0 and lost seven tests to it; v1's urllib sentence removes that, so mvvault 
 a gap survives on a larger problem. One thing that does look real and is not a solve rate: the
 three anti-slop-rule runs of four on datagate v2 that refuse an input every other prompt accepts
 (`notes/spectest-datagate-runs.md`).
+
+## With mvvault v1 (2026-09-21)
+
+The cheaper evidence came in: mvvault v1 has both pairs (min13 jobs 261 and 262, anti-slop 273 and
+274).
+
+| problem | spectest+antislop (min13) | anti-slop |
+|---|---|---|
+| mvvault v1 (227) | 227, 225 | 222, 224 |
+| all eight runs (1892) | 1874 | 1862 |
+| strict checkpoints (44) | 29 | 23 |
+
+Mean of the four problems' fail rates: min13 0.60%, anti-slop 1.17%, a gap of 0.57 points. The
+same exact permutation test over four problems (1296 relabelings) gives the observed gap or more
+in 90: one-sided p 0.069, two-sided 0.139. mvvault alone is a gap of 1.3 points, the largest of
+the four, and the urllib sentence did what it was for: neither prompt lost the seven `requests`
+tests on v1. So a gap did survive on the larger problem, and it is still short of the usual bar.
+
+Causes on mvvault v1, from `notes/mvvault-runs.md`:
+
+| run | own causes | tests |
+|---|---|---|
+| min13 227 | none | 0 |
+| min13 225 | the viewer's auto-migration skips the legacy-schema check (a bug; its registry chose strict) | 2 |
+| anti-slop 222 | the missing-vault redirect carries `?missing=`; the landing notice lacks "not found"; a literal `../..` is treated as a missing vault | 5 |
+| anti-slop 224 | the missing-vault redirect carries `?missing=`; the landing notice lacks "not found" | 3 |
+
+One own cause in two runs for min13, five in two for anti-slop, and anti-slop's redirect choice is
+the same one in both runs (and in both its v0 runs). Over the four problems that makes two own
+causes in eight runs for min13 and eight in eight for anti-slop. The direction has now held on
+every problem where the two differ at all.
 
 ## At v0, for contrast
 

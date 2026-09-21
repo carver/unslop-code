@@ -125,7 +125,7 @@ svg .hit { fill: transparent; }
   </section>
 
   <section>
-    <h2>Averaged over the three problems with a patched spec</h2>
+    <h2 id="patched-heading">Averaged over the problems with a patched spec</h2>
     <div class="squares" id="squares"></div>
   </section>
 
@@ -223,6 +223,9 @@ const PAPER = {
 const PAPER_DRAWN = ["Anti-Slop", "Plan-First"];
 const problems = Object.keys(G.problems);
 const patched = problems.filter(p => G.problems[p].patched);
+const COUNT_WORDS = ["no", "one", "two", "three", "four", "five", "six"];
+document.getElementById("patched-heading").textContent =
+  `Averaged over the ${COUNT_WORDS[patched.length] ?? patched.length} problems with a patched spec`;
 const cell = (p, prompt, kind) => D.problems[p].cells[`${prompt}|${kind}`];
 const mean = xs => xs.reduce((a, b) => a + b, 0) / xs.length;
 // A prompt may not have run every problem yet; a mean covers the problems it did, null if none.
@@ -236,7 +239,7 @@ const partialNote = (set, kind = "v0") => {
     .map(pr => `${label(pr)} over ${have(set, pr, kind).length} so far`);
   return short.length ? `; ${short.join(", ")}` : "";
 };
-// A patched cell that covers one problem of three sits beside means over all three, so the
+// A patched cell that covers only some of the patched problems sits beside means over all of them, so the
 // cards that draw patched cells say which prompts are short.
 const patchedNote = () => partialNote(patched, "patched").replace(/ so far/g, " patched so far");
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));

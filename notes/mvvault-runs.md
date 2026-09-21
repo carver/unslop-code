@@ -139,4 +139,9 @@ v0. Sentence by sentence, from the run's registry (66 entries) and code:
     `0.0.0.0`.
   - `05` and `07` held; no entry questions either.
 
-One strict run. The user's bar is twice.
+One strict run. The user's bar is twice: job 262 is the repeat, under bin/scb-strict in the
+specpatch channel. Queued behind it at the user's call, each `--after 262` so none runs unless
+the repeat is strict too: just-solve on v1 twice (263, 264), anti-slop twice (265, 266) and
+min12-ABDJKMN twice (267, 268), plain `bin/queue add` in the main queue, after file_merger's
+v7 pairs and ahead of the test-set batch. With them mvvault joins the uplift grid as a fourth
+patched problem.

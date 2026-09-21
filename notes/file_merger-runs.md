@@ -32,6 +32,7 @@ The control is the dev6 sweep's just-solve run (`notes/dev6-opus5.md`).
 | min13-ABDJKMNT on v7 (strict) | `…min13-ABDJKMNT-specv7/20260920T0949` | min13 on v7 under bin/scb-strict: v6 plus the checkpoint-1 sentence "keeping fractional seconds"; first of two, the repeat runs only if this one is strict | 46/46, 86/86, 104/104, 147/147 | complete 2026-09-20; no misses, strict on every checkpoint; both sub-second tests pass, and the registry no longer weighs dropping the fraction, only how many digits to print; 4/4 strict, $26, 79 min. Quality: erosion 0.005, verbosity 0.199, ast 0.035, cloned 0.143; final checkpoint, implementation only (40% of LOC): ast 0.126, erosion 0.055, cloned 0.019 |
 | min13-ABDJKMNT on v7, repeat (strict) | `…min13-ABDJKMNT-specv7/20260920T1114` | same config as the first run; second of two, started by pueue once job 253 exited 0 | 46/46, 86/86, 104/104, 147/147 | complete 2026-09-20; no misses, strict on every checkpoint again, so min13 is strict twice on v7; its registry asks the first run's question, how many digits, and answers it the same way; 4/4 strict, $26, 81 min. Quality: erosion 0.000, verbosity 0.195, ast 0.028, cloned 0.135; final checkpoint, implementation only (32% of LOC): ast 0.124, erosion 0.000, cloned 0.019 |
 | anti-slop on v7 | `…anti_slop-specv7/20260920T1550` | the upstream anti_slop prompt on v7, for the uplift grid and the solve-rate comparison with min13; first of two | 46/46, 86/86, 104/104, 146/147 | complete 2026-09-20; 1 miss, partition_by_map_value at checkpoint 4: the directory is named with the column name percent-encoded too, the reading v5's sentence "Values use percent-encoding" was written against; both sub-second tests pass; 3/4 strict, $23, 68 min, overlapped throughout by the specpatch channel's job 261, so the minutes are not comparable. Quality: erosion 0.000, verbosity 0.144, ast 0.055, cloned 0.055; final checkpoint, implementation only (51% of LOC): ast 0.127, erosion 0.000, cloned 0.020 |
+| anti-slop on v7, repeat | `…anti_slop-specv7/20260920T1705` | same config as the first run; second of two | 46/46, 86/86, 104/104, 147/147 | complete 2026-09-20; no misses, strict on every checkpoint; partition_by_map_value passed this time; 4/4 strict, $17, 43 min, overlapped by the specpatch channel, so the minutes are not comparable. Quality: erosion 0.013, verbosity 0.143, ast 0.086, cloned 0.031; final checkpoint, implementation only (63% of LOC): ast 0.119, erosion 0.000, cloned 0.007 |
 
 ## Test failure summaries
 
@@ -137,6 +138,9 @@ The control is the dev6 sweep's just-solve run (`notes/dev6-opus5.md`).
     read the sentence. just-solve's second v6 run missed the same test. Pair so far 146
     against min13's 147 and 147. Implementation only: erosion 0.000, ast 0.127, cloned 0.020.
     $23 and 68 min, every checkpoint shared with job 261. First of two.
+  - repeat (147): strict throughout; the partition name was left as written this time, so the
+    first run's miss was its own toss. Pair 146 and 147 against min13's 147 and 147.
+    Implementation only: erosion 0.000, ast 0.119, cloned 0.007. $17 and 43 min.
 
 ### min11-ABDFJKMN
 

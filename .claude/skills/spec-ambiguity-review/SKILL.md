@@ -18,8 +18,8 @@ are the later ones.
 
     bin/miss-report <run_dir> --out notes/<problem>-misses.md
 
-One section per distinct failing hidden test: docstring, assertions, spec lines near
-the test's words, candidate registry entries by word overlap. The candidates are hints.
+One section per distinct failing hidden test: docstring, assertions, the E lines of its failure,
+spec lines near the test's words, candidate registry entries by word overlap. The candidates are hints.
 For every failing test, read the test, the spec section, and the registry until you can
 name the one sentence the test and the tester read differently, and the reading the test
 takes. When misses smell of parsing, read the fixture's bytes too: file_merger's TSV fixtures
@@ -32,9 +32,9 @@ artifacts) or "noise" (flips between runs, like a detector on a tiny sample).
 
 - **Noise needs the registry's word for it.** A test that failed in one run only is not noise until
   that run's registry has been read: `bin/registry-scores <run> --grep <words from the spec line>
-  --full`. `bin/registry-scores <run> --misses` (also in the recap) lists candidate entries per
-  miss from the test id's words; it says where to start reading, the grep on the spec line's
-  own words settles it. rejector's two "one-run" misses were both Risk 40 entries where the run chose the other
+  --full`. `bin/miss-report <run> --brief` (also in the recap) lists candidate entries per miss
+  from the words of the test's name, source and failure output; it says where to start reading,
+  the grep on the spec line's own words settles it. rejector's two "one-run" misses were both Risk 40 entries where the run chose the other
   side knowingly. A rare coin gets a sentence like any other reading.
 - **Read the later checkpoints for the rule.** Three times the spec stated the hidden reading one
   to three checkpoints after it was first needed (mvvault's "filename contains entry `id`" at

@@ -119,44 +119,29 @@ def test_words_of_a_test_id_drop_digits_and_the_words_every_test_id_has():
 
 def test_near_ranks_entries_by_how_rare_the_shared_words_are_and_names_them():
     rows = rs.entries(NEAR)
-    got = rs.near(rows, "test_hidden_cases[hidden/type_alias_with_parquet]")
+    got = rs.near(rows, rs.words("test_hidden_cases[hidden/type_alias_with_parquet]"))
     # "type" is in every entry, so it ranks nothing and T3 drops out; the tie goes to the higher Risk
     assert [(r["id"], hit) for r, hit in got] == [("T2", ["parquet", "type"]), ("T1", ["alias", "type"])]
 
 
 def test_near_matches_a_plural_to_its_singular_but_not_a_short_prefix():
     rows = rs.entries(NEAR)
-    assert [r["id"] for r, _ in rs.near(rows, "test_core_cases[correct_aliases/case1]")] == ["T1"]
-    assert [r["id"] for r, _ in rs.near(rows, "test_new_entries")] == []  # "new" is no prefix match for "newline"
-    assert rs.near(rows, "test_no_such_word") == []
+    assert [r["id"] for r, _ in rs.near(rows, rs.words("test_core_cases[correct_aliases/case1]"))] == ["T1"]
+    # "new" is too short to match "newline" as its prefix
+    assert [r["id"] for r, _ in rs.near(rows, rs.words("test_new_entries"))] == []
+    assert rs.near(rows, rs.words("test_no_such_word")) == []
+    assert rs.near([], {"alias"}) == []
 
 
-def make_run_with_misses(tmp_path, failed):
-    import json
-    checkpoint = tmp_path / "file_merger" / "checkpoint_1"
-    (checkpoint / "snapshot").mkdir(parents=True)
-    (checkpoint / "snapshot" / "AMBIGUITIES.md").write_text(NEAR)
-    (checkpoint / "evaluation.json").write_text(
-        json.dumps({"tests": {"checkpoint_1-Core": {"passed": ["test_ok"], "failed": failed}}})
-    )
-    return tmp_path
+def test_near_lets_the_tests_own_name_outweigh_the_words_around_it_and_lists_its_words_first():
+    rows = rs.entries(NEAR)
+    got = rs.near(rows, {"parquet", "schema"}, named={"alias"})
+    assert [(r["id"], hit) for r, hit in got] == [("T1", ["alias"]), ("T2", ["parquet", "schema"])]
+    assert [r["id"] for r, _ in rs.near(rows, {"parquet", "schema", "alias"})] == ["T2", "T1"]
 
 
-def test_misses_lists_candidates_per_miss_and_folds_misses_with_the_same_words(tmp_path, capsys):
-    run = make_run_with_misses(
-        tmp_path,
-        ["test_core_cases[correct_aliases/case1]", "test_core_cases[correct_aliases/case2]", "test_atomic"],
-    )
-    rs.main([str(run), "--misses"])
-    out = capsys.readouterr().out.splitlines()
-    assert out[1:] == [
-        "test_atomic",
-        "  no entry shares a word with this test id",
-        "test_core_cases[correct_aliases/case1] (+1 more with the same words)",
-        "   25  T1. User aliases that shadow built-in type names  [aliases]",
-    ]
-
-
-def test_misses_on_a_clean_run_says_there_are_none(tmp_path, capsys):
-    rs.main([str(make_run_with_misses(tmp_path, [])), "--misses"])
-    assert capsys.readouterr().out.splitlines()[1:] == ["no failing tests in this run"]
+def test_near_marks_a_long_entry_down():
+    filler = " ".join(f"filler{chr(97 + i)}word" for i in range(26))
+    long_entry = f"## T9. Aliases\n### Choice\n{filler}\n### Risk: 50\nx\n"
+    rows = rs.entries(NEAR + "\n" + long_entry)
+    assert [r["id"] for r, _ in rs.near(rows, {"alias"})] == ["T1", "T9"]

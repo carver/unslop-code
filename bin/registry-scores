@@ -2,7 +2,7 @@
 """Risk (v10) or Differs (v9) scores of a run's AMBIGUITIES.md: count, spread, the top entries,
 and any entry matching a pattern.
 
-Usage: bin/registry-scores <run_dir> [checkpoint_N] [--grep REGEX] [--full] [--top N] [--misses]
+Usage: bin/registry-scores <run_dir> [checkpoint_N] [--grep REGEX] [--full] [--top N]
 Reads <run_dir>/<problem>/checkpoint_N/snapshot/AMBIGUITIES.md (last checkpoint by default) and
 accepts every entry style seen so far (### Differs sections, ### Risk: N headings, **Differs** — N and
 **Differs** N lines, Risk spelled the same ways). --grep prints the Choice and Risk text of entries
@@ -10,22 +10,18 @@ whose heading, quoted spec text or id (`^T8$`) matches, which is how a known fli
 with --full it prints those entries whole, verbatim, which is what a spec pitch quotes. A run
 that kept no registry (just-solve, anti-slop) says so and exits 1.
 
---misses lists, under each failing test of the run, the entries that share words with the test id,
-rarest shared words first, with those words in brackets. They are candidates to read, not a
-finding: a test id has few words, and `test_tpm_gate` ranks an entry about "gates" above the two
-about tpm. Misses whose ids differ only in digits (case1, case2) fold into one line.
+bin/miss-report ranks the entries near a failing test with `words` and `near` from here.
 """
 
 import argparse
 import collections
-import json
 import math
 import pathlib
 import re
 
 ID_NOISE = {"test", "tests", "case", "cases", "core", "hidden", "error", "errors", "correct",
             "checkpoint", "functionality", "the", "and", "for", "with", "not"}
-NEAR_TOP = 3
+NAME_WEIGHT = 6  # of the few misses whose entry is known, this put the most in the top three
 
 
 def entries(text):
@@ -83,43 +79,25 @@ def same_word(a, b):
     return a == b or (len(a) >= 4 and len(b) - len(a) <= 3 and b.startswith(a))
 
 
-def near(rows, test_id):
-    """[(entry, the test id's words it shares)], best first: a shared word counts for more the
-    fewer entries have it, a word every entry has counts for nothing, ties go to the higher Risk."""
-    wanted = words(test_id)
-    shared = {}
+def near(rows, wanted, named=frozenset()):
+    """[(entry, the wanted words it shares)], best first. A shared word counts for more the fewer
+    entries have it, and for nothing when every entry has it; one of the `named` words (the test's
+    own name) counts NAME_WEIGHT times; a long entry is marked down, since it shares words with
+    everything. Ties go to the higher Risk."""
+    shared, length = {}, {}
     for r in rows:
         entry_words = words(r["text"])
-        shared[r["id"]] = sorted(w for w in wanted if any(same_word(w, e) for e in entry_words))
+        length[r["id"]] = max(len(entry_words), 1)
+        hit = (w for w in wanted | named if any(same_word(w, e) for e in entry_words))
+        shared[r["id"]] = sorted(hit, key=lambda w: (w not in named, w))  # the name's words lead
     spread = collections.Counter(w for hit in shared.values() for w in hit)
-    weight = {r["id"]: sum(math.log(len(rows) / spread[w]) for w in shared[r["id"]]) for r in rows}
+    weight = {
+        r["id"]: sum((NAME_WEIGHT if w in named else 1) * math.log(len(rows) / spread[w]) for w in shared[r["id"]])
+        / math.sqrt(length[r["id"]])
+        for r in rows
+    }
     ranked = sorted((r for r in rows if weight[r["id"]] > 0), key=lambda r: (-weight[r["id"]], -(r["score"] or 0)))
     return [(r, shared[r["id"]]) for r in ranked]
-
-
-def failing_tests(problem_dir):
-    """Every test id that failed in any checkpoint of the run."""
-    failed = set()
-    for evaluation in problem_dir.glob("checkpoint_*/evaluation.json"):
-        for group in json.loads(evaluation.read_text()).get("tests", {}).values():
-            failed.update(group.get("failed", []))
-    return failed
-
-
-def print_misses(rows, misses, top):
-    if not misses:
-        print("no failing tests in this run")
-    folded = collections.defaultdict(list)
-    for miss in sorted(misses):
-        folded[frozenset(words(miss))].append(miss)
-    for same in sorted(folded.values()):
-        more = f" (+{len(same) - 1} more with the same words)" if len(same) > 1 else ""
-        print(f"{same[0]}{more}")
-        candidates = near(rows, same[0])[:top]
-        if not candidates:
-            print("  no entry shares a word with this test id")
-        for r, hit in candidates:
-            print(f"  {r['score'] if r['score'] is not None else '-':>3}  {r['head'][:90]}  [{', '.join(hit)}]")
 
 
 def registry_text(run_dir, checkpoint=None):
@@ -137,7 +115,6 @@ def main(argv=None):
     parser.add_argument("--grep", metavar="REGEX")
     parser.add_argument("--full", action="store_true")
     parser.add_argument("--top", type=int)
-    parser.add_argument("--misses", action="store_true")
     args = parser.parse_args(argv)
     path, text = registry_text(args.run_dir, args.checkpoint)
     rows = entries(text)
@@ -147,9 +124,6 @@ def main(argv=None):
         f"{path.relative_to(args.run_dir) if str(path).startswith(str(args.run_dir)) else path}: "
         f"{len(rows)} entries, {len(scored)} scored, by decade {by_decade}"
     )
-    if args.misses:
-        print_misses(rows, failing_tests(path.parents[2]), NEAR_TOP if args.top is None else args.top)
-        return
     for r in sorted(scored, key=lambda r: -r["score"])[: 6 if args.top is None else args.top]:
         print(f"  {r['score']:>3}  {r['head'][:90]}")
     if args.grep:

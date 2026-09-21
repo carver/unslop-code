@@ -60,8 +60,8 @@ prompt and `save_dir` relative to it, which is where `bin/queue` and `bin/scb-ex
     bin/failures [run_a [run_b]] [problem]   # failing tests, one run or side by side
     bin/askrun <checkpoint_dir> [question]   # resume that checkpoint's Claude session
                                              # for post-run Q&A (no args = interactive)
-    bin/miss-report <run_dir>                # failing hidden tests with assertions, spec lines,
-                                             # candidate AMBIGUITIES entries
+    bin/miss-report <run_dir>                # failing hidden tests with assertions, failure output, spec lines,
+                                             # candidate AMBIGUITIES entries; --brief for the candidates alone
     bin/judge-ambiguities run|summarize ...  # blind judges over a registry, optionally against
                                              # a spec patch
     bin/spec-patch <problem> <vN>            # build the problem's spec version vN (specs/<problem>/vN/*.patch
@@ -71,8 +71,7 @@ prompt and `save_dir` relative to it, which is where `bin/queue` and `bin/scb-ex
                                              # (--spec vN reads specs/<problem>/vN/problems; default v0)
     bin/compare-runs <run_dir>...            # runs side by side: scores, cost, quality, miss matrix
     bin/registry-scores <run_dir> [--grep X] # a run's AMBIGUITIES.md Differs scores: spread, top entries,
-                                             # the Choice and Differs text of matching entries;
-                                             # --misses: the entries sharing words with each failing test
+                                             # the Choice and Differs text of matching entries
     python3 -m pytest                        # the bin tools' tests; GitHub Actions runs them on every PR
     bin/fork-run <run_dir> --spec vN --keep k  # copy a run keeping checkpoints 1..k, pointed at spec vN;
                                              # --queue continues it with bin/queue resume-strict <copy>

@@ -30,6 +30,7 @@ existing snapshot with `bin/reeval`, and every later run scores it that way nati
 | just-solve on v1 | `…just-solve-specv1/20260921T0904` | benchmark's own prompt on spec v1, a baseline for the grid's patched cell; first of two | 37/37, 66/67, 114/115, 154/155, 184/185, 226/227 | complete 2026-09-21; 1 miss, test_sync_v2_absent_entry_gets_removed_true_after_migration from checkpoint 2 on: the run gives the migration and the sync that triggered it one timestamp, so the sync's `true` overwrites the migration's `false` and the history reads [True] where the test wants [False, True]; the agent's bug, new to opus-5 (15 pass, 1 fail before, the fail sonnet's just-solve); urllib throughout; the missing-vault redirect and test_migration_atomic passed; no tests written; 1/6 strict, $16, 49 min. Quality: erosion 0.378, verbosity 0.382, ast 0.352, cloned 0.026; final checkpoint, implementation only (100% of LOC): ast 0.271, erosion 0.247, cloned 0.037 |
 | just-solve on v1, repeat | `…just-solve-specv1/20260921T1008` | same config as the first run; second of two | 37/37, 67/67, 113/115, 153/155, 181/185, 223/227 | complete 2026-09-21; 4 misses, none traced (a baseline): the two digest grouping tests from checkpoint 3 (test_digest_v1_entries_group, test_digest_v2_groups) and the two literal `../..` path-traversal cases at checkpoint 5, the same failure as anti-slop's first v1 run; the first run's one miss passed; test_migration_atomic passed; 2/6 strict, $14, 44 min. Quality: erosion 0.289, verbosity 0.402, ast 0.359, cloned 0.036; final checkpoint, implementation only (100% of LOC): ast 0.278, erosion 0.306, cloned 0.037 |
 | min12-ABDJKMN on v1 | `…min12-ABDJKMN-specv1/20260921T1106` | min12 on spec v1, for the grid's patched cell and the user's question whether min12 misses test_migration_atomic more or less than min13; first of two | 37/37, 67/67, 115/115, 154/155, 184/185, 224/227 | complete 2026-09-21; 3 misses, both readings the registry carries: test_missing_vault_route (T46, Risk 35, chose `/?missing=<name>` and wrote that a test asserting the bare `/` would fail; dropped draft `06`) and test_migration_atomic x2 (T15, Risk 40, "missing fields tolerated", so an entry without `width` migrates and the viewer answers 302 where the test wants 500); all six v1 sentences held; 3/6 strict, $25, 89 min. Quality: erosion 0.075, verbosity 0.200, ast 0.098, cloned 0.066; final checkpoint, implementation only (26% of LOC): ast 0.235, erosion 0.102, cloned 0.048 |
+| min12-ABDJKMN on v1, repeat | `…min12-ABDJKMN-specv1/20260921T1251` | same config as the first run; second of two | 37/37, 67/67, 115/115, 155/155, 185/185, 227/227 | complete 2026-09-21; 0 misses; it asked the first run's two questions and chose the tests' side both times (T16, Risk 35, strict on malformed entry data; T42, Risk 25, a bare `/` with the name kept on the server); test_migration_atomic passed; 6/6 strict, $31, 114 min. Quality: erosion 0.063, verbosity 0.208, ast 0.077, cloned 0.108; final checkpoint, implementation only (22% of LOC): ast 0.227, erosion 0.215, cloned 0.040 |
 
 ## Test failure summaries
 
@@ -94,6 +95,12 @@ existing snapshot with `bin/reeval`, and every later run scores it that way nati
     data" as wrong types only, "with missing fields tolerated", so test_migration_atomic's entry
     without `width` is migrated and redirected (302) where the test wants 500. $25 and 89 min.
     Implementation only (26% of lines): erosion 0.102, ast 0.235, cloned 0.048. First of two.
+  - on v1, repeat (227): strict at all six checkpoints, so the pair is 224 and 227 against 220
+    and 223 on v0, min13's 227 and 225, anti-slop's 222 and 224 and just-solve's 226 and 223.
+    Same two questions, the other answers: T16, Risk 35, took the schema tables as the definition
+    of well-formed, and T42, Risk 25, read "Redirect to `/`" as no query string and kept the
+    name on the server. $31 and 114 min, the dearest run on v1. Implementation only (22% of
+    lines): erosion 0.215, ast 0.227, cloned 0.040; the mean of the two runs is 0.159, 0.231, 0.044.
 
 ### min13-ABDJKMNT (min12 plus the anti-slop list)
 
@@ -300,3 +307,12 @@ The question gets asked. The three other registries read for it carry the same l
 strict; this run is the only one of the four to choose tolerant. On the user's question:
 min12 has now missed test_migration_atomic in two runs of three (v0 first run through a cause not
 read, this one through T15) and min13 in one of four (a bug). History: 15 pass, 4 fail.
+
+min12 on v1, repeat (job 278, 2026-09-21): 227/227, all six checkpoints strict. The pair is 224 and
+227. The run asked both of the first run's questions and chose the tests' side: T16, Risk 35, "How
+strict 'malformed v1 or v2 entry data' is", strict because "the schema table is the definition of
+well-formed"; T42, Risk 25, a bare `/` because "the spec says 'Redirect to `/`' without a query
+string", with the vault's name kept on the server for the next landing render.
+test_migration_atomic passed, so min12 stands at two misses in four runs and min13 at one in four.
+That closes the v1 cell for all four prompts: just-solve 226 and 223, anti-slop 222 and 224, min12
+224 and 227, min13 227 and 225. The grid rebuild that was waiting on this run is due.

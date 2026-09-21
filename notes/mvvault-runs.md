@@ -22,6 +22,7 @@ existing snapshot with `bin/reeval`, and every later run scores it that way nati
 | min13-ABDJKMNT | `…min13-ABDJKMNT/20260918T1850` | min12-ABDJKMN plus chunk T, upstream's anti-slop rules as the whole Implement section; one sample run for the ast question | 35/37, 60/67, 106/115, 144/155, 174/185, 215/227 | complete 2026-09-18; 12 misses. Seven are one cause: the run fetched with `requests`, and the hidden tests reroute the v1 source URL by patching `urllib.request.urlopen`, so every v1-vault sync tried the real media.example.com (five at checkpoint 2, v1 download URL at 3, sync links at 4). Three are the ones every opus-5 run shares. Two more that min12-ABDJKMN passed but other runs have missed the same way: the missing-vault redirect carries `?missing=missing` (fable-5 just-solve, the 2026-09-07 min11 run), and the post page shows 1:30 where the test looks for 90 (both fable just-solve runs). 0/6 strict, $33, 140 min. Quality: erosion 0.007, verbosity 0.159, ast 0.048, cloned 0.075; implementation only, ast 0.132 against min12's 0.235 and 0.199 |
 | min13-ABDJKMNT, repeat | `…min13-ABDJKMNT/20260919T1041` | same config as the first run; second of two | 35/37, 60/67, 106/115, 145/155, 175/185, 216/227 | complete 2026-09-19; 11 misses: the first run's twelve minus missing vault route at checkpoint 4, which passed; the two new-to-any-run misses of the first run (post create at 6) shrink to one; 0/6 strict, $24, 88 min. Quality: erosion 0.000, verbosity 0.135, ast 0.048, cloned 0.049; final checkpoint, implementation only (26% of LOC): ast 0.119, erosion 0.000, cloned 0.009 |
 | min13-ABDJKMNT | `…min13-ABDJKMNT/20260918T1850` | min12 plus chunk T, the upstream anti-slop rule list (d902f32); first of the min13 pair, rejector next | 35/37, 60/67, 106/115, 144/155, 174/185, 215/227 | complete 2026-09-18; 12 misses: ten shared with the just-solve repeat (the checkpoint-1 pair, the five-test v1 auto-migration block at 2, skip-downloaded and download URL at 3, sync links at 4) plus two no other run missed (missing vault route at 4, post create at 6); serve custom addr passed, which every other opus-5 run missed. 0/6 strict, $33, 140 min. Quality: erosion 0.007, verbosity 0.159, ast 0.048, cloned 0.075 |
+| min13-ABDJKMNT on v1 (strict) | `…min13-ABDJKMNT-specv1/20260920T1529` | min13 on spec v1 (six sentences) under bin/scb-strict, in the specpatch channel beside the main queue; first of two | 37/37, 67/67, 115/115, 155/155, 185/185, 227/227 | complete 2026-09-20; no misses, strict on every checkpoint, the first strict mvvault run of any prompt (best before: 223); urllib for every request; 6/6 strict, $25, 93 min, overlapped by main-queue jobs throughout, so the minutes are not comparable. Quality: erosion 0.000, verbosity 0.144, ast 0.038, cloned 0.067; final checkpoint, implementation only (27% of LOC): ast 0.103, erosion 0.000, cloned 0.007 |
 
 ## Test failure summaries
 
@@ -122,3 +123,20 @@ First run: min13-ABDJKMNT under bin/scb-strict, in the `specpatch` channel besid
 comparable; its `window_usage.jsonl` marks the shared checkpoints. The registry is the thing to
 read: whether the six sentences settle their questions, and whether `04` draws pushback.
 
+First run on v1 (job 261, 2026-09-20): 227/227, all six checkpoints strict, from 215 and 216 on
+v0. Sentence by sentence, from the run's registry (66 entries) and code:
+
+  - `01` held: both rejection tests pass, and T11 reads the row as intended, "The row is named
+    'Source metadata fetch failure' and says malformed entries are *included* in it".
+  - `02` held with the checkpoint-3 row cut: `urllib.request.urlopen` at both request sites,
+    metadata and downloads, and no `requests` import; the seven-test block passed. No entry
+    questions it.
+  - `03` held: test_skip_downloaded_candidate passes, and the question moved on, as file_merger's
+    did: T28 "What counts as a partial-download artifact", Risk 25, quotes "apart from partial
+    downloads" and asks only which suffixes count, choosing a family (`.part`, `.partial`, `.tmp`,
+    `.download`, `.crdownload`). Untested either way.
+  - `04` held with no pushback: no entry mentions the host, and the code has no special case for
+    `0.0.0.0`.
+  - `05` and `07` held; no entry questions either.
+
+One strict run. The user's bar is twice.

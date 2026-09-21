@@ -48,8 +48,9 @@ The control is the dev6 sweep's just-solve run (`notes/dev6-opus5.md`).
     Four of its five are sentences v1 now carries (patches 04, 05, 06, 07); test_costs fails as
     min13's did, `0.011 <= 0.01`, money rounded to the example's cents, so that reading has
     now cost three runs of fourteen. The fifth is its own: test_icl_round_robin_strategy wants
-    setups a, b, a, b down the rows and got b, a, b, a (12 pass, 2 fail over all runs), the
-    round-robin counter advancing in the order requests start, not in input order. The TPM
+    setups a, b, a, b across a row's attempts and got b, a, b, a (12 pass, 2 fail over all
+    runs). Its `icl.choose(attempts)` indexes by an attempt counter that starts at 0, so the
+    offset comes from somewhere else in the attempt loop; not traced. The TPM
     gate passed this time. Pair 73 and 74 against just-solve's 73 and 76, min12's 75 and 76,
     min13's 74 and 73. Implementation only over the pair: erosion 0.000, ast 0.170, cloned
     0.002 on 1865 lines per run against just-solve's 0.709, 0.334, 0.062 on 2778. $32 and 105

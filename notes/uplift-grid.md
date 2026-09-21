@@ -33,36 +33,41 @@ erosion / ast% are the cell means of the quality scores (lower is better); $ is 
 
 anti-slop is the benchmark's upstream `anti_slop` prompt as shipped, the paper's Anti-Slop arm.
 min13-ABDJKMNT is min12 with that prompt's rule list appended as chunk T; the page calls it
-spectest+antislop. min13 has two runs per cell. anti-slop has one run per problem at v0 so
-far; its second pass and its patched cells are jobs 241-252.
+spectest+antislop. Both have two runs per cell since 2026-09-21, when anti-slop's second pass
+(jobs 241 to 246) and its patched pairs landed. file_merger's grid version is still v6, where
+anti-slop has no run (its v7 pair is 146 and 147); v7 takes over when just-solve's v7 pair lands.
 
 | problem | anti-slop v0 | min13 v0 | min13 patched |
 |---|---|---|---|
-| datagate (v2) | 379 | 383, 385 | 393, 401 |
-| xjq (v3) | 155 | 162, 162 | 167, 167 |
-| file_merger (v6) | 138 | 127, 127 | 147, 145 |
-| mvvault | 213 | 215, 216 | |
-| rejector | 73 | 73, 74 | |
-| sith | 189 | 195, 211 | |
+| datagate (v2) | 379, 381 | 383, 385 | 393, 401 |
+| xjq (v3) | 155, 155 | 162, 162 | 167, 167 |
+| file_merger (v6) | 138, 139 | 127, 127 | 147, 145 |
+| mvvault | 213, 213 | 215, 216 | |
+| rejector | 73, 74 | 73, 74 | |
+| sith | 189, 202 | 195, 211 | |
+
+anti-slop patched: datagate v2 393 and 396, xjq v3 167 and 167.
 
 Erosion / ast% and cost, as above:
 
 | problem | anti-slop v0 | min13 v0 | min13 patched |
 |---|---|---|---|
-| datagate | 0.000 / 0.055, $14 | 0.000 / 0.053, $18 | 0.003 / 0.053, $20 |
-| xjq | 0.000 / 0.136, $5 | 0.000 / 0.016, $11 | 0.016 / 0.025, $9 |
-| file_merger | 0.000 / 0.049, $21 | 0.021 / 0.036, $22 | 0.002 / 0.035, $21 |
-| mvvault | 0.000 / 0.222, $15 | 0.004 / 0.048, $29 | |
-| rejector | 0.012 / 0.100, $39 | 0.024 / 0.074, $33 | |
-| sith | 0.009 / 0.054, $42 | 0.001 / 0.036, $46 | |
+| datagate | 0.000 / 0.066, $13 | 0.000 / 0.053, $18 | 0.003 / 0.053, $20 |
+| xjq | 0.000 / 0.138, $5 | 0.000 / 0.016, $11 | 0.016 / 0.025, $9 |
+| file_merger | 0.012 / 0.060, $19 | 0.021 / 0.036, $22 | 0.002 / 0.035, $21 |
+| mvvault | 0.000 / 0.217, $17 | 0.004 / 0.048, $29 | |
+| rejector | 0.040 / 0.106, $36 | 0.024 / 0.074, $33 | |
+| sith | 0.013 / 0.053, $43 | 0.001 / 0.036, $46 | |
 
-- **anti-slop removes erosion and buys no correctness.** Over six problems at v0 erosion goes
-  from just-solve's 0.58 to 0.003, and hidden tests failed stay where they were, 8.4% against
-  8.3%. ast-grep falls less far, 0.25 to 0.10, and barely moves on mvvault (0.222, 84% of its
-  just-solve). It writes the least code, 62% of just-solve's lines, and is the fastest arm at
-  64 minutes against 80, for the same $23. With the test files left out: erosion 0.002,
-  ast-grep 0.131, cloned 0.006 on 1373 implementation lines per run against just-solve's 2515.
-  One run per problem, so read the per-problem figures as single draws.
+- **anti-slop removes erosion and buys little correctness.** Over six problems at v0, two runs
+  each, erosion goes from just-solve's 0.58 to 0.011, and hidden tests failed from 8.3% to 7.8%
+  (the one-run figure was 8.4%; sith's repeat, 202 after 189, moved it). ast-grep falls less
+  far, 0.25 to 0.11, and barely moves on mvvault (0.217). It writes the least code, 62% of
+  just-solve's lines, and is the fastest arm at 67 minutes against 80, for $22 against $23. With
+  the test files left out: erosion 0.004, ast-grep 0.137, cloned 0.009 on 1371 implementation
+  lines per run against just-solve's 2515. The second pass repeated the first closely: xjq 155
+  and 155 on the same twelve misses, mvvault 213 and 213, datagate 379 and 381; sith is the wide
+  one. Its minutes from 2026-09-20 on overlap the specpatch channel in places.
 - **min13 keeps min12's tests and takes anti-slop's erosion.** Erosion 0.008 against min12's
   0.15, ast-grep 0.04 against 0.09, which is the lowest of the four arms, and cloned lines stay
   at min12's level (0.15 against 0.17) because the clones are in the tests. With the test files
@@ -150,11 +155,12 @@ Erosion / ast% and cost, as above:
   repositories (`human_relative` in `bin/grid --json`), the user's call over my first plan of
   dividing by anti-slop, which cannot work: anti-slop's erosion is 0.000 on four problems and
   its cloned lines 0.000 on xjq and 0.005 on mvvault. Whole snapshot, anti-slop, spectest,
-  spectest+antislop: erosion 1%, 47%, 3% of the human mean; ast-grep 162%, 144%, 69%; cloned
-  lines 28%, 173%, 149%. Implementation only: erosion 0%, 74%, 5%; ast-grep 106%, 213%, 95%;
-  cloned 8%, 35%, 16%. So spectest+antislop is the one prompt under the human mean on ast-grep
-  in both scopes, and spectest alone is at twice the human implementation figure. anti-slop has
-  one run per problem until jobs 241-246 land. The implementation-against-tests table follows
+  spectest+antislop, with anti-slop's second pass in (2026-09-21): erosion 3%, 47%, 3% of the
+  human mean; ast-grep 169%, 144%, 69%; cloned lines 25%, 173%, 149%. Implementation only:
+  erosion 1%, 74%, 5%; ast-grep 110%, 213%, 95%; cloned 11%, 35%, 16%. So spectest+antislop is
+  the one prompt under the human mean on ast-grep in both scopes, and spectest alone is at twice
+  the human implementation figure. On anti-slop's first runs alone the figures were erosion 1%
+  and 0%, ast-grep 162% and 106%, cloned 28% and 8%. The implementation-against-tests table follows
   suit: no just-solve row, and its paragraphs set each prompt beside anti-slop in values, never
   as a ratio of a score, since anti-slop's implementation erosion is 0.000. Read that way the
   test dilution is plain: spectest's ast-grep equals anti-slop's over the whole snapshot (0.085
@@ -178,7 +184,7 @@ Erosion / ast% and cost, as above:
   rejector again the one climber, 0.000 to 0.043. So length is not it, and the reading left is
   obedience to a rule list that maps onto a threshold. Not checked: the paper's agent and
   effort for GPT, whether its runs used the prompt as the repo ships it today, and its problem
-  mix. One anti-slop run per problem until jobs 241-246 land.
+  mix. anti-slop has two runs per problem since 2026-09-21; the rows above are its first runs.
 - **Erosion along the run, against the paper's Figure 5.** The v2 paper (arXiv 2603.24755v2)
   says erosion rises in 77% of agent trajectories, 0.026 per checkpoint, and that quality
   prompts lower the starting point "but do not slow the degradation" (its Figure 5, top row:

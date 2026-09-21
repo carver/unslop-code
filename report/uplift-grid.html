@@ -132,7 +132,7 @@ svg .hit { fill: transparent; }
   <section>
     <h2>Implementation files against test files</h2>
     <p class="note" style="margin-bottom:10px">The final checkpoint of every v0 run, scored three ways: implementation files only, test files only, and the whole snapshot as the benchmark scores it. Each score is the mean of the six problems, every problem counting once, as every repository does in the human row. Line counts are per run, the mean over the runs column, so a prompt with one run per problem compares with one that has two. As on the quality charts, just-solve is left out and the paragraphs read each prompt against anti-slop, the benchmark's own quality prompt. Lower is better.</p>
-    <div class="tablewrap"><table><thead><tr><th rowspan="2">prompt</th><th rowspan="2">runs</th><th rowspan="2">impl LOC per run</th><th rowspan="2">test LOC per run</th><th rowspan="2">test share</th><th colspan="3">ast-grep</th><th colspan="3">erosion</th><th colspan="3">cloned</th></tr><tr><th>impl</th><th>tests</th><th>all</th><th>impl</th><th>tests</th><th>all</th><th>impl</th><th>tests</th><th>all</th></tr></thead><tbody><tr><td>anti-slop</td><td class="num">6</td><td class="num">1,372</td><td class="num">950</td><td class="num">31%</td><td class="num">0.116</td><td class="num">0.015</td><td class="num">0.086</td><td class="num">0.000</td><td class="num">0.010</td><td class="num">0.004</td><td class="num">0.009</td><td class="num">0.096</td><td class="num">0.033</td></tr><tr><td>spectest</td><td class="num">12</td><td class="num">1,852</td><td class="num">4,137</td><td class="num">72%</td><td class="num">0.250</td><td class="num">0.016</td><td class="num">0.085</td><td class="num">0.360</td><td class="num">0.011</td><td class="num">0.157</td><td class="num">0.030</td><td class="num">0.225</td><td class="num">0.169</td></tr><tr><td>spectest+antislop</td><td class="num">12</td><td class="num">1,468</td><td class="num">2,703</td><td class="num">67%</td><td class="num">0.106</td><td class="num">0.009</td><td class="num">0.041</td><td class="num">0.034</td><td class="num">0.002</td><td class="num">0.012</td><td class="num">0.011</td><td class="num">0.209</td><td class="num">0.143</td></tr><tr><td>human, 27 repositories</td><td class="num">-</td><td class="num">-</td><td class="num">-</td><td class="num">58%</td><td class="num">0.124</td><td class="num">0.019</td><td class="num">0.063</td><td class="num">0.444</td><td class="num">0.164</td><td class="num">0.309</td><td class="num">0.079</td><td class="num">0.113</td><td class="num">0.100</td></tr></tbody></table></div><p class="note" style="margin-top:10px">scb-check scores the test files along with the implementation, and spectest writes 4.4 times the test code anti-slop does. ast-grep is 0.086 under anti-slop and 0.085 under spectest over the whole snapshot; in implementation files alone, 0.116 and 0.250. spectest writes 35% more implementation, and <b>flagged implementation lines per run go from 157 to 489</b>. Erosion is 0.004 and 0.157 over the whole snapshot, 0.000 and 0.360 in implementation files. Cloned lines go from 0.033 to 0.169 over the whole snapshot; implementation clones go from 0.009 to 0.030.</p><p class="note" style="margin-top:8px">spectest+antislop writes 2.8 times the test code anti-slop does. ast-grep is 0.086 under anti-slop and 0.041 under spectest+antislop over the whole snapshot; in implementation files alone, 0.116 and 0.106. spectest+antislop writes 7% more implementation, and <b>flagged implementation lines per run go from 157 to 161</b>. Erosion is 0.004 and 0.012 over the whole snapshot, 0.000 and 0.034 in implementation files. Cloned lines go from 0.033 to 0.143 over the whole snapshot; implementation clones go from 0.009 to 0.011.</p><p class="note" style="margin-top:8px">The human row is the mean over 27 of the 28 Major-tier repositories (over 10k stars) in the paper's v1, Table 2, at HEAD, split by the same tool. Humans write tests too, 58% of their lines, so their whole-repository figures are diluted the same way. Implementation against implementation, anti-slop's ast-grep share is 0.9 times the human one, its erosion is 0.00 against 0.44, its cloned share is 0.009 against 0.079, and its tests are cloned 0.8 times as much as human tests; spectest's ast-grep share is 2.0 times the human one, its erosion is 0.36 against 0.44, its cloned share is 0.030 against 0.079, and its tests are cloned 2.0 times as much as human tests; spectest+antislop's ast-grep share is 0.9 times the human one, its erosion is 0.03 against 0.44, its cloned share is 0.011 against 0.079, and its tests are cloned 1.8 times as much as human tests. The human bars in the headline are this same rerun. v1's Table 2 gives 0.10 for ast-grep, which this scb-check version does not reproduce (0.063 here); its erosion mean, 0.31, it does (0.31).</p>
+    <div class="tablewrap"><table><thead><tr><th rowspan="2">prompt</th><th rowspan="2">runs</th><th rowspan="2">impl LOC per run</th><th rowspan="2">test LOC per run</th><th rowspan="2">test share</th><th colspan="3">ast-grep</th><th colspan="3">erosion</th><th colspan="3">cloned</th></tr><tr><th>impl</th><th>tests</th><th>all</th><th>impl</th><th>tests</th><th>all</th><th>impl</th><th>tests</th><th>all</th></tr></thead><tbody><tr><td>anti-slop</td><td class="num">12</td><td class="num">1,371</td><td class="num">912</td><td class="num">31%</td><td class="num">0.120</td><td class="num">0.014</td><td class="num">0.088</td><td class="num">0.008</td><td class="num">0.023</td><td class="num">0.013</td><td class="num">0.011</td><td class="num">0.079</td><td class="num">0.029</td></tr><tr><td>spectest</td><td class="num">12</td><td class="num">1,852</td><td class="num">4,137</td><td class="num">72%</td><td class="num">0.250</td><td class="num">0.016</td><td class="num">0.085</td><td class="num">0.360</td><td class="num">0.011</td><td class="num">0.157</td><td class="num">0.030</td><td class="num">0.225</td><td class="num">0.169</td></tr><tr><td>spectest+antislop</td><td class="num">12</td><td class="num">1,468</td><td class="num">2,703</td><td class="num">67%</td><td class="num">0.106</td><td class="num">0.009</td><td class="num">0.041</td><td class="num">0.034</td><td class="num">0.002</td><td class="num">0.012</td><td class="num">0.011</td><td class="num">0.209</td><td class="num">0.143</td></tr><tr><td>human, 27 repositories</td><td class="num">-</td><td class="num">-</td><td class="num">-</td><td class="num">58%</td><td class="num">0.124</td><td class="num">0.019</td><td class="num">0.063</td><td class="num">0.444</td><td class="num">0.164</td><td class="num">0.309</td><td class="num">0.079</td><td class="num">0.113</td><td class="num">0.100</td></tr></tbody></table></div><p class="note" style="margin-top:10px">scb-check scores the test files along with the implementation, and spectest writes 4.5 times the test code anti-slop does. ast-grep is 0.088 under anti-slop and 0.085 under spectest over the whole snapshot; in implementation files alone, 0.120 and 0.250. spectest writes 35% more implementation, and <b>flagged implementation lines per run go from 162 to 489</b>. Erosion is 0.013 and 0.157 over the whole snapshot, 0.008 and 0.360 in implementation files. Cloned lines go from 0.029 to 0.169 over the whole snapshot; implementation clones go from 0.011 to 0.030.</p><p class="note" style="margin-top:8px">spectest+antislop writes 3.0 times the test code anti-slop does. ast-grep is 0.088 under anti-slop and 0.041 under spectest+antislop over the whole snapshot; in implementation files alone, 0.120 and 0.106. spectest+antislop writes 7% more implementation, and <b>flagged implementation lines per run go from 162 to 161</b>. Erosion is 0.013 and 0.012 over the whole snapshot, 0.008 and 0.034 in implementation files. The rise in cloned lines is all in the tests; implementation clones go from 0.011 to 0.011.</p><p class="note" style="margin-top:8px">The human row is the mean over 27 of the 28 Major-tier repositories (over 10k stars) in the paper's v1, Table 2, at HEAD, split by the same tool. Humans write tests too, 58% of their lines, so their whole-repository figures are diluted the same way. Implementation against implementation, anti-slop's ast-grep share is 1.0 times the human one, its erosion is 0.01 against 0.44, its cloned share is 0.011 against 0.079, and its tests are cloned 0.7 times as much as human tests; spectest's ast-grep share is 2.0 times the human one, its erosion is 0.36 against 0.44, its cloned share is 0.030 against 0.079, and its tests are cloned 2.0 times as much as human tests; spectest+antislop's ast-grep share is 0.9 times the human one, its erosion is 0.03 against 0.44, its cloned share is 0.011 against 0.079, and its tests are cloned 1.8 times as much as human tests. The human bars in the headline are this same rerun. v1's Table 2 gives 0.10 for ast-grep, which this scb-check version does not reproduce (0.063 here); its erosion mean, 0.31, it does (0.31).</p>
     <p class="note" style="margin-top:8px">Per-problem rows, the rules that fire in tests and the same split on human repositories are in <span class="mono">notes/quality-test-dilution.md</span> in the repository.</p>
   </section>
 
@@ -244,17 +244,27 @@ const G = {
        "cost": 13.964165999999999,
        "minutes": 42.21962805,
        "loc": 1616
+      },
+      {
+       "fail": 0.059259259259259234,
+       "erosion": 0.0,
+       "verbosity": 0.14933301117354628,
+       "ast": 0.07773002753264784,
+       "cloned": 0.046571067998450066,
+       "cost": 11.052347999999999,
+       "minutes": 48.99074855,
+       "loc": 1738
       }
      ],
      "mean": {
-      "fail": 0.06419753086419755,
+      "fail": 0.06172839506172839,
       "erosion": 0.0,
-      "verbosity": 0.13044204948411095,
-      "ast": 0.05505001980981111,
-      "cloned": 0.04757471690212307,
-      "cost": 13.964165999999999,
-      "minutes": 42.21962805,
-      "loc": 1616.0
+      "verbosity": 0.1398875303288286,
+      "ast": 0.06639002367122948,
+      "cloned": 0.04707289245028656,
+      "cost": 12.508256999999999,
+      "minutes": 45.605188299999995,
+      "loc": 1677.0
      }
     },
     "anti_slop|patched": {
@@ -269,17 +279,27 @@ const G = {
        "cost": 11.510746000000001,
        "minutes": 29.73653725,
        "loc": 1391
+      },
+      {
+       "fail": 0.022222222222222254,
+       "erosion": 0.00886139064097546,
+       "verbosity": 0.14550701926087126,
+       "ast": 0.06706091538968588,
+       "cloned": 0.03380968825013128,
+       "cost": 11.2855085,
+       "minutes": 51.983369,
+       "loc": 1652
       }
      ],
      "mean": {
-      "fail": 0.029629629629629672,
-      "erosion": 0.0,
-      "verbosity": 0.11286202617240097,
-      "ast": 0.06604851058990503,
-      "cloned": 0.010177402665020699,
-      "cost": 11.510746000000001,
-      "minutes": 29.73653725,
-      "loc": 1391.0
+      "fail": 0.025925925925925963,
+      "erosion": 0.00443069532048773,
+      "verbosity": 0.1291845227166361,
+      "ast": 0.06655471298979546,
+      "cloned": 0.02199354545757599,
+      "cost": 11.398127250000002,
+      "minutes": 40.859953125000004,
+      "loc": 1521.5
      }
     },
     "min12-ABDJKMN|v0": {
@@ -509,17 +529,27 @@ const G = {
        "cost": 21.415312,
        "minutes": 58.65999635,
        "loc": 2218
+      },
+      {
+       "fail": 0.05442176870748294,
+       "erosion": 0.023149234428326594,
+       "verbosity": 0.1263860763498796,
+       "ast": 0.07117499885815629,
+       "cloned": 0.01397772473194115,
+       "cost": 17.03435,
+       "minutes": 64.89208968333334,
+       "loc": 1966
       }
      ],
      "mean": {
-      "fail": 0.061224489795918324,
-      "erosion": 0.0,
-      "verbosity": 0.11655661057660376,
-      "ast": 0.04936967315397813,
-      "cloned": 0.023348906492364138,
-      "cost": 21.415312,
-      "minutes": 58.65999635,
-      "loc": 2218.0
+      "fail": 0.05782312925170063,
+      "erosion": 0.011574617214163297,
+      "verbosity": 0.12147134346324168,
+      "ast": 0.06027233600606721,
+      "cloned": 0.018663315612152644,
+      "cost": 19.224831000000002,
+      "minutes": 61.77604301666667,
+      "loc": 2092.0
      }
     },
     "min12-ABDJKMN|v0": {
@@ -714,17 +744,27 @@ const G = {
        "cost": 14.994527,
        "minutes": 43.856763533333336,
        "loc": 1219
+      },
+      {
+       "fail": 0.06167400881057272,
+       "erosion": 0.0,
+       "verbosity": 0.31800275366549563,
+       "ast": 0.2130661917944936,
+       "cloned": 0.02820506482712512,
+       "cost": 19.000133,
+       "minutes": 50.92579315,
+       "loc": 1424
       }
      ],
      "mean": {
       "fail": 0.06167400881057272,
       "erosion": 0.0,
-      "verbosity": 0.3145870014023605,
-      "ast": 0.22184502987745192,
-      "cloned": 0.00531131927005262,
-      "cost": 14.994527,
-      "minutes": 43.856763533333336,
-      "loc": 1219.0
+      "verbosity": 0.31629487753392804,
+      "ast": 0.21745561083597276,
+      "cloned": 0.01675819204858887,
+      "cost": 16.99733,
+      "minutes": 47.39127834166666,
+      "loc": 1321.5
      }
     },
     "min12-ABDJKMN|v0": {
@@ -849,17 +889,27 @@ const G = {
        "cost": 39.493437,
        "minutes": 91.00186006666667,
        "loc": 4347
+      },
+      {
+       "fail": 0.06329113924050633,
+       "erosion": 0.06776402880370867,
+       "verbosity": 0.15050668811895496,
+       "ast": 0.11076125610153512,
+       "cloned": 0.004163491432749444,
+       "cost": 31.923370499999997,
+       "minutes": 105.21143535,
+       "loc": 4303
       }
      ],
      "mean": {
-      "fail": 0.07594936708860756,
-      "erosion": 0.011510888922404566,
-      "verbosity": 0.15925683642598448,
-      "ast": 0.1003063937116716,
-      "cloned": 0.020041891757252853,
-      "cost": 39.493437,
-      "minutes": 91.00186006666667,
-      "loc": 4347.0
+      "fail": 0.06962025316455694,
+      "erosion": 0.03963745886305662,
+      "verbosity": 0.15488176227246972,
+      "ast": 0.10553382490660336,
+      "cloned": 0.012102691595001148,
+      "cost": 35.70840375,
+      "minutes": 98.10664770833333,
+      "loc": 4325.0
      }
     },
     "min12-ABDJKMN|v0": {
@@ -984,17 +1034,27 @@ const G = {
        "cost": 41.801394499999994,
        "minutes": 132.47677433333334,
        "loc": 4249
+      },
+      {
+       "fail": 0.11403508771929827,
+       "erosion": 0.01674076112486241,
+       "verbosity": 0.16512777958997374,
+       "ast": 0.05163784067718189,
+       "cloned": 0.03897573180988858,
+       "cost": 43.338736,
+       "minutes": 135.95667245,
+       "loc": 3755
       }
      ],
      "mean": {
-      "fail": 0.17105263157894735,
-      "erosion": 0.009278389554094558,
-      "verbosity": 0.19033435794663492,
-      "ast": 0.05438481919526048,
-      "cloned": 0.07089760019881565,
-      "cost": 41.801394499999994,
-      "minutes": 132.47677433333334,
-      "loc": 4249.0
+      "fail": 0.1425438596491228,
+      "erosion": 0.013009575339478482,
+      "verbosity": 0.17773106876830433,
+      "ast": 0.05301132993622119,
+      "cloned": 0.05493666600435211,
+      "cost": 42.57006525,
+      "minutes": 134.21672339166668,
+      "loc": 4002.0
      }
     },
     "min12-ABDJKMN|v0": {
@@ -1154,17 +1214,27 @@ const G = {
        "cost": 4.52313,
        "minutes": 16.28524895,
        "loc": 287
+      },
+      {
+       "fail": 0.07185628742514971,
+       "erosion": 0.0,
+       "verbosity": 0.1797171396499388,
+       "ast": 0.13973333981734085,
+       "cloned": 0.0,
+       "cost": 4.5473085,
+       "minutes": 15.232886016666667,
+       "loc": 273
       }
      ],
      "mean": {
       "fail": 0.07185628742514971,
       "erosion": 0.0,
-      "verbosity": 0.2040530923306537,
-      "ast": 0.1363824830769694,
+      "verbosity": 0.19188511599029623,
+      "ast": 0.13805791144715512,
       "cloned": 0.0,
-      "cost": 4.52313,
-      "minutes": 16.28524895,
-      "loc": 287.0
+      "cost": 4.53521925,
+      "minutes": 15.759067483333332,
+      "loc": 280.0
      }
     },
     "anti_slop|patched": {
@@ -1179,17 +1249,27 @@ const G = {
        "cost": 5.7833775,
        "minutes": 20.139886933333333,
        "loc": 594
+      },
+      {
+       "fail": 0.0,
+       "erosion": 0.0,
+       "verbosity": 0.18384519524846352,
+       "ast": 0.09400740518286566,
+       "cloned": 0.04401313645352239,
+       "cost": 5.1520715,
+       "minutes": 19.114805233333335,
+       "loc": 646
       }
      ],
      "mean": {
       "fail": 0.0,
       "erosion": 0.0,
-      "verbosity": 0.26787005871142827,
-      "ast": 0.0865623347460028,
-      "cloned": 0.12371061661869413,
-      "cost": 5.7833775,
-      "minutes": 20.139886933333333,
-      "loc": 594.0
+      "verbosity": 0.22585762697994588,
+      "ast": 0.09028486996443423,
+      "cloned": 0.08386187653610826,
+      "cost": 5.4677245,
+      "minutes": 19.627346083333336,
+      "loc": 620.0
      }
     },
     "min12-ABDJKMN|v0": {
@@ -1360,25 +1440,25 @@ const G = {
   },
   "anti_slop|v0": {
    "n": 6,
-   "fail": 0.08432571926056553,
-   "erosion": 0.0034648797460831876,
-   "verbosity": 0.18587165802772473,
-   "ast": 0.1028897364708571,
-   "cloned": 0.02786240577010139,
-   "cost": 22.69866108333333,
-   "minutes": 64.08337854722222,
-   "loc": 2322.6666666666665
+   "fail": 0.0775409888938052,
+   "erosion": 0.010703608569449734,
+   "verbosity": 0.1836919497261781,
+   "ast": 0.10678683946720818,
+   "cloned": 0.02492229295173022,
+   "cost": 21.924017708333334,
+   "minutes": 67.14249137361111,
+   "loc": 2282.9166666666665
   },
   "anti_slop|patched": {
    "n": 2,
-   "fail": 0.014814814814814836,
-   "erosion": 0.0,
-   "verbosity": 0.19036604244191463,
-   "ast": 0.07630542266795393,
-   "cloned": 0.06694400964185741,
-   "cost": 8.64706175,
-   "minutes": 24.938212091666667,
-   "loc": 992.5
+   "fail": 0.012962962962962982,
+   "erosion": 0.002215347660243865,
+   "verbosity": 0.177521074848291,
+   "ast": 0.07841979147711484,
+   "cloned": 0.052927710996842126,
+   "cost": 8.432925875,
+   "minutes": 30.24364960416667,
+   "loc": 1070.75
   },
   "min12-ABDJKMN|v0": {
    "n": 6,
@@ -1474,41 +1554,41 @@ const G = {
     ]
    },
    "anti_slop": {
-    "runs": 6,
+    "runs": 12,
     "ckpts": [
-     6,
-     7,
-     7,
-     7,
-     6
+     12,
+     14,
+     14,
+     14,
+     12
     ],
     "erosion": [
-     0.009278389554094558,
-     0.0,
-     0.0,
-     0.004649994602035754,
-     0.004167413732962091
+     0.011886745317689037,
+     0.008362668862209365,
+     0.007088410960762127,
+     0.00988105025644019,
+     0.012316305457798533
     ],
     "verbosity": [
-     0.1730600387634776,
-     0.2028307986355385,
-     0.21709542961743078,
-     0.17021874863388642,
-     0.1760039196305833
+     0.18180408136186654,
+     0.1936221869383285,
+     0.2102992113155083,
+     0.1699267569708265,
+     0.1758877634230249
     ],
     "ast": [
-     0.11191748352832791,
-     0.11726736782433712,
-     0.120019025792891,
-     0.08221168064712783,
-     0.08594348144060178
+     0.12413595332777193,
+     0.11896206833039434,
+     0.12062721171961403,
+     0.08496333095090357,
+     0.08831597319196936
     ],
     "cloned": [
-     0.0026263297872340424,
-     0.034182036598849594,
-     0.037973732080276136,
-     0.03786405056267232,
-     0.03299748441130023
+     0.006360943635299394,
+     0.032002037639747134,
+     0.03170822868874422,
+     0.033987499894049714,
+     0.02879934842061407
     ]
    },
    "min12-ABDJKMN": {
@@ -1598,14 +1678,14 @@ const G = {
     "prompts": {
      "anti_slop": {
       "n": 6,
-      "mean": 0.005479635743491597,
+      "mean": 0.016514092837414167,
       "best": {
        "problem": "datagate",
        "share": 0.0
       },
       "worst": {
        "problem": "rejector",
-       "share": 0.01806029357739839
+       "share": 0.062190170416422885
       }
      },
      "min12-ABDJKMN": {
@@ -1662,14 +1742,14 @@ const G = {
     "prompts": {
      "anti_slop": {
       "n": 6,
-      "mean": 0.44011082279696107,
+      "mean": 0.4562010236870515,
       "best": {
-       "problem": "datagate",
-       "share": 0.1704295807536523
+       "problem": "sith",
+       "share": 0.19381293895017435
       },
       "worst": {
        "problem": "mvvault",
-       "share": 0.8367372686751319
+       "share": 0.8201816104218604
       }
      },
      "min12-ABDJKMN": {
@@ -1726,14 +1806,14 @@ const G = {
     "prompts": {
      "anti_slop": {
       "n": 6,
-      "mean": 0.6604594794463885,
+      "mean": 0.5888450730964455,
       "best": {
        "problem": "xjq",
        "share": 0.0
       },
       "worst": {
-       "problem": "sith",
-       "share": 1.3947590312146776
+       "problem": "datagate",
+       "share": 1.126342890574737
       }
      },
      "min12-ABDJKMN": {
@@ -1790,14 +1870,14 @@ const G = {
     "prompts": {
      "anti_slop": {
       "n": 6,
-      "mean": 0.6214333323293675,
+      "mean": 0.6160249044777822,
       "best": {
        "problem": "mvvault",
-       "share": 0.40111878907535375
+       "share": 0.4348469891411649
       },
       "worst": {
        "problem": "rejector",
-       "share": 0.8415448649695092
+       "share": 0.8372858387377795
       }
      },
      "min12-ABDJKMN": {
@@ -1837,14 +1917,14 @@ const G = {
     "prompts": {
      "anti_slop": {
       "n": 6,
-      "mean": 0.01122308013121714,
+      "mean": 0.03467002189727155,
       "best": {
        "problem": "datagate",
        "share": 0.0
       },
       "worst": {
        "problem": "rejector",
-       "share": 0.0372848809265961
+       "share": 0.1283895573925142
       }
      },
      "min12-ABDJKMN": {
@@ -1901,14 +1981,14 @@ const G = {
     "prompts": {
      "anti_slop": {
       "n": 6,
-      "mean": 1.6238033476747196,
+      "mean": 1.6853073334828712,
       "best": {
-       "problem": "file_merger",
-       "share": 0.7791509949463533
+       "problem": "sith",
+       "share": 0.8366235347439797
       },
       "worst": {
        "problem": "mvvault",
-       "share": 3.5011529287183887
+       "share": 3.4318792229205335
       }
      },
      "min12-ABDJKMN": {
@@ -1965,14 +2045,14 @@ const G = {
     "prompts": {
      "anti_slop": {
       "n": 6,
-      "mean": 0.27958798533784895,
+      "mean": 0.2500851410272376,
       "best": {
        "problem": "xjq",
        "share": 0.0
       },
       "worst": {
        "problem": "sith",
-       "share": 0.71142877497484
+       "share": 0.5512672486385661
       }
      },
      "min12-ABDJKMN": {
@@ -2119,17 +2199,27 @@ const G = {
         "cost": 13.964165999999999,
         "minutes": 42.21962805,
         "loc": 625
+       },
+       {
+        "fail": 0.059259259259259234,
+        "erosion": 0.0,
+        "verbosity": 0.15792159438905218,
+        "ast": 0.12223352216857086,
+        "cloned": 0.011095531821823981,
+        "cost": 11.052347999999999,
+        "minutes": 48.99074855,
+        "loc": 704
        }
       ],
       "mean": {
-       "fail": 0.06419753086419755,
+       "fail": 0.06172839506172839,
        "erosion": 0.0,
-       "verbosity": 0.1297898301142525,
-       "ast": 0.07685344949847048,
-       "cloned": 0.0161177615043776,
-       "cost": 13.964165999999999,
-       "minutes": 42.21962805,
-       "loc": 625.0
+       "verbosity": 0.14385571225165233,
+       "ast": 0.09954348583352067,
+       "cloned": 0.01360664666310079,
+       "cost": 12.508256999999999,
+       "minutes": 45.605188299999995,
+       "loc": 664.5
       }
      },
      "anti_slop|patched": {
@@ -2144,17 +2234,27 @@ const G = {
         "cost": 11.510746000000001,
         "minutes": 29.73653725,
         "loc": 596
+       },
+       {
+        "fail": 0.022222222222222254,
+        "erosion": 0.021926417331237687,
+        "verbosity": 0.15991916480867666,
+        "ast": 0.09639632737055175,
+        "cloned": 0.0,
+        "cost": 11.2855085,
+        "minutes": 51.983369,
+        "loc": 675
        }
       ],
       "mean": {
-       "fail": 0.029629629629629672,
-       "erosion": 0.0,
-       "verbosity": 0.1469217933391434,
-       "ast": 0.09816172772157053,
+       "fail": 0.025925925925925963,
+       "erosion": 0.010963208665618843,
+       "verbosity": 0.15342047907391004,
+       "ast": 0.09727902754606113,
        "cloned": 0.0,
-       "cost": 11.510746000000001,
-       "minutes": 29.73653725,
-       "loc": 596.0
+       "cost": 11.398127250000002,
+       "minutes": 40.859953125000004,
+       "loc": 635.5
       }
      },
      "min12-ABDJKMN|v0": {
@@ -2384,17 +2484,27 @@ const G = {
         "cost": 21.415312,
         "minutes": 58.65999635,
         "loc": 1456
+       },
+       {
+        "fail": 0.05442176870748294,
+        "erosion": 0.019510971951628646,
+        "verbosity": 0.1632887368585067,
+        "ast": 0.10635684073702541,
+        "cloned": 0.012128236265867096,
+        "cost": 17.03435,
+        "minutes": 64.89208968333334,
+        "loc": 1219
        }
       ],
       "mean": {
-       "fail": 0.061224489795918324,
-       "erosion": 0.0,
-       "verbosity": 0.13765655855667241,
-       "ast": 0.06830724802211945,
-       "cloned": 0.00861434113365054,
-       "cost": 21.415312,
-       "minutes": 58.65999635,
-       "loc": 1456.0
+       "fail": 0.05782312925170063,
+       "erosion": 0.009755485975814323,
+       "verbosity": 0.15047264770758956,
+       "ast": 0.08733204437957243,
+       "cloned": 0.010371288699758818,
+       "cost": 19.224831000000002,
+       "minutes": 61.77604301666667,
+       "loc": 1337.5
       }
      },
      "min12-ABDJKMN|v0": {
@@ -2589,17 +2699,27 @@ const G = {
         "cost": 14.994527,
         "minutes": 43.856763533333336,
         "loc": 1219
+       },
+       {
+        "fail": 0.06167400881057272,
+        "erosion": 0.0,
+        "verbosity": 0.31800275366549563,
+        "ast": 0.2130661917944936,
+        "cloned": 0.02820506482712512,
+        "cost": 19.000133,
+        "minutes": 50.92579315,
+        "loc": 1424
        }
       ],
       "mean": {
        "fail": 0.06167400881057272,
        "erosion": 0.0,
-       "verbosity": 0.3145870014023605,
-       "ast": 0.22184502987745192,
-       "cloned": 0.00531131927005262,
-       "cost": 14.994527,
-       "minutes": 43.856763533333336,
-       "loc": 1219.0
+       "verbosity": 0.31629487753392804,
+       "ast": 0.21745561083597276,
+       "cloned": 0.01675819204858887,
+       "cost": 16.99733,
+       "minutes": 47.39127834166666,
+       "loc": 1321.5
       }
      },
      "min12-ABDJKMN|v0": {
@@ -2724,17 +2844,27 @@ const G = {
         "cost": 39.493437,
         "minutes": 91.00186006666667,
         "loc": 1813
+       },
+       {
+        "fail": 0.06329113924050633,
+        "erosion": 0.0,
+        "verbosity": 0.241463004029335,
+        "ast": 0.20422059755539812,
+        "cloned": 0.0034852517517456466,
+        "cost": 31.923370499999997,
+        "minutes": 105.21143535,
+        "loc": 1916
        }
       ],
       "mean": {
-       "fail": 0.07594936708860756,
+       "fail": 0.06962025316455694,
        "erosion": 0.0,
-       "verbosity": 0.23004172533591674,
-       "ast": 0.20724771323389346,
-       "cloned": 0.0,
-       "cost": 39.493437,
-       "minutes": 91.00186006666667,
-       "loc": 1813.0
+       "verbosity": 0.23575236468262586,
+       "ast": 0.2057341553946458,
+       "cloned": 0.0017426258758728233,
+       "cost": 35.70840375,
+       "minutes": 98.10664770833333,
+       "loc": 1864.5
       }
      },
      "min12-ABDJKMN|v0": {
@@ -2859,17 +2989,27 @@ const G = {
         "cost": 41.801394499999994,
         "minutes": 132.47677433333334,
         "loc": 2835
+       },
+       {
+        "fail": 0.11403508771929827,
+        "erosion": 0.023494087007135553,
+        "verbosity": 0.16331643777125154,
+        "ast": 0.06768711769237076,
+        "cloned": 0.009177714317315617,
+        "cost": 43.338736,
+        "minutes": 135.95667245,
+        "loc": 2679
        }
       ],
       "mean": {
-       "fail": 0.17105263157894735,
-       "erosion": 0.010224415449117416,
-       "verbosity": 0.16935501044975318,
-       "ast": 0.0755501518780385,
-       "cloned": 0.008264661044374502,
-       "cost": 41.801394499999994,
-       "minutes": 132.47677433333334,
-       "loc": 2835.0
+       "fail": 0.1425438596491228,
+       "erosion": 0.016859251228126485,
+       "verbosity": 0.16633572411050235,
+       "ast": 0.07161863478520464,
+       "cloned": 0.00872118768084506,
+       "cost": 42.57006525,
+       "minutes": 134.21672339166668,
+       "loc": 2757.0
       }
      },
      "min12-ABDJKMN|v0": {
@@ -3029,17 +3169,27 @@ const G = {
         "cost": 4.52313,
         "minutes": 16.28524895,
         "loc": 287
+       },
+       {
+        "fail": 0.07185628742514971,
+        "erosion": 0.0,
+        "verbosity": 0.1797171396499388,
+        "ast": 0.13973333981734085,
+        "cloned": 0.0,
+        "cost": 4.5473085,
+        "minutes": 15.232886016666667,
+        "loc": 273
        }
       ],
       "mean": {
        "fail": 0.07185628742514971,
        "erosion": 0.0,
-       "verbosity": 0.2040530923306537,
-       "ast": 0.1363824830769694,
+       "verbosity": 0.19188511599029623,
+       "ast": 0.13805791144715512,
        "cloned": 0.0,
-       "cost": 4.52313,
-       "minutes": 16.28524895,
-       "loc": 287.0
+       "cost": 4.53521925,
+       "minutes": 15.759067483333332,
+       "loc": 280.0
       }
      },
      "anti_slop|patched": {
@@ -3054,17 +3204,27 @@ const G = {
         "cost": 5.7833775,
         "minutes": 20.139886933333333,
         "loc": 304
+       },
+       {
+        "fail": 0.0,
+        "erosion": 0.0,
+        "verbosity": 0.22144569872481829,
+        "ast": 0.16433097070697195,
+        "cloned": 0.0,
+        "cost": 5.1520715,
+        "minutes": 19.114805233333335,
+        "loc": 325
        }
       ],
       "mean": {
        "fail": 0.0,
        "erosion": 0.0,
-       "verbosity": 0.21411191526959011,
-       "ast": 0.15539718895379928,
+       "verbosity": 0.2177788069972042,
+       "ast": 0.1598640798303856,
        "cloned": 0.0,
-       "cost": 5.7833775,
-       "minutes": 20.139886933333333,
-       "loc": 304.0
+       "cost": 5.4677245,
+       "minutes": 19.627346083333336,
+       "loc": 314.5
       }
      },
      "min12-ABDJKMN|v0": {
@@ -3235,25 +3395,25 @@ const G = {
    },
    "anti_slop|v0": {
     "n": 6,
-    "fail": 0.08432571926056553,
-    "erosion": 0.0017040692415195692,
-    "verbosity": 0.19758053636493486,
-    "ast": 0.13103101259782388,
-    "cloned": 0.006384680492075877,
-    "cost": 22.69866108333333,
-    "minutes": 64.08337854722222,
-    "loc": 1372.5
+    "fail": 0.0775409888938052,
+    "erosion": 0.004435789533990135,
+    "verbosity": 0.20076607371276575,
+    "ast": 0.1366236404460119,
+    "cloned": 0.008533323494694394,
+    "cost": 21.924017708333334,
+    "minutes": 67.14249137361111,
+    "loc": 1370.8333333333333
    },
    "anti_slop|patched": {
     "n": 2,
-    "fail": 0.014814814814814836,
-    "erosion": 0.0,
-    "verbosity": 0.18051685430436676,
-    "ast": 0.1267794583376849,
+    "fail": 0.012962962962962982,
+    "erosion": 0.005481604332809422,
+    "verbosity": 0.18559964303555712,
+    "ast": 0.12857155368822337,
     "cloned": 0.0,
-    "cost": 8.64706175,
-    "minutes": 24.938212091666667,
-    "loc": 450.0
+    "cost": 8.432925875,
+    "minutes": 30.24364960416667,
+    "loc": 475.0
    },
    "min12-ABDJKMN|v0": {
     "n": 6,
@@ -3349,41 +3509,41 @@ const G = {
      ]
     },
     "anti_slop": {
-     "runs": 6,
+     "runs": 12,
      "ckpts": [
-      6,
-      7,
-      7,
-      7,
-      6
+      12,
+      14,
+      14,
+      14,
+      12
      ],
      "erosion": [
-      0.010224415449117416,
-      0.0,
-      0.0,
-      0.0,
-      0.0
+      0.005112207724558708,
+      0.003201895253634848,
+      0.004453785746278486,
+      0.0013017188498511817,
+      0.007800400996052057
      ],
      "verbosity": [
-      0.19753308665442249,
-      0.20810952228278315,
-      0.21579433278501278,
-      0.17722273540661757,
-      0.190032758537427
+      0.2050973995220747,
+      0.20291701161468886,
+      0.21791286929673337,
+      0.18386435027140566,
+      0.19656792906847906
      ],
      "ast": [
-      0.13879316518658186,
-      0.14183540986799342,
-      0.14583182896918118,
-      0.11047291189267959,
-      0.11566419407275962
+      0.15249839857865288,
+      0.1460661140799033,
+      0.1465949524271227,
+      0.11644944005222473,
+      0.12012907481705516
      ],
      "cloned": [
-      0.0,
-      0.009922907166416759,
-      0.0056528748537518075,
-      0.00902927578653943,
-      0.009417028717475349
+      0.0017825311942959,
+      0.012003799340509954,
+      0.009272725543849421,
+      0.010485509047013402,
+      0.010881944085220604
      ]
     },
     "min12-ABDJKMN": {
@@ -3473,14 +3633,14 @@ const G = {
      "prompts": {
       "anti_slop": {
        "n": 6,
-       "mean": 0.0026447597755557633,
+       "mean": 0.006601693253247734,
        "best": {
         "problem": "datagate",
         "share": 0.0
        },
        "worst": {
         "problem": "sith",
-        "share": 0.01586855865333458
+        "share": 0.02616599631501886
        }
       },
       "min12-ABDJKMN": {
@@ -3537,14 +3697,14 @@ const G = {
      "prompts": {
       "anti_slop": {
        "n": 6,
-       "mean": 0.44157152156111007,
+       "mean": 0.46289263263099395,
        "best": {
-        "problem": "datagate",
-        "share": 0.2264832983113866
+        "problem": "sith",
+        "share": 0.2294694965674088
        },
        "worst": {
         "problem": "xjq",
-        "share": 0.741155263631911
+        "share": 0.7502601906532248
        }
       },
       "min12-ABDJKMN": {
@@ -3601,14 +3761,14 @@ const G = {
      "prompts": {
       "anti_slop": {
        "n": 6,
-       "mean": 0.18352403284371477,
+       "mean": 0.23992638983361714,
        "best": {
-        "problem": "rejector",
+        "problem": "xjq",
         "share": 0.0
        },
        "worst": {
-        "problem": "datagate",
-        "share": 0.4785694268734758
+        "problem": "mvvault",
+        "share": 0.4564943149993787
        }
       },
       "min12-ABDJKMN": {
@@ -3665,14 +3825,14 @@ const G = {
      "prompts": {
       "anti_slop": {
        "n": 6,
-       "mean": 0.5525549815058792,
+       "mean": 0.5578359046671285,
        "best": {
         "problem": "sith",
-        "share": 0.48728085252664144
+        "share": 0.4738741835682365
        },
        "worst": {
         "problem": "rejector",
-        "share": 0.6526277897768179
+        "share": 0.6711663066954644
        }
       },
       "min12-ABDJKMN": {
@@ -3712,14 +3872,14 @@ const G = {
      "prompts": {
       "anti_slop": {
        "n": 6,
-       "mean": 0.0038347552100635,
+       "mean": 0.009982086767228626,
        "best": {
         "problem": "datagate",
         "share": 0.0
        },
        "worst": {
         "problem": "sith",
-        "share": 0.023008531260381
+        "share": 0.03793924560669623
        }
       },
       "min12-ABDJKMN": {
@@ -3776,14 +3936,14 @@ const G = {
      "prompts": {
       "anti_slop": {
        "n": 6,
-       "mean": 1.0579276669775446,
+       "mean": 1.10308183021268,
        "best": {
-        "problem": "file_merger",
-        "share": 0.5515039997401154
+        "problem": "sith",
+        "share": 0.5782397137003175
        },
        "worst": {
         "problem": "mvvault",
-        "share": 1.7911484482621953
+        "share": 1.7557088393186864
        }
       },
       "min12-ABDJKMN": {
@@ -3840,14 +4000,14 @@ const G = {
      "prompts": {
       "anti_slop": {
        "n": 6,
-       "mean": 0.08113993055072016,
+       "mean": 0.10844603368730377,
        "best": {
-        "problem": "rejector",
+        "problem": "xjq",
         "share": 0.0
        },
        "worst": {
-        "problem": "datagate",
-        "share": 0.2048331237125166
+        "problem": "mvvault",
+        "share": 0.21297205720250978
        }
       },
       "min12-ABDJKMN": {
@@ -3904,7 +4064,7 @@ const G = {
  }
 };
 // Test files' share of the final checkpoint's lines, from the split behind the table below.
-const TEST_SHARE = {"prompts": {"just-solve": {"mean": 0.271188096236006, "problems": {"datagate": 0.4821539096348257, "file_merger": 0.11944670463791701, "mvvault": 0.347318196775255, "rejector": 0.46220114219339853, "sith": 0.21600862417463954, "xjq": 0.0}}, "anti_slop": {"mean": 0.3120850443067763, "problems": {"datagate": 0.6132425742574258, "file_merger": 0.3435527502254283, "mvvault": 0.0, "rejector": 0.5829307568438004, "sith": 0.33278418451400327, "xjq": 0.0}}, "min12-ABDJKMN": {"mean": 0.7169203587238097, "problems": {"datagate": 0.7847222222222222, "file_merger": 0.6641221374045801, "mvvault": 0.7726897121608594, "rejector": 0.7305926825975428, "sith": 0.5355376344086021, "xjq": 0.813857763549051}}, "min13-ABDJKMNT": {"mean": 0.6726240055635183, "problems": {"datagate": 0.7342259721203228, "file_merger": 0.6502572660269782, "mvvault": 0.7326186179811061, "rejector": 0.6671949286846276, "sith": 0.5143983025159139, "xjq": 0.7370489460521615}}}, "human": {"n": 27, "mean": 0.5792103051512905, "min": {"repo": "jinja", "value": 0.42620614779127364}, "max": {"repo": "fastapi", "value": 0.7607925222052406}}};
+const TEST_SHARE = {"prompts": {"just-solve": {"mean": 0.271188096236006, "problems": {"datagate": 0.4821539096348257, "file_merger": 0.11944670463791701, "mvvault": 0.347318196775255, "rejector": 0.46220114219339853, "sith": 0.21600862417463954, "xjq": 0.0}}, "anti_slop": {"mean": 0.3074020918528784, "problems": {"datagate": 0.6037567084078712, "file_merger": 0.36065965583174, "mvvault": 0.0, "rejector": 0.5689017341040462, "sith": 0.3110944527736132, "xjq": 0.0}}, "min12-ABDJKMN": {"mean": 0.7169203587238097, "problems": {"datagate": 0.7847222222222222, "file_merger": 0.6641221374045801, "mvvault": 0.7726897121608594, "rejector": 0.7305926825975428, "sith": 0.5355376344086021, "xjq": 0.813857763549051}}, "min13-ABDJKMNT": {"mean": 0.6726240055635183, "problems": {"datagate": 0.7342259721203228, "file_merger": 0.6502572660269782, "mvvault": 0.7326186179811061, "rejector": 0.6671949286846276, "sith": 0.5143983025159139, "xjq": 0.7370489460521615}}}, "human": {"n": 27, "mean": 0.5792103051512905, "min": {"repo": "jinja", "value": 0.42620614779127364}, "max": {"repo": "fastapi", "value": 0.7607925222052406}}};
 const [JS, ...OTHERS] = G.prompts;
 const MIN = G.prompts.includes("min12-ABDJKMN") ? "min12-ABDJKMN" : OTHERS[0];
 const PROMPTS = {

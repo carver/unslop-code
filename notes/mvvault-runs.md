@@ -25,6 +25,7 @@ existing snapshot with `bin/reeval`, and every later run scores it that way nati
 | min13-ABDJKMNT | `…min13-ABDJKMNT/20260918T1850` | min12 plus chunk T, the upstream anti-slop rule list (d902f32); first of the min13 pair, rejector next | 35/37, 60/67, 106/115, 144/155, 174/185, 215/227 | complete 2026-09-18; 12 misses: ten shared with the just-solve repeat (the checkpoint-1 pair, the five-test v1 auto-migration block at 2, skip-downloaded and download URL at 3, sync links at 4) plus two no other run missed (missing vault route at 4, post create at 6); serve custom addr passed, which every other opus-5 run missed. 0/6 strict, $33, 140 min. Quality: erosion 0.007, verbosity 0.159, ast 0.048, cloned 0.075 |
 | min13-ABDJKMNT on v1 (strict) | `…min13-ABDJKMNT-specv1/20260920T1529` | min13 on spec v1 (six sentences) under bin/scb-strict, in the specpatch channel beside the main queue; first of two | 37/37, 67/67, 115/115, 155/155, 185/185, 227/227 | complete 2026-09-20; no misses, strict on every checkpoint, the first strict mvvault run of any prompt (best before: 223); urllib for every request; 6/6 strict, $25, 93 min, overlapped by main-queue jobs throughout, so the minutes are not comparable. Quality: erosion 0.000, verbosity 0.144, ast 0.038, cloned 0.067; final checkpoint, implementation only (27% of LOC): ast 0.103, erosion 0.000, cloned 0.007 |
 | min13-ABDJKMNT on v1, repeat (halted at the last checkpoint) | `…min13-ABDJKMNT-specv1/20260920T1737` | same config as the first run, under bin/scb-strict in the specpatch channel; second of two | 37/37, 67/67, 115/115, 155/155, 185/185, 225/227 | complete 2026-09-20 (the halt came after checkpoint 6, the last); 2 misses, test_migration_atomic for a v1 and a v2 catalog: an annotation POST to a vault whose legacy entry lacks `width` answers 303 where the test wants 500; 5/6 strict, $28, 93 min, overlapped by the main queue, so the minutes are not comparable. Quality: erosion 0.000, verbosity 0.146, ast 0.058, cloned 0.056; final checkpoint, implementation only (28% of LOC): ast 0.154, erosion 0.000, cloned 0.007 |
+| anti-slop on v1 | `…anti_slop-specv1/20260921T0531` | the upstream anti_slop prompt on spec v1, a baseline for the grid's patched cell; first of two | 37/37, 67/67, 115/115, 154/155, 180/185, 222/227 | complete 2026-09-21; 5 misses: the missing-vault redirect carries `?missing=`, the reading draft 06 would have settled (one test at 4), the nonexistent-vault landing page lacks "not found" on the detail and static routes (two at 5), and a literal `../..` in a static route is redirected, 303, where the tests want 403 or 404 (two at 5); urllib throughout, so the seven-test v1 block passed; test_migration_atomic passed; 3/6 strict, $22, 94 min. Quality: erosion 0.018, verbosity 0.176, ast 0.080, cloned 0.031; final checkpoint, implementation only (39% of LOC): ast 0.142, erosion 0.036, cloned 0.000 |
 
 ## Test failure summaries
 
@@ -194,3 +195,21 @@ queue ahead of the test-set batch. The min12 pair is there for one question: whe
 or less likely than min13 to miss test_migration_atomic (min12's first v0 run missed it, its
 repeat did not). Its runs also fill spectest's patched cell for mvvault on the grid.
 
+anti-slop on v1, first run (job 273, 2026-09-21): 222/227, from 213 and 213 on v0. Patch `02`
+did what it was for: `urllib.request.urlopen` at both request sites and the seven-test v1 block
+passed, where both v0 runs imported `requests` and lost it. It wrote tests this time (39% of
+lines are implementation; the v0 runs wrote none). test_migration_atomic passed. The five misses:
+
+  - test_missing_vault_route: the redirect goes to `/?missing=missing`. This is draft `06`, the
+    one sentence dropped from v1 because the spec already says "Redirect to `/`". anti-slop has
+    now taken the query-string road three runs of three; min13 took it once of four.
+  - the nonexistent-vault pair at checkpoint 5 (detail and static routes): the landing page the
+    redirect reaches does not say "not found". 13 pass, 2 fail before this run; anti-slop's v0
+    repeat lost the same pair. Probably the same choice seen from the other side: the notice
+    rides on a query parameter those routes do not set. Not traced further.
+  - two path-traversal cases with a literal `../..`: 303 where the tests want 403 or 404. New:
+    15 pass, 0 fail before this run for the encoded spelling of the same test. The path
+    normalises to another vault's route and is handled as a missing vault. The agent's bug.
+
+Three of the five sit on the missing-vault redirect, so draft `06` is worth a second look if
+anti-slop's repeat does the same.

@@ -1,6 +1,6 @@
 rejector: a failing request gets three HTTP calls in all (checkpoint 1)
 
-DRAFT for rejector v1. Not applied, not judged, uncommitted; the user edits the wording.
+rejector v1, 2026-09-20: the user's wording (e81b2a7), no judge run.
 
 Sentence: "If a request receives an HTTP `5xx`, retry it up to 3 times. After the third failure,
 treat that row as failed". test_api_failure_after_max_retries queues three 500s and wants

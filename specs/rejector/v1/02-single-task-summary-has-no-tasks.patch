@@ -1,6 +1,6 @@
 rejector: a single-task config's summary has no `tasks` object (checkpoint 2)
 
-DRAFT for rejector v1. Not applied, not judged, uncommitted; the user edits the wording.
+rejector v1, 2026-09-20: the user's wording (e81b2a7), no judge run.
 
 Sentence: "The stdout summary now includes a `tasks` object keyed by executed task name", with
 the compatibility bullets above it covering `--input` and `--output` for single-task configs and

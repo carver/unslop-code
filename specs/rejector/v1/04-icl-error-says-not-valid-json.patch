@@ -1,6 +1,6 @@
 rejector: a malformed ICL line is reported as not valid JSON (checkpoint 3)
 
-DRAFT for rejector v1. Not applied, not judged, uncommitted; the user edits the wording.
+rejector v1, 2026-09-20: the user's wording (e81b2a7), no judge run.
 
 Sentence: "malformed lines or missing keys must terminate the run with exit code 1 before any API
 requests are sent". test_invalid_icl_file_fails_before_any_api_requests also asserts `"not valid

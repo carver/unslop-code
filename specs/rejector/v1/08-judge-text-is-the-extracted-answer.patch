@@ -1,6 +1,6 @@
 rejector: under llm_judge, extracted_answer is the text taken from the judge's reply (checkpoint 2)
 
-DRAFT for rejector v1. Not applied, not judged, uncommitted; the user edits the wording.
+rejector v1, 2026-09-20: the user's wording (e81b2a7), no judge run.
 
 Sentences: "`result` includes `judge_score`" and, from part 1, "`result.extracted_answer` is the
 extracted comparison value, or `null` when there is no evaluation or no output". The

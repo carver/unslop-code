@@ -1,6 +1,6 @@
 rejector: requests go out in input order, so replies pair with their rows (checkpoint 1)
 
-DRAFT for rejector v1. Not applied, not judged, uncommitted; the user edits the wording.
+rejector v1, 2026-09-20: the user's wording (e81b2a7), no judge run.
 
 The benchmark's mistake, stated late. The mock API hands out queued replies first come, first
 served. test_first_number_extract (checkpoint 2) queues "an 8 out of 10" then "Score: 7.5" for two

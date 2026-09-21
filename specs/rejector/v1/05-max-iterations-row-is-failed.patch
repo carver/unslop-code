@@ -1,6 +1,6 @@
 rejector: a row that hits max_iterations has passed false, evaluation or not (checkpoint 4)
 
-DRAFT for rejector v1. Not applied, not judged, uncommitted; the user edits the wording.
+rejector v1, 2026-09-20: the user's wording (e81b2a7), no judge run.
 
 The benchmark's mistake: the test contradicts a sentence of the spec. Three lines bear on it.
 Step 5 of the loop: "If `max_iterations` is reached first, output `null` and use `finish_reason:

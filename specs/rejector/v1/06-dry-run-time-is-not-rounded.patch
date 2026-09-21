@@ -1,6 +1,6 @@
 rejector: the dry run's time estimate is not rounded to one decimal (checkpoint 5)
 
-DRAFT for rejector v1. Not applied, not judged, uncommitted; the user edits the wording.
+rejector v1, 2026-09-20: the user's wording (e81b2a7), no judge run.
 
 The benchmark's mistake: the example misleads. "estimate time in minutes as `total_inputs *
 avg_attempts / rpm`" and the example prints `"est_time_minutes": 9.3`. test_dry_run has one row

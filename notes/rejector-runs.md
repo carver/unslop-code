@@ -94,3 +94,30 @@ The control is the dev6 sweep's just-solve run (`notes/dev6-opus5.md`).
     first run (agentic max iterations, dry run). The retry-exhaustion test flipped the other
     way this time, and three of the first run's misses passed. rejector's misses move between
     runs of the same prompt; the pair is 74 and 76 against the control's 73, $37 and $30.
+
+## Spec v1 (2026-09-20)
+
+Eight sentences, the user's wording (e81b2a7), no judge run. The misses they answer are grouped
+in `notes/rejector-misses.md`; each patch's preamble carries its evidence.
+
+  - `01`, checkpoint 1: "retry it until the 3rd time", three HTTP calls in all where six runs of
+    nine made four. The draft said "up to 3 requests in all".
+  - `02`, checkpoint 2: a single-task config's summary "keeps its previous keys and has no
+    `tasks` object".
+  - `03`, checkpoint 1: "Send requests in input order: concurrent execution must not cause a later
+    input row to consume the response intended for an earlier row", checkpoint 5's own words,
+    three checkpoints early. It narrows a race in test_first_number_extract and cannot close it.
+  - `04`, checkpoint 3: "malformed line errors include `not valid JSON`".
+  - `05`, checkpoint 4: on the omitted-evaluation bullet, `result.passed` is `null` "except when
+    `max_iterations` was reached, where it is `false`". The test contradicted the spec.
+  - `06`, checkpoint 5: the dry run's minutes "prefer precision over rounding" (the draft said "at
+    least four decimal places"); 0 of 9 runs passed test_dry_run.
+  - `07`, checkpoint 5: costs "to at least four decimal places".
+  - `08`, checkpoint 2: under `llm_judge`, `result.extracted_answer` is the text `extract` took
+    from the judge's reply.
+  - Not patched: test_tpm_gate (4 of 9 pass), a missed wake-up in the limiter, the agent's bug.
+
+Queued in the `specpatch` channel behind mvvault's repeat: min13-ABDJKMNT on v1 under
+bin/scb-strict, then its repeat, which runs only if the first is strict (`--after`). Their
+minutes overlap the main queue and are not comparable.
+

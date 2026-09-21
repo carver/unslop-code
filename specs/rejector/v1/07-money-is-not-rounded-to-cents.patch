@@ -1,6 +1,6 @@
 rejector: cost values are not rounded to the example's two decimals (checkpoint 5)
 
-DRAFT for rejector v1. Not applied, not judged, uncommitted; the user edits the wording.
+rejector v1, 2026-09-20: the user's wording (e81b2a7), no judge run.
 
 The benchmark's mistake, the same one as patch 06: the example misleads. The cost summary's
 example prints `"total": 12.45, "prompt": 4.50, "completion": 7.95`, and no sentence says how

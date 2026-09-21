@@ -1,0 +1,258 @@
+#!/usr/bin/env python3
+"""The Risk a run's registry gave each patched sentence while the sentence was still unpatched.
+
+    bin/patch-risk [problem ...] [--detail] [--json FILE]
+    bin/patch-risk <problem> --candidates [--side wrong|right|both]
+
+A sentence is one hunk of a patch in the problem's latest specs/<problem>/vN/. Its tests come from
+specs/patch-tests.json. The runs counted are the ones that kept a registry (AMBIGUITIES.md) and
+read the line unpatched: v0 runs, and runs of a version the patch had not entered yet. A run read
+the line wrong when any of the sentence's tests failed in it, right when they all passed, and is
+left out when it never reached them.
+
+Which entry of a run's registry asks the sentence's question is a judgement, so it is made once
+and kept in specs/patch-entries.json: {problem: {"<patch>#<hunk>": {"<family>/<stamp>": "T12"}}},
+null when the run did not ask. Word overlap alone picked the wrong entry about one time in three
+(an entry about budgets quotes the same line as the one about rounding money). --candidates
+prints, for every pair not yet in that file, the entries to choose from: the ones quoting the
+changed line first, then by the telling words heading and quote share with the patch's title and
+new wording (`near` in bin/registry-scores). Scores come from confirmed picks only; a pair still
+to be confirmed counts under `unconfirmed`, a run that did not ask under `unasked`, and a run
+whose registry predates the Risk line (no entry of it has a score) under `unscored`, unpicked.
+"""
+import argparse
+import difflib
+import json
+import pathlib
+import re
+import statistics
+import sys
+import types
+
+HERE = pathlib.Path(__file__).resolve().parent
+ROOT = HERE.parent
+CANDIDATES = 5
+QUOTED_RUN = 4  # words in a row an entry's quote shares with the changed line to count as quoting it
+
+
+def sibling(name):
+    """Another bin script, loaded as a module."""
+    module = types.ModuleType(name.replace("-", "_"))
+    module.__file__ = str(HERE / name)
+    sys.modules.setdefault(module.__name__, module)
+    exec(compile((HERE / name).read_text(), str(HERE / name), "exec"), module.__dict__)
+    return module
+
+
+registry_scores = sibling("registry-scores")
+results = sibling("results")
+
+
+def latest_version(problem, specs):
+    versions = [p for p in (specs / problem).glob("v*") if p.is_dir() and p.name[1:].isdigit()]
+    if not versions:
+        raise SystemExit(f"patch-risk: no specs/{problem}/vN folder under {specs}")
+    return max(versions, key=lambda p: int(p.name[1:]))
+
+
+def hunks(patch_text):
+    """[(checkpoint number, removed lines, added lines, context lines)] of a unified diff."""
+    out, checkpoint = [], None
+    for line in patch_text.split("\n--- a/", 1)[1].splitlines() if "\n--- a/" in patch_text else []:
+        if target := re.match(r"(?:\+\+\+ b/|--- a/)?\S*checkpoint_(\d+)\.md", line):
+            checkpoint = int(target.group(1))
+        elif line.startswith("@@"):
+            out.append((checkpoint, [], [], []))
+        elif out and line[:1] in "-+ " and not line.startswith(("---", "+++")):
+            text = line[1:].strip()
+            if text:
+                out[-1][{"-": 1, "+": 2, " ": 3}[line[0]]].append(text)
+    return out
+
+
+def sentences(problem, specs):
+    """One record per hunk of every patch in the problem's latest version."""
+    tests = json.loads((specs / "patch-tests.json").read_text()).get(problem, {})
+    out = []
+    for patch in sorted(latest_version(problem, specs).glob("*.patch")):
+        text = patch.read_text()
+        listed = tests.get(patch.name, [])
+        for number, (checkpoint, removed, added, context) in enumerate(hunks("\n" + text), start=1):
+            out.append({
+                "problem": problem, "patch": patch.name, "hunk": number, "checkpoint": checkpoint,
+                "title": text.splitlines()[0].strip(), "removed": removed, "added": added, "context": context,
+                "tests": listed.get(str(number), []) if isinstance(listed, dict) else listed,
+            })
+    return out
+
+
+def absent_at(problem, patch_name, version, specs):
+    """Whether a run of `version` read the line without this patch (matched by its NN- prefix)."""
+    return version == "v0" or not list((specs / problem / version).glob(f"{patch_name.split('-')[0]}-*.patch"))
+
+
+def word_list(text):
+    return re.findall(r"[a-z0-9_]+", text.lower())
+
+
+def quotes(entry, lines):
+    """Whether the entry's quoted spec text shares a run of words with any of `lines`."""
+    quoted = word_list(" ".join(line for line in entry["text"].splitlines() if line.startswith(">")))
+    for line in lines:
+        wanted = word_list(line)
+        match = difflib.SequenceMatcher(None, quoted, wanted, autojunk=False).find_longest_match()
+        if match.size >= min(QUOTED_RUN, len(wanted)) and match.size >= 2:
+            return True
+    return False
+
+
+def asked(entry):
+    """The entry cut down to where its question is: the heading and the quoted spec text."""
+    quoted = [line for line in entry["text"].splitlines() if line.startswith(">")]
+    return {**entry, "text": "\n".join([entry["head"], *quoted])}
+
+
+def candidates(rows, sentence):
+    """The run's entries ordered for picking: those quoting the changed line first, then by the
+    telling words heading and quote share with the patch's title and new wording."""
+    words = registry_scores.words
+    old = words(" ".join(sentence["removed"]))
+    new = (words(" ".join(sentence["added"])) - old) | words(sentence["title"].split(":", 1)[-1])
+    quoting = {r["id"] for r in rows if quotes(r, sentence["removed"])}
+    ranked = [cut["id"] for cut, _ in registry_scores.near([asked(r) for r in rows], old, named=new)]
+    by_id = {r["id"]: r for r in rows}
+    return [by_id[i] for i in sorted(ranked, key=lambda i: i not in quoting)]
+
+
+def outcome(problem_dir, needles):
+    """'wrong' when a test matching a needle failed at any checkpoint, 'right' when they only passed,
+    None when the run never reached one."""
+    seen = None
+    for evaluation in problem_dir.glob("checkpoint_*/evaluation.json"):
+        for group in json.loads(evaluation.read_text()).get("tests", {}).values():
+            if any(needle in name for name in group.get("failed", []) for needle in needles):
+                return "wrong"
+            if any(needle in name for name in group.get("passed", []) for needle in needles):
+                seen = "right"
+    return seen
+
+
+def last_registry(problem_dir):
+    snaps = sorted(
+        (p for p in problem_dir.glob("checkpoint_*/snapshot/AMBIGUITIES.md") if p.parts[-3].split("_")[1].isdigit()),
+        key=lambda p: int(p.parts[-3].split("_")[1]),
+    )
+    return registry_scores.entries(snaps[-1].read_text()) if snaps else None
+
+
+def spread(scores):
+    if not scores:
+        return None
+    median = statistics.median(scores)
+    return {"n": len(scores), "min": min(scores), "median": int(median) if median == int(median) else median,
+            "max": max(scores)}
+
+
+UNSET = object()
+
+
+def collect(problem, specs, outputs):
+    """Every sentence of the problem with the scores of the runs that read it wrong and right."""
+    picks_file = specs / "patch-entries.json"
+    picks = json.loads(picks_file.read_text()).get(problem, {}) if picks_file.exists() else {}
+    runs = []
+    for problem_dir in sorted(outputs.glob(f"*/*/*/{problem}"), key=lambda p: p.parent.name):
+        rows = last_registry(problem_dir)
+        if rows is not None:
+            runs.append((problem_dir, results.spec_of(problem_dir.parent), rows))
+    out = []
+    for sentence in sentences(problem, specs):
+        sides = {side: {"runs": 0, "scores": [], "unasked": 0, "unscored": 0, "unconfirmed": 0}
+                 for side in ("wrong", "right")}
+        detail = []
+        for problem_dir, version, rows in runs:
+            side = outcome(problem_dir, sentence["tests"]) if sentence["tests"] else None
+            if side is None or not absent_at(problem, sentence["patch"], version, specs):
+                continue
+            run = f"{problem_dir.parent.parent.name}/{problem_dir.parent.name}"
+            pick = picks.get(f"{sentence['patch']}#{sentence['hunk']}", {}).get(run, UNSET)
+            entry = next((r for r in rows if r["id"] == pick), None)
+            if pick is not UNSET and pick is not None and entry is None:
+                raise SystemExit(f"patch-risk: {picks_file} names {pick} for {run}, which its registry does not have")
+            sides[side]["runs"] += 1
+            if not any(r["score"] is not None for r in rows):
+                pick = None if pick is UNSET else pick  # a registry from before the Risk line: nothing to pick
+                sides[side]["unscored"] += 1
+            elif pick is UNSET:
+                sides[side]["unconfirmed"] += 1
+            elif entry is None:
+                sides[side]["unasked"] += 1
+            elif entry["score"] is None:
+                sides[side]["unscored"] += 1
+            else:
+                sides[side]["scores"].append(entry["score"])
+            detail.append({"run": run, "spec": version, "side": side, "confirmed": pick is not UNSET,
+                           "entry": entry and entry["id"], "risk": entry and entry["score"],
+                           "head": entry and entry["head"], "dir": str(problem_dir),
+                           "candidates": [] if pick is not UNSET else candidates(rows, sentence)[:CANDIDATES]})
+        for side in sides.values():
+            side["scores"].sort()
+        out.append({**sentence, **sides, "detail": detail})
+    return out
+
+
+def print_candidates(collected, side):
+    for s in collected:
+        todo = [d for d in s["detail"] if not d["confirmed"] and side in (d["side"], "both")]
+        if not todo:
+            continue
+        print(f"\n=== {s['patch']}#{s['hunk']}  {s['title']}")
+        for mark, lines in (("-", s["removed"]), ("+", s["added"])):
+            for line in lines:
+                print(f"  {mark} {line[:200]}")
+        print(f"  tests: {', '.join(s['tests'])}")
+        for d in todo:
+            print(f"\n  {d['run']}  (read it {d['side']}; {d['dir']})")
+            for r in d["candidates"]:
+                quote = next((line[1:].strip() for line in r["text"].splitlines() if line.startswith(">")), "")
+                print(f"    risk {r['score'] if r['score'] is not None else '-':>3}  {r['head'][:110]}")
+                print(f"          > {quote[:120]}")
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument("problems", nargs="*", help="default: every problem in specs/patch-tests.json")
+    parser.add_argument("--detail", action="store_true", help="the confirmed entry of every run")
+    parser.add_argument("--candidates", action="store_true", help="the entries to choose from, per unconfirmed pair")
+    parser.add_argument("--side", choices=("wrong", "right", "both"), default="wrong", help="with --candidates")
+    parser.add_argument("--json", type=pathlib.Path, help="write the full result here")
+    parser.add_argument("--specs", type=pathlib.Path, default=ROOT / "specs")
+    parser.add_argument("--outputs", type=pathlib.Path, default=ROOT / "outputs")
+    args = parser.parse_args(argv)
+    tested = json.loads((args.specs / "patch-tests.json").read_text())
+    collected = [s for problem in args.problems or sorted(tested) for s in collect(problem, args.specs, args.outputs)]
+    if args.candidates:
+        print_candidates(collected, args.side)
+        return
+
+    def cell(side):
+        stats = spread(side["scores"])
+        scores = f"{stats['min']}-{stats['max']} median {stats['median']} (n={stats['n']})" if stats else "no score"
+        rest = ", ".join(f"{side[k]} {k}" for k in ("unasked", "unscored", "unconfirmed") if side[k])
+        return f"{side['runs']} runs, {scores}" + (f", {rest}" if rest else "")
+
+    for s in collected:
+        print(f"{s['problem']} {s['patch']}#{s['hunk']}  wrong: {cell(s['wrong'])}  |  right: {cell(s['right'])}")
+        for d in s["detail"] if args.detail else []:
+            pick = "?" if not d["confirmed"] else d["entry"] or "-"
+            head = (d["head"] or "")[:80]
+            print(f"    {d['side']:5} {d['spec']:3} {d['run'][-52:]:52} {pick:5} {d['risk'] or '-':>3}  {head}")
+    if args.json:
+        for s in collected:
+            for d in s["detail"]:
+                d["candidates"] = [r["id"] for r in d["candidates"]]
+        args.json.write_text(json.dumps(collected, indent=1) + "\n")
+
+
+if __name__ == "__main__":
+    main()

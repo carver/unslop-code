@@ -1,0 +1,141 @@
+{
+ "datagate": {
+  "01-datagate-clarified.patch": {
+   "1": [
+    "test_autodetect_latin1"
+   ],
+   "2": [
+    "test_shape_objects_includes_rowid",
+    "test_rowid_sequential_all_rows",
+    "test_rowid_ignores_sort",
+    "test_spreadsheet_query_controls"
+   ],
+   "3": [
+    "test_upload_csv_charset_honored",
+    "test_export_charset_upload"
+   ],
+   "4": [
+    "test_convert_spreadsheet_invalid_charset_ignored"
+   ],
+   "5": [
+    "test_force_variants_trigger_refresh",
+    "test_arbitrary_force_triggers_refresh"
+   ]
+  },
+  "02-datagate-enrich-single.patch": [
+   "test_duplicate_enrich_params_do_not_enable_metadata"
+  ],
+  "03-datagate-delimiter-if-present.patch": [
+   "test_single_column_csv"
+  ]
+ },
+ "file_merger": {
+  "01-tsv-crlf.patch": [
+   "/tsv_empty_fields]",
+   "/tsv_gzip]",
+   "/tsv_whitespace_values]",
+   "/unicode_tsv]",
+   "/consensus_type_tie]",
+   "/five_file_mixed]",
+   "/four_format_merge]",
+   "/auto_mix_union]",
+   "/consensus_inference]"
+  ],
+  "02-authoritative-typed-sources.patch": [
+   "/cross_file_type_inference]",
+   "/jsonl_nulls_loose]"
+  ],
+  "03-csv-backslash-quote.patch": [
+   "correct_aliases/case1]",
+   "correct_nested/case1]",
+   "correct_nested/case5]",
+   "correct_nested/case8]"
+  ],
+  "04-map-key-quoted.patch": [
+   "errors/map_lookup_no_quotes]"
+  ],
+  "05-infer-by-cast-rules.patch": [
+   "spec_correct/cross_family_coercion]"
+  ],
+  "06-alias-cycle-at-load.patch": [
+   "errors/alias_cycle]"
+  ],
+  "07-partition-encode-value-only.patch": [
+   "correct_partition_nested/partition_by_map_value]"
+  ],
+  "08-map-key-unquoted-is-error.patch": [
+   "errors/map_lookup_no_quotes]"
+  ],
+  "09-timestamp-keeps-fraction.patch": [
+   "spec_correct/type_parsing_edgecases]",
+   "hidden/nested_timestamp_microseconds]"
+  ]
+ },
+ "xjq": {
+  "01-text-flags-per-element.patch": [
+   "test_css_text_all_first_match_only",
+   "test_css_text_all_with_multiple_elements_joins_with_newlines",
+   "test_first_with_text_all",
+   "test_text_all_deeply_nested_with_whitespace",
+   "test_text_all_with_multiple_elements_joins_with_newlines"
+  ],
+  "02-no-trailing-newline.patch": [
+   "test_json_empty_string_preserves_element_with_empty_text",
+   "test_text_all_on_whitespace_only_element_is_empty_output"
+  ],
+  "03-empty-string-text.patch": [
+   "test_json_empty_string_preserves_element_with_empty_text"
+  ],
+  "04-union-mixed-results-as-text.patch": [
+   "test_redundant_text_extraction_mixed_pipe_paths"
+  ]
+ },
+ "mvvault": {
+  "01-fetch-failure-message.patch": [
+   "test_sync_rejects_source_entry_missing_tracked_field",
+   "test_sync_rejects_source_entry_with_wrong_field_type"
+  ],
+  "02-urllib-request.patch": [
+   "test_sync_links",
+   "test_sync_v1_download_url"
+  ],
+  "03-downloaded-means-name-contains-id.patch": [
+   "test_skip_downloaded_candidate"
+  ],
+  "04-browser-opens-bind-address.patch": [
+   "test_serve_custom_addr"
+  ],
+  "05-sync-created-entries-carry-annotations.patch": [
+   "test_sync_v1_adds_new_entries_in_v3_shape"
+  ],
+  "07-annotation-timecode-shown-in-seconds.patch": [
+   "test_post_create"
+  ]
+ },
+ "rejector": {
+  "01-three-requests-in-all.patch": [
+   "test_api_failure_after_max_retries"
+  ],
+  "02-single-task-summary-has-no-tasks.patch": [
+   "test_backward_compat_single_task"
+  ],
+  "03-responses-pair-with-rows-in-input-order.patch": [
+   "test_first_number_extract"
+  ],
+  "04-icl-error-says-not-valid-json.patch": [
+   "test_invalid_icl_file_fails_before_any_api_requests"
+  ],
+  "05-max-iterations-row-is-failed.patch": [
+   "test_agentic_max_iterations"
+  ],
+  "06-dry-run-time-is-not-rounded.patch": [
+   "test_dry_run"
+  ],
+  "07-money-is-not-rounded-to-cents.patch": [
+   "test_costs"
+  ],
+  "08-judge-text-is-the-extracted-answer.patch": [
+   "test_llm_judge_pass"
+  ]
+ }
+}

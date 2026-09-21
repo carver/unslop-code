@@ -35,7 +35,9 @@ paths still resolve.
 
 Two files describe the patches for `bin/patch-risk` and the spec-patches page. `patch-tests.json` names
 the hidden tests each patch answers (per hunk where a patch has several), from the patch headers and
-`notes/critical-ambiguities.md`. `patch-entries.json` records, for each run that read a line unpatched and
+`notes/critical-ambiguities.md`; its `_same` lists a sentence that repeats another's reading, so the two
+count as one bug. `patch-entries.json` records, for each run that read a line unpatched and
 failed those tests, which entry of its registry asked the line's question, or null when none did. Those
-picks were made by reading the entries (2026-09-21, one Sonnet agent per problem, spot-checked by hand);
+picks were made by reading the entries (2026-09-21, Sonnet agents per problem, both the runs that failed the
+tests and the ones that passed; the failing side's every Choice then read by hand);
 a new patch or run shows up under `bin/patch-risk <problem> --candidates` until its pick is recorded.

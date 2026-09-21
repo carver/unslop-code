@@ -32,7 +32,8 @@ Some important entry points to understand and use the repository.
 - `report/` — every published page as plain HTML, so nothing depends on the claude.ai links:
   the baseline (`scbench-baseline.html`), the five datagate sentences (`five-sentences.html`),
   the uplift grid (`uplift-grid.html`), the spec patches per problem (`spec-patches.html`, built by
-  `python3 report/spec_patches.py` from `specs/`, with the agents' Risk scores per line behind a toggle),
+  `python3 report/spec_patches.py` from `specs/`, with the agents' Risk scores per line and, at the top, what
+  clarifying every entry from the highest Risk down would fix),
   the delimiter patch (`patch-infer-delimiter.html`), the enrich patch (`patch-enrich-single.html`) and the min12 prompt rendered
   (`min12-prompt.html`). The build scripts sit beside the pages they generate.
 - `notes/` — credential plumbing and incident log (`credential-setup.md`), control
@@ -74,7 +75,8 @@ prompt and `save_dir` relative to it, which is where `bin/queue` and `bin/scb-ex
     bin/registry-scores <run_dir> [--grep X] # a run's AMBIGUITIES.md Differs scores: spread, top entries,
                                              # the Choice and Differs text of matching entries
     bin/patch-risk [problem] [--detail]      # per patched sentence, the Risk its question got in the runs that read
-                                             # it unpatched and wrong; --candidates lists the picks still to confirm
+                                             # it unpatched and wrong; --candidates lists the picks still to confirm,
+                                             # --curve what addressing entries from the highest Risk down finds
     python3 -m pytest                        # the bin tools' tests; GitHub Actions runs them on every PR
     bin/fork-run <run_dir> --spec vN --keep k  # copy a run keeping checkpoints 1..k, pointed at spec vN;
                                              # --queue continues it with bin/queue resume-strict <copy>

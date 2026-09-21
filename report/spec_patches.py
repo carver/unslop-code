@@ -8,9 +8,10 @@ The patches, their hunks, the version each entered and any later rewording come 
 file, UTC). A patch's title is its header line unless `spec-patches.json` gives a shorter one; the
 same file holds each problem's blurb. The stylesheet is `spec-patches.template.html`.
 
-Behind the page's toggle, each changed line shows the Risk scores that runs gave the question
-while the line was unpatched and they read it wrong (bin/patch-risk, from the confirmed picks in
-specs/patch-entries.json). The build stops while any of those picks is unconfirmed.
+Each changed line shows the Risk scores that runs gave the question while the line was unpatched
+and they read it wrong, and the top of the page charts what addressing entries from the highest
+Risk down would find (bin/patch-risk and its curve(), from the confirmed picks in
+specs/patch-entries.json). The build stops while any pick is unconfirmed.
 """
 import difflib
 import html
@@ -171,7 +172,7 @@ def hunk_html(sentence):
               if d["side"] == "wrong" and d["risk"] is not None]
     slip_prompts = [prompt_of(d["run"]) for d in sentence["detail"] if d["side"] == "wrong" and d["slip"]]
     sentence_html = risk_sentence(sentence["wrong"], sentence["problem"], slip_prompts)
-    risk = (f'<div class="risk" hidden><p>{sentence_html}</p>'
+    risk = (f'<div class="risk"><p>{sentence_html}</p>'
             f'{strip(points)}</div>')
     return f'<div class="hunk"><div class="where">checkpoint {sentence["checkpoint"]}</div>{"".join(lines)}{risk}</div>'
 
@@ -196,31 +197,184 @@ def header_title(patch):
     return line[:1].upper() + line[1:]
 
 
-RISK_KEY = """<div class="risk-key" id="risk-key" hidden>
+CHART_W, CHART_H, LEFT, RIGHT, TOP, BOTTOM = 420, 170, 40, 14, 12, 30
+
+
+def moves(points, start):
+    """SVG horizontal and vertical moves from `start` through `points`, skipping the ones that go nowhere."""
+    path, (last_x, last_y) = "", start
+    for x, y in points:
+        if (x, y) != (last_x, last_y):
+            path += f"H{x}" if y == last_y else f"V{y}" if x == last_x else f"L{x},{y}"
+        last_x, last_y = x, y
+    return path
+
+
+def step_path(points):
+    """An SVG path through (x, y) points using only horizontal and vertical moves."""
+    return f"M{points[0][0]},{points[0][1]}" + moves(points[1:], points[0])
+
+
+def chart(title, series, points, x_domain, y_max, x_ticks, y_ticks, x_label, tips, reference=None, height=CHART_H):
+    """One single-series line chart. `points` are (x value, y percent); `x_domain` runs left to right
+    and may descend; `tips` has one hover text per point; `reference` is a second, muted line."""
+    (x0, x1), plot_w, plot_h = x_domain, CHART_W - LEFT - RIGHT, height - TOP - BOTTOM
+
+    def sx(value):
+        return round(LEFT + plot_w * (value - x0) / (x1 - x0), 1)
+
+    def sy(value):
+        return round(TOP + plot_h * (1 - value / y_max), 1)
+
+    grid = "".join(f'<line class="grid" x1="{LEFT}" y1="{sy(t)}" x2="{CHART_W - RIGHT}" y2="{sy(t)}"/>'
+                   f'<text class="tick" x="{LEFT - 6}" y="{sy(t) + 3}" text-anchor="end">{t}%</text>' for t in y_ticks)
+    xs = "".join(f'<text class="tick" x="{sx(t)}" y="{height - BOTTOM + 14}" text-anchor="middle">{t}</text>'
+                 for t in x_ticks)
+    line = "M" + "L".join(f"{sx(x)},{sy(y)}" for x, y in points)
+    extra = ""
+    if reference:
+        (rx0, ry0), (rx1, ry1) = reference
+        extra = f'<line class="reference" x1="{sx(rx0)}" y1="{sy(ry0)}" x2="{sx(rx1)}" y2="{sy(ry1)}"/>'
+    hover = json.dumps([[sx(x), sy(y), tip] for (x, y), tip in zip(points, tips, strict=True)],
+                       ensure_ascii=False)
+    return (f'<figure class="chart" data-points="{html.escape(hover)}"><figcaption>{html.escape(title)}</figcaption>'
+            f'<svg viewBox="0 0 {CHART_W} {height}" role="img" aria-label="{html.escape(title)}">{grid}{xs}'
+            f'<text class="tick" x="{LEFT + plot_w / 2}" y="{height - 2}" text-anchor="middle">{x_label}</text>'
+            f'{extra}<path class="series {series}" d="{line}"/>'
+            f'<line class="cross" x1="0" y1="{TOP}" x2="0" y2="{height - BOTTOM}" visibility="hidden"/>'
+            f'<circle class="dot {series}" r="4" cx="0" cy="0" visibility="hidden"/></svg>'
+            f'<div class="tip" hidden></div></figure>')
+
+
+def band_path(upper, lower):
+    """A closed SVG path: along `upper` left to right, down to `lower`, and back along it."""
+    return step_path(upper) + moves(list(reversed(lower)), upper[-1]) + "Z"
+
+
+def stepped(points):
+    """(x, y) levels as the corners of a step line: each value holds until the next x."""
+    out = [points[0]]
+    for x, y in points[1:]:
+        out += [(x, out[-1][1]), (x, y)]
+    return out
+
+
+BANDS = (("b1", "spec bugs addressed"), ("b3", "spec bugs still unfound"), ("b2", "changes that fix no known bug"))
+STACK_H = 300
+
+
+def stacked_chart(title, levels, x_domain, x_ticks, x_label, tips):
+    """Three stacked, stepped bands over a descending Risk axis. `levels` are (risk, [band values
+    bottom to top])."""
+    (x0, x1), plot_w, plot_h = x_domain, CHART_W - LEFT - RIGHT, STACK_H - TOP - BOTTOM
+    y_max = max(sum(values) for _, values in levels)
+    unit = 10 ** (len(str(int(y_max))) - 1)
+    y_max = unit * -(-y_max // unit)
+    y_ticks = [unit * i for i in range(int(y_max // unit) + 1)]
+
+    def sx(value):
+        return round(LEFT + plot_w * (value - x0) / (x1 - x0), 1)
+
+    def sy(value):
+        return round(TOP + plot_h * (1 - value / y_max), 1)
+
+    grid = "".join(f'<line class="grid" x1="{LEFT}" y1="{sy(t)}" x2="{CHART_W - RIGHT}" y2="{sy(t)}"/>'
+                   f'<text class="tick" x="{LEFT - 6}" y="{sy(t) + 3}" text-anchor="end">{t:g}</text>' for t in y_ticks)
+    xs = "".join(f'<text class="tick" x="{sx(t)}" y="{STACK_H - BOTTOM + 14}" text-anchor="middle">{t}</text>'
+                 for t in x_ticks)
+    edges = [[(risk, sum(values[:k])) for risk, values in levels] for k in range(len(BANDS) + 1)]
+    edges = [[(sx(x), sy(y)) for x, y in stepped(edge)] for edge in edges]
+    bands = "".join(f'<path class="band {name}" d="{band_path(edges[k + 1], edges[k])}"/>'
+                    for k, (name, _) in enumerate(BANDS))
+    key = "".join(f'<span><i class="key-swatch {name}"></i>{label}</span>' for name, label in reversed(BANDS))
+    hover = json.dumps([[sx(risk), sy(values[0]), tip] for (risk, values), tip in zip(levels, tips, strict=True)],
+                       ensure_ascii=False)
+    return (f'<figure class="chart" data-points="{html.escape(hover)}"><figcaption>{html.escape(title)}</figcaption>'
+            f'<div class="key">{key}</div>'
+            f'<svg viewBox="0 0 {CHART_W} {STACK_H}" role="img" aria-label="{html.escape(title)}">{grid}{xs}'
+            f'<text class="tick" x="{LEFT + plot_w / 2}" y="{STACK_H - 2}" text-anchor="middle">{x_label}</text>'
+            f'{bands}<line class="cross" x1="0" y1="{TOP}" x2="0" y2="{STACK_H - BOTTOM}" visibility="hidden"/>'
+            f'<circle class="dot b1" r="4" cx="0" cy="0" visibility="hidden"/></svg>'
+            f'<div class="tip" hidden></div></figure>')
+
+
+def percent(part, whole):
+    return 100 * part / whole if whole else 0
+
+
+def chart_section(curve):
+    """The pooled charts at the top of the page, from bin/patch-risk's curve()."""
+    rows, instances = curve["thresholds"], curve["bug_instances"]
+    top = max(row["risk"] for row in rows)
+    high = 5 * -(-top // 5)
+    x_ticks = [t for t in range(high, -1, -10)]
+    runs = curve["runs"]
+    levels = [(r["risk"], [r["found"] / runs, r["remaining"] / runs, (r["addressed"] - r["hits"]) / runs])
+              for r in rows]
+    stack_tips = [f"Risk ≥ {risk}, per run: {found:.1f} bugs addressed, {left:.1f} still unfound, "
+                  f"{none:.1f} changes that fix no known bug" for risk, (found, left, none) in levels]
+    ceiling = curve["gain"][-1][1]
+    gain = [(p, 100 * share) for p, share in curve["gain"]]
+    gain_tips = [f"Top {p}% of a registry by Risk: {100 * share:.0f}% of its bugs found "
+                 f"({p * ceiling:.0f}% in random order)" for p, share in curve["gain"]]
+    floor = rows[-1]["remaining"]
+    table = "".join(f"<tr><td>{r['risk']}</td><td>{r['addressed']}</td><td>{r['hits']}</td>"
+                    f"<td>{percent(r['hits'], r['addressed']):.1f}%</td><td>{r['remaining']}</td></tr>"
+                    for r in rows if r["risk"] % 5 == 0 or r is rows[0])
+    return f"""<section id="risk-charts">
+<h2 class="plain">Does the agents' Risk score find the spec bugs?</h2>
+<div class="risk-key">
 <p>The spectest prompts have the agent keep a registry of every ambiguity it meets in the spec: the line, the
 readings, the one it chose, and a Risk from 0 to 100, its own estimate that the hidden tests take another reading.
-It writes that number before it has seen any test.</p>
-<p>Under each changed line: the Risk on that question in the runs that read the line unpatched, chose against the
-tests (the tests the patch answers failed) and had the question in their registry. Each dot is one run, the tick is
-the median. Runs that failed the same tests without asking the question are counted beside it. A run whose entry
+It writes that number before it has seen any test. Suppose a spec author clarified every entry at or above some
+Risk. The charts pool {curve['runs']} runs with {curve['entries']} scored entries. A bug is one of the
+{curve['bugs']} readings patched below; it counts once for each run that read its line unpatched, whichever way the
+run read it: {instances} bug instances. {floor} of {instances} stay unfound at any level, because those runs never
+asked the question.</p>
+</div>
+<div class="charts">
+{stacked_chart("One run's registry: spec changes made, and what they fix", levels, (high, 0), x_ticks,
+               "clarify every entry at or above this Risk", stack_tips)}
+{chart("Bugs found reading a registry from its highest Risk down", "s1", gain, (0, 100), 100, (0, 25, 50, 75, 100),
+       (0, 25, 50, 75, 100), "% of the run's registry read (dashed: random order)", gain_tips,
+       reference=((0, 0), (100, 100 * ceiling)), height=STACK_H)}
+</div>
+<p class="risk-key">Left: averages per run, in spec changes. The two lower bands always add up to the run's bugs;
+the top band is every other entry clarified. It is an upper bound on waste: an entry counts as a bug only if it is
+one we patched, and a high-Risk entry we never patched may still be a real ambiguity that no test probes.</p>
+<details class="numbers"><summary>The numbers</summary><div class="scroll"><table>
+<thead><tr><th>Risk ≥</th><th>entries addressed</th><th>a bug's entry</th><th>share</th>
+<th>bug instances left</th></tr></thead>
+<tbody>{table}</tbody></table></div></details>
+<div class="risk-key">
+<p>Under each changed line below: the Risk on that question in the runs that read the line unpatched, chose against
+the tests (the tests the patch answers failed) and had the question in their registry. Each dot is one run, the tick
+is the median. Runs that failed the same tests without asking the question are counted beside it. A run whose entry
 chose the tests' reading and whose code failed them anyway is a slip, not a reading: it gets no dot and is named
 with its prompt. Which registry entry asks a line's question, and which way it chose, was settled by reading the
 entries, one run at a time.</p>
-</div>"""
+</div>
+</section>"""
+
 
 SCRIPT = """<script>
-(function () {
-  var box = document.getElementById("show-risk");
-  function apply() {
-    document.querySelectorAll(".risk, #risk-key").forEach(function (el) { el.hidden = !box.checked; });
+document.querySelectorAll(".chart").forEach(function (fig) {
+  var points = JSON.parse(fig.dataset.points), svg = fig.querySelector("svg");
+  var cross = fig.querySelector(".cross"), dot = fig.querySelector(".dot"), tip = fig.querySelector(".tip");
+  function show(event) {
+    var box = svg.getBoundingClientRect(), x = (event.clientX - box.left) * svg.viewBox.baseVal.width / box.width;
+    var best = points.reduce(function (a, b) { return Math.abs(b[0] - x) < Math.abs(a[0] - x) ? b : a; });
+    cross.setAttribute("x1", best[0]); cross.setAttribute("x2", best[0]);
+    dot.setAttribute("cx", best[0]); dot.setAttribute("cy", best[1]);
+    cross.setAttribute("visibility", "visible"); dot.setAttribute("visibility", "visible");
+    tip.textContent = best[2]; tip.hidden = false;
   }
-  try { box.checked = localStorage.getItem("show-risk") === "1"; } catch (e) {}
-  box.addEventListener("change", function () {
-    try { localStorage.setItem("show-risk", box.checked ? "1" : "0"); } catch (e) {}
-    apply();
-  });
-  apply();
-})();
+  function hide() {
+    cross.setAttribute("visibility", "hidden"); dot.setAttribute("visibility", "hidden"); tip.hidden = true;
+  }
+  svg.addEventListener("pointermove", show); svg.addEventListener("pointerdown", show);
+  svg.addEventListener("pointerleave", hide);
+});
 </script>"""
 
 
@@ -250,9 +404,8 @@ def build():
             "latest version of each problem. A version folder carries every earlier patch, so this is the full set."
             f"{rest} Risk scores: <span class=\"mono\">bin/patch-risk</span>.")
     body = (f'<div class="wrap"><h1>SCBench Spec Patches</h1><p class="lede">{lede}</p>'
-            '<label class="switch" for="show-risk"><input type="checkbox" id="show-risk">'
-            "<span>Show the agents' own Risk scores for each line</span></label>"
-            f'{RISK_KEY}<nav class="toc">{"".join(toc)}</nav>{"".join(sections)}<p class="foot">{foot}</p></div>'
+            f'{chart_section(patch_risk.curve(list(files), SPECS, ROOT / "outputs"))}'
+            f'<nav class="toc">{"".join(toc)}</nav>{"".join(sections)}<p class="foot">{foot}</p></div>'
             f"{SCRIPT}")
     return (HERE / "spec-patches.template.html").read_text() + "</style>\n" + body + "\n"
 

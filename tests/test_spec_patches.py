@@ -75,10 +75,46 @@ def test_history_names_the_version_a_patch_entered_and_a_later_rewording(tmp_pat
     assert sp.history("p", "02-y.patch", tmp_path) == ("v3", None)
 
 
-def test_the_page_lists_every_patch_with_the_risk_blocks_hidden_until_the_toggle():
+def test_the_page_lists_every_patch():
     page = sp.build()
     assert page.count('<article class="patch"') == sum(len(p) for p in sp.patch_files().values()) >= 30
-    assert '<input type="checkbox" id="show-risk">' in page
-    assert page.count('<div class="risk" hidden>') == page.count('<div class="hunk">') >= 34
     assert 'id="rejector-01"' in page and "JSONL ranks equal to CSV under the authoritative strategy" in page
     assert "entered v1, reworded in v3" in page
+
+
+CURVE = {
+    "runs": 2, "bugs": 2, "bug_instances": 4, "entries": 4,
+    "thresholds": [
+        {"risk": 45, "addressed": 1, "hits": 1, "found": 1, "remaining": 3},
+        {"risk": 35, "addressed": 3, "hits": 2, "found": 2, "remaining": 2},
+        {"risk": 0, "addressed": 4, "hits": 2, "found": 2, "remaining": 2},
+    ],
+    "gain": [(p, 0 if p == 0 else 0.5) for p in range(101)],
+}
+
+
+def test_the_chart_section_stacks_three_bands_per_run_beside_the_gain_curve_with_a_table():
+    section = sp.chart_section(CURVE)
+    assert section.count("<svg") == 2 and section.count('class="band') == 3 and section.count('class="series') == 1
+    # per run (2 runs): at Risk >= 35, 1 bug addressed, 1 remaining, 0.5 changes that fix no known bug
+    assert ("Risk ≥ 35, per run: 1.0 bugs addressed, 1.0 still unfound, "
+            "0.5 changes that fix no known bug") in section
+    assert "Top 50% of a registry by Risk: 50% of its bugs found (25% in random order)" in section
+    assert section.count('class="key-swatch') == 3
+    assert "<table" in section and "<td>45</td><td>1</td><td>1</td><td>100.0%</td><td>3</td>" in section
+    assert "2 of 4 stay unfound at any level" in section
+
+
+def test_band_path_closes_a_stepped_area_between_two_edges():
+    assert sp.band_path([(10, 50), (30, 50), (30, 20)], [(10, 60), (30, 60), (30, 60)]) == "M10,50H30V20V60H10Z"
+
+
+def test_a_step_path_holds_each_value_until_the_next_level():
+    assert sp.step_path([(10, 50), (30, 50), (30, 20), (60, 20)]) == "M10,50H30V20H60"
+
+
+def test_the_page_has_no_toggle_and_shows_every_risk_block():
+    page = sp.build()
+    assert "show-risk" not in page and '<div class="risk" hidden>' not in page
+    assert page.count('<div class="risk">') == page.count('<div class="hunk">') >= 34
+    assert page.index('id="risk-charts"') < page.index('<nav class="toc">')

@@ -15,6 +15,8 @@ import re
 BANNER = re.compile(r"^=+ (.+) =+$")
 TITLE = re.compile(r"^_+ (.+) _+$")
 FAILURE_BLOCKS = {"FAILURES", "ERRORS"}
+# What changes between two runs of one failing test without the failure changing.
+PER_RUN = re.compile(r"(?<=:)\d{4,5}\b|0x[0-9a-f]+|(?<=pytest-)\d+")
 
 
 def failure_sections(text):
@@ -56,10 +58,11 @@ def run_failures(run):
 
 def folded(failures):
     """[(problem, first checkpoint, title, lines, checkpoints that repeat it)]: a failure printing the
-    same lines at a later checkpoint joins its first showing."""
+    same lines at a later checkpoint joins its first showing. Ports, object addresses and pytest's
+    numbered tmp folders do not make lines differ."""
     first = {}
     for problem, checkpoint, title, lines in failures:
-        key = (problem, title, tuple(lines))
+        key = (problem, title, tuple(PER_RUN.sub("#", line) for line in lines))
         if key in first:
             first[key][4].append(checkpoint)
         else:

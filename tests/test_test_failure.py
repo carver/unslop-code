@@ -150,3 +150,16 @@ def test_checkpoint_10_comes_after_checkpoint_9(tmp_path):
         evaluation.mkdir(parents=True)
         (evaluation / "stdout.txt").write_text(STDOUT)
     assert [checkpoint for _, checkpoint, _, _ in mod.run_failures(run)][::2] == ["checkpoint_9", "checkpoint_10"]
+
+
+def test_a_new_port_address_or_tmp_folder_is_still_the_same_failure():
+    first = ["E  assert 'http://127.0.0.1:33267/?missing=x' == 'http://127.0.0.1:33267'", "E  <Obj at 0x7f7cbe213590>"]
+    later = ["E  assert 'http://127.0.0.1:41847/?missing=x' == 'http://127.0.0.1:41847'", "E  <Obj at 0x7f00aa000010>"]
+    other = ["E  assert 'http://127.0.0.1:41847/?missing=y' == 'http://127.0.0.1:41847'", "E  <Obj at 0x7f00aa000010>"]
+    tmp = ["E  /tmp/pytest-of-agent/pytest-3/test_x0/config.yaml"]
+    got = mod.folded([("p", "checkpoint_4", "t", first), ("p", "checkpoint_5", "t", later),
+                      ("p", "checkpoint_6", "t", other), ("p", "checkpoint_1", "u", tmp),
+                      ("p", "checkpoint_2", "u", [tmp[0].replace("pytest-3", "pytest-12")])])
+    assert [(checkpoint, repeats) for _, checkpoint, _, _, repeats in got] == [
+        ("checkpoint_4", ["checkpoint_5"]), ("checkpoint_6", []), ("checkpoint_1", ["checkpoint_2"])]
+    assert got[0][3] == first  # the first showing's own lines are the ones printed

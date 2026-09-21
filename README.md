@@ -29,7 +29,9 @@ Some important entry points to understand and use the repository.
 
 - `baseline-report.md` — the Sonnet 4.6 reproduction vs the leaderboard, with manifest.
   The page: `report/scbench-baseline.html` (regenerate with `python3 report/build.py`).
-- `report/` — every published page as plain HTML, so nothing depends on the claude.ai links:
+- `report/` — every report page as plain HTML, the committed file being the page (the claude.ai
+  artifact copies are no longer republished; a republish from a fresh session costs about 100k tokens
+  of reading the live page back, and the file in the repo says the same thing):
   the baseline (`scbench-baseline.html`), the five datagate sentences (`five-sentences.html`),
   the uplift grid (`uplift-grid.html`), the spec patches per problem (`spec-patches.html`, built by
   `python3 report/spec_patches.py` from `specs/`, with the agents' Risk scores per line and, at the top, what

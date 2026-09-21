@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Build report/quality-examples.html: code the agent wrote, marked with its scb-check hits.
 
-    python3 report/quality_examples.py    # then publish report/quality-examples.html
+    python3 report/quality_examples.py    # the committed page is the report; no artifact publish
 
 `quality-examples.json` names the examples, hand-picked to show spectest at its best (the
 candidates they came from are in notes/quality-test-dilution.md). Each has line ranges in a just-solve snapshot

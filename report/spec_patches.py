@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Build report/spec-patches.html: every spec patch, latest version of each problem, line by line.
 
-    python3 report/spec_patches.py    # then publish report/spec-patches.html
+    python3 report/spec_patches.py    # the committed page is the report; no artifact publish
 
 The patches, their hunks, the version each entered and any later rewording come from
 `specs/<problem>/vN/`; dates from the patch header, else from git (the commit that added the

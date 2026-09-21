@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Build report/uplift-grid.html: the template with `bin/grid --json` embedded.
 
-    python3 report/uplift_grid.py    # then publish report/uplift-grid.html
+    python3 report/uplift_grid.py    # the committed page is the report; no artifact publish
 
 The page is self-contained: the grid data sits in a script constant, the charts are inline
 SVG drawn by the page, no library. The implementation-against-tests table comes from

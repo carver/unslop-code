@@ -50,14 +50,16 @@ cloned% and lines per run. Done when the table has both scopes.
 ## 5. Next
 
 `bin/queue` for the running job's id; back to step 1. A trigger named in memory (a page
-rebuild, a republish) fires on the wake of its last job.
+rebuild) fires on the wake of its last job. A rebuild ends at the committed HTML under `report/`:
+do not publish it as a claude.ai artifact (the user's call, 2026-09-21; a republish from a session
+that did not publish the page costs about 100k tokens of reading the live page back).
 
 ## Traps
 
 - Every Bash result through `tail`, `cut -c1-N` or `jq`: pueue's table and pytest's `E` lines are
   thousands of characters wide. `cd` into a snapshot before grepping it, so paths stay short.
 - The grid has one patched version per problem, and it flips when the first just-solve run on the
-  new version lands. Do not rebuild or republish while a version's pairs are half in; rebuild when
+  new version lands. Do not rebuild while a version's pairs are half in; rebuild when
   the last pair lands, then fix the hand-written version mentions (`notes/uplift-grid.md`,
   `README.md`, `report/spec-patches.html`).
 - The pre-commit hook lints the whole tree, other sessions' untracked files included. A commit

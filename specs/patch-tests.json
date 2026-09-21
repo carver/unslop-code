@@ -69,7 +69,10 @@
   "09-timestamp-keeps-fraction.patch": [
    "spec_correct/type_parsing_edgecases]",
    "hidden/nested_timestamp_microseconds]"
-  ]
+  ],
+  "_same": {
+   "08-map-key-unquoted-is-error.patch#1": "04-map-key-quoted.patch#1"
+  }
  },
  "xjq": {
   "01-text-flags-per-element.patch": [

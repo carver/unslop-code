@@ -3,6 +3,7 @@
 
     bin/patch-risk [problem ...] [--detail] [--json FILE]
     bin/patch-risk <problem> --candidates [--side wrong|right|both]
+    bin/patch-risk [problem ...] --curve
 
 A sentence is one hunk of a patch in the problem's latest specs/<problem>/vN/. Its tests come from
 specs/patch-tests.json. The runs counted are the ones that kept a registry (AMBIGUITIES.md) and
@@ -16,7 +17,8 @@ null when the run did not ask, and {"entry": "T12", "slip": true} when the entry
 reading and the run failed them anyway: a bug, not a reading, counted under `slips` with no score.
 Word overlap alone picked the wrong entry about one time in three
 (an entry about budgets quotes the same line as the one about rounding money). --candidates
-prints, for every pair not yet in that file, the entries to choose from: the ones quoting the
+prints, for every pair not yet in that file, the headings already confirmed for the sentence in
+other runs (what a match looks like) and the entries to choose from: the ones quoting the
 changed line first, then by the telling words heading and quote share with the patch's title and
 new wording (`near` in bin/registry-scores). Scores come from confirmed picks only; a pair still
 to be confirmed counts under `unconfirmed`, a run that did not ask under `unasked`, and a run
@@ -25,6 +27,7 @@ whose registry predates the Risk line (no entry of it has a score) under `unscor
 import argparse
 import difflib
 import json
+import math
 import pathlib
 import re
 import statistics
@@ -35,6 +38,7 @@ HERE = pathlib.Path(__file__).resolve().parent
 ROOT = HERE.parent
 CANDIDATES = 5
 CHOICE_SHOWN = 330
+KNOWN_SHOWN = 4
 QUOTED_RUN = 4  # words in a row an entry's quote shares with the changed line to count as quoting it
 
 
@@ -185,7 +189,8 @@ def collect(problem, specs, outputs):
             if pick is not UNSET and pick is not None and entry is None:
                 raise SystemExit(f"patch-risk: {picks_file} names {pick} for {run}, which its registry does not have")
             sides[side]["runs"] += 1
-            if not any(r["score"] is not None for r in rows):
+            scored_registry = any(r["score"] is not None for r in rows)
+            if not scored_registry:
                 pick = None if pick is UNSET else pick  # a registry from before the Risk line: nothing to pick
                 sides[side]["unscored"] += 1
             elif pick is UNSET:
@@ -200,6 +205,7 @@ def collect(problem, specs, outputs):
                 sides[side]["scores"].append(entry["score"])
             detail.append({"run": run, "spec": version, "side": side, "confirmed": pick is not UNSET,
                            "entry": entry and entry["id"], "slip": slip, "choice": entry and entry["choice"],
+                           "entry_risk": entry and entry["score"], "scored_registry": scored_registry,
                            "risk": None if slip else entry and entry["score"],
                            "head": entry and entry["head"], "dir": str(problem_dir),
                            "candidates": [] if pick is not UNSET else candidates(rows, sentence)[:CANDIDATES]})
@@ -207,6 +213,65 @@ def collect(problem, specs, outputs):
             side["scores"].sort()
         out.append({**sentence, **sides, "detail": detail})
     return out
+
+
+def found_reading(risks, hit_risks, read):
+    """Bugs found after reading the `read` highest-Risk entries; within a block of equal Risk the
+    order is unknown, so a part-read block yields its hits in proportion."""
+    found, left = 0.0, read
+    for risk in sorted(set(risks), reverse=True):
+        if left <= 0:
+            break
+        size = risks.count(risk)
+        found += hit_risks.count(risk) * min(left, size) / size
+        left -= size
+    return found
+
+
+def curve(problems, specs, outputs):
+    """What addressing registry entries from the highest Risk down would find, over every run with a
+    scored registry. A bug is one reading: a patched sentence, with the sentences that
+    specs/patch-tests.json lists under `_same` folded into the one they repeat. It is a bug of a run
+    when the run read the line unpatched and reached its tests, whichever way it read it, and the
+    run finds it at the Risk of its entry on the question (never, when it did not ask).
+    `thresholds`: per Risk level, entries at or above it (`addressed`), those that are a bug's entry
+    (`hits`), bug instances found and remaining, summed over runs. `gain`: [(percent of its registry
+    a run has read, highest Risk first; share of its bugs found)], averaged over runs."""
+    same = {p: json.loads((specs / "patch-tests.json").read_text()).get(p, {}).get("_same", {}) for p in problems}
+    per_run, bugs = {}, set()
+    for problem in problems:
+        for sentence in collect(problem, specs, outputs):
+            name = f"{sentence['patch']}#{sentence['hunk']}"
+            bug = (problem, same[problem].get(name, name))
+            for d in sentence["detail"]:
+                if not d["confirmed"]:
+                    raise SystemExit(f"patch-risk: unconfirmed pick for {name} in {d['run']}; "
+                                     f"see bin/patch-risk {problem} --candidates --side both")
+                if not d["scored_registry"]:
+                    continue
+                bugs.add(bug)
+                run = per_run.setdefault(d["dir"], {})
+                run[bug] = max(filter(None, [run.get(bug), d["entry"] and (d["entry"], d["entry_risk"])]),
+                               key=lambda pick: pick[1] or 0, default=None)
+    runs = []
+    for directory, found in per_run.items():
+        risks = [r["score"] for r in last_registry(pathlib.Path(directory)) if r["score"] is not None]
+        hits = {pick for pick in found.values() if pick and pick[1] is not None}
+        runs.append((risks, [risk for _, risk in hits], len(found)))
+    instances = sum(n for _, _, n in runs)
+    levels = sorted({risk for risks, _, _ in runs for risk in risks} | {0}, reverse=True)
+    thresholds = []
+    for level in levels:
+        hit = sum(1 for _, hit_risks, _ in runs for risk in hit_risks if risk >= level)
+        thresholds.append({"risk": level, "addressed": sum(1 for risks, _, _ in runs for r in risks if r >= level),
+                           "hits": hit, "found": hit, "remaining": instances - hit})
+    gain = []
+    for percent in range(101):
+        shares = [found_reading(risks, hit_risks, math.ceil(len(risks) * percent / 100)) / n
+                  for risks, hit_risks, n in runs if n]
+        gain.append((percent, round(statistics.mean(shares), 4) if shares else 0))
+    return {"runs": len(runs), "bugs": len(bugs), "bug_instances": instances,
+            "entries": sum(len(risks) for risks, _, _ in runs), "thresholds": thresholds, "gain": gain}
 
 
 def print_candidates(collected, side):
@@ -219,6 +284,9 @@ def print_candidates(collected, side):
             for line in lines:
                 print(f"  {mark} {line[:200]}")
         print(f"  tests: {', '.join(s['tests'])}")
+        known = list(dict.fromkeys(d["head"] for d in s["detail"] if d["confirmed"] and d["head"]))[:KNOWN_SHOWN]
+        for head in known:
+            print(f"  confirmed in another run: {head[:110]}")
         for d in todo:
             print(f"\n  {d['run']}  (read it {d['side']}; {d['dir']})")
             for r in d["candidates"]:
@@ -235,11 +303,22 @@ def main(argv=None):
                         help="with --detail: each wrong-side entry's Choice, to tell a wrong reading from a slip")
     parser.add_argument("--candidates", action="store_true", help="the entries to choose from, per unconfirmed pair")
     parser.add_argument("--side", choices=("wrong", "right", "both"), default="wrong", help="with --candidates")
+    parser.add_argument("--curve", action="store_true",
+                        help="what addressing entries from the highest Risk down would find, pooled")
     parser.add_argument("--json", type=pathlib.Path, help="write the full result here")
     parser.add_argument("--specs", type=pathlib.Path, default=ROOT / "specs")
     parser.add_argument("--outputs", type=pathlib.Path, default=ROOT / "outputs")
     args = parser.parse_args(argv)
     tested = json.loads((args.specs / "patch-tests.json").read_text())
+    if args.curve:
+        got = curve(args.problems or sorted(tested), args.specs, args.outputs)
+        print(f"{got['runs']} runs, {got['entries']} scored entries, {got['bugs']} bugs, "
+              f"{got['bug_instances']} bug instances (a bug in a run that read its line unpatched)")
+        for row in got["thresholds"]:
+            share = 100 * row["hits"] / row["addressed"] if row["addressed"] else 0
+            print(f"  Risk >= {row['risk']:3}: {row['addressed']:5} addressed, {row['hits']:3} are a bug's entry "
+                  f"({share:4.1f}%), {row['remaining']:3} bug instances remain")
+        return
     collected = [s for problem in args.problems or sorted(tested) for s in collect(problem, args.specs, args.outputs)]
     if args.candidates:
         print_candidates(collected, args.side)

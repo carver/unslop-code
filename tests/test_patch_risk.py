@@ -184,3 +184,52 @@ def test_candidates_mode_lists_the_unconfirmed_pairs_with_the_patch_and_the_choi
     assert "opus-5_high_min13/20260901T0000  (read it wrong;" in out
     assert "    risk  45  T1. How many HTTP calls a failing request gets" in out
     assert "opus-5_high_min12/20260902T0000" not in out  # the right side is not asked for by default
+    (specs / "patch-entries.json").write_text(json.dumps({"rejector": {"01-three.patch#1": {
+        "opus-5_high_min13/20260901T0000": "T1"}}}))
+    where = ["--specs", str(specs), "--outputs", str(tmp_path / "outputs")]
+    pr.main(["rejector", "--candidates", "--side", "both", *where])
+    assert "  confirmed in another run: T1. How many HTTP calls a failing request gets" in capsys.readouterr().out
+
+
+def curve_tree(tmp_path):
+    """Two scored runs of one problem with two bugs: 01 (both runs asked, Risk 45 and 35) and the second
+    hunk of 02, which no run asked. The first hunk of 02 is declared the same reading as 01."""
+    specs = make_tree(tmp_path)
+    tests = json.loads((specs / "patch-tests.json").read_text())
+    tests["rejector"]["02-order.patch"] = {"1": ["test_api_failure_after_max_retries"], "2": ["test_backward_compat"]}
+    tests["rejector"]["_same"] = {"02-order.patch#1": "01-three.patch#1"}
+    (specs / "patch-tests.json").write_text(json.dumps(tests))
+    retry = ["test_api_failure_after_max_retries"]
+    make_run(tmp_path, "opus-5_high_min13", "20260901T0000", WRONG_REGISTRY, ["test_backward_compat"], retry)
+    make_run(tmp_path, "opus-5_high_min12", "20260902T0000", RIGHT_REGISTRY, [*retry, "test_backward_compat"], [])
+    unscored = re.sub(r"### Risk: \d+", "### Notes", WRONG_REGISTRY)
+    make_run(tmp_path, "opus-5_high_v7", "20260903T0000", unscored, [], retry)
+    a, b = "opus-5_high_min13/20260901T0000", "opus-5_high_min12/20260902T0000"
+    (specs / "patch-entries.json").write_text(json.dumps({"rejector": {
+        "01-three.patch#1": {a: "T1", b: "T4"}, "02-order.patch#1": {a: "T1", b: "T4"},
+        "02-order.patch#2": {a: None, b: None}}}))
+    return specs
+
+
+def test_curve_counts_one_bug_per_reading_and_only_runs_with_scores(tmp_path):
+    got = pr.curve(["rejector"], curve_tree(tmp_path), tmp_path / "outputs")
+    assert (got["runs"], got["bugs"], got["bug_instances"], got["entries"]) == (2, 2, 4, 4)
+    by_t = {row["risk"]: row for row in got["thresholds"]}
+    assert by_t[45] == {"risk": 45, "addressed": 1, "hits": 1, "found": 1, "remaining": 3}
+    assert by_t[35] == {"risk": 35, "addressed": 3, "hits": 2, "found": 2, "remaining": 2}
+    assert by_t[0]["remaining"] == 2 and by_t[0]["addressed"] == 4  # the bug no run asked is never found
+
+
+def test_curve_gain_is_the_share_of_bugs_found_reading_a_registry_from_the_top(tmp_path):
+    got = pr.curve(["rejector"], curve_tree(tmp_path), tmp_path / "outputs")
+    gain = dict(got["gain"])
+    assert gain[0] == 0 and gain[100] == 0.5  # each run finds one of its two bugs, the other is never asked
+    assert gain[50] == 0.5  # min13 finds its bug with its first entry of three, min12 with its only entry
+
+
+def test_curve_refuses_unconfirmed_pairs(tmp_path):
+    import pytest
+    specs = curve_tree(tmp_path)
+    (specs / "patch-entries.json").write_text("{}")
+    with pytest.raises(SystemExit, match="unconfirmed"):
+        pr.curve(["rejector"], specs, tmp_path / "outputs")

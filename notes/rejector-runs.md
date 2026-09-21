@@ -117,7 +117,8 @@ in `notes/rejector-misses.md`; each patch's preamble carries its evidence.
     from the judge's reply.
   - Not patched: test_tpm_gate (4 of 9 pass), a missed wake-up in the limiter, the agent's bug.
 
-Queued in the `specpatch` channel behind mvvault's repeat: min13-ABDJKMNT on v1 under
-bin/scb-strict, then its repeat, which runs only if the first is strict (`--after`). Their
-minutes overlap the main queue and are not comparable.
+Queued in the `specpatch` channel as jobs 267 and 268 and removed the same hour, before either
+started, at the user's call: `01`'s wording is to change first, and with no run made against it
+the folder stays v1. Nothing ran and no run directory exists. Expect test_tpm_gate to fail under
+bin/scb-strict whatever the sentences say, so the run may need the plain driver.
 

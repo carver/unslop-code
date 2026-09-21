@@ -187,3 +187,10 @@ checkpoint 6's spec, where "migration failure" is not defined, and T68 defined i
 "raised while converting". A phrase-per-test suite checks that each sentence holds somewhere; it
 does not check that one rule holds on every path that reaches it.
 
+Baselines on v1, queued 2026-09-20 at the user's call: the repeat's two misses are the agent's
+mistake, so v1 stands as the patched spec. anti-slop twice (jobs 273, 274), just-solve twice (275,
+276) and min12-ABDJKMN twice (277, 278), plain `bin/queue add` with no dependency, in the main
+queue ahead of the test-set batch. The min12 pair is there for one question: whether it is more
+or less likely than min13 to miss test_migration_atomic (min12's first v0 run missed it, its
+repeat did not). Its runs also fill spectest's patched cell for mvvault on the grid.
+

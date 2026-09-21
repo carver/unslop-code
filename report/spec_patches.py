@@ -343,6 +343,31 @@ DIFFICULTY_ORDER = ("Easy", "Medium", "Hard")
 SMALL = (300, 190)
 
 
+def problem_highlights(curves):
+    """What stands out across the problem cards, with its figures read from the curves. '' unless the
+    four problems it compares are all there."""
+    if not {"rejector", "datagate", "xjq", "mvvault"} <= set(curves):
+        return ""
+
+    def top_fifth(problem):
+        gain = dict(curves[problem]["gain"])
+        return f"{100 * gain[20]:.0f}%", f"{20 * gain[100]:.0f}%"
+
+    (datagate, datagate_random), (xjq, xjq_random) = top_fifth("datagate"), top_fifth("xjq")
+    rejector, rejector_random = top_fifth("rejector")
+    mvvault = curves["mvvault"]
+    unasked = percent(mvvault["thresholds"][-1]["remaining"], mvvault["bug_instances"])
+    return f"""<div class="highlights"><h3>What stands out</h3>
+<p>Difficulty does not sort these. The two Easy problems sit at opposite ends: reading the top fifth of a datagate
+registry finds {datagate} of its bugs ({datagate_random} in random order), and on xjq {xjq} ({xjq_random}).</p>
+<p>The kind of bug sorts them better. On rejector and datagate several bugs are sentences whose own wording
+pulls two ways, like rejector's "retry it up to 3 times. After the third failure". The agent sees those
+coming and scores them high: the top fifth of a rejector registry finds {rejector} of its bugs, against
+{rejector_random} in random order. mvvault's bugs are mostly things the spec never says, such as which HTTP client
+the tests can reroute, or the exact words of an error message. A registry of ambiguous sentences has nothing to flag
+there, and {unasked:.0f}% of mvvault's bug instances were never asked about by their run.</p></div>"""
+
+
 def problem_section(curves, difficulty):
     """One card per problem, easiest first: the same two charts as the pooled pair, on shared scales."""
     high, x_ticks = risk_axis(curves.values())
@@ -365,7 +390,7 @@ def problem_section(curves, difficulty):
             f'<p class="risk-key">Easiest first, by the benchmark\'s own difficulty label. Every left chart shares one '
             f'scale and so does every right chart, so heights compare across problems. Few runs and few bugs each: '
             f'read the shapes, not the steps.</p><div class="key shared">{legend()}</div>'
-            f'<div class="cards">{"".join(cards)}</div></section>')
+            f'<div class="cards">{"".join(cards)}</div>{problem_highlights(curves)}</section>')
 
 
 def chart_section(curve):

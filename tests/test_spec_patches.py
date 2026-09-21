@@ -136,3 +136,17 @@ def test_the_per_problem_section_is_one_card_per_problem_in_order_of_difficulty_
 
 def test_nice_step_keeps_the_axis_close_to_the_data():
     assert [sp.nice_step(top) for top in (4.7, 20, 76, 108, 260)] == [1, 5, 20, 25, 100]
+
+
+def test_highlights_quote_the_figures_of_the_curves_they_talk_about():
+    def curve(top20, ceiling, unfound, instances):
+        gain = [(p, ceiling if p == 100 else top20 if p == 20 else 0) for p in range(101)]
+        return {**CURVE, "bug_instances": instances, "gain": gain,
+                "thresholds": [{"risk": 0, "addressed": 10, "hits": 1, "found": 1, "remaining": unfound}]}
+    curves = {"rejector": curve(0.48, 0.58, 20, 48), "datagate": curve(0.38, 0.85, 9, 62),
+              "xjq": curve(0.15, 0.71, 13, 45), "mvvault": curve(0.13, 0.40, 18, 30)}
+    text = " ".join(sp.problem_highlights(curves).split())  # the prose wraps in the source
+    assert "finds 38% of its bugs (17% in random order), and on xjq 15% (14%)" in text
+    assert "finds 48% of its bugs, against 12% in random order" in text
+    assert "60% of mvvault's bug instances" in text
+    assert sp.problem_highlights({"rejector": curves["rejector"]}) == ""  # nothing to compare

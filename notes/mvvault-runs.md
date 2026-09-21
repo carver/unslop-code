@@ -158,7 +158,7 @@ keeps 500 for "failures raised while converting a catalog whose version was reco
 viewer does not do what they say: `viewer/edits.py` `_migrated` calls `upgrade_catalog` and
 answers 500 only if that raises, and the schema check lives in the loader the `migrate` command
 runs afterwards, so the malformed entry is converted, annotated and redirected (303). The first
-v1 run validates on both paths and passed. min12's first v0 run and two just-solve runs of other
+v1 run passed the pair; how its viewer path validates was not read. min12's first v0 run and two just-solve runs of other
 models failed the same pair (10 pass, 3 fail before this run). The agent's bug, so no sentence
 by the user's rule; if one is wanted, line 135 could name the case: "Migration failure during
 auto-migration, malformed v1 or v2 entry data included".

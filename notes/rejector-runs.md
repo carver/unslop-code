@@ -100,8 +100,9 @@ The control is the dev6 sweep's just-solve run (`notes/dev6-opus5.md`).
 Eight sentences, the user's wording (e81b2a7), no judge run. The misses they answer are grouped
 in `notes/rejector-misses.md`; each patch's preamble carries its evidence.
 
-  - `01`, checkpoint 1: "retry it until the 3rd time", three HTTP calls in all where six runs of
-    nine made four. The draft said "up to 3 requests in all".
+  - `01`, checkpoint 1: "retry it up to 3 total requests", where six runs of nine made four calls.
+    The first committed wording, "retry it until the 3rd time", was replaced before any run
+    (0fbd0e3), so the folder is still v1.
   - `02`, checkpoint 2: a single-task config's summary "keeps its previous keys and has no
     `tasks` object".
   - `03`, checkpoint 1: "Send requests in input order: concurrent execution must not cause a later
@@ -121,4 +122,11 @@ Queued in the `specpatch` channel as jobs 267 and 268 and removed the same hour,
 started, at the user's call: `01`'s wording is to change first, and with no run made against it
 the folder stays v1. Nothing ran and no run directory exists. Expect test_tpm_gate to fail under
 bin/scb-strict whatever the sentences say, so the run may need the plain driver.
+
+Queued 2026-09-20 with the new `01`: min13-ABDJKMNT on v1 under bin/scb-strict in the `specpatch`
+channel, and its repeat `--after` it. Behind the repeat, in the main queue ahead of the test-set
+batch: anti-slop on v1 twice and just-solve on v1 twice, each `--after` the repeat, so they start
+only if both strict runs are strict. test_tpm_gate is at checkpoint 5, the last, and is the
+agent's bug (4 of 9 pass), so a halt there is expected; the point of the first run is to see that
+the TPM gate is the only miss left. The baselines are then re-queued by hand.
 

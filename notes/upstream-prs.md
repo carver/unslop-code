@@ -110,6 +110,55 @@ patch cover `requests` and `httpx` too, which only moves the line. Not drafted; 
 first, since the second fix changes the spec's contract. No patch in `patches/scb-problems/`,
 and our runs are scored as the tests stand.
 
+## Problem set: sith's fake interpreter answers only the reference's three probes
+
+`_make_fake_python` (`tests/test_checkpoint_6.py:19-60`) writes a script that dispatches on
+substrings of `argv`: `--version`, then `"sys.prefix != sys.base_prefix" in code`, then
+`"sys.prefix" in code and "sys.path" in code`. The reference probes an interpreter with exactly
+those three calls (`solutions/checkpoint_6/sith.py:5106-5145`). The spec says nothing about how
+to learn `version`, `is_virtualenv`, `prefix` or `sys_path`. A solution that asks for all four
+in one `-c` script, as all nine of our opus-5 runs do, contains both `sys.prefix` and
+`sys.path`, gets `{"prefix", "sys_path"}` back with no version, and drops the interpreter as
+not a Python. A real CPython answers every run's probe.
+
+Evidence: `test_env_list_includes_fake_envs`, `…_sort_order_descending_version`,
+`…_dedupes_symlinked_fake_executables`, `…_equal_versions_sort_by_executable_path` and
+`test_env_info_with_explicit_executable` are 0 pass, 12 fail over every complete sith run,
+four models. The two `find-virtualenvs` tests are 3 pass, 9 fail, and the three passes list
+any `bin/python` with `version: ""`, against the spec's own `version` row. No run has reached
+the sort or dedupe assertions, so those tests have never measured either. Detail in
+`notes/sith-misses/family-5.md`, found 2026-09-20. Not checked: that the reference passes
+these in the evaluation container.
+
+Fix: have the fake answer a combined probe, or make it a wrapper that execs the real python
+with patched `sys` values. Not drafted; seven tests a run.
+
+## Problem set: sith's `extract-variable` fixture changes what the function returns
+
+`test_extract_variable_inserts_assignment_and_replaces_expression` and
+`test_extract_variable_diff_output_is_unified_diff` (`tests/test_checkpoint_5.py:221` and `:703`)
+select `b - a` inside `return a + b - a * t` and expect `delta = b - a` / `return a + delta * t`.
+`a + b - a * t` parses as `(a + b) - (a * t)`, so `b - a` is no node of the tree and the
+expected output returns 2.0 where the original returned 3.5 (a=1, b=3, t=0.5). The reference
+accepts any selection whose text parses alone (`solutions/checkpoint_5/sith.py:4326`). Every
+run matches the selection against AST nodes and exits 1 with the spec's own message
+("selection is not a complete expression", checkpoint_5.md:67). 0 pass, 12 fail. Fix: the
+fixture likely lost a pair of parentheses, `return a + (<<b - a>>) * t`. Not drafted.
+
+## Problem set: sith's stub `goto` tests need a default the spec denies
+
+`test_goto_prefers_py_source_when_stub_exists` and `test_goto_uses_stub_when_definition_only_in_stub`
+(`tests/test_checkpoint_4.py:486-525`) run plain `goto` with the cursor on a use of an imported
+name (`from util import work` / `work|()`) and want the definition in the other file.
+checkpoint_3.md:49 says "Without `--follow-imports` (default), `goto` on an imported name
+returns the `import` statement itself". The checkpoint-4 reference added `should_follow =
+follow_imports or line != symbol.line` (`sith.py:3706`); the checkpoint-3 reference has plain
+`if follow_imports:`, and checkpoint_4.md never mentions the flag. 0 pass, 12 fail; with
+`--follow-imports` added by hand seven of nine snapshots give the expected path. Fix: pass
+`--follow-imports` in the two tests, or say in checkpoint 4 that a use line follows the
+import. Not drafted; whether we patch the spec toward the test is with the user
+(`notes/sith-misses.md`, sentence 7).
+
 ## Harness: patches we carry (all in `patches/`, applied to the checkout)
 
 Listed in `README.md` with what each fixes: stream-parser string message; stop-after-

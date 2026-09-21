@@ -34,7 +34,9 @@ Which set the problem is in (`split.json`) decides:
   `notes/spectest-datagate-runs.md`) and a failure-summary entry in its `## Test failure
   summaries`, with WHAT CHANGED and CAUSES filled from the matrix (which misses every run
   shares, which one prompt owns, which are new to any run). `bin/lint`, then commit the ledger
-  alone. Done when the commit exists.
+  alone. Done when the commit exists. A just-solve or anti-slop run is a baseline: name its
+  misses from the recap's signatures and stop there, with no tracing in the snapshot and no
+  spec pitch. Tracing and pitching are for the min12 and min13 runs.
 - test: results only. No ledger, no transcript or spec reading. `bin/results --write` refreshes
   the table on disk and stays uncommitted until the batch's one results commit. Done when
   refreshed.

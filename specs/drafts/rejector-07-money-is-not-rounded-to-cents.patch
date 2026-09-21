@@ -1,0 +1,27 @@
+rejector: cost values are not rounded to the example's two decimals (checkpoint 5)
+
+DRAFT for rejector v1. Not applied, not judged, uncommitted; the user edits the wording.
+
+The benchmark's mistake, the same one as patch 06: the example misleads. The cost summary's
+example prints `"total": 12.45, "prompt": 4.50, "completion": 7.95`, and no sentence says how
+money is rounded. test_costs has five small calls and wants `0.011 <= cost["prompt"] <= 0.012`
+and `0.021 <= cost["completion"] <= 0.022`; min13-ABDJKMNT 20260918T2129 printed 0.01. 10 pass,
+2 fail over all twelve rejector runs (the other is fable-5's just-solve). Its registry saw it
+coming, T89 "How much money values are rounded", Risk 40: "Every money value the spec prints has
+exactly two decimals ... This is a coin-flip with real consequences: a run whose true cost is
+`0.0006` reports `0.0` here ... If the author's fixtures use small token counts, they most likely
+kept the raw float." Every spectest run carries the same entry at Risk 35 to 45 (min12 T92, T90;
+min13's repeat T90), and the others kept more decimals.
+
+--- a/rejector/checkpoint_5.md
++++ b/rejector/checkpoint_5.md
+@@ -97,7 +97,8 @@
+ 
+ Rules:
+ 
+-- track prompt cost, completion cost, and total cost across all tasks
++- track prompt cost, completion cost, and total cost across all tasks; report
++  them to at least four decimal places
+ - include judge calls and every agentic iteration
+ - when `budget` is configured and the running total reaches or exceeds it:
+   stop sending new requests immediately, let in-flight requests finish, write

@@ -1,0 +1,34 @@
+rejector: a row that hits max_iterations has passed false, evaluation or not (checkpoint 4)
+
+DRAFT for rejector v1. Not applied, not judged, uncommitted; the user edits the wording.
+
+The benchmark's mistake: the test contradicts a sentence of the spec. Three lines bear on it.
+Step 5 of the loop: "If `max_iterations` is reached first, output `null` and use `finish_reason:
+"max_iterations"`". Then, under the output rules, "if `max_iterations` is hit, evaluation fails
+because output is `null`" (checkpoint_4.md:177), which covers a row that has an evaluation. And
+"when evaluation is omitted for a single-solution agentic row, keep the part 1 rule:
+`result.passed` is `null`" (:190), which covers a row that has none. test_agentic_max_iterations
+configures no evaluation, lets the loop run out, and wants `result.passed is False`. 1 pass, 8
+fail of the nine opus runs: the runs print `null`, as line 190 says.
+
+Registered: min13-ABDJKMNT 20260918T2129 T68 Risk 25 chose null and argued from that very
+bullet, "with no evaluation configured there is no verdict to report, which is exactly the Part 1
+rule the next bullet preserves"; min12 T85 Risk 20, T80 Risk 30.
+
+Placement, the user's idea (2026-09-20): the exception goes on the bullet the runs reasoned
+from, so the rule and its exception are read together. The first draft put it in step 5, where
+the loop's end is described; a tester who then met line 190 would have had two sentences to
+weigh again. JSON `false`, as the spec writes it elsewhere.
+
+--- a/rejector/checkpoint_4.md
++++ b/rejector/checkpoint_4.md
+@@ -188,7 +188,8 @@
+   `total_completion_tokens`, `total_tokens`, `latency_ms`,
+   `finish_reason`, and `iterations_detail`
+ - when evaluation is omitted for a single-solution agentic row, keep the part
+-  1 rule: `result.passed` is `null`
++  1 rule: `result.passed` is `null`, except when `max_iterations` was reached,
++  where it is `false`
+ - when evaluation is omitted in the checkpoint 3 list format, keep the
+   checkpoint 3 rules: `result.passed` is the number of emitted outputs,
+   `result.failed` is the number of loops that produced no output, and each

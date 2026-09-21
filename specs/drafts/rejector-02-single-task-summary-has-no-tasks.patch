@@ -1,0 +1,23 @@
+rejector: a single-task config's summary has no `tasks` object (checkpoint 2)
+
+DRAFT for rejector v1. Not applied, not judged, uncommitted; the user edits the wording.
+
+Sentence: "The stdout summary now includes a `tasks` object keyed by executed task name", with
+the compatibility bullets above it covering `--input` and `--output` for single-task configs and
+saying nothing of the summary. test_backward_compat_single_task ("single output file, no 'tasks'
+in summary") asserts `"tasks" not in summary`. 4 pass, 5 fail. Registered at Risk 35 in every
+spectest run (min13 20260919T1228 T20, 20260918T2129 T19; min12 T43, T23; min11 T27, Risk 45);
+T20 chose to print it: "The spec bothers to define the name of a single-task config
+(`task.name`) ... One code path for both config shapes also follows from 'the summary now
+includes'".
+
+--- a/rejector/checkpoint_2.md
++++ b/rejector/checkpoint_2.md
+@@ -178,6 +178,7 @@
+ - write `<output_dir>/<task_name>.jsonl`
+ - when `--task` is present, write output files only for the tasks that ran
+ - for single-task configs, `--output <path>` still writes a single file
++- for single-task configs, the stdout summary keeps its previous keys and has no `tasks` object
+ 
+ # Summary And Scheduling
+ 

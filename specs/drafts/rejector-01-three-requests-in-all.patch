@@ -1,0 +1,24 @@
+rejector: a failing request gets three HTTP calls in all (checkpoint 1)
+
+DRAFT for rejector v1. Not applied, not judged, uncommitted; the user edits the wording.
+
+Sentence: "If a request receives an HTTP `5xx`, retry it up to 3 times. After the third failure,
+treat that row as failed". test_api_failure_after_max_retries queues three 500s and wants
+`output` null, `passed` false and `total_api_calls == 3`; a fourth call reaches the mock's default
+reply, so the row comes back with an output. 3 pass, 6 fail of the nine opus runs. Every spectest
+registry carries it at Risk 40 to 45, the highest on the problem: min13-ABDJKMNT 20260919T1228 T1
+chose "1 initial call + 3 retries = 4 HTTP calls ... 'Retry it up to 3 times' is the operative,
+unambiguous instruction; 'after the third failure' reads naturally as the third failed retry".
+The sentence's two halves disagree; the tests side with the second.
+
+--- a/rejector/checkpoint_1.md
++++ b/rejector/checkpoint_1.md
+@@ -142,7 +142,7 @@
+ }
+ ```
+ 
+-If a request receives an HTTP `5xx`, retry it up to 3 times. After the
++If a request receives an HTTP `5xx`, retry it until the 3rd time. After the
+ third failure, treat that row as failed, emit `null` output for it, count it
+ as failed in the summary, and continue. Retry requests count toward
+ `total_api_calls`, but for `greedy` and `sample` rows they do not increase

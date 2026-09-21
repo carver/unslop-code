@@ -159,8 +159,8 @@ The control is the dev6 sweep's just-solve run (`notes/dev6-opus5.md`).
     both have runs there), so the v6 cells leave the page. The spec carries the score for the
     bare prompt too; the quality does not move: implementation erosion 0.756 and ast 0.341
     against min13's 0.055 and 0.000, 0.126 and 0.124 on v7. $15 and 57 min. First of two.
-  - repeat (144): the alias family at checkpoint 4, three tests with one failure (exit 3, a
-    key that does not resolve to a primitive, where the tests expect success). It is an old
+  - repeat (144): the alias family at checkpoint 4, three tests with one failure (exit 3
+    where the tests expect success; the message was not read). It is an old
     one: correct_aliases/case1 stands at 13 pass, 15 fail over every file_merger run, and
     just-solve's first v6 run and min13's first v0 run lost the same three. No v1 to v7
     sentence is aimed at it; the cause has not been traced. Pair 147 and 144 against 142 and

@@ -28,6 +28,7 @@ existing snapshot with `bin/reeval`, and every later run scores it that way nati
 | anti-slop on v1 | `…anti_slop-specv1/20260921T0531` | the upstream anti_slop prompt on spec v1, a baseline for the grid's patched cell; first of two | 37/37, 67/67, 115/115, 154/155, 180/185, 222/227 | complete 2026-09-21; 5 misses: the missing-vault redirect carries `?missing=`, the reading draft 06 would have settled (one test at 4), the nonexistent-vault landing page lacks "not found" on the detail and static routes (two at 5), and a literal `../..` in a static route is redirected, 303, where the tests want 403 or 404 (two at 5); urllib throughout, so the seven-test v1 block passed; test_migration_atomic passed; 3/6 strict, $22, 94 min. Quality: erosion 0.018, verbosity 0.176, ast 0.080, cloned 0.031; final checkpoint, implementation only (39% of LOC): ast 0.142, erosion 0.036, cloned 0.000 |
 | anti-slop on v1, repeat | `…anti_slop-specv1/20260921T0719` | same config as the first run; second of two | 37/37, 67/67, 115/115, 154/155, 182/185, 224/227 | complete 2026-09-21; 3 misses, all on the missing-vault redirect: `?missing=` in the Location (one test at 4) and a landing notice that reads "No vault named 'x' here." where the tests look for the words "not found" (two at 5); the first run's two path-traversal misses passed; urllib throughout; test_migration_atomic passed; 3/6 strict, $25, 90 min. Quality: erosion 0.000, verbosity 0.182, ast 0.099, cloned 0.014; final checkpoint, implementation only (50% of LOC): ast 0.138, erosion 0.000, cloned 0.010 |
 | just-solve on v1 | `…just-solve-specv1/20260921T0904` | benchmark's own prompt on spec v1, a baseline for the grid's patched cell; first of two | 37/37, 66/67, 114/115, 154/155, 184/185, 226/227 | complete 2026-09-21; 1 miss, test_sync_v2_absent_entry_gets_removed_true_after_migration from checkpoint 2 on: the run gives the migration and the sync that triggered it one timestamp, so the sync's `true` overwrites the migration's `false` and the history reads [True] where the test wants [False, True]; the agent's bug, new to opus-5 (15 pass, 1 fail before, the fail sonnet's just-solve); urllib throughout; the missing-vault redirect and test_migration_atomic passed; no tests written; 1/6 strict, $16, 49 min. Quality: erosion 0.378, verbosity 0.382, ast 0.352, cloned 0.026; final checkpoint, implementation only (100% of LOC): ast 0.271, erosion 0.247, cloned 0.037 |
+| just-solve on v1, repeat | `…just-solve-specv1/20260921T1008` | same config as the first run; second of two | 37/37, 67/67, 113/115, 153/155, 181/185, 223/227 | complete 2026-09-21; 4 misses, none traced (a baseline): the two digest grouping tests from checkpoint 3 (test_digest_v1_entries_group, test_digest_v2_groups) and the two literal `../..` path-traversal cases at checkpoint 5, the same failure as anti-slop's first v1 run; the first run's one miss passed; test_migration_atomic passed; 2/6 strict, $14, 44 min. Quality: erosion 0.289, verbosity 0.402, ast 0.359, cloned 0.036; final checkpoint, implementation only (100% of LOC): ast 0.278, erosion 0.306, cloned 0.037 |
 
 ## Test failure summaries
 
@@ -53,6 +54,12 @@ existing snapshot with `bin/reeval`, and every later run scores it that way nati
     share a timestamp, so `removed` reads [True] and not [False, True]. No tests and 3254
     implementation lines; $16 and 49 min. Implementation only: erosion 0.247, ast 0.271,
     cloned 0.037. First of two.
+  - repeat (223): pair 226 and 223 against 221 and 214 on v0. Four misses, none shared with the
+    first run: the two digest grouping tests at checkpoint 3 and the two literal `../..`
+    path-traversal cases at checkpoint 5, which anti-slop's first v1 run also lost. Not traced;
+    these runs only set the baseline. test_migration_atomic passed. No tests and 3460
+    implementation lines; $14 and 44 min. Implementation only: erosion 0.306, ast 0.278, cloned
+    0.037; the mean of the two runs is 0.277, 0.275, 0.037.
 
 ### anti-slop (the upstream anti_slop prompt, 2026-09-20)
 
@@ -257,3 +264,9 @@ it, so this is the agent's bug and no reading of the spec. 15 pass, 1 fail befor
 one earlier fail is sonnet's just-solve, with the same assertion. The missing-vault redirect
 passed (bare `/`, "not found" on the page) and so did test_migration_atomic. urllib throughout,
 no tests written.
+
+just-solve on v1, repeat (job 276, 2026-09-21): 223/227, pair 226 and 223 against 221 and 214 on
+v0. A baseline, so the misses are named and not traced: test_digest_v1_entries_group and
+test_digest_v2_groups from checkpoint 3 on, and the two literal `../..` path-traversal cases at
+checkpoint 5 that anti-slop's first v1 run also failed. test_migration_atomic passed, so it has
+passed in all four baseline runs on v1. The just-solve pair is in; min12's pair (277, 278) is next.

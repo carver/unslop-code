@@ -52,3 +52,25 @@ def test_two_processes_claiming_one_config_start_a_gap_apart(tmp_path):
     procs = [subprocess.Popen([sys.executable, str(SCRIPT), "configs/runs/x-opus5.yaml"], env=env) for _ in range(2)]
     assert [p.wait(timeout=30) for p in procs] == [0, 0]
     assert 2 <= time.monotonic() - began < 10
+
+
+def write_run_config(path, save_template):
+    path.write_text(f"problems:\n  - x\nsave_template: {save_template}\n")
+    return path
+
+
+def test_the_slot_is_the_run_directory_prefix_not_the_config_name(tmp_path):
+    # mvvault v1 and rejector v1 under one prompt are two configs and one directory prefix.
+    template = "spectest/${model.name}_${agent.version}_${thinking}_min13-ABDJKMNT-specv1/${now:%Y%m%dT%H%M}"
+    mvvault = write_run_config(tmp_path / "min13-ABDJKMNT-specv1-mvvault-opus5.yaml", template)
+    rejector = write_run_config(tmp_path / "min13-ABDJKMNT-specv1-rejector-opus5.yaml", template)
+    other = write_run_config(tmp_path / "just-solve-specv1-mvvault-opus5.yaml",
+                             "spectest/${model.name}_${agent.version}_${thinking}_just-solve-specv1/${now:%Y%m%dT%H%M}")
+    assert slot.slot_key(mvvault) == slot.slot_key(rejector)
+    assert slot.slot_key(other) != slot.slot_key(mvvault)
+    assert "/" not in slot.slot_key(mvvault) and "$" not in slot.slot_key(mvvault)
+
+
+def test_a_config_that_cannot_be_read_falls_back_to_its_name(tmp_path):
+    assert slot.slot_key(tmp_path / "missing-opus5.yaml") == "missing-opus5.yaml"
+    assert slot.slot_key(write_run_config(tmp_path / "plain.yaml", "outputs/fixed")) == "plain.yaml"

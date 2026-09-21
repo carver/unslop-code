@@ -3,10 +3,13 @@
 
     bin/start-slot <run-config.yaml>     # returns once the slot is this caller's
 
-A run directory is named by its config and the minute it started
-(`save_template: …/${now:%Y%m%dT%H%M}`), so two fresh runs of one config that start in the
-same minute write into one directory. With one queue that cannot happen. With two channels
-(`bin/queue add --group`) it can, the first time both reach the same config at once. The
+A run directory is named by its config's `save_template` and the minute it started
+(`…/${now:%Y%m%dT%H%M}`), so two fresh runs with one template that start in the same minute
+write into one directory. That is two runs of one config, and also runs of two configs that
+share a prompt and a spec number (mvvault v1 and rejector v1 both save under `…-specv1/`), so
+the slot is keyed by the template's prefix (slot_key), not by the config's name. With one
+queue that cannot happen. With two channels (`bin/queue add --group`) it can, the first time
+both start such a run at once. The
 drivers call this just before they launch checkpoint 1; resumes name their directory and need
 no slot. The gap is two minutes, not one, because scb takes some seconds to reach the line
 that reads the clock, and a start at :59 must not land beside one at :01 of the next minute.
@@ -19,7 +22,10 @@ import fcntl
 import os
 import pathlib
 import sys
+import re
 import time
+
+import yaml
 
 GAP_S = 120
 
@@ -29,6 +35,20 @@ def wait_seconds(last, now, gap):
     if last is None or now < last:
         return 0
     return max(0, gap - (now - last))
+
+
+def slot_key(config_path):
+    """What two runs must not share: the run directory's name up to its timestamp, from the
+    config's `save_template`. Configs for different problems under one prompt and spec number
+    (mvvault v1, rejector v1) share it, so the config's own name is not enough. A config that
+    cannot be read, or that has no timestamp in its template, falls back to its file name."""
+    path = pathlib.Path(config_path)
+    try:
+        template = yaml.safe_load(path.read_text()).get("save_template", "")
+    except (OSError, yaml.YAMLError, AttributeError):
+        return path.name
+    prefix, stamp, _ = str(template).partition("${now")
+    return re.sub(r"[^A-Za-z0-9._-]+", "_", prefix).strip("_") if stamp and prefix else path.name
 
 
 def last_start(directory, config_name):
@@ -54,7 +74,7 @@ def main():
     if len(sys.argv) != 2:
         raise SystemExit("usage: start-slot <run-config.yaml>")
     directory = os.environ.get("START_SLOT_DIR") or pathlib.Path.home() / ".cache" / "scbench" / "start-slots"
-    claim(directory, pathlib.Path(sys.argv[1]).name, gap=float(os.environ.get("START_SLOT_GAP", GAP_S)))
+    claim(directory, slot_key(sys.argv[1]), gap=float(os.environ.get("START_SLOT_GAP", GAP_S)))
 
 
 if __name__ == "__main__":

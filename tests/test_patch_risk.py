@@ -142,17 +142,26 @@ def test_collect_counts_only_confirmed_picks_and_says_what_is_left(tmp_path):
     specs = make_tree(tmp_path)
     make_runs(tmp_path)
     got = pr.collect("rejector", specs, tmp_path / "outputs")[0]
-    assert got["wrong"] == {"runs": 3, "scores": [], "unasked": 0, "unscored": 1, "unconfirmed": 2}
+    assert got["wrong"] == {"runs": 3, "scores": [], "unasked": 0, "unscored": 1, "unconfirmed": 2, "slips": 0}
     assert [r["id"] for r in got["detail"][0]["candidates"]][0] == "T1"
     (specs / "patch-entries.json").write_text(json.dumps({"rejector": {"01-three.patch#1": {
         "opus-5_high_min13/20260901T0000": "T1", "opus-5_high_min12/20260902T0000": "T4",
         "opus-5_high_min11/20260903T0000": None}}}))
     got = pr.collect("rejector", specs, tmp_path / "outputs")[0]
-    assert got["wrong"] == {"runs": 3, "scores": [45], "unasked": 1, "unscored": 1, "unconfirmed": 0}
-    assert got["right"] == {"runs": 1, "scores": [35], "unasked": 0, "unscored": 0, "unconfirmed": 0}
+    assert got["wrong"] == {"runs": 3, "scores": [45], "unasked": 1, "unscored": 1, "unconfirmed": 0, "slips": 0}
+    assert got["right"] == {"runs": 1, "scores": [35], "unasked": 0, "unscored": 0, "unconfirmed": 0, "slips": 0}
     assert pr.spread([45]) == {"n": 1, "min": 45, "median": 45, "max": 45}
     assert pr.spread([10, 40, 30, 20]) == {"n": 4, "min": 10, "median": 25, "max": 40}
     assert pr.spread([]) is None
+
+
+def test_an_entry_that_chose_the_tests_reading_in_a_failing_run_is_a_slip_without_a_score(tmp_path):
+    specs = make_tree(tmp_path)
+    make_runs(tmp_path)
+    (specs / "patch-entries.json").write_text(json.dumps({"rejector": {"01-three.patch#1": {
+        "opus-5_high_min13/20260901T0000": {"entry": "T1", "slip": True}, "opus-5_high_min11/20260903T0000": None}}}))
+    got = pr.collect("rejector", specs, tmp_path / "outputs")[0]
+    assert got["wrong"] == {"runs": 3, "scores": [], "unasked": 1, "unscored": 1, "unconfirmed": 0, "slips": 1}
 
 
 def test_a_pick_the_registry_does_not_have_is_an_error(tmp_path):

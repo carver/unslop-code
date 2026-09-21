@@ -12,7 +12,9 @@ left out when it never reached them.
 
 Which entry of a run's registry asks the sentence's question is a judgement, so it is made once
 and kept in specs/patch-entries.json: {problem: {"<patch>#<hunk>": {"<family>/<stamp>": "T12"}}},
-null when the run did not ask. Word overlap alone picked the wrong entry about one time in three
+null when the run did not ask, and {"entry": "T12", "slip": true} when the entry chose the tests'
+reading and the run failed them anyway: a bug, not a reading, counted under `slips` with no score.
+Word overlap alone picked the wrong entry about one time in three
 (an entry about budgets quotes the same line as the one about rounding money). --candidates
 prints, for every pair not yet in that file, the entries to choose from: the ones quoting the
 changed line first, then by the telling words heading and quote share with the patch's title and
@@ -32,6 +34,7 @@ import types
 HERE = pathlib.Path(__file__).resolve().parent
 ROOT = HERE.parent
 CANDIDATES = 5
+CHOICE_SHOWN = 330
 QUOTED_RUN = 4  # words in a row an entry's quote shares with the changed line to count as quoting it
 
 
@@ -167,7 +170,7 @@ def collect(problem, specs, outputs):
             runs.append((problem_dir, results.spec_of(problem_dir.parent), rows))
     out = []
     for sentence in sentences(problem, specs):
-        sides = {side: {"runs": 0, "scores": [], "unasked": 0, "unscored": 0, "unconfirmed": 0}
+        sides = {side: {"runs": 0, "scores": [], "unasked": 0, "unscored": 0, "unconfirmed": 0, "slips": 0}
                  for side in ("wrong", "right")}
         detail = []
         for problem_dir, version, rows in runs:
@@ -176,6 +179,8 @@ def collect(problem, specs, outputs):
                 continue
             run = f"{problem_dir.parent.parent.name}/{problem_dir.parent.name}"
             pick = picks.get(f"{sentence['patch']}#{sentence['hunk']}", {}).get(run, UNSET)
+            slip = isinstance(pick, dict) and bool(pick.get("slip"))
+            pick = pick["entry"] if isinstance(pick, dict) else pick
             entry = next((r for r in rows if r["id"] == pick), None)
             if pick is not UNSET and pick is not None and entry is None:
                 raise SystemExit(f"patch-risk: {picks_file} names {pick} for {run}, which its registry does not have")
@@ -185,6 +190,8 @@ def collect(problem, specs, outputs):
                 sides[side]["unscored"] += 1
             elif pick is UNSET:
                 sides[side]["unconfirmed"] += 1
+            elif slip:
+                sides[side]["slips"] += 1
             elif entry is None:
                 sides[side]["unasked"] += 1
             elif entry["score"] is None:
@@ -192,7 +199,8 @@ def collect(problem, specs, outputs):
             else:
                 sides[side]["scores"].append(entry["score"])
             detail.append({"run": run, "spec": version, "side": side, "confirmed": pick is not UNSET,
-                           "entry": entry and entry["id"], "risk": entry and entry["score"],
+                           "entry": entry and entry["id"], "slip": slip, "choice": entry and entry["choice"],
+                           "risk": None if slip else entry and entry["score"],
                            "head": entry and entry["head"], "dir": str(problem_dir),
                            "candidates": [] if pick is not UNSET else candidates(rows, sentence)[:CANDIDATES]})
         for side in sides.values():
@@ -223,6 +231,8 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("problems", nargs="*", help="default: every problem in specs/patch-tests.json")
     parser.add_argument("--detail", action="store_true", help="the confirmed entry of every run")
+    parser.add_argument("--choices", action="store_true",
+                        help="with --detail: each wrong-side entry's Choice, to tell a wrong reading from a slip")
     parser.add_argument("--candidates", action="store_true", help="the entries to choose from, per unconfirmed pair")
     parser.add_argument("--side", choices=("wrong", "right", "both"), default="wrong", help="with --candidates")
     parser.add_argument("--json", type=pathlib.Path, help="write the full result here")
@@ -238,15 +248,20 @@ def main(argv=None):
     def cell(side):
         stats = spread(side["scores"])
         scores = f"{stats['min']}-{stats['max']} median {stats['median']} (n={stats['n']})" if stats else "no score"
-        rest = ", ".join(f"{side[k]} {k}" for k in ("unasked", "unscored", "unconfirmed") if side[k])
+        rest = ", ".join(f"{side[k]} {k}" for k in ("unasked", "unscored", "slips", "unconfirmed") if side[k])
         return f"{side['runs']} runs, {scores}" + (f", {rest}" if rest else "")
 
     for s in collected:
-        print(f"{s['problem']} {s['patch']}#{s['hunk']}  wrong: {cell(s['wrong'])}  |  right: {cell(s['right'])}")
+        slips = [d["run"].split("/")[0].split("_high_")[-1] for d in s["detail"] if d["slip"]]
+        named = f"  (slip under {', '.join(slips)})" if slips else ""
+        name = f"{s['problem']} {s['patch']}#{s['hunk']}"
+        print(f"{name}  wrong: {cell(s['wrong'])}{named}  |  right: {cell(s['right'])}")
         for d in s["detail"] if args.detail else []:
             pick = "?" if not d["confirmed"] else d["entry"] or "-"
             head = (d["head"] or "")[:80]
             print(f"    {d['side']:5} {d['spec']:3} {d['run'][-52:]:52} {pick:5} {d['risk'] or '-':>3}  {head}")
+            if args.choices and d["side"] == "wrong" and d["choice"]:
+                print(f"          chose: {d['choice'][:CHOICE_SHOWN]}")
     if args.json:
         for s in collected:
             for d in s["detail"]:

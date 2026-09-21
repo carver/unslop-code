@@ -1,0 +1,293 @@
+{
+ "datagate": {
+  "01-datagate-clarified.patch#1": {
+   "opus-5_2.1.251_high_min12-ABDFJKMN/20260908T1728": "T14",
+   "opus-5_2.1.251_high_min11-ABDFJKMN/20260908T1911": null,
+   "opus-5_2.1.251_high_min11-ABDFJKMN/20260908T2330": null,
+   "opus-5_2.1.251_high_min12-ABDJKMN/20260909T0313": null,
+   "opus-5_2.1.251_high_min12-ABDJKMN/20260914T1357": null,
+   "opus-5_2.1.251_high_min13-ABDJKMNT/20260919T0148": "T12",
+   "opus-5_2.1.251_high_min13-ABDJKMNT/20260919T0808": null
+  },
+  "01-datagate-clarified.patch#2": {
+   "opus-5_2.1.251_high_min12-ABDFJKMN/20260908T1547": "T23",
+   "opus-5_2.1.251_high_min12-ABDFJKMN/20260908T1728": "T25",
+   "opus-5_2.1.251_high_min11-ABDFJKMN/20260908T1911": "T23",
+   "opus-5_2.1.251_high_min11-ABDFJKMN/20260908T2330": "T23",
+   "opus-5_2.1.251_high_min12-ABDJKMN/20260909T0313": "T16",
+   "opus-5_2.1.251_high_min12-ABDJKMN/20260914T1357": "T22",
+   "opus-5_2.1.251_high_min13-ABDJKMNT/20260919T0148": "T13",
+   "opus-5_2.1.251_high_min13-ABDJKMNT/20260919T0808": "T16"
+  },
+  "01-datagate-clarified.patch#3": {
+   "opus-5_2.1.251_high_min11-ABDFJKMN/20260908T1911": null,
+   "opus-5_2.1.251_high_min11-ABDFJKMN/20260908T2330": {
+    "entry": "T61",
+    "slip": true
+   },
+   "opus-5_2.1.251_high_min12-ABDJKMN/20260909T0313": {
+    "entry": "T53",
+    "slip": true
+   },
+   "opus-5_2.1.251_high_min12-ABDJKMN/20260914T1357": null,
+   "opus-5_2.1.251_high_min13-ABDJKMNT/20260919T0148": null,
+   "opus-5_2.1.251_high_min13-ABDJKMNT/20260919T0808": {
+    "entry": "T46",
+    "slip": true
+   }
+  },
+  "01-datagate-clarified.patch#4": {
+   "opus-5_2.1.251_high_min12-ABDFJKMN/20260908T1547": "T54",
+   "opus-5_2.1.251_high_min11-ABDFJKMN/20260908T1911": "T47",
+   "opus-5_2.1.251_high_min11-ABDFJKMN/20260908T2330": "T55",
+   "opus-5_2.1.251_high_min12-ABDJKMN/20260909T0313": "T50",
+   "opus-5_2.1.251_high_min12-ABDJKMN/20260914T1357": "T52"
+  },
+  "01-datagate-clarified.patch#5": {
+   "opus-5_2.1.251_high_min12-ABDFJKMN/20260908T1547": "T63",
+   "opus-5_2.1.251_high_min12-ABDFJKMN/20260908T1728": "T65",
+   "opus-5_2.1.251_high_min11-ABDFJKMN/20260908T1911": "T60",
+   "opus-5_2.1.251_high_min11-ABDFJKMN/20260908T2330": "T72",
+   "opus-5_2.1.251_high_min12-ABDJKMN/20260909T0313": "T59",
+   "opus-5_2.1.251_high_min12-ABDJKMN/20260914T1357": "T60",
+   "opus-5_2.1.251_high_min13-ABDJKMNT/20260919T0148": "T51",
+   "opus-5_2.1.251_high_min13-ABDJKMNT/20260919T0808": null
+  },
+  "02-datagate-enrich-single.patch#1": {
+   "opus-5_2.1.251_high_spectest-v9-disambiguated/20260905T0804": "T94",
+   "fable-5-1_2.1.251_high_spectest-v9-disambiguated/20260905T1055": "T66",
+   "opus-5_2.1.251_high_min12-ABDFJKMN/20260908T1547": "T88",
+   "opus-5_2.1.251_high_min12-ABDFJKMN/20260908T1728": "T100",
+   "opus-5_2.1.251_high_min11-ABDFJKMN/20260908T1911": "T85",
+   "opus-5_2.1.251_high_min12-ABDJKMN/20260909T0313": "T89",
+   "opus-5_2.1.251_high_min12-ABDJKMN/20260914T1357": "T101",
+   "opus-5_2.1.251_high_min13-ABDJKMNT/20260919T0148": "T74",
+   "opus-5_2.1.251_high_min13-ABDJKMNT/20260919T0808": "T73"
+  },
+  "03-datagate-delimiter-if-present.patch#1": {
+   "fable-5-1_2.1.251_high_spectest-v9-disambiguated/20260905T1055": "T5",
+   "opus-5_2.1.251_high_min11-ABDFJKMN/20260908T1911": "T3",
+   "opus-5_2.1.251_high_min11-ABDFJKMN/20260908T2330": "T2",
+   "opus-5_2.1.251_high_min12-ABDJKMN/20260909T0313": "T6",
+   "opus-5_2.1.251_high_min12-ABDJKMN/20260914T1357": "T11",
+   "opus-5_2.1.251_high_min13-ABDJKMNT/20260919T0148": "T3",
+   "opus-5_2.1.251_high_min13-ABDJKMNT/20260919T0808": "T8"
+  },
+  "_notes": [
+   "01-datagate-clarified.patch#1 (charset detection fallback to latin-1): 5 of 7 runs (min11-ABDFJKMN/20260908T1911, min11-ABDFJKMN/20260908T2330, min12-ABDJKMN/20260909T0313, min12-ABDJKMN/20260914T1357, min13-ABDJKMNT/20260919T0808) never registered an entry about the detection *method*/fallback itself; their charset entries only ask about empty charset, malformed charset, or /upload charset, so null after grepping 'latin|detect|encoding' and 'ambiguous|confidence|chardet|fallback|utf-8|utf8|bom|bytes' across each full registry.",
+   "01-datagate-clarified.patch#5 (any value-bearing force is 400) min11-ABDFJKMN/20260908T2330: two entries ask related questions - T72 quotes the exact patch sentence and reasons about occurrence-vs-value directly (chosen); T71 is about which spellings count as 'present' for the presence flag, a related but distinct question, so not picked.",
+   "01-datagate-clarified.patch#5 min13-ABDJKMNT/20260919T0808: the only force-related entries are T51 (value can switch flag off), T52 (force outside /convert), T53 (repeated force while caching disabled) - none asks whether a value-bearing force (e.g. force=yes) itself is HTTP 400, so null.",
+   "02-datagate-enrich-single.patch#1 min11-ABDFJKMN/20260908T1911: no dedicated 'repeated enrich parameter' entry exists; T85 ('what a present-but-not-yes enrich value does') folds the repeated-parameter sub-question into its Choice/Risk discussion, so it was picked as the closest fit rather than a clean dedicated entry.",
+   "01#3: T61, T53 and T46 all chose to honour ?charset= on /upload, the tests' reading, and the runs failed the upload-charset tests anyway; slips, cause not traced (checked by hand 2026-09-21, as was every wrong-side entry's Choice on all five problems)."
+  ]
+ },
+ "file_merger": {
+  "01-tsv-crlf.patch#1": {
+   "opus-5_2.1.251_high_min11-ABDFJKMN/20260907T0941": null,
+   "opus-5_2.1.251_high_min11-ABDFJKMN/20260908T0504": null,
+   "opus-5_2.1.251_high_min13-ABDJKMNT/20260919T0311": null,
+   "opus-5_2.1.251_high_min13-ABDJKMNT/20260919T0925": null
+  },
+  "02-authoritative-typed-sources.patch#1": {
+   "opus-5_2.1.251_high_min11-ABDFJKMN/20260907T0941": "T28",
+   "opus-5_2.1.251_high_min11-ABDFJKMN/20260908T0504": "T26",
+   "opus-5_2.1.251_high_min12-ABDJKMN/20260909T0739": "T28",
+   "opus-5_2.1.251_high_min12-ABDJKMN/20260914T1615": "T31",
+   "opus-5_2.1.251_high_min13-ABDJKMNT/20260919T0311": "T21",
+   "opus-5_2.1.251_high_min13-ABDJKMNT/20260919T0925": "T19"
+  },
+  "03-csv-backslash-quote.patch#1": {
+   "opus-5_2.1.251_high_min11-ABDFJKMN/20260907T0941": null,
+   "opus-5_2.1.251_high_min11-ABDFJKMN/20260908T0504": null,
+   "opus-5_2.1.251_high_min12-ABDJKMN/20260909T0739": null,
+   "opus-5_2.1.251_high_min12-ABDJKMN/20260914T1615": null,
+   "opus-5_2.1.251_high_min13-ABDJKMNT/20260919T0311": null,
+   "opus-5_2.1.251_high_min13-ABDJKMNT/20260919T0925": null
+  },
+  "04-map-key-quoted.patch#1": {
+   "opus-5_2.1.251_high_min11-ABDFJKMN/20260907T0941": "T66",
+   "opus-5_2.1.251_high_min11-ABDFJKMN/20260908T0504": "T55",
+   "opus-5_2.1.251_high_min12-ABDJKMN/20260909T0739": null,
+   "opus-5_2.1.251_high_min12-ABDJKMN/20260914T1615": "T76",
+   "opus-5_2.1.251_high_min13-ABDJKMNT/20260919T0311": "T63"
+  },
+  "05-infer-by-cast-rules.patch#1": {
+   "opus-5_2.1.251_high_min12-ABDJKMN-specv1/20260909T1429": "T3"
+  },
+  "06-alias-cycle-at-load.patch#1": {
+   "opus-5_2.1.251_high_min12-ABDJKMN-specv3/20260910T0934": null,
+   "opus-5_2.1.251_high_min13-ABDJKMNT/20260919T0311": null,
+   "opus-5_2.1.251_high_min13-ABDJKMNT/20260919T0925": null
+  },
+  "07-partition-encode-value-only.patch#1": {
+   "opus-5_2.1.251_high_min11-ABDFJKMN/20260907T0941": "T47",
+   "opus-5_2.1.251_high_min12-ABDJKMN/20260909T0739": "T44",
+   "opus-5_2.1.251_high_min12-ABDJKMN-specv4/20260910T1126": "T46",
+   "opus-5_2.1.251_high_min12-ABDJKMN/20260914T1615": "T47",
+   "opus-5_2.1.251_high_min13-ABDJKMNT/20260919T0311": "T41",
+   "opus-5_2.1.251_high_min13-ABDJKMNT/20260919T0925": "T39"
+  },
+  "08-map-key-unquoted-is-error.patch#1": {
+   "opus-5_2.1.251_high_min11-ABDFJKMN/20260907T0941": "T66",
+   "opus-5_2.1.251_high_min11-ABDFJKMN/20260908T0504": "T55",
+   "opus-5_2.1.251_high_min12-ABDJKMN/20260909T0739": null,
+   "opus-5_2.1.251_high_min12-ABDJKMN-specv5/20260910T1126": "T58",
+   "opus-5_2.1.251_high_min12-ABDJKMN/20260914T1615": "T76",
+   "opus-5_2.1.251_high_min13-ABDJKMNT/20260919T0311": "T63"
+  },
+  "09-timestamp-keeps-fraction.patch#1": {
+   "opus-5_2.1.251_high_min13-ABDJKMNT-specv6/20260920T0700": "T8"
+  },
+  "_notes": [
+   "01-tsv-crlf.patch#1 all runs: searched each run's full registry for CRLF/line-ending/carriage-return questions; only literal-tab-detection, exit-code, quotechar/escapechar, bool-rendering and max-bytes entries exist. No run registered the \\n vs \\r\\n line-ending question, so all four are null.",
+   "02-authoritative-typed-sources.patch#1 opus-5_2.1.251_high_min11-ABDFJKMN/20260907T0941: picked T28 (Risk 50, exact question match: ranks Parquet > JSONL > CSV/TSV under authoritative) over T33 (Risk 45, a related but narrower question about what typed sources contribute to inference). The patch's own prose cites 'T37, Risk 45' for one of the two min11 runs, but that run's actual T37 is 'Default value of --parquet-row-group-bytes' (Risk 10, unrelated) at every checkpoint; treating that citation as stale and going by content match instead.",
+   "03-csv-backslash-quote.patch#1 all runs: searched for backslash/escape-style, quoted-field, dialect-sniffing and malformed-JSON-in-nested-column questions; none of the six runs' registries contain an entry asking whether a backslash before a quote is a valid escape inside a quoted CSV field (entries found are all about whether --csv-quotechar/--csv-escapechar affect output, a different question). All null.",
+   "04-map-key-quoted.patch#1 and 08-map-key-unquoted-is-error.patch#1 (same underlying question, per instructions): for min11-ABDFJKMN/20260907T0941 (T66 'Which spellings a path component may use') and /20260908T0504 (T55 'Field-path grammar'), and min12-ABDJKMN/20260914T1615 (T76 'Field-path syntax details') and min13-ABDJKMNT/20260919T0311 (T63 'Which punctuation reaches which kind of container'): these entries debate dot-vs-bracket and single-vs-double-quote interchangeability rather than literally asking 'is an unquoted bracket key valid at all', so the match is inferential, by analogy to min12-ABDJKMN-specv5/20260910T1126's T58 ('Strict grammar' vs 'Uniform steps'), which the patch text explicitly names as the settled entry for that run. Flagging all four as uncertain.",
+   "04-map-key-quoted.patch#1 and 08-map-key-unquoted-is-error.patch#1 opus-5_2.1.251_high_min12-ABDJKMN/20260909T0739: searched broadly (path/grammar/spelling/near-miss/tokenize/bracket/attrs) and found no field-path-grammar ambiguity entry at all in this run's registry; null for both patches.",
+   "06-alias-cycle-at-load.patch#1 opus-5_2.1.251_high_min13-ABDJKMNT/20260919T0925: only one alias-related entry exists (T51, 'Exit code for an unknown or malformed type name'), which is a different question (which exit code) than when cycle detection happens; null.",
+   "06#1 min13-ABDJKMNT/20260919T0311: T51 asks what counts as a cycle and which exit code, and takes lazy detection for granted; the patch's question is when cycles are detected, so null (checked by hand 2026-09-21)."
+  ]
+ },
+ "mvvault": {
+  "01-fetch-failure-message.patch#1": {
+   "opus-5_2.1.251_high_min11-ABDFJKMN/20260907T1659": null,
+   "opus-5_2.1.251_high_min12-ABDJKMN/20260914T2119": null,
+   "opus-5_2.1.251_high_min12-ABDJKMN/20260915T0327": null,
+   "opus-5_2.1.251_high_min13-ABDJKMNT/20260918T1850": null,
+   "opus-5_2.1.251_high_min13-ABDJKMNT/20260919T1041": null
+  },
+  "02-urllib-request.patch#1": {
+   "opus-5_2.1.251_high_min13-ABDJKMNT/20260918T1850": null,
+   "opus-5_2.1.251_high_min13-ABDJKMNT/20260919T1041": null
+  },
+  "03-downloaded-means-name-contains-id.patch#1": {
+   "opus-5_2.1.251_high_min11-ABDFJKMN/20260907T1659": "T32",
+   "opus-5_2.1.251_high_min12-ABDJKMN/20260914T2119": null,
+   "opus-5_2.1.251_high_min12-ABDJKMN/20260915T0327": null,
+   "opus-5_2.1.251_high_min13-ABDJKMNT/20260918T1850": "T29",
+   "opus-5_2.1.251_high_min13-ABDJKMNT/20260919T1041": null
+  },
+  "04-browser-opens-bind-address.patch#1": {
+   "opus-5_2.1.251_high_min11-ABDFJKMN/20260907T1659": null,
+   "opus-5_2.1.251_high_min12-ABDJKMN/20260914T2119": null,
+   "opus-5_2.1.251_high_min12-ABDJKMN/20260915T0327": null
+  },
+  "05-sync-created-entries-carry-annotations.patch#1": {
+   "opus-5_2.1.251_high_min12-ABDJKMN/20260914T2119": "T10",
+   "opus-5_2.1.251_high_min13-ABDJKMNT/20260918T1850": "T16",
+   "opus-5_2.1.251_high_min13-ABDJKMNT/20260919T1041": {
+    "entry": "T12",
+    "slip": true
+   }
+  },
+  "07-annotation-timecode-shown-in-seconds.patch#1": {
+   "opus-5_2.1.251_high_min13-ABDJKMNT/20260918T1850": null,
+   "opus-5_2.1.251_high_min13-ABDJKMNT/20260919T1041": "T70"
+  },
+  "_notes": [
+   "01-fetch-failure-message.patch#1 all 5 runs: patch header states 0/11 runs raised this — every run rejects the entry and words the message itself without ever questioning whether the literal phrase 'Source metadata fetch failure' must appear. Nearest candidate, min13/20260918T1850 T8 'What counts as a source metadata fetch failure', asks a scope question (which failure classes fold into this category) not the wording question; its own risk note ('only message wording differs') is a side-effect observation, not the ambiguity itself. Targeted greps for wording/verbatim/exact-message language found nothing in any of the 5 registries.",
+   "02-urllib-request.patch#1 both runs: per patch header this settles no spec sentence (tests just reroute urllib.request); a match requires an entry asking which HTTP client/library to use. Searched both registries for urllib/requests/HTTP client/library/transport — no such entry in either.",
+   "03-downloaded-means-name-contains-id.patch#1 min12/20260914T2119, min12/20260915T0327, min13/20260919T1041: none of these three registries has an entry asking the checkpoint-3 candidate-selection matching rule itself (what counts as 'a corresponding media file'); their nearby entries (T26/T36, T24/T25, T22/T34) ask which entries are candidates by category (previews/removed/--format) rather than the file-matching mechanism. min12/20260914T2119's T46 and min13/20260919T1041's T41 ask the same underlying question but attached to the checkpoint-4 'contains id' line, which per the patch header's own analysis these runs treat as a separate, later question (listing/display) from the checkpoint-3 candidate rule already coded — so not counted as a match.",
+   "04-browser-opens-bind-address.patch#1 all 3 runs: patch header explicitly says no run's registry raises the 0.0.0.0/bind-vs-destination question; confirmed by grep across all three for 0.0.0.0/wildcard/bind-host/--host with zero hits.",
+   "07-annotation-timecode-shown-in-seconds.patch#1 min13/20260918T1850: no entry in this run's registry asks raw-seconds-vs-clock-format for the rendered annotation; T77 (top candidate) is about whether the annotations section/heading appears at all when empty, a different question. Searched for clock/MM:SS/timecode-format wording with no hits, so null.",
+   "05#1 min13-ABDJKMNT/20260919T1041: T12 chose annotations on sync-created entries, the tests' reading; the test is one of the v1 cases that fail when the run imports requests (patch 02), so a slip here."
+  ]
+ },
+ "rejector": {
+  "01-three-requests-in-all.patch#1": {
+   "opus-5_2.1.251_high_min11-ABDFJKMN/20260908T0648": "T1",
+   "opus-5_2.1.251_high_min13-ABDJKMNT/20260918T2129": "T2",
+   "opus-5_2.1.251_high_min13-ABDJKMNT/20260919T1228": "T1"
+  },
+  "02-single-task-summary-has-no-tasks.patch#1": {
+   "opus-5_2.1.251_high_min11-ABDFJKMN/20260907T1923": "T27",
+   "opus-5_2.1.251_high_min12-ABDJKMN/20260914T2312": "T43",
+   "opus-5_2.1.251_high_min12-ABDJKMN/20260915T0516": "T23",
+   "opus-5_2.1.251_high_min13-ABDJKMNT/20260919T1228": "T20"
+  },
+  "03-responses-pair-with-rows-in-input-order.patch#1": {
+   "opus-5_2.1.251_high_min11-ABDFJKMN/20260907T1923": null,
+   "opus-5_2.1.251_high_min12-ABDJKMN/20260914T2312": null,
+   "opus-5_2.1.251_high_min13-ABDJKMNT/20260918T2129": null
+  },
+  "04-icl-error-says-not-valid-json.patch#1": {
+   "opus-5_2.1.251_high_min11-ABDFJKMN/20260907T1923": null,
+   "opus-5_2.1.251_high_min13-ABDJKMNT/20260919T1228": null
+  },
+  "05-max-iterations-row-is-failed.patch#1": {
+   "opus-5_2.1.251_high_min11-ABDFJKMN/20260907T1923": null,
+   "opus-5_2.1.251_high_min11-ABDFJKMN/20260908T0648": null,
+   "opus-5_2.1.251_high_min12-ABDJKMN/20260914T2312": "T85",
+   "opus-5_2.1.251_high_min13-ABDJKMNT/20260918T2129": "T68",
+   "opus-5_2.1.251_high_min13-ABDJKMNT/20260919T1228": null
+  },
+  "06-dry-run-time-is-not-rounded.patch#1": {
+   "opus-5_2.1.251_high_min11-ABDFJKMN/20260907T1923": null,
+   "opus-5_2.1.251_high_min11-ABDFJKMN/20260908T0648": null,
+   "opus-5_2.1.251_high_min12-ABDJKMN/20260914T2312": null,
+   "opus-5_2.1.251_high_min12-ABDJKMN/20260915T0516": "T97",
+   "opus-5_2.1.251_high_min13-ABDJKMNT/20260918T2129": null,
+   "opus-5_2.1.251_high_min13-ABDJKMNT/20260919T1228": "T104"
+  },
+  "07-money-is-not-rounded-to-cents.patch#1": {
+   "opus-5_2.1.251_high_min13-ABDJKMNT/20260918T2129": "T89"
+  },
+  "08-judge-text-is-the-extracted-answer.patch#1": {
+   "opus-5_2.1.251_high_min13-ABDJKMNT/20260919T1228": "T22"
+  },
+  "_notes": [
+   "05#1 min11-ABDFJKMN/20260907T1923, min11-ABDFJKMN/20260908T0648, min13-ABDJKMNT/20260919T1228: registries hold T8/T5/T13 ('result.passed when no evaluation configured and the API call fails'), which reach the same null-unless-max_iterations conclusion but for a request-failure row, not an agentic max_iterations row. Treated as a sibling question, not a match, since the alternatives never mention max_iterations; picked null. Low-medium confidence.",
+   "06#1 min11-ABDFJKMN/20260908T0648 (T108), min12-ABDJKMN/20260914T2312 (T105), min13-ABDJKMNT/20260918T2129 (T99): each has an 'est_time_minutes' entry whose Choice text asserts one-decimal rounding as a side detail, but the entry's actual Alternatives decide a different question (per-task summing / RPM-disabled fallback), not whether the value is rounded at all. Treated as not a match; picked null. Medium confidence - these are the closest thing each registry has.",
+   "03#1 and 04#1: matches notes/rejector-misses.md's explicit statement that no registry asks either question; confirmed by targeted regex search (order/race wording and 'not valid JSON'/malformed wording) turning up only unrelated entries in all listed runs. High confidence null."
+  ]
+ },
+ "xjq": {
+  "01-text-flags-per-element.patch#1": {
+   "opus-5_2.1.251_high_spectest-v11/20260907T0137": "T11",
+   "opus-5_2.1.251_high_spectest-v11/20260907T0401": null,
+   "opus-5_2.1.251_high_min11-ABDFJKMN/20260907T0654": "T12",
+   "opus-5_2.1.251_high_min11-ABDFJKMN/20260907T0810": "T13",
+   "opus-5_2.1.251_high_min12-ABDFJKMN/20260908T2036": "T14",
+   "opus-5_2.1.251_high_min12-ABDFJKMN/20260908T2212": "T15",
+   "opus-5_2.1.251_high_min12-ABDJKMN/20260909T0650": "T12",
+   "opus-5_2.1.251_high_min12-ABDJKMN/20260914T1526": null,
+   "opus-5_2.1.251_high_min13-ABDJKMNT/20260919T0105": "T12",
+   "opus-5_2.1.251_high_min13-ABDJKMNT/20260919T0719": "T10"
+  },
+  "02-no-trailing-newline.patch#1": {
+   "opus-5_2.1.251_high_spectest-v11/20260907T0137": "T2",
+   "opus-5_2.1.251_high_spectest-v11/20260907T0401": "T9",
+   "opus-5_2.1.251_high_min11-ABDFJKMN/20260907T0654": "T4",
+   "opus-5_2.1.251_high_min11-ABDFJKMN/20260907T0810": "T7",
+   "opus-5_2.1.251_high_min12-ABDFJKMN/20260908T2036": "T2",
+   "opus-5_2.1.251_high_min12-ABDFJKMN/20260908T2212": "T5",
+   "opus-5_2.1.251_high_min12-ABDJKMN/20260909T0650": "T10",
+   "opus-5_2.1.251_high_min12-ABDJKMN/20260914T1526": "T9"
+  },
+  "03-empty-string-text.patch#1": {
+   "opus-5_2.1.251_high_spectest-v11/20260907T0137": "T25",
+   "opus-5_2.1.251_high_spectest-v11/20260907T0401": null,
+   "opus-5_2.1.251_high_min11-ABDFJKMN/20260907T0654": null,
+   "opus-5_2.1.251_high_min11-ABDFJKMN/20260907T0810": {
+    "entry": "T29",
+    "slip": true
+   },
+   "opus-5_2.1.251_high_min12-ABDFJKMN/20260908T2036": null,
+   "opus-5_2.1.251_high_min12-ABDFJKMN/20260908T2212": "T34",
+   "opus-5_2.1.251_high_min12-ABDFJKMN-specv1/20260909T0430": null,
+   "opus-5_2.1.251_high_min12-ABDFJKMN-specv1/20260909T0533": null,
+   "opus-5_2.1.251_high_min12-ABDJKMN/20260909T0650": "T26",
+   "opus-5_2.1.251_high_min12-ABDJKMN/20260914T1526": null
+  },
+  "04-union-mixed-results-as-text.patch#1": {
+   "opus-5_2.1.251_high_min12-ABDFJKMN-specv2/20260909T0907": "T3"
+  },
+  "_notes": [
+   "01-text-flags-per-element.patch#1 opus-5_2.1.251_high_min11-ABDFJKMN/20260907T0654: run has both T11 (direct-text granularity, chosen correctly) and T12 (--text-all vs ::text granularity, chosen wrong); picked T12 since the failing tests are all --text-all-specific and T12's choice is the wrong one.",
+   "01-text-flags-per-element.patch#1 opus-5_2.1.251_high_min12-ABDJKMN/20260914T1526: no entry in this run's registry specifically addresses --text-all granularity (only T13, about direct --text, whose Choice already picked the correct per-element reading); picked T13 anyway as the closest available question, but this may actually be a case where the wrong output came from an unregistered implementation slip rather than a registered ambiguity.",
+   "02-no-trailing-newline.patch#1 opus-5_2.1.251_high_min11-ABDFJKMN/20260907T0810: this run's registry has no entry titled around 'trailing newline' for the original 'join results with each on a newline' sentence (only T23, which is about a differently-worded later spec sentence); picked T7 ('results that normalize to the empty string', which frames a kept-empty-result as still contributing an empty line) as the closest match to the patch's actual failure mechanism, per the patch header's own T7/T45 framing.",
+   "01#1 spectest-v11/20260907T0401 and min12-ABDJKMN/20260914T1526: their T13 asks only about direct text and chose per element, the tests' reading; the failing tests are all --text-all, whose per-node wording neither run questioned, so null (checked by hand 2026-09-21).",
+   "03#1 min11-ABDFJKMN/20260907T0810: T29 keeps the empty string as text, the tests' reading; the run fails the shared test through patch 02's trailing newline (its T7), so a slip here."
+  ]
+ }
+}

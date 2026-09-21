@@ -26,6 +26,7 @@ existing snapshot with `bin/reeval`, and every later run scores it that way nati
 | min13-ABDJKMNT on v1 (strict) | `…min13-ABDJKMNT-specv1/20260920T1529` | min13 on spec v1 (six sentences) under bin/scb-strict, in the specpatch channel beside the main queue; first of two | 37/37, 67/67, 115/115, 155/155, 185/185, 227/227 | complete 2026-09-20; no misses, strict on every checkpoint, the first strict mvvault run of any prompt (best before: 223); urllib for every request; 6/6 strict, $25, 93 min, overlapped by main-queue jobs throughout, so the minutes are not comparable. Quality: erosion 0.000, verbosity 0.144, ast 0.038, cloned 0.067; final checkpoint, implementation only (27% of LOC): ast 0.103, erosion 0.000, cloned 0.007 |
 | min13-ABDJKMNT on v1, repeat (halted at the last checkpoint) | `…min13-ABDJKMNT-specv1/20260920T1737` | same config as the first run, under bin/scb-strict in the specpatch channel; second of two | 37/37, 67/67, 115/115, 155/155, 185/185, 225/227 | complete 2026-09-20 (the halt came after checkpoint 6, the last); 2 misses, test_migration_atomic for a v1 and a v2 catalog: an annotation POST to a vault whose legacy entry lacks `width` answers 303 where the test wants 500; 5/6 strict, $28, 93 min, overlapped by the main queue, so the minutes are not comparable. Quality: erosion 0.000, verbosity 0.146, ast 0.058, cloned 0.056; final checkpoint, implementation only (28% of LOC): ast 0.154, erosion 0.000, cloned 0.007 |
 | anti-slop on v1 | `…anti_slop-specv1/20260921T0531` | the upstream anti_slop prompt on spec v1, a baseline for the grid's patched cell; first of two | 37/37, 67/67, 115/115, 154/155, 180/185, 222/227 | complete 2026-09-21; 5 misses: the missing-vault redirect carries `?missing=`, the reading draft 06 would have settled (one test at 4), the nonexistent-vault landing page lacks "not found" on the detail and static routes (two at 5), and a literal `../..` in a static route is redirected, 303, where the tests want 403 or 404 (two at 5); urllib throughout, so the seven-test v1 block passed; test_migration_atomic passed; 3/6 strict, $22, 94 min. Quality: erosion 0.018, verbosity 0.176, ast 0.080, cloned 0.031; final checkpoint, implementation only (39% of LOC): ast 0.142, erosion 0.036, cloned 0.000 |
+| anti-slop on v1, repeat | `…anti_slop-specv1/20260921T0719` | same config as the first run; second of two | 37/37, 67/67, 115/115, 154/155, 182/185, 224/227 | complete 2026-09-21; 3 misses, all on the missing-vault redirect: `?missing=` in the Location (one test at 4) and a landing notice that reads "No vault named 'x' here." where the tests look for the words "not found" (two at 5); the first run's two path-traversal misses passed; urllib throughout; test_migration_atomic passed; 3/6 strict, $25, 90 min. Quality: erosion 0.000, verbosity 0.182, ast 0.099, cloned 0.014; final checkpoint, implementation only (50% of LOC): ast 0.138, erosion 0.000, cloned 0.010 |
 
 ## Test failure summaries
 
@@ -213,3 +214,21 @@ lines are implementation; the v0 runs wrote none). test_migration_atomic passed.
 
 Three of the five sit on the missing-vault redirect, so draft `06` is worth a second look if
 anti-slop's repeat does the same.
+
+anti-slop on v1, repeat (job 274, 2026-09-21): 224/227, pair 222 and 224 against 213 and 213 on
+v0 and min13's 227 and 225. Its three misses are one place in the spec, checkpoint_4.md:110,
+"Redirect to `/`; landing page shows vault-not-found indication", read against the tests twice
+over:
+
+  - the Location carries `?missing=<name>` (test_missing_vault_route wants the bare root): four
+    anti-slop runs of four now, min13 one of four. This is dropped draft `06`.
+  - the notice itself. `pages.landing` prints "No vault named 'x' here."; test_missing_vault_route
+    and the checkpoint-5 pair assert the words "not found" in the page (tests/test_checkpoint_4.py:450,
+    test_checkpoint_5.py:608). "vault-not-found indication" names a condition, and the tests want
+    it as a phrase, the same kind of miss as patch `01`'s "Source metadata fetch failure". The
+    first run's checkpoint-5 pair was this too, not the query parameter as guessed in its entry
+    above: its wording is "vault x does not exist".
+
+So draft `06` comes back stronger than it left: "Redirect to `/` with no query string; the landing
+page says the vault was `not found`". Pitched to the user; v1 has runs against it now, so the
+sentence would make a v2. test_migration_atomic: passed in both anti-slop runs.

@@ -1,6 +1,5 @@
 """report/prompt_page.py: a prompt's Jinja source rendered as the min12 page was, for any prompt."""
 import re
-import subprocess
 import sys
 from pathlib import Path
 
@@ -60,9 +59,9 @@ def test_a_nested_list_nests():
 def test_the_min12_page_is_reproduced_from_its_source():
     built = pp.build("min12-ABDJKMN")
     # the page as it was written by hand (commit 258e4e6), before this script existed; it said 425 words
-    # where no count of the source gives that, so the page takes the tool's count
-    kept = subprocess.run(["git", "show", "258e4e6:report/min12-prompt.html"], cwd=ROOT, capture_output=True,
-                          text=True, check=True).stdout
+    # where no count of the source gives that, so the page takes the tool's count. The copy is a fixture,
+    # not `git show`, so the test runs in a shallow clone and in a release archive without .git.
+    kept = (ROOT / "tests" / "fixtures" / "min12-prompt-258e4e6.html").read_text()
     strip = lambda s: re.sub(r"\s+", " ", s).strip()  # noqa: E731
     assert strip(built) == strip(kept).replace("425 words", "423 words")
 

@@ -1,0 +1,71 @@
+<title>Spectest prompt: min12-ABDJKMN</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root {
+  color-scheme: light;
+  --bg: #f5f6f4; --paper: #fdfdfb; --ink: #1d201f; --ink-2: #5a615e; --ink-3: #8d938f;
+  --rule: #d9ddda; --accent: #1f6f78; --accent-soft: #dbeef0; --slot: #7a4f1d; --slot-soft: #f4e6d3;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #161917; --paper: #1d211f; --ink: #e9ece9; --ink-2: #a3aaa6; --ink-3: #6f7672;
+    --rule: #2f3532; --accent: #6cc3cc; --accent-soft: #1b3a3e; --slot: #d9a86a; --slot-soft: #3d2d1a;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #161917; --paper: #1d211f; --ink: #e9ece9; --ink-2: #a3aaa6; --ink-3: #6f7672;
+  --rule: #2f3532; --accent: #6cc3cc; --accent-soft: #1b3a3e; --slot: #d9a86a; --slot-soft: #3d2d1a;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: "Source Serif 4", Georgia, "Times New Roman", serif; font-size: 17px; line-height: 1.55; padding-block: 40px 64px; padding-inline: 20px; }
+.sheet { max-width: 68ch; margin: 0 auto; background: var(--paper); border: 1px solid var(--rule); padding: 36px clamp(20px, 5vw, 48px) 44px; }
+.meta { display: flex; flex-wrap: wrap; gap: 6px 18px; align-items: baseline; font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; font-size: 12.5px; color: var(--ink-3); margin: 0 0 28px; padding-bottom: 14px; border-bottom: 1px solid var(--rule); }
+.meta b { color: var(--ink-2); font-weight: 500; }
+h1, h2 { font-family: "Instrument Sans", "Helvetica Neue", Arial, sans-serif; text-wrap: balance; letter-spacing: -0.01em; margin: 0; }
+h1 { font-size: 30px; font-weight: 700; line-height: 1.15; margin-bottom: 18px; }
+h2 { font-size: 20px; font-weight: 600; margin: 34px 0 12px; padding-top: 18px; border-top: 1px solid var(--rule); }
+.p { display: grid; gap: 4px; margin: 0 0 14px; }
+.p p { margin: 0; }
+ul { margin: 0 0 14px; padding-left: 22px; }
+li { margin: 2px 0; }
+code { font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; font-size: 0.86em; background: var(--bg); border: 1px solid var(--rule); border-radius: 3px; padding: 1px 5px; }
+code.tpl { color: var(--accent); background: var(--accent-soft); border-color: transparent; }
+code.tpl::before { content: "{% "; opacity: 0.6; }
+code.tpl::after { content: " %}"; opacity: 0.6; }
+code.slot { color: var(--slot); background: var(--slot-soft); }
+code.slot::before { content: "{{ "; opacity: 0.6; }
+code.slot::after { content: " }}"; opacity: 0.6; }
+.tplline { margin: 4px 0 10px; }
+.tplline code.slot { display: block; padding: 14px 16px; font-size: 14px; }
+.note { margin: 32px 0 0; padding-top: 14px; border-top: 1px solid var(--rule); font-family: "Instrument Sans", "Helvetica Neue", Arial, sans-serif; font-size: 13.5px; color: var(--ink-2); }
+</style>
+<div class="sheet">
+  <p class="meta"><b>configs/prompts/min12-ABDJKMN.jinja</b><span>425 words of prose</span><span>spectest prompt</span></p>
+<h1>Task Directions</h1>
+<div class="p"><p>Fully implement the following spec. Use the approach:</p></div>
+<ul><li>Environment setup</li><li>Write tests from the spec</li><li>Implement</li><li>Declare complete</li></ul>
+<div class="p"><p>Specifically:</p></div>
+<h2>Environment</h2>
+<div class="tplline"><code class="tpl">if not is_continuation</code></div>
+<div class="p"><p>Use a virtual environment and ensure that a <code>requirements.txt</code> is present with any dependencies you need to solve the problem.</p></div>
+<div class="tplline"><code class="tpl">else</code></div>
+<div class="p"><p>Keep using the same virtual environment you started with, update <code>requirements.txt</code> with any new dependencies you need.</p></div>
+<div class="tplline"><code class="tpl">endif</code></div>
+<div class="p"><p>Touch an IN_PROGRESS file. Delete any COMPLETED file.</p></div>
+<div class="p"><p>When killing a process never run a pkill. Instead, pgrep.</p><p>Make sure only one process is found, then kill that one by PID.</p><p>Why? It&#x27;s too easy to pkill your own Bash argv.</p></div>
+<div class="p"><p>For long-lived processes, log to a file or /dev/null instead of an undrained pipe.</p></div>
+<h2>Testing</h2>
+<div class="p"><p>Split the spec file into minimal possible logical phrases and minimal context, and iterate through each phrase.</p><p>For each phrase, add a test section with a comment of the phrase &amp; context.</p></div>
+<div class="p"><p>If the spec is non-trivially under-specified, such that alternative interpretations would change the behavior of a conforming implementation on some input, then never ask for clarification.</p><p>Instead, make your best choice at how to interpret the intention of the spec.</p><p>Then, add a numbered entry to an AMBIGUITIES.md file, starting with T1.</p><p>The entry must have sections for Spec Text, Alternatives, Choice, and Risk.</p><p>The entry will quote the relevant spec source verbatim, explain the reasonable alternative interpretations, and your choice &amp; why it seems to best fit the spec.</p><p>The &quot;### Risk: N&quot; section</p><p>Risk is a number from 0 to 100: the chance that the spec&#x27;s author, who has an implementation of their own and writes the hidden tests against it, prefers a different reading from your choice on some tested input.</p><p>Reason about what the author&#x27;s implementation most likely does and what fixture they would naturally write, not only about which reading the prose supports best.</p><p>If Risk is above 0, name the reading the author most likely prefers in one line.</p><p>Use the whole range: a flat number on every entry is useless.</p></div>
+<div class="p"><p>If a previous ambiguity is resolved by the current spec, annotate the entry instead of removing it.</p></div>
+<div class="p"><p>You run tests only to validate the tests themselves: collection succeeds, helpers and generators work<code class="tpl">if is_continuation</code>, and each failure is because behavior is missing, not because the test is broken<code class="tpl">endif</code>. Quick, targeted runs.</p></div>
+<div class="p"><p>Never run the full suite to completion or long hypothesis runs; a green suite is the implementer&#x27;s job, not yours.</p></div>
+<h2>Implement</h2>
+<h2>Declare complete</h2>
+<div class="p"><p>touch a COMPLETED file. rm the IN_PROGRESS file.</p></div>
+<h2>Spec</h2>
+<div class="tplline"><code class="tpl slot">spec.strip()</code></div>
+  <p class="note">Rendered from the Jinja source. The file marks every section with a single <code>#</code>; here the first stays a title and the rest are subsections, which is what the source meant. Template tags are shown in place rather than expanded: teal for conditionals, amber for the slot the problem's spec fills.</p>
+</div>

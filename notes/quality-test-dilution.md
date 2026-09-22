@@ -258,3 +258,32 @@ rows. Which of chunk T's bullets does the work is untested; T is one chunk, and 
 (file grouping, the defensive gotcha, the comment gotcha) would let the subset search answer.
 Runs: `…min13-ABDJKMNT/20260918T1850` (mvvault) and `…/20260918T2129` (rejector); ledger rows in
 `notes/mvvault-runs.md` and `notes/rejector-runs.md`.
+
+## Code pairs, spectest against spectest+antislop (2026-09-21)
+
+`report/quality-examples-antislop.html` (`python3 report/quality_examples.py
+report/quality-examples-antislop.json`). The user's ask: the earlier pairs put just-solve
+against spectest and were only kind of compelling; these put spectest (min12) against
+spectest+antislop (min13), and the spectest side is chosen blind, the worst of its kind in the
+twelve min12 runs by scb-check's own numbers, before any min13 code was read. Only then was
+the same job found in min13's runs (one Sonnet agent per problem) and shown as it is.
+
+Population, implementation files, final checkpoint, twelve runs of each prompt:
+
+| | min12 | min13 |
+|---|---|---|
+| functions over CC 10 | 172 (37 over CC 20; worst 85) | 11 (none over 20; worst 17) |
+| ast-grep flagged lines | 9,346 | 3,459 |
+| implementation clone groups / lines | 91 / 815 | 25 / 240 |
+| test clone groups / lines | 790 / 10,726 | 489 / 6,289 |
+
+The nine blind picks: sith `main` CC 85 and `parse_args` CC 66 (one argparse parser and a
+dispatch dict in both min13 runs), rejector `schema_error` CC 43 (a dispatcher at CC 14 plus
+small checkers; the other run a tuple of seven rules), file_merger `run` CC 36 (a 24- and a
+16-line driver), rejector `build_task` with 117 flagged lines (split in two; one run has four
+isinstance calls in the file, the other 25 spread thin), rejector's enum check pasted 8 times
+(NOT fixed: both runs wrote a helper and used it at two of six sites), file_merger's JSON loader
+in two copies (NOT fixed: still two, in separate files), file_merger's four isinstance guards
+(gone), sith's rank helper pasted into a test (once). Six of nine cleaner in both min13 runs.
+Cloned tests stay: sith's test_inline.py has ten one-assert tests in a row that one parametrize
+would collapse. The rule list sits under Implement and the tests are written before it.

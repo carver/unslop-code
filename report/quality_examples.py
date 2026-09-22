@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Build report/quality-examples.html: code the agent wrote, marked with its scb-check hits.
 
-    python3 report/quality_examples.py    # the committed page is the report; no artifact publish
+    python3 report/quality_examples.py [manifest.json ...]    # the committed page is the report; no artifact publish
 
 `quality-examples.json` names the examples, hand-picked to show spectest at its best (the
 candidates they came from are in notes/quality-test-dilution.md). Each has line ranges in a just-solve snapshot
@@ -195,22 +195,26 @@ def render_pane(side, category, css, prompt, run, pane_id="", hidden=False, note
             f'{render_code(annotate(side, category))}{render_items(summary, category)}{note}</section>')
 
 
-def render_example(example, side_for):
+DEFAULT_PROMPTS = {"before": "just-solve", "after": "spectest"}
+
+
+def render_example(example, side_for, prompts=DEFAULT_PROMPTS):
     category, ident = example["category"], esc(example["id"])
+    before_name, after_name = esc(prompts["before"]), esc(prompts["after"])
     before = side_for(example["before"])
     head = f'<header><h3>{esc(example["title"])}</h3><span class="chip">{esc(example["problem"])}</span></header>'
     why = f'<p class="why">{esc(example["what_is_wrong"])}</p>'
     if "after" not in example:
-        pane = render_pane(before, category, "min", "spectest", example["before"]["run"])
+        pane = render_pane(before, category, "min", after_name, example["before"]["run"])
         return f'<article class="ex" id="{ident}">{head}{why}<div class="panes">{pane}</div></article>'
     after = side_for(example["after"])
     result = verdict(category, summarize(before, category).count, summarize(after, category).count)
     note = (f'<p class="changed"><span class="verdict {VERDICT_CLASS[result]}">{result}</span> '
             f'{esc(example["what_changed"])}</p>')
     switch = (f'<button type="button" class="switch" role="switch" aria-checked="false" aria-controls="{ident}-after">'
-              f'<span class="track"><span class="thumb"></span></span>Show the spectest version</button>')
-    panes = (render_pane(before, category, "js", "just-solve", example["before"]["run"])
-             + render_pane(after, category, "min", "spectest", example["after"]["run"], f"{ident}-after", True, note))
+              f'<span class="track"><span class="thumb"></span></span>Show the {after_name} version</button>')
+    panes = (render_pane(before, category, "js", before_name, example["before"]["run"])
+             + render_pane(after, category, "min", after_name, example["after"]["run"], f"{ident}-after", True, note))
     return f'<article class="ex" id="{ident}">{head}{why}{switch}<div class="panes">{panes}</div></article>'
 
 
@@ -225,24 +229,34 @@ def render_examples(manifest, load_hits=load_cached_hits, load_functions=load_fu
         snapshot, hits, functions = run_data(spec["run"])
         return Side(snapshot, spec["segments"], hits, functions)
 
+    prompts = manifest.get("prompts", DEFAULT_PROMPTS)
     out = []
-    for category, title, blurb in SECTIONS:
+    for category, title, blurb in manifest.get("sections", SECTIONS):
         examples = [e for e in manifest["examples"] if e["category"] == category]
         if examples:
-            body = "".join(render_example(e, side_for) for e in examples)
+            body = "".join(render_example(e, side_for, prompts) for e in examples)
             intro = f'<h2>{title}</h2><p class="note">{blurb}</p>'
             out.append(f'<section class="group" id="{category}">{intro}{body}</section>')
     return "".join(out)
 
 
-def build():
-    manifest = json.loads((HERE / "quality-examples.json").read_text())
+def build(manifest_path=None):
+    """The page a manifest describes: its `page` name, `intro` HTML and `prompts`, or the original
+    just-solve-against-spectest page when it names none."""
+    manifest_path = Path(manifest_path or HERE / "quality-examples.json")
+    manifest = json.loads(manifest_path.read_text())
     template = (HERE / "quality-examples.template.html").read_text()
     assert template.count("__EXAMPLES__") == 1
-    out = HERE / "quality-examples.html"
-    out.write_text(template.replace("__EXAMPLES__", render_examples(manifest)))
+    intro = manifest.get("intro", (HERE / "quality-examples.intro.html").read_text())
+    after_label = manifest.get("prompts", DEFAULT_PROMPTS)["after"]
+    out = HERE / manifest.get("page", "quality-examples.html")
+    page = template.replace("__INTRO__", intro).replace("__AFTER_LABEL__", esc(after_label))
+    out.write_text(page.replace("__EXAMPLES__", render_examples(manifest)))
     return out
 
 
 if __name__ == "__main__":
-    print(build())
+    import sys
+
+    for manifest in sys.argv[1:] or [None]:
+        print(f"wrote {build(manifest).relative_to(ROOT)}")

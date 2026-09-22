@@ -90,16 +90,13 @@ a { color: var(--js); text-underline-offset: 2px; }
 
 <div class="wrap">
   <header>
-    <h1>What just-solve wrote, and what spectest wrote instead</h1>
-    <p class="lede">Code Opus 5 wrote for the six dev problems under the benchmark's <b>just-solve</b> prompt, at the final checkpoint, spec v0. Tinted lines are what scb-check 0.1.3 flagged. The switch on each example shows what the <b>spectest</b> prompt (min12-ABDJKMN) wrote for the same job in its own run. Implementation files only, because spectest's test files dilute its scores.</p>
-    <p class="lede"><b>These are not representative.</b> They were picked by hand from 21 candidates to show spectest at its best. On other code from the same runs its version is no better: the same isinstance ladder line for line, a CC 25 main that stays CC 25, a check pasted three times on both sides.</p>
-  </header>
+__INTRO__  </header>
 
   <div class="bar">
     <nav aria-label="Groups">
       <a href="#ast">ast-grep smells</a><a href="#clone">Cloned lines</a><a href="#erosion">Erosion</a><a href="#blowup">Cloned tests</a>
     </nav>
-    <button type="button" class="switch" id="all-switch" role="switch" aria-checked="false"><span class="track"><span class="thumb"></span></span>Show every spectest version</button>
+    <button type="button" class="switch" id="all-switch" role="switch" aria-checked="false"><span class="track"><span class="thumb"></span></span>Show every __AFTER_LABEL__ version</button>
   </div>
 
   __EXAMPLES__

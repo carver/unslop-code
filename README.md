@@ -38,7 +38,10 @@ Some important entry points to understand and use the repository.
   clarifying every entry from the highest Risk down would fix),
   the delimiter patch (`patch-infer-delimiter.html`), the enrich patch (`patch-enrich-single.html`) and the min12 prompt rendered
   (`min12-prompt.html`) and the spectest+antislop prompt (`min13-prompt.html`), both by
-  `python3 report/prompt_page.py <prompt name>`. The build scripts sit beside the pages they generate.
+  `python3 report/prompt_page.py <prompt name>`; the code pairs just-solve against spectest
+  (`quality-examples.html`) and spectest against spectest+antislop (`quality-examples-antislop.html`,
+  `python3 report/quality_examples.py report/quality-examples-antislop.json`; its spectest side is the worst
+  code by the tool's numbers, picked blind). The build scripts sit beside the pages they generate.
 - `notes/` — credential plumbing and incident log (`credential-setup.md`), control
   isolation audit, spec-delivery mechanism, per-run comparisons
   (`dev6-opus5.md`, `dev6-fable5.md`), leaderboard/paper reference, compiled results.

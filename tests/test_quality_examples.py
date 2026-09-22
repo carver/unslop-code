@@ -156,3 +156,35 @@ def test_functions_come_from_the_symbols_file_beside_the_snapshot(snapshot):
     rows = [function("big", 2, 9, 17), {"name": "X", "type": "variable", "file_path": "app.py", "start": 1, "end": 1}]
     symbols.write_text("".join(json.dumps(r) + "\n" for r in rows))
     assert [f["name"] for f in qe.load_functions(snapshot)] == ["big"]
+
+
+def test_the_manifest_names_the_two_prompts_and_the_page_uses_them(snapshot):
+    example = {"id": "e", "category": "clone", "problem": "p", "title": "t", "what_is_wrong": "w", "what_changed": "c",
+               "before": {"run": "a", "segments": [{"file": "app.py", "start": 1, "end": 2}]},
+               "after": {"run": "b", "segments": [{"file": "app.py", "start": 1, "end": 2}]}}
+    manifest = {"runs": {"a": str(snapshot), "b": str(snapshot)}, "examples": [example],
+                "prompts": {"before": "spectest", "after": "spectest+antislop"},
+                "sections": [["clone", "Cloned lines", "Copies of each other."]]}
+    html = qe.render_examples(manifest, load_hits=lambda _: [])
+    assert "Show the spectest+antislop version" in html
+    assert 'class="pane js"' in html and 'class="pane min"' in html  # the colours stay by side
+    assert html.count("spectest+antislop") >= 2 and "just-solve" not in html
+
+
+def test_the_prompt_names_default_to_the_original_pair(snapshot):
+    example = {"id": "e", "category": "blowup", "problem": "p", "title": "t", "what_is_wrong": "w",
+               "before": {"run": "a", "segments": [{"file": "app.py", "start": 1, "end": 2}]}}
+    html = qe.render_examples({"runs": {"a": str(snapshot)}, "examples": [example]}, load_hits=lambda _: [])
+    assert "spectest" in html and "spectest+antislop" not in html
+
+
+def test_build_takes_a_manifest_and_writes_the_page_named_in_it(tmp_path, monkeypatch):
+    manifest = tmp_path / "m.json"
+    manifest.write_text(json.dumps({"runs": {}, "examples": [], "page": "out.html",
+                                    "intro": "<h1>Intro here</h1>", "prompts": {"before": "x", "after": "y"}}))
+    monkeypatch.setattr(qe, "HERE", tmp_path)
+    (tmp_path / "quality-examples.template.html").write_text("<title>T</title>__INTRO__ __EXAMPLES__ __AFTER_LABEL__")
+    (tmp_path / "quality-examples.intro.html").write_text("unused default intro")
+    out = qe.build(manifest)
+    assert out == tmp_path / "out.html"
+    assert out.read_text() == "<title>T</title><h1>Intro here</h1>  y"

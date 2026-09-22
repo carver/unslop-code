@@ -1,0 +1,343 @@
+{
+ "page": "quality-examples-antislop.html",
+ "prompts": {
+  "before": "spectest",
+  "after": "spectest+antislop"
+ },
+ "intro": "    <h1>What spectest wrote, and what spectest+antislop wrote instead</h1>\n    <p class=\"lede\">Code Opus 5 wrote for the dev problems under the <b>spectest</b> prompt (min12-ABDJKMN), at the final checkpoint, spec v0. Tinted lines are what scb-check 0.1.3 flagged. The switch on each example shows what <b>spectest+antislop</b> (min13-ABDJKMNT, the same prompt plus the benchmark's anti-slop rule list under Implement) wrote for the same job in its own runs. Implementation files only.</p>\n    <p class=\"lede\"><b>How these were chosen.</b> Not for the contrast. Each spectest example is the worst code of its kind in the twelve spectest runs by the tool's own numbers, picked before any spectest+antislop code was read: the highest-complexity functions, the function with the most flagged lines, the largest duplicated blocks. Only then was the code doing the same job found in the spectest+antislop runs and shown as it is. Six of the nine jobs came out cleaner in both spectest+antislop runs; the enum check is still pasted in both, the JSON loader is still two copies, and one run keeps its isinstance checks by spreading them.</p>\n    <p class=\"lede\"><b>Over all twelve runs of each prompt</b>, implementation files, final checkpoint: functions over CC 10 go from 172 (37 of them over CC 20, the worst at 85) to 11 (none over 20, the worst at 17); ast-grep flagged lines from 9,346 to 3,459; duplicated implementation blocks from 91 to 25. Cloned test lines go from 10,726 to 6,289 and stay the largest number on the page: the rule list is under Implement, and the tests are written before it applies.</p>\n",
+ "sections": [
+  [
+   "erosion",
+   "Erosion",
+   "Erosion is the share of cyclomatic complexity sitting in functions above CC 10. The tinted line is the def of such a function. This is where the rule list does the most: no spectest+antislop run has a function over CC 17."
+  ],
+  [
+   "ast",
+   "ast-grep smells",
+   "Each tinted line sits inside a match of one of scb-check's ast-grep rules. The whole-function rules (isinstance-heavy, try-soup, validator-returnmix) flag every line of a function they judge defensive, so one long function is most of a run's count."
+  ],
+  [
+   "clone",
+   "Cloned lines",
+   "Tinted blocks are copies of each other. Two of the four largest spectest clones survive the rule list."
+  ],
+  [
+   "blowup",
+   "Where both prompts go wrong: cloned tests",
+   "Cloned test lines fall by 41% under spectest+antislop and stay in the thousands. The rule list is under Implement; the tests are written first, and no rule reaches them. This is a spectest+antislop run, so there is no other side to show."
+  ]
+ ],
+ "runs": {
+  "sith.min12.20260915T0053": "outputs/spectest/opus-5_2.1.251_high_min12-ABDJKMN/20260915T0053/sith/checkpoint_6/snapshot",
+  "sith.min12.20260915T0719": "outputs/spectest/opus-5_2.1.251_high_min12-ABDJKMN/20260915T0719/sith/checkpoint_6/snapshot",
+  "sith.min13.20260919T0435": "outputs/spectest/opus-5_2.1.251_high_min13-ABDJKMNT/20260919T0435/sith/checkpoint_6/snapshot",
+  "rejector.min12.20260914T2312": "outputs/spectest/opus-5_2.1.251_high_min12-ABDJKMN/20260914T2312/rejector/checkpoint_5/snapshot",
+  "rejector.min12.20260915T0516": "outputs/spectest/opus-5_2.1.251_high_min12-ABDJKMN/20260915T0516/rejector/checkpoint_5/snapshot",
+  "rejector.min13.20260918T2129": "outputs/spectest/opus-5_2.1.251_high_min13-ABDJKMNT/20260918T2129/rejector/checkpoint_5/snapshot",
+  "file_merger.min12.20260909T0739": "outputs/spectest/opus-5_2.1.251_high_min12-ABDJKMN/20260909T0739/file_merger/checkpoint_4/snapshot",
+  "file_merger.min12.20260914T1615": "outputs/spectest/opus-5_2.1.251_high_min12-ABDJKMN/20260914T1615/file_merger/checkpoint_4/snapshot",
+  "file_merger.min13.20260919T0311": "outputs/spectest/opus-5_2.1.251_high_min13-ABDJKMNT/20260919T0311/file_merger/checkpoint_4/snapshot"
+ },
+ "examples": [
+  {
+   "id": "erosion-sith-main",
+   "category": "erosion",
+   "problem": "sith",
+   "title": "Parsing the command line and dispatching",
+   "what_is_wrong": "main(argv) is a 222-line while-loop that recognises every flag by string comparison into a local variable each, then works out the command and validates the combination inline. CC 85, the highest in any spectest run. The other spectest run has the same job as parse_args at CC 66.",
+   "what_changed": "argparse subparsers built by small helpers, and a dict from command name to handler. No function in the file comes near CC 10.",
+   "before": {
+    "run": "sith.min12.20260915T0719",
+    "segments": [
+     {
+      "file": "sith.py",
+      "start": 5031,
+      "end": 5070,
+      "label": "main, the first 40 of 222 lines"
+     }
+    ]
+   },
+   "after": {
+    "run": "sith.min13.20260919T0435",
+    "segments": [
+     {
+      "file": "sith.py",
+      "start": 59,
+      "end": 93,
+      "label": "build_parser"
+     },
+     {
+      "file": "sith.py",
+      "start": 225,
+      "end": 243,
+      "label": "answer and main"
+     }
+    ]
+   }
+  },
+  {
+   "id": "erosion-rejector-schema",
+   "category": "erosion",
+   "problem": "rejector",
+   "title": "Validating a value against a JSON Schema",
+   "what_is_wrong": "schema_error is one recursive function handling every draft-7 keyword the spec lists: type, enum, bounds, length, pattern, required, properties, items. CC 43.",
+   "what_changed": "A dispatcher of a dozen lines that checks type and enum, then hands off by the value's kind to three small checkers; the dispatcher itself is still just over the CC 10 line. The other spectest+antislop run loops a tuple of seven one-keyword rule functions instead.",
+   "before": {
+    "run": "rejector.min12.20260914T2312",
+    "segments": [
+     {
+      "file": "rejector.py",
+      "start": 1013,
+      "end": 1050,
+      "label": "schema_error, the first 38 of 81 lines"
+     }
+    ]
+   },
+   "after": {
+    "run": "rejector.min13.20260918T2129",
+    "segments": [
+     {
+      "file": "rejector_core/schema.py",
+      "start": 37,
+      "end": 93,
+      "label": "validate_document and the checkers it hands off to"
+     }
+    ]
+   }
+  },
+  {
+   "id": "erosion-file-merger-run",
+   "category": "erosion",
+   "problem": "file_merger",
+   "title": "The merge driver",
+   "what_is_wrong": "run(argv) is the whole CLI in one 132-line function: every flag validated, --key and --partition-by parsed, the schema resolved, rows cast and sorted and written. CC 36.",
+   "what_changed": "A 24-line driver that names each step and calls it. The other spectest+antislop run's driver is 16 lines.",
+   "before": {
+    "run": "file_merger.min12.20260909T0739",
+    "segments": [
+     {
+      "file": "merge_files.py",
+      "start": 2243,
+      "end": 2280,
+      "label": "run, the first 38 of 132 lines"
+     }
+    ]
+   },
+   "after": {
+    "run": "file_merger.min13.20260919T0311",
+    "segments": [
+     {
+      "file": "csvmerge/pipeline.py",
+      "start": 24,
+      "end": 47,
+      "label": "run"
+     }
+    ]
+   }
+  },
+  {
+   "id": "ast-rejector-build-task",
+   "category": "ast",
+   "problem": "rejector",
+   "title": "Building a task from the config and the CLI overrides",
+   "what_is_wrong": "build_task merges CLI overrides over the config dict and validates every field of the result in one 117-line function. Two whole-function rules flag all of it: function-with-many-type-guards and defensive-function-isinstance-heavy. The largest flagged span in any spectest run.",
+   "what_changed": "The override merge is its own function and the task builder is 40 lines with no isinstance call; the file has four. The other spectest+antislop run splits the same way but keeps 25 isinstance calls spread across the file, which the rules no longer flag as one function.",
+   "before": {
+    "run": "rejector.min12.20260914T2312",
+    "segments": [
+     {
+      "file": "rejector.py",
+      "start": 561,
+      "end": 604,
+      "label": "build_task, the first 44 of 117 lines"
+     }
+    ]
+   },
+   "after": {
+    "run": "rejector.min13.20260918T2129",
+    "segments": [
+     {
+      "file": "rejector_core/config.py",
+      "start": 264,
+      "end": 303,
+      "label": "_build_task"
+     }
+    ]
+   }
+  },
+  {
+   "id": "clone-rejector-enum",
+   "category": "clone",
+   "problem": "rejector",
+   "title": "Checking a config value against its allowed set",
+   "what_is_wrong": "The same three lines, `if X not in SET: raise ConfigError(\"...must be one of...\")`, pasted eight times through the config builder. The other spectest run pastes them seven times.",
+   "what_changed": "Not fixed. Both spectest+antislop runs wrote a helper for exactly this check and then used it at two of six sites; the other four are pasted again in a new phrasing, and the clone detector still tints them. Fewer cloned lines, the same pattern.",
+   "before": {
+    "run": "rejector.min12.20260915T0516",
+    "segments": [
+     {
+      "file": "rejector.py",
+      "start": 315,
+      "end": 317,
+      "label": "copy 1 of 8: generation.scheme"
+     },
+     {
+      "file": "rejector.py",
+      "start": 365,
+      "end": 372,
+      "label": "copies 2 and 3: api_type and chat_template"
+     }
+    ]
+   },
+   "after": {
+    "run": "rejector.min13.20260918T2129",
+    "segments": [
+     {
+      "file": "rejector_core/config.py",
+      "start": 452,
+      "end": 455,
+      "label": "the helper"
+     },
+     {
+      "file": "rejector_core/config.py",
+      "start": 295,
+      "end": 297,
+      "label": "the two sites that use it"
+     },
+     {
+      "file": "rejector_core/config.py",
+      "start": 398,
+      "end": 407,
+      "label": "two of the four sites that do not"
+     }
+    ]
+   }
+  },
+  {
+   "id": "clone-file-merger-loader",
+   "category": "clone",
+   "problem": "file_merger",
+   "title": "Reading a JSON file for the aliases and for the schema",
+   "what_is_wrong": "Open, json.load, and two except branches raising ToolError, written once for the alias file and once more for the schema file.",
+   "what_changed": "Not fixed by eye. Still two copies, one in aliases.py and one in schema.py, each shorter and with the read-or-inline step added; the two no longer match closely enough for the clone detector, which is why its count drops.",
+   "before": {
+    "run": "file_merger.min12.20260909T0739",
+    "segments": [
+     {
+      "file": "merge_files.py",
+      "start": 511,
+      "end": 519,
+      "label": "load_aliases"
+     }
+    ]
+   },
+   "after": {
+    "run": "file_merger.min13.20260919T0311",
+    "segments": [
+     {
+      "file": "csvmerge/aliases.py",
+      "start": 64,
+      "end": 69,
+      "label": "_read_document, for aliases"
+     },
+     {
+      "file": "csvmerge/schema.py",
+      "start": 32,
+      "end": 38,
+      "label": "load_schema, the same again"
+     }
+    ]
+   }
+  },
+  {
+   "id": "clone-file-merger-guards",
+   "category": "clone",
+   "problem": "file_merger",
+   "title": "Checking the shape of the alias file",
+   "what_is_wrong": "Four back-to-back `if not isinstance(x, T): raise ToolError(...)` blocks, one per level of the alias document.",
+   "what_changed": "One isinstance check on the document and a helper for the target type; the block is not repeated.",
+   "before": {
+    "run": "file_merger.min12.20260909T0739",
+    "segments": [
+     {
+      "file": "merge_files.py",
+      "start": 521,
+      "end": 540,
+      "label": "load_aliases, continued"
+     }
+    ]
+   },
+   "after": {
+    "run": "file_merger.min13.20260919T0311",
+    "segments": [
+     {
+      "file": "csvmerge/aliases.py",
+      "start": 56,
+      "end": 74,
+      "label": "load_aliases and _target"
+     }
+    ]
+   }
+  },
+  {
+   "id": "clone-sith-rank",
+   "category": "clone",
+   "problem": "sith",
+   "title": "The sort bucket of a completion",
+   "what_is_wrong": "group_rank puts keywords, dunders, private and public names in four buckets. The test suite pastes the function verbatim to check the order, so the tool sees two copies.",
+   "what_changed": "The bucket function exists once, with named constants; the tests check the order without re-implementing it.",
+   "before": {
+    "run": "sith.min12.20260915T0053",
+    "segments": [
+     {
+      "file": "sith.py",
+      "start": 2034,
+      "end": 2041,
+      "label": "group_rank"
+     },
+     {
+      "file": "tests/test_ordering.py",
+      "start": 7,
+      "end": 14,
+      "label": "the same, in the tests"
+     }
+    ]
+   },
+   "after": {
+    "run": "sith.min13.20260919T0435",
+    "segments": [
+     {
+      "file": "sithlib/matching.py",
+      "start": 27,
+      "end": 34,
+      "label": "group"
+     },
+     {
+      "file": "tests/test_ordering.py",
+      "start": 4,
+      "end": 12,
+      "label": "what the tests use instead"
+     }
+    ]
+   }
+  },
+  {
+   "id": "cloned-tests",
+   "category": "blowup",
+   "problem": "sith",
+   "title": "One-assert tests for bracket insertion",
+   "what_is_wrong": "Ten tests in a row, each `changed = inline(...)` and one assert on the result, differing only in the source string and the expected string: a truth table unrolled by hand where one parametrize would do. xjq has a five-copy cluster of the same shape and rejector a four-copy one.",
+   "before": {
+    "run": "sith.min13.20260919T0435",
+    "segments": [
+     {
+      "file": "tests/test_inline.py",
+      "start": 44,
+      "end": 91,
+      "label": "ten tests"
+     }
+    ]
+   }
+  }
+ ]
+}

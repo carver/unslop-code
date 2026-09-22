@@ -286,3 +286,16 @@ def test_the_human_repositories_sit_at_one_with_their_spread_on_the_same_scale()
 
 def test_no_human_shares_without_a_human_panel():
     assert "human_relative" not in gr.grid(quality_cells())
+
+
+def test_drawn_run_dirs_lists_each_drawn_run_once_and_no_other():
+    def snapshots(key, i):
+        run_dir = f"outputs/spectest/{key[3]}_{key[1]}_{key[2]}/run{i}"
+        return [f"{run_dir}/{key[0]}/checkpoint_{n}/snapshot" for n in (1, 2)]
+
+    cells = {key: [r | {"snapshots": snapshots(key, i)} for i, r in enumerate(runs)] for key, runs in CELLS.items()}
+    dirs = gr.drawn_run_dirs(cells, gr.DEFAULT_PROMPTS[:1] + ("min12-ABDJKMN", "min13-ABDJKMNT"), "opus-5")
+    assert "outputs/spectest/opus-5_just-solve_v0/run1" in dirs
+    assert "outputs/spectest/opus-5_just-solve_v2/run0" not in dirs  # neither v0 nor the patched spec
+    assert "outputs/spectest/fable-5.1_just-solve_v0/run0" not in dirs
+    assert len(dirs) == len(set(dirs)) == 7 and dirs == sorted(dirs)  # sith shares xjq's v0 run dirs

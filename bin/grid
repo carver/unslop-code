@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """The uplift grid: two prompts by two specs, per problem and averaged across problems.
 
-    bin/grid [--json] [--prompts A,B] [--model opus-5] [--set dev|test|all]
+    bin/grid [--json | --runs] [--prompts A,B] [--model opus-5] [--set dev|test|all]
 
 Rows are problems; the four cells are (prompt, spec) with spec v0 (the cached benchmark
 spec) and "patched", the highest spec version the baseline and another prompt both ran, so
@@ -10,7 +10,8 @@ better: fail% is the share of hidden tests failed at the last checkpoint (1 - sc
 four quality means are as bin/results reports them, cost is cc_$ per run, minutes the run's
 wall clock (checkpoint end minus start, summed). A cell lists its
 runs and their mean; the bottom rows average the cell means over the problems that have the
-cell (n says how many). --json prints the same structure for a page to draw from.
+cell (n says how many). --json prints the same structure for a page to draw from. --runs
+prints the run directories behind the drawn cells, one per line, for bin/add-run.
 
 Problems default to the dev set of split.json, the six the experiment ran in full; --set test
 takes the test set as its runs land, --set all every problem with a run.
@@ -35,6 +36,7 @@ files only (report/scb_split.py, two scb-check runs per checkpoint, cached), and
 reference taken from the repositories' implementation files, so a page can switch scope.
 """
 import json
+import os
 import pathlib
 import statistics
 import sys
@@ -242,6 +244,13 @@ def drawn_cells(cells, prompts, model):
             if key[1] in prompts and key[3] == model and key[2] in ("v0", patched_spec(cells, key[0], prompts, model))}
 
 
+def drawn_run_dirs(cells, prompts=DEFAULT_PROMPTS, model="opus-5"):
+    """The run directories behind every run the grid draws, each once, sorted. A run directory
+    can hold several problems, so it appears once however many of its problems are drawn."""
+    return sorted({str(pathlib.Path(run["snapshots"][0]).parents[2])
+                   for runs in drawn_cells(cells, prompts, model).values() for run in runs})
+
+
 def with_loc(cells, prompts=DEFAULT_PROMPTS, model="opus-5", split=scb_split.split_reports):
     """cells with each drawn run's whole-snapshot line count at its final checkpoint, from the
     split cache, so the count is the same measure the implementation-only grid uses."""
@@ -339,6 +348,9 @@ def main():
         model = args[args.index("--model") + 1]
     cells, _ = results.collect(results.run_dirs())
     cells = only(cells, problem_set(problems))
+    if "--runs" in args:
+        print("\n".join(os.path.relpath(d) for d in drawn_run_dirs(cells, prompts, model)))
+        return
     repos = json.loads(HUMAN_SPLIT.read_text())
     g = grid(with_loc(cells, prompts, model) if as_json else cells, prompts, model, human_panel(repos, "all"))
     if as_json:

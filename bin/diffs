@@ -1,0 +1,141 @@
+#!/usr/bin/env python3
+"""Keep a run's diff.json files out of git and rebuild them byte for byte from the snapshots.
+    bin/diffs meta <run_dir>...      write diff_meta.json beside every checkpoint's diff.json
+    bin/diffs rebuild <run_dir>...   write each diff.json back from diff_meta.json and the snapshots
+
+A run's diff.json holds the per-file diffs of one checkpoint, which the snapshots determine,
+plus what they do not: the checksums of the harness's snapshot archives, the times those
+were taken, and the order of the files, which is a Python set's order and so changes from
+process to process. diff_meta.json keeps those, the base the checkpoint was diffed against,
+and the sha256 of the original file. The base is "previous", the prior checkpoint's
+snapshot, or "empty": a checkpoint that starts a resumed session diffs against an empty
+workspace, because the harness takes its "before" snapshot of the fresh workspace and then
+restores the previous checkpoint into it. bin/scb-strict resumes at every checkpoint.
+
+meta refuses a checkpoint that neither base reproduces. rebuild refuses to write a file
+whose sha256 differs from the one recorded, so a snapshot edited since leaves no wrong diff.
+"""
+import hashlib
+import json
+import os
+import pathlib
+import sys
+
+HERE = pathlib.Path(__file__).resolve().parent
+ROOT = HERE.parent
+sys.path.insert(0, str(ROOT / "harness" / "src"))
+VENV_PYTHON = (
+    pathlib.Path(os.environ.get("UV_PROJECT_ENVIRONMENT", pathlib.Path.home() / ".venvs" / "scbench-harness"))
+    / "bin"
+    / "python"
+)
+DIFF = "diff.json"
+META = "diff_meta.json"
+HEADER = ("from_checksum", "to_checksum", "from_timestamp", "to_timestamp")
+
+
+def harness_available():
+    """The diff builder imports only inside bin/scb's venv, where the harness's dependencies live."""
+    try:
+        from slop_code.execution.snapshot import create_diff_from_directories  # noqa: F401
+
+        return True
+    except ImportError:
+        return False
+
+
+def reexec_in_venv():
+    """Restart under the harness venv (only from main: an import-time exec would swallow a test runner)."""
+    if VENV_PYTHON.exists() and pathlib.Path(sys.executable).resolve() != VENV_PYTHON.resolve():
+        os.execv(str(VENV_PYTHON), [str(VENV_PYTHON), *sys.argv])
+    sys.exit(f"the harness is not importable and no venv python at {VENV_PYTHON}")
+
+
+def checkpoints(problem):
+    """The problem's checkpoint_N directories in checkpoint order."""
+    found = [d for d in problem.iterdir() if d.is_dir() and d.name.startswith("checkpoint_")]
+    return sorted(found, key=lambda d: int(d.name.removeprefix("checkpoint_")))
+
+
+def problems(run_dir):
+    """The run's problem directories: the ones holding checkpoints."""
+    return sorted(d for d in run_dir.iterdir() if d.is_dir() and any(d.glob("checkpoint_*/snapshot")))
+
+
+def build(base, snapshot, header, files):
+    """diff.json's text for snapshot against base (None for an empty workspace), carrying the
+    recorded header and file order, or None when the files it finds are not the recorded ones."""
+    from slop_code.execution.snapshot import SnapshotDiff, create_diff_from_directories
+
+    diff = json.loads(
+        create_diff_from_directories(base, snapshot, header["from_checksum"], header["to_checksum"]).model_dump_json()
+    )
+    if set(diff["file_diffs"]) != set(files):
+        return None
+    diff |= {key: header[key] for key in HEADER}
+    diff["file_diffs"] = {path: diff["file_diffs"][path] for path in files}
+    return SnapshotDiff.model_validate(diff).model_dump_json()
+
+
+def sha256(text):
+    return hashlib.sha256(text.encode()).hexdigest()
+
+
+def bases(problem):
+    """(checkpoint, {"previous": prior snapshot, "empty": None}) in checkpoint order; the first
+    checkpoint has no previous one."""
+    previous = None
+    for checkpoint in checkpoints(problem):
+        yield checkpoint, ({"previous": previous} if previous else {}) | {"empty": None}
+        previous = checkpoint / "snapshot"
+
+
+def save_meta(problem):
+    """Write diff_meta.json for every checkpoint of problem that has a diff.json."""
+    for checkpoint, candidates in bases(problem):
+        if not (checkpoint / DIFF).exists():
+            continue
+        original = (checkpoint / DIFF).read_text()
+        recorded = json.loads(original)
+        header = {key: recorded[key] for key in HEADER}
+        files = list(recorded["file_diffs"])
+        base = next(
+            (
+                name
+                for name, directory in candidates.items()
+                if build(directory, checkpoint / "snapshot", header, files) == original
+            ),
+            None,
+        )
+        if base is None:
+            sys.exit(f"{checkpoint}: neither the previous snapshot nor an empty one reproduces {DIFF}")
+        meta = {"base": base, **header, "files": files, "sha256": sha256(original)}
+        (checkpoint / META).write_text(json.dumps(meta, indent=1) + "\n")
+
+
+def rebuild(problem):
+    """Write diff.json for every checkpoint of problem that has a diff_meta.json."""
+    for checkpoint, candidates in bases(problem):
+        if not (checkpoint / META).exists():
+            continue
+        meta = json.loads((checkpoint / META).read_text())
+        text = build(candidates[meta["base"]], checkpoint / "snapshot", meta, meta["files"])
+        if text is None or sha256(text) != meta["sha256"]:
+            sys.exit(f"{checkpoint}: the snapshots no longer give the recorded {DIFF}")
+        (checkpoint / DIFF).write_text(text)
+
+
+def main():
+    if not harness_available():
+        reexec_in_venv()
+    commands = {"meta": save_meta, "rebuild": rebuild}
+    if len(sys.argv) < 3 or sys.argv[1] not in commands:
+        sys.exit(__doc__)
+    for run_dir in map(pathlib.Path, sys.argv[2:]):
+        for problem in problems(run_dir):
+            commands[sys.argv[1]](problem)
+            print(f"{sys.argv[1]}: {problem}")
+
+
+if __name__ == "__main__":
+    main()

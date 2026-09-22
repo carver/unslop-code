@@ -25,6 +25,7 @@ The control is the dev6 sweep's just-solve run (`notes/dev6-opus5.md`).
 | anti-slop on v1, repeat | `…anti_slop-specv1/20260921T1637` | same config as the first run; second of two | 21/21, 34/34, 50/50, 67/67, 78/79 | complete 2026-09-21; 1 miss, test_tpm_gate (the timeout; 8 pass, 9 fail over all runs now), the same as min13's only miss on v1 twice; all eight v1 sentences held; 4/5 strict, $33, 103 min. Quality: erosion 0.097, verbosity 0.193, ast 0.140, cloned 0.017; final checkpoint, implementation only (58% of LOC): ast 0.199, erosion 0.070, cloned 0.021 |
 | just-solve on v1 | `…just-solve-specv1/20260921T1830` | benchmark's own prompt on spec v1, a baseline for the grid's patched cell; first of two | 21/21, 34/34, 50/50, 67/67, 79/79 | complete 2026-09-21; 0 misses, the first 79/79 on rejector under any prompt; test_tpm_gate passed (9 pass, 9 fail over all runs); 5/5 strict, $32, 115 min. Quality: erosion 0.830, verbosity 0.287, ast 0.216, cloned 0.070; final checkpoint, implementation only (51% of LOC): ast 0.354, erosion 0.714, cloned 0.048 |
 | just-solve on v1, repeat | `…just-solve-specv1/20260921T2034` | same config as the first run; second of two | 21/21, 33/34, 50/50, 67/67, 78/79 | complete 2026-09-21; 2 misses, named and not traced (a baseline): test_first_number_extract at checkpoint 2 (the reply-order race patch `03` narrows and cannot close) and test_tpm_gate (the timeout; 9 pass, 10 fail over all runs); the other six v1 sentences held; 3/5 strict, $26, 122 min. Quality: erosion 0.534, verbosity 0.160, ast 0.108, cloned 0.039; final checkpoint, implementation only (50% of LOC): ast 0.202, erosion 0.673, cloned 0.070 |
+| min12-ABDJKMN on v1 | `…min12-ABDJKMN-specv1/20260922T0514` | min12 on spec v1, the one patched pair the dev grid was missing; first of two | 21/21, 33/34, 50/50, 67/67, 79/79 | complete 2026-09-22; 1 miss, test_first_number_extract at checkpoint 2 only (passed at 3, 4 and 5): the reply-order race that patch `03`'s sentence narrows and cannot close; no registry entry asks about pairing order (T37 and T47 are about scheduling and round_robin); test_tpm_gate passed; all eight sentences held; 4/5 strict, $34, 166 min. Quality: erosion 0.198, verbosity 0.188, ast 0.109, cloned 0.076; final checkpoint, implementation only (28% of LOC): ast 0.305, erosion 0.629, cloned 0.031 |
 
 ## Test failure summaries
 
@@ -95,6 +96,14 @@ The control is the dev6 sweep's just-solve run (`notes/dev6-opus5.md`).
   - repeat (76): three misses, one better. Backward-compat single-task holds across all four
     min runs, the checkpoint-5 pair (dry run, TPM gate) is the control's. Pair: 75 and 76
     against the control's 73; erosion 0.192 and 0.151 against 0.559.
+  - on v1 (79 at the final checkpoint, 33/34 at checkpoint 2): from 75 and 76 on v0, level
+    with just-solve's 79 and 78, min13's 78 and 78 and anti-slop's 77 and 78. The one miss
+    is the reply-order race at checkpoint 2, which passed at every later checkpoint: `'7.5'
+    == '8'`, the first row's reply taken by the second. Patch `03` puts "send requests in
+    input order" in checkpoint 1 and the run's registry never questioned it; the race is in
+    the mock, not the reading (rejector-misses.md, reading 3). test_tpm_gate passed, which
+    min13 lost in both v1 runs. 166 min, the longest v1 run; $34. Implementation only (28%
+    of lines): erosion 0.629, ast 0.305, cloned 0.031. First of two.
 
 ### min13-ABDJKMNT (min12 plus the anti-slop list)
 
@@ -232,3 +241,9 @@ reply-order race at checkpoint 2 and test_tpm_gate, both the benchmark's regular
 traced. The v1 cell is complete for all three prompts that ran it (min12 was not queued on
 rejector): just-solve 79 and 78, anti-slop 77 and 78, min13 78 and 78. The queue is empty; the
 test-set batch stays stashed.
+
+min12 on v1, first run (job 284, 2026-09-22): 79/79 at the final checkpoint, from 75 and 76 on v0.
+The one miss is test_first_number_extract at checkpoint 2, passing from checkpoint 3 on: the
+mock's first-come reply order, which `03`'s sentence cannot fix (18 pass, 2 fail, and the fails
+sit in different runs each time). No registry entry asks about reply pairing. test_tpm_gate
+passed. The repeat (285) closes the last patched pair on the dev grid.

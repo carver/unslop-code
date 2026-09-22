@@ -1,5 +1,7 @@
 # Unslop Code
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22906578.svg)](https://doi.org/10.5281/zenodo.22906578)
+
 Improving code quality against the excellent [Slop Code Bench](https://github.com/SprocketLab/slop-code-bench).
 
 Progress:
@@ -270,7 +272,11 @@ Two levers, measured in both orders on the six dev problems with Opus 5, two run
 ## How to cite
 
 Use GitHub's "Cite this repository" button, which reads `CITATION.cff` and exports APA or
-BibTeX. No DOI yet, so cite the commit hash you read. The numbers here change week to week.
+BibTeX. Zenodo archives every release. The DOI
+[10.5281/zenodo.22906578](https://doi.org/10.5281/zenodo.22906578) always points to the latest
+one. Each version also has its own DOI, listed on that page. The numbers here change week to
+week, so cite a version DOI when the exact figures matter. v0.1.0 is
+[10.5281/zenodo.22906579](https://doi.org/10.5281/zenodo.22906579).
 
 If you use the benchmark itself, cite the
 [SlopCodeBench paper](https://arxiv.org/abs/2603.24755) too.

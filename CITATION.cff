@@ -8,6 +8,7 @@ authors:
   - family-names: Carver
     given-names: Jason
     orcid: "https://orcid.org/0009-0004-5744-0522"
+doi: 10.5281/zenodo.22906578
 repository-code: "https://github.com/carver/unslop-code"
 url: "https://github.com/carver/unslop-code"
 license: CC-BY-4.0

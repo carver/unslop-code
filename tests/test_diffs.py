@@ -1,5 +1,6 @@
 """bin/diffs: a checkpoint's diff.json comes back byte for byte from its snapshots and diff_meta.json."""
 import json
+import os
 import random
 import sys
 import types
@@ -97,3 +98,13 @@ def test_checkpoints_sort_by_number_not_name(tmp_path):
         (problem / f"checkpoint_{n}").mkdir(parents=True)
     (problem / "quality_analysis").mkdir()
     assert [c.name for c in mod.checkpoints(problem)] == ["checkpoint_1", "checkpoint_2", "checkpoint_10"]
+
+
+def test_meta_leaves_an_unchanged_file_untouched(tmp_path):
+    problem = make_problem(tmp_path, ("empty", "previous", "previous"))
+    mod.save_meta(problem)
+    meta = problem / "checkpoint_2" / "diff_meta.json"
+    old = meta.stat().st_mtime_ns - 10**9
+    os.utime(meta, ns=(old, old))
+    mod.save_meta(problem)
+    assert meta.stat().st_mtime_ns == old

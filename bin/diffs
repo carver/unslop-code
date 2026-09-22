@@ -110,7 +110,10 @@ def save_meta(problem):
         if base is None:
             sys.exit(f"{checkpoint}: neither the previous snapshot nor an empty one reproduces {DIFF}")
         meta = {"base": base, **header, "files": files, "sha256": sha256(original)}
-        (checkpoint / META).write_text(json.dumps(meta, indent=1) + "\n")
+        text = json.dumps(meta, indent=1) + "\n"
+        path = checkpoint / META
+        if not path.exists() or path.read_text() != text:
+            path.write_text(text)
 
 
 def rebuild(problem):

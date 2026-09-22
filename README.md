@@ -210,7 +210,7 @@ Two levers, measured in both orders on the six dev problems with Opus 5, two run
 (`notes/uplift-grid.md`, `bin/grid` for the table, the published grid linked there):
 
 - **Correctness comes from the spec.** Rewriting the ambiguous sentences (datagate v2, xjq v3,
-  file_merger v7, mvvault v1) takes hidden-test failures from 8% to about 1% for every prompt. The prompt
+  file_merger v7, mvvault v1, rejector v1) takes hidden-test failures from 8% to about 1% for every prompt. The prompt
   alone barely moves them at v0: 8.3% to 5.5% over six problems, most of that on sith.
 - **Code quality comes from the prompt.** The 444-word min12 prompt cuts the harness's erosion
   score from 0.58 to 0.15 averaged over six problems, and ast-grep smells from 0.25 to 0.09;
@@ -218,8 +218,8 @@ Two levers, measured in both orders on the six dev problems with Opus 5, two run
 - **Order does not matter.** Prompt-then-spec and spec-then-prompt land on the same score; the
   quality gap is the prompt's either way.
 - **The price is time more than money.** Averaged over six problems at v0, min12 costs $24 a
-  run to just-solve's $23 and takes 87 minutes to its 80; on the four patched specs 72 minutes to
-  47. Small problems pay 1.5x to 2x in both; the large ones pay less, where the bare prompt's
+  run to just-solve's $23 and takes 87 minutes to its 80; on the patched specs 72 minutes to
+  61. Small problems pay 1.5x to 2x in both; the large ones pay less, where the bare prompt's
   long runs are the expense. The page: `report/uplift-grid.html` (`python3 report/uplift_grid.py`).
 - **Erosion may not climb under min12.** The paper's Figure 5 has every prompt on every GPT
   model eroding further from the first checkpoint to the last, and says quality prompts do

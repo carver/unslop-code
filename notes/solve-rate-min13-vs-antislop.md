@@ -3,8 +3,8 @@
 The user's question, asked before the last runs landed. Both prompts now have two runs on each
 of the three patched specs (xjq v3, datagate v2, file_merger v7; jobs 247 to 258 and min13's
 earlier pairs). Answer: the gap points the expected way and is noise at this size.
-mvvault v1 joined on 2026-09-21 and is in its own section below: the gap grows to 0.57 points,
-one-sided p 0.069.
+mvvault v1 and rejector v1 joined on 2026-09-21 and have their own sections below: over five
+problems the gap is 0.58 points, one-sided p 0.035.
 
 ## By run
 
@@ -82,6 +82,25 @@ One own cause in two runs for min13, five in two for anti-slop, and anti-slop's 
 the same one in both runs (and in both its v0 runs). Over the four problems that makes two own
 causes in eight runs for min13 and eight in eight for anti-slop. The direction has now held on
 every problem where the two differ at all.
+
+## With rejector v1 (2026-09-21)
+
+rejector v1 has both pairs too (min13 jobs 267 and 268, anti-slop 280 and 281).
+
+| problem | spectest+antislop (min13) | anti-slop |
+|---|---|---|
+| rejector v1 (79) | 78, 78 | 77, 78 |
+| all ten runs (2050) | 2030 | 2017 |
+
+Mean of the five problems' fail rates: min13 0.74%, anti-slop 1.32%, a gap of 0.58 points. The
+exact permutation test over five problems (7776 relabelings) gives the observed gap or more in
+272: one-sided p 0.035, two-sided 0.069. That is the first time the gap clears the usual one-sided
+bar, on the strength of two more problems pointing the same way, each by one or two tests. On
+rejector the three misses across four runs are the tpm timeout (every prompt's regular) three
+times and a first-run test_costs; the difference between the prompts there is one test.
+
+Own causes over the five problems: min13 two in ten runs, anti-slop nine in ten (rejector adds
+one, test_costs `3.0 == 1.0` in anti-slop's first run, the tpm timeout being the benchmark's).
 
 ## At v0, for contrast
 

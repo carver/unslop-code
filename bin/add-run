@@ -1,0 +1,272 @@
+#!/usr/bin/env python3
+"""Commit runs under outputs/ (gitignored) so their results can be rebuilt from git, or take them out.
+    bin/add-run [--allow-partial] <run_dir>...
+    bin/add-run --remove <run_dir>...
+
+A run directory is the one holding checkpoint_results.jsonl, such as
+outputs/spectest/opus-5_2.1.251_high_min12-ABDJKMN/20260914T1357. `bin/grid --runs` lists the
+ones the uplift grid draws.
+
+Adding, for every run named, all checked before anything changes:
+1. Refuses a partial run (unless --allow-partial) and one still being written: a file changed
+   in the last ten minutes, or a process holding a file open under it.
+2. Replaces every Claude token (sk-ant-...) in the files it will commit with ***redacted***.
+3. Writes diff_meta.json beside each diff.json (bin/diffs meta).
+4. Stages the allowlisted files: the code snapshots, the scores, the small quality summaries,
+   the prompts, settings and harness logs. Transcripts, test reports, per-symbol quality files,
+   diff.json and bytecode stay out. A file type the list does not name stays out, so a new
+   harness output needs a decision here before it is committed. Files of the run tracked before
+   but no longer allowed are untracked.
+5. Scans the staged changes with gitleaks and stops on any finding. A false positive goes in
+   .gitleaksignore by its fingerprint.
+6. Rebuilds every diff.json from a clean copy of the staged tree and compares it byte for byte.
+7. Commits the runs in one commit, or nothing when they are already committed as they are.
+
+On a failure after staging, the runs are unstaged, so the index is as it was. The tool
+refuses to start while anything else is staged, so its commit holds only runs.
+
+--remove untracks the runs and commits that; the files stay on disk. Older outputs stay
+reachable from earlier commits and tags.
+
+Needs the harness venv (for the diffs) and gitleaks, both from `python3 install.py`.
+"""
+import os
+import pathlib
+import re
+import shutil
+import subprocess
+import sys
+import tempfile
+import time
+import types
+
+HERE = pathlib.Path(__file__).resolve().parent
+ROOT = HERE.parent
+GITLEAKS = pathlib.Path.home() / ".local" / "bin" / "gitleaks"
+VENV_PYTHON = (
+    pathlib.Path(os.environ.get("UV_PROJECT_ENVIRONMENT", pathlib.Path.home() / ".venvs" / "scbench-harness"))
+    / "bin"
+    / "python"
+)
+
+
+def load(name):
+    """A bin/ script as a module (they have no .py extension)."""
+    module = types.ModuleType(name.replace("-", "_"))
+    module.__file__ = str(HERE / name)
+    sys.modules[module.__name__] = module
+    exec(compile((HERE / name).read_text(), str(HERE / name), "exec"), module.__dict__)
+    return module
+
+
+diffs = load("diffs")
+harness_available = diffs.harness_available
+
+TOKEN = re.compile(r"sk-ant-[a-z]{2,4}\d{2}-[A-Za-z0-9_-]{20,}")
+REDACTED = "***redacted***"
+
+# What gets committed, as globs relative to the run, the problem and the checkpoint directory.
+RUN_FILES = ("checkpoint_results.jsonl", "config.yaml", "environment.yaml", "problem_catalog.json",
+             "result.json", "run_agent.log", "harness_provenance.jsonl")
+PROBLEM_FILES = ("infer.log", "problem.yaml", "run_info.yaml", "run_info.yaml.*", "window_usage.jsonl")
+CHECKPOINT_FILES = ("checkpoint.yaml", "prompt.txt", "inference_result.json", "evaluation.json", "evaluation.json.*",
+                    "diff_meta.json", "agent/stderr.log", "qa/*.md", "quality_analysis/files.jsonl",
+                    "quality_analysis/overall_quality.json", "quality_analysis/scb_check.json")
+SNAPSHOT_SKIP = ("__pycache__",)
+SNAPSHOT_SKIP_SUFFIXES = (".pyc",)
+
+
+def git(repo, *args, stdin=None):
+    r = subprocess.run(["git", "-C", str(repo), *args], input=stdin, capture_output=True, text=True)
+    if r.returncode != 0:
+        sys.exit(f"git {' '.join(args[:2])} failed: {r.stderr.strip()}")
+    return r.stdout
+
+
+def run_path(repo, arg):
+    """The run directory arg names, which must sit under the repo's outputs/."""
+    path = pathlib.Path(arg).resolve()
+    if not path.is_relative_to(pathlib.Path(repo).resolve() / "outputs"):
+        sys.exit(f"{arg}: not a directory under outputs/")
+    return path
+
+
+def selected_files(run):
+    """Every file of the run the allowlist keeps, sorted."""
+    files = [p for pattern in RUN_FILES for p in run.glob(pattern)]
+    for problem in (d for d in run.iterdir() if d.is_dir()):
+        files += [p for pattern in PROBLEM_FILES for p in problem.glob(pattern)]
+        for checkpoint in problem.glob("checkpoint_*"):
+            files += [p for pattern in CHECKPOINT_FILES for p in checkpoint.glob(pattern)]
+            files += [
+                p
+                for p in (checkpoint / "snapshot").rglob("*")
+                if not any(part in SNAPSHOT_SKIP for part in p.relative_to(checkpoint).parts)
+                and not p.name.endswith(SNAPSHOT_SKIP_SUFFIXES)
+            ]
+    return sorted({p for p in files if p.is_file() and not p.is_symlink()})
+
+
+def redact(paths):
+    """Replace Claude tokens in place, keeping each file's times; returns how many files changed."""
+    changed = 0
+    for path in paths:
+        data = path.read_bytes()
+        text = data.decode("utf-8", errors="surrogateescape")
+        clean = TOKEN.sub(REDACTED, text)
+        if clean != text:
+            stat = path.stat()
+            path.write_bytes(clean.encode("utf-8", errors="surrogateescape"))
+            os.utime(path, ns=(stat.st_atime_ns, stat.st_mtime_ns))
+            changed += 1
+    return changed
+
+
+def open_files_under(run):
+    """Paths under run that some process has open, from /proc."""
+    held = set()
+    for fd_dir in pathlib.Path("/proc").glob("[0-9]*/fd"):
+        try:
+            for fd in fd_dir.iterdir():
+                target = os.readlink(fd)
+                if target.startswith(str(run) + os.sep):
+                    held.add(target)
+        except OSError:
+            continue
+    return held
+
+
+def check_idle(run, quiet_seconds=600):
+    newest = max((p.stat().st_mtime for p in run.rglob("*") if p.is_file()), default=0)
+    if time.time() - newest < quiet_seconds:
+        sys.exit(f"{run}: a file changed in the last {quiet_seconds // 60} minutes; it may still be written")
+    held = open_files_under(run)
+    if held:
+        sys.exit(f"{run}: still being written, {len(held)} files open, e.g. {sorted(held)[0]}")
+
+
+def is_complete(run):
+    """Every problem in the run reached its last checkpoint, as bin/results counts it."""
+    cells, partial = load("results").collect([run])
+    return bool(cells) and not partial
+
+
+def check_index_clean(repo):
+    staged = git(repo, "diff", "--cached", "--name-only").split()
+    if staged:
+        sys.exit(f"something else is staged ({', '.join(staged[:3])}); commit or unstage it first")
+
+
+def gitleaks_binary():
+    return shutil.which("gitleaks") or str(GITLEAKS)
+
+
+def scan_staged(repo):
+    r = subprocess.run([gitleaks_binary(), "git", "--pre-commit", "--staged", "--redact", "--no-banner", str(repo)],
+                       capture_output=True, text=True)
+    if r.returncode != 0:
+        sys.exit(f"gitleaks found secrets in the staged runs; nothing committed:\n{r.stdout[-3000:]}{r.stderr[-2000:]}")
+
+
+def verify_diffs(repo, runs):
+    """Rebuild every diff.json from a clean copy of the staged tree and compare it with the run's."""
+    tree = git(repo, "write-tree").strip()
+    scratch = pathlib.Path(tempfile.mkdtemp(prefix=".add-run-", dir=pathlib.Path(repo) / "outputs"))
+    try:
+        rel = [str(run.relative_to(pathlib.Path(repo).resolve())) for run in runs]
+        archive = subprocess.run(["git", "-C", str(repo), "archive", tree, *rel], capture_output=True, check=True)
+        subprocess.run(["tar", "-x", "-C", str(scratch)], input=archive.stdout, check=True)
+        checked = 0
+        for run, path in zip(runs, rel, strict=True):
+            for problem in diffs.problems(scratch / path):
+                diffs.rebuild(problem)
+                for checkpoint in diffs.checkpoints(problem):
+                    original = run / problem.name / checkpoint.name / diffs.DIFF
+                    if (checkpoint / diffs.DIFF).read_bytes() != original.read_bytes():
+                        sys.exit(f"{original}: the rebuilt diff.json differs")
+                    checked += 1
+        return checked
+    finally:
+        shutil.rmtree(scratch)
+
+
+def runs_phrase(n):
+    return f"{n} run{'s' * (n != 1)}"
+
+
+def title(added, updated):
+    """'add 2 runs', 'update 1 run' or 'add 2 runs, update 1 run'."""
+    return ", ".join(f"{verb} {runs_phrase(n)}" for verb, n in (("add", added), ("update", updated)) if n)
+
+
+def add(repo, runs, complete=is_complete, quiet_seconds=600, allow_partial=False):
+    repo = pathlib.Path(repo)
+    check_index_clean(repo)
+    for run in runs:
+        if not (run / "checkpoint_results.jsonl").exists():
+            sys.exit(f"{run}: no checkpoint_results.jsonl, not a run directory")
+        if not allow_partial and not complete(run):
+            sys.exit(f"{run}: a partial run; pass --allow-partial to commit it anyway")
+        check_idle(run, quiet_seconds)
+    rel = [str(run.relative_to(repo.resolve())) for run in runs]
+    for run, path in zip(runs, rel, strict=True):
+        redacted = redact(selected_files(run))
+        for problem in diffs.problems(run):
+            diffs.save_meta(problem)
+        if redacted:
+            print(f"{path}: {redacted} files redacted")
+    unrecorded = [path for run, path in zip(runs, rel, strict=True) if not (run / "harness_provenance.jsonl").exists()]
+    if unrecorded:
+        print(f"{len(unrecorded)} of the runs have no harness_provenance.jsonl (made before bin/scb recorded it); "
+              "outputs/README.md should name their harness")
+    tracked_before = {path for path in rel if git(repo, "ls-tree", "-r", "--name-only", "HEAD", "--", path).strip()}
+    try:
+        git(repo, "rm", "-r", "-q", "--cached", "--ignore-unmatch", "--", *rel)
+        files = [str(p.relative_to(repo.resolve())) for run in runs for p in selected_files(run)]
+        git(repo, "add", "-f", "--pathspec-from-file=-", stdin="\n".join(files) + "\n")
+        if not git(repo, "diff", "--cached", "--name-only"):
+            print("already committed as they are; nothing to do")
+            return
+        scan_staged(repo)
+        checked = verify_diffs(repo, runs)
+    except BaseException:
+        git(repo, "reset", "-q", "--", *rel)
+        raise
+    stat = git(repo, "diff", "--cached", "--shortstat").strip()
+    message = f"outputs: {title(len(rel) - len(tracked_before), len(tracked_before))}\n\n" + "\n".join(rel) + (
+        f"\n\n{stat}. Redacted, allowlisted and scanned by bin/add-run; "
+        f"{checked} diff.json files rebuild byte for byte."
+    )
+    git(repo, "commit", "-q", "-m", message)
+    print(f"committed: {stat}")
+
+
+def remove(repo, runs):
+    repo = pathlib.Path(repo)
+    check_index_clean(repo)
+    rel = [str(run.relative_to(repo.resolve())) for run in runs]
+    git(repo, "rm", "-r", "-q", "--cached", "--ignore-unmatch", "--", *rel)
+    if not git(repo, "diff", "--cached", "--name-only"):
+        print("none of them are tracked; nothing to do")
+        return
+    git(repo, "commit", "-q", "-m", f"outputs: remove {runs_phrase(len(rel))}\n\n" + "\n".join(rel))
+    print(f"removed from git, kept on disk: {runs_phrase(len(rel))}")
+
+
+def main():
+    if not harness_available():
+        diffs.reexec_in_venv()
+    args = sys.argv[1:]
+    flags = {a for a in args if a.startswith("--")}
+    names = [a for a in args if not a.startswith("--")]
+    if not names or flags - {"--remove", "--allow-partial"}:
+        sys.exit(__doc__)
+    runs = [run_path(ROOT, name) for name in names]
+    if "--remove" in flags:
+        remove(ROOT, runs)
+    else:
+        add(ROOT, runs, allow_partial="--allow-partial" in flags)
+
+
+if __name__ == "__main__":
+    main()

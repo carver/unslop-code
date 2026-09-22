@@ -4,7 +4,7 @@
 target-version = "py312"
 line-length = 120
 extend-include = [
-  "bin/ast-rules", "bin/build-prompt", "bin/compare-runs", "bin/diffs", "bin/failures", "bin/fork-run", "bin/grid", "bin/harness-provenance",
+  "bin/ast-rules", "bin/build-prompt", "bin/add-run", "bin/compare-runs", "bin/diffs", "bin/failures", "bin/fork-run", "bin/grid", "bin/harness-provenance",
   "bin/judge-ambiguities", "bin/ledger-row", "bin/miss-report", "bin/miss-signatures", "bin/patch-risk",
   "bin/quality-split", "bin/queue", "bin/reeval",
   "bin/registry-scores", "bin/results", "bin/run-config", "bin/run-recap", "bin/scb-extend", "bin/start-slot", "bin/summarize",

@@ -101,6 +101,9 @@ prompt and `save_dir` relative to it, which is where `bin/queue` and `bin/scb-ex
     bin/results [--write]                    # every complete run, one row per problem/prompt/spec -> notes/results.md
     bin/grid [--json]                        # the 2x2 uplift grid (just-solve vs min12, v0 vs patched), per problem
                                              # and averaged; fail%, quality, cost, all lower-is-better
+    bin/grid --runs                          # the run directories behind the grid's cells, one per line
+    bin/add-run <run_dir>... [--remove]      # commit runs to git: redact, allowlist, gitleaks, diff meta, verify
+    bin/diffs meta|rebuild <run_dir>...      # diff.json stays out of git; rebuild it byte for byte from diff_meta.json
     bin/queue wait <id>                      # block until a job ends, print its STRICT-RUN/EXTEND lines and run_dir;
                                              # run it in the background so the wake-up names the run directory
     bin/queue add configs/runs/<name>.yaml   # enqueue a run (one at a time); bin/queue = the live queue per channel

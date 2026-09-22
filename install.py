@@ -3,7 +3,8 @@
 sandbox-setup/setup.py.
 
 Installs pueue (a persistent one-at-a-time task queue; bin/queue wraps it) into
-~/.local/bin if missing, and starts its daemon if it is not running. Applies the
+~/.local/bin if missing, and starts its daemon if it is not running; installs gitleaks there too,
+pinned by sha256, for bin/add-run. Applies the
 problem-set patches in patches/scb-problems/ to the cached problems (~/.cache/scbench/problems,
 or SCBENCH_PROBLEMS_PATH), skipping any already applied; a re-downloaded cache gets them back.
 Then builds the harness the runs use: a clone of slop-code-bench at harness/ (not tracked),
@@ -13,13 +14,18 @@ is for developing the harness and is left alone: on 2026-09-11 a branch switch t
 the patches under a running queue, which is why runs read a checkout of their own. Last, points
 git's hooks at .githooks/, so bin/lint runs before every commit.
 """
+import hashlib
+import io
 import os
 import pathlib
 import shutil
 import subprocess
+import tarfile
 import urllib.request
 
 VERSION = "v4.0.4"
+GITLEAKS_VERSION = "8.24.2"
+GITLEAKS_SHA256 = "fa0500f6b7e41d28791ebc680f5dd9899cd42b58629218a5f041efa899151a8e"  # linux_x64 tarball
 BIN = pathlib.Path.home() / ".local" / "bin"
 ROOT = pathlib.Path(__file__).resolve().parent
 PROBLEMS = pathlib.Path(
@@ -97,6 +103,23 @@ def install_hooks(repo=ROOT):
     subprocess.run(["git", "-C", str(repo), "config", "core.hooksPath", ".githooks"], check=True)
 
 
+def install_gitleaks(bin_dir, sha256=GITLEAKS_SHA256):
+    """gitleaks, for bin/add-run's secret scan: the pinned release, refused unless its checksum matches."""
+    url = (
+        f"https://github.com/gitleaks/gitleaks/releases/download/v{GITLEAKS_VERSION}/"
+        f"gitleaks_{GITLEAKS_VERSION}_linux_x64.tar.gz"
+    )
+    with urllib.request.urlopen(url, timeout=60) as r:
+        data = r.read()
+    if hashlib.sha256(data).hexdigest() != sha256:
+        raise SystemExit(f"install: gitleaks {GITLEAKS_VERSION} download does not match its sha256")
+    with tarfile.open(fileobj=io.BytesIO(data), mode="r:gz") as tar:
+        binary = tar.extractfile("gitleaks").read()
+    dst = pathlib.Path(bin_dir) / "gitleaks"
+    dst.write_bytes(binary)
+    dst.chmod(0o755)
+
+
 def main():
     BIN.mkdir(parents=True, exist_ok=True)
     for name in ("pueue", "pueued"):
@@ -110,6 +133,9 @@ def main():
     if subprocess.run([BIN / "pueue", "status"], capture_output=True).returncode != 0:
         print("starting pueued")
         subprocess.run([BIN / "pueued", "-d"], check=True)
+    if not (BIN / "gitleaks").exists():
+        print(f"installing gitleaks {GITLEAKS_VERSION}")
+        install_gitleaks(BIN)
     patch_problems()
     install_harness()
     install_hooks()

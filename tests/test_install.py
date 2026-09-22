@@ -2,6 +2,8 @@
 import subprocess
 import sys
 import types
+
+import pytest
 from pathlib import Path
 
 SCRIPT = Path(__file__).resolve().parent.parent / "install.py"
@@ -45,3 +47,20 @@ def test_install_hooks_points_the_repo_at_the_tracked_hooks(tmp_path):
     query = ["git", "-C", str(tmp_path), "config", "core.hooksPath"]
     got = subprocess.run(query, capture_output=True, text=True).stdout
     assert got.strip() == ".githooks"
+
+
+def test_gitleaks_install_refuses_a_download_with_the_wrong_checksum(tmp_path, monkeypatch):
+    import io
+    import tarfile
+
+    payload = io.BytesIO()
+    with tarfile.open(fileobj=payload, mode="w:gz") as tar:
+        info = tarfile.TarInfo("gitleaks")
+        info.size = 4
+        tar.addfile(info, io.BytesIO(b"bin\n"))
+    monkeypatch.setattr(mod.urllib.request, "urlopen", lambda url, timeout: io.BytesIO(payload.getvalue()))
+    with pytest.raises(SystemExit, match="sha256"):
+        mod.install_gitleaks(tmp_path, sha256="0" * 64)
+    assert not (tmp_path / "gitleaks").exists()
+    mod.install_gitleaks(tmp_path, sha256=mod.hashlib.sha256(payload.getvalue()).hexdigest())
+    assert (tmp_path / "gitleaks").read_bytes() == b"bin\n" and (tmp_path / "gitleaks").stat().st_mode & 0o111

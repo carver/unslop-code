@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 # The linters CI runs, as one command. Arguments go to ruff, so `bin/lint --fix` applies
 # its safe fixes. Shell scripts are every tracked file with a bash shebang; actionlint
-# checks the GitHub workflow. Every tool is pinned so CI and a laptop agree.
+# checks the GitHub workflow, and reuse checks that REUSE.toml gives every file a license. Every
+# tool is pinned so CI and a laptop agree.
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 uvx ruff@0.14.3 check "$@"
 mapfile -t shell_scripts < <(git grep -lE '^#!(/usr/bin/env |/bin/)bash$')
 uvx --from shellcheck-py==0.11.0.1 shellcheck "${shell_scripts[@]}"
 uvx --from actionlint-py==1.7.12.24 actionlint
+uvx reuse@6.2.0 lint -q

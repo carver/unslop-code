@@ -1,0 +1,63 @@
+version = 1
+SPDX-PackageName = "unslop-code"
+SPDX-PackageDownloadLocation = "https://github.com/carver/unslop-code"
+
+# Which license covers which path. The license texts are in LICENSES/. Everything is
+# CC-BY-4.0 unless a later table says otherwise, and for a file several tables match,
+# the last one wins. The README's License section says the same in prose.
+
+# Prose, prompts, notes, reports, configs and run data.
+[[annotations]]
+path = "**"
+precedence = "override"
+SPDX-FileCopyrightText = "2026 Jason Carver"
+SPDX-License-Identifier = "CC-BY-4.0"
+
+# Code.
+[[annotations]]
+path = [
+  "bin/**", "report/**.py", "tests/**.py", "install.py", "ruff.toml", "pytest.ini",
+  ".github/**", ".githooks/**", ".gitignore",
+]
+precedence = "override"
+SPDX-FileCopyrightText = "2026 Jason Carver"
+SPDX-License-Identifier = "MIT"
+
+# Prompts and harness configs: our text around lines taken from slop-code-bench's own
+# prompts and configs (just-solve.jinja, anti_slop.jinja), which are MIT.
+[[annotations]]
+path = ["configs/prompts/**", "configs/agents/**", "configs/models/**"]
+precedence = "override"
+SPDX-FileCopyrightText = ["2026 Jason Carver", "2025 gabeorlanski"]
+SPDX-License-Identifier = "CC-BY-4.0 AND MIT"
+
+# Patches to slop-code-bench's source (MIT), applied by install.py.
+[[annotations]]
+path = "patches/*.patch"
+precedence = "override"
+SPDX-FileCopyrightText = ["2026 Jason Carver", "2025 gabeorlanski"]
+SPDX-License-Identifier = "MIT"
+
+# Patches to the problem set, gabeorlanski/scb-problems (Apache-2.0), and the spec
+# versions built from them. Changes to Apache-2.0 files stay under Apache-2.0.
+[[annotations]]
+path = ["patches/scb-problems/**", "specs/**.patch"]
+precedence = "override"
+SPDX-FileCopyrightText = ["2026 Jason Carver", "The scb-problems authors <https://github.com/gabeorlanski/scb-problems>"]
+SPDX-License-Identifier = "Apache-2.0"
+
+# Committed runs. Each checkpoint's prompt holds our prompt (above) and the problem's spec,
+# and problem.yaml copies the problem's config from scb-problems. Snapshots are the agent's
+# code and can include files the problem ships.
+[[annotations]]
+path = "outputs/**"
+precedence = "override"
+SPDX-FileCopyrightText = ["2026 Jason Carver", "2025 gabeorlanski", "The scb-problems authors <https://github.com/gabeorlanski/scb-problems>"]
+SPDX-License-Identifier = "CC-BY-4.0 AND MIT AND Apache-2.0"
+
+# The one test fixture is a copy of a report page, so it is prose like the page.
+[[annotations]]
+path = "tests/fixtures/**"
+precedence = "override"
+SPDX-FileCopyrightText = "2026 Jason Carver"
+SPDX-License-Identifier = "CC-BY-4.0"

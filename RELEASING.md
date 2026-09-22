@@ -13,23 +13,26 @@ before then do not move to the paper, so add the block the day a preprint exists
 
 Do these before the first DOI exists.
 
-- [ ] Register an ORCID at orcid.org and add it to the author in `CITATION.cff` as
+- [x] Register an ORCID at orcid.org and add it to the author in `CITATION.cff` as
       `orcid: "https://orcid.org/0000-0000-0000-0000"`. It ties the same person together across
       Zenodo, arXiv and a venue.
-- [ ] Decide to tag a release at each results milestone, not only when a release feels due. A
+- [x] Decide to tag a release at each results milestone, not only when a release feels due. A
       paper can then cite the exact version behind each table.
-- [ ] Keep one name form everywhere. "Jason Carver" is already in the cff, `LICENSE` and the git
-      history.
-- [ ] Stay the sole copyright holder of the prose. The repository is GPL and a paper's text and
-      figures will likely be CC-BY. You can relicense your own notes. Outside contributions to
-      them would need permission from each author.
+- [x] Keep one name form everywhere. "Jason Carver" is already in the cff, `REUSE.toml` and the
+      git history.
+- [x] License so a paper can reuse the prose. Since 2026-09-22 the prose, prompts, notes,
+      reports and run data are CC-BY-4.0 and the code is MIT (`REUSE.toml` maps paths to
+      licenses). A contribution comes in under the license of the files it touches, so a
+      CC-BY paper can take contributed prose without asking each author. Before that the
+      repository was GPL-3.0-or-later, which would have needed their permission.
 
 Decide these before the first DOI exists.
 
-- [ ] Double-blind venues. A public repository with your name and a DOI deanonymizes a
+- [x] Double-blind venues. A public repository with your name and a DOI deanonymizes a
       submission. arXiv and most ML venues do not mind, and anonymized mirrors exist for the ones
       that do. Pick the kind of venue before the DOI spreads.
-- [ ] Run data. Since 2026-09-22 the runs behind the uplift grid are committed under
+      (carver: Don't worry about it.)
+- [x] Run data. Since 2026-09-22 the runs behind the uplift grid are committed under
       `outputs/` by `bin/add-run`, so a release archive holds them: the code snapshots, the
       scores and the small quality files, with tokens redacted. `outputs/README.md` lists what
       they leave out and how to rebuild it. Agent transcripts are not in git. A paper that

@@ -277,5 +277,14 @@ If you use the benchmark itself, cite the
 
 ## License
 
-GPL-3.0-or-later; the text is in `LICENSE`. Copyright 2026 Jason Carver.
-The benchmark itself (slop-code-bench, its problems and harness) keeps its own license.
+The prose, prompts, notes, reports, configs and run data are CC-BY-4.0. The code is MIT:
+`bin/`, the Python under `report/` and `tests/`, `install.py`, CI and hooks. `REUSE.toml` maps
+every path to its license, the texts are in `LICENSES/`, and `bin/lint` checks the map. Copyright
+2026 Jason Carver.
+
+Material from upstream keeps its own license. The lines our prompts take from slop-code-bench's
+prompts, and the patches to its source, are MIT. The patches to its problem set, and the problem
+text inside `outputs/`, are Apache-2.0. `CITATION.cff` names CC-BY-4.0 alone, because Zenodo reads
+one license per record.
+
+Until 2026-09-22 the repository was GPL-3.0-or-later.

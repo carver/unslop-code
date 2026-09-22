@@ -4,22 +4,37 @@ Improving code quality against the excellent [Slop Code Bench](https://github.co
 
 Progress:
 
-- Improved quality on 21 problems
-- Near-perfect correctness on 3 problems
-- The last 15 problems are untouched as a holdout, for now
+- Opus 5.0 solved basically all code quality
+- Achieved perfect strict solves on 2 problems of the 5 attempted
+- Two more saw ~10x reduction in failing tests
 
-With a new prompt, code quality improves significantly on all 21 tested problems.
+See reports/ for summarized results and info.
 
-The prompt lifts correctness (Core, Isolated, Strict) a bit, but mostly requires some changes to the spec.
+## Quality
 
-In the 3 problems, I analyzed the test failures and concluded that the specs are legitimately ambiguous.
-The new prompt asks the agent to identify these ambiguities, which it does well.
+Opus 5.0, using the anti-slop prompt, meets or beats human quality on Erosion and Verbosity.
+This is especially true when evaluating only the implementation, without test code.
 
-I patched the spec for datagate, file_merger, and xjq (chosen at random, one from each difficulty).
-With a few minimal patches, they all get nearly perfect strict solves.
+## Correctness
 
-In a single test, Opus makes what I think is just a wrong call in reading the spec.
-I chose not to alter the spec to patch up Opus' bad call.
+I identified ambiguities using a new prompt.
+I paired the ambiguities with failed tests, to patch the spec where appropriate.
+
+Related, if the tests made implementation assumptions (like using urllib instead of requests), then the implementation would fail due to no fault of the agent.
+Those implementation requirements became a part of the spec.
+
+I patched the spec for datagate, file_merger, xjq, mvvault, and rejector (chosen at random from the larger set).
+file_merger and xjq got full strict solves.
+
+Why didn't this get to perfect strict solves on 5/5 problems?
+
+There were three broad categories:
+
+- The spec was clear enough and the agent intepreted poorly
+- The implementation had a legitimate bug
+- The test made assumptions that were too cumbersome to be clarified in the spec (for example, that requests would arrive in a certain order)
+
+The rest of this doc is generated & maintained by LLMs.
 
 ## Navigating
 

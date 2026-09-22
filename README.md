@@ -201,11 +201,16 @@ The patches, in the order install.py applies them:
   `bin/scb` fills it from `bin/harness-provenance`: the harness commit, each
   patch's sha256, a hash of the checkout's changes and the scb arguments, so a
   run names the build that made it (2026-09-22).
-- `patches/resume-only-problem.patch` — `scb run --resume` honours
-  `SCB_RESUME_ONLY_PROBLEM=<problem>` and resumes that problem alone. Upstream's
-  `--problem` merges into the run's saved list on resume, so a queue job for one
-  problem of a multi-problem run would otherwise resume every problem.
-  `bin/scb-extend` sets the variable for its child.
+
+`patches/resume-only-problem.patch` is not applied: it is missing from install.py's list,
+and has been since install.py started building the harness on 2026-09-10. It would make
+`scb run --resume` honour `SCB_RESUME_ONLY_PROBLEM=<problem>` and resume that problem
+alone. `bin/scb-extend` sets the variable for its child, but the harness ignores it, so
+resuming a run with several problems resumes every unfinished one. Upstream's `--problem`
+is no help: on a resume it merges into the run's saved list. On top of the eight the
+patch no longer applies: its first hunk adds `import os` to `run_agent.py`, which
+`run-records-harness-provenance.patch` already does, so that hunk fails. Its other
+hunk, the resume filter, still applies.
 
 `patches/scb-problems/` holds patches for the upstream problem set
 (gabeorlanski/scb-problems), not applied to the cache, each with its evidence as a

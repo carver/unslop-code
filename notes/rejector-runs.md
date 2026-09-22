@@ -22,6 +22,7 @@ The control is the dev6 sweep's just-solve run (`notes/dev6-opus5.md`).
 | min13-ABDJKMNT on v1 (halted at the last checkpoint) | `…min13-ABDJKMNT-specv1/20260920T1926` | min13 on spec v1 (eight sentences) under bin/scb-strict in the specpatch channel; first of two | 21/21, 34/34, 50/50, 67/67, 78/79 | complete 2026-09-20 (the halt came after checkpoint 5, the last); 1 miss, test_tpm_gate, by the 10-second timeout: the limiter sleeps until the window slides and no reply wakes it; every other test passes, the best rejector run of any prompt (best before: 76); 4/5 strict, $33, 95 min, overlapped by the main queue, so the minutes are not comparable. Quality: erosion 0.018, verbosity 0.178, ast 0.070, cloned 0.080; final checkpoint, implementation only (33% of LOC): ast 0.192, erosion 0.030, cloned 0.022 |
 | min13-ABDJKMNT on v1, repeat (halted at the last checkpoint) | `…min13-ABDJKMNT-specv1/20260920T2113` | same config as the first run, under bin/scb-strict in the specpatch channel; second of two | 21/21, 34/34, 50/50, 67/67, 78/79 | complete 2026-09-20; 1 miss, test_tpm_gate again by the 10-second timeout, the same missed wake-up (`rejlib/ratelimit.py:107`, `await asyncio.sleep(wait)`); every other test passes; 4/5 strict, $40, 119 min, overlapped by the main queue, so the minutes are not comparable. Quality: erosion 0.046, verbosity 0.141, ast 0.064, cloned 0.033; final checkpoint, implementation only (32% of LOC): ast 0.116, erosion 0.026, cloned 0.019 |
 | anti-slop on v1 | `…anti_slop-specv1/20260921T1502` | the upstream anti_slop prompt on spec v1, a baseline for the grid's patched cell; first of two | 21/21, 34/34, 49/50, 67/67, 77/79 | complete 2026-09-21; 3 misses, named and not traced (a baseline): test_first_number_extract at checkpoint 3 (the reply-order race patch `03` narrows and cannot close; 14 pass, 2 fail before this run), test_costs (`3.0 == 1.0`, a different failure from the cents rounding patch `07` settles) and test_tpm_gate (the timeout every prompt has hit); the other six v1 sentences held; 3/5 strict, $32, 84 min. Quality: erosion 0.111, verbosity 0.139, ast 0.106, cloned 0.023; final checkpoint, implementation only (46% of LOC): ast 0.176, erosion 0.088, cloned 0.023 |
+| anti-slop on v1, repeat | `…anti_slop-specv1/20260921T1637` | same config as the first run; second of two | 21/21, 34/34, 50/50, 67/67, 78/79 | complete 2026-09-21; 1 miss, test_tpm_gate (the timeout; 8 pass, 9 fail over all runs now), the same as min13's only miss on v1 twice; all eight v1 sentences held; 4/5 strict, $33, 103 min. Quality: erosion 0.097, verbosity 0.193, ast 0.140, cloned 0.017; final checkpoint, implementation only (58% of LOC): ast 0.199, erosion 0.070, cloned 0.021 |
 
 ## Test failure summaries
 
@@ -64,6 +65,10 @@ The control is the dev6 sweep's just-solve run (`notes/dev6-opus5.md`).
     timeout that has now cost eight runs across every prompt). It wrote tests this time, 54%
     of 2848 lines; $32 and 84 min. Implementation only: erosion 0.088, ast 0.176, cloned
     0.023. First of two.
+  - on v1, repeat (78): the pair is 77 and 78 against 73 and 74 on v0 and min13's 78 and 78.
+    One miss, test_tpm_gate, min13's only v1 miss too, so on v1 the two prompts are level.
+    Not traced. 42% of 3220 lines are tests; $33 and 103 min. Implementation only: erosion
+    0.070, ast 0.199, cloned 0.021; the mean of the two runs is 0.079, 0.188, 0.022.
 
 ### min12-ABDJKMN (without F)
 
@@ -197,3 +202,7 @@ of this run's registry (92 entries) are worth keeping:
 anti-slop on v1, first run (job 280, 2026-09-21): 77/79, from 73 and 74 on v0. A baseline: the
 misses are test_first_number_extract at checkpoint 3, test_costs (`3.0 == 1.0`, another failure
 than the cents rounding) and test_tpm_gate. Six of the eight v1 sentences drew no miss. Not traced.
+
+anti-slop on v1, repeat (job 281, 2026-09-21): 78/79, the pair 77 and 78 against min13's 78 and 78.
+One miss, test_tpm_gate, the timeout min13 also lost twice on v1. All eight sentences held. On v1
+anti-slop and min13 are level on this problem; the just-solve pair (282, 283) closes the cell.

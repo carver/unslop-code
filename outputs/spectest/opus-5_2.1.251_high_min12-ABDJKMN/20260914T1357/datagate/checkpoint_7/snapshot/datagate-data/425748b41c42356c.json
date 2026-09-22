@@ -1,0 +1,1 @@
+{"columns": ["city", "zip"], "rows": [["K\u00f6ln", 50667]], "metadata": {"dataset_summary": {"filetype": "csv", "row_count": 1, "column_count": 2}, "column_details": {"city": {"type": "text", "distinct_count": 1, "missing_count": 0}, "zip": {"type": "integer", "distinct_count": 1, "missing_count": 0}}}}

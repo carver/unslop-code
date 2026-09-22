@@ -1,0 +1,131 @@
+{
+  "classes": {
+    "attribute_counts_mean": 2.0,
+    "attribute_counts_sum": 8,
+    "count": 4,
+    "method_counts_mean": 1.0,
+    "method_counts_sum": 4
+  },
+  "complexity": {
+    "cc_max": 13,
+    "cc_ratings": {
+      "A": 121,
+      "B": 22,
+      "C": 2,
+      "D": 0,
+      "E": 0,
+      "F": 0
+    },
+    "cc_sum": 474,
+    "mi_min": 29.58913587015922,
+    "mi_ratings": {
+      "A": 7,
+      "B": 0,
+      "C": 0
+    },
+    "mi_sum": 359.2798789922557,
+    "num_complex": 2
+  },
+  "file_count": 7,
+  "functions": {
+    "cc_concentration": 0.3159707868265123,
+    "cc_extreme_count": 0,
+    "cc_high_count": 2,
+    "cc_max": 13,
+    "cc_mean": 3.83739837398374,
+    "cc_normalized": 0.0028906187453200277,
+    "cc_std": 2.2881518913092838,
+    "cc_sum": 472,
+    "cc_top20": 0.3940677966101695,
+    "count": 123,
+    "depth_max": 5,
+    "extreme_cc_mean": 0.0,
+    "high_cc_mean": 12.0,
+    "lines_mean": 7.951219512195122,
+    "lines_sum": 978
+  },
+  "graph": {
+    "cyclic_dependency_mass": 0.0,
+    "dependency_entropy": 0.2648798210119062,
+    "edge_count": 31,
+    "node_count": 30,
+    "propagation_cost": 0.07126436781609195
+  },
+  "lines": {
+    "comments": 185,
+    "loc": 1049,
+    "multi_comment": 11,
+    "single_comment": 197,
+    "total_lines": 1547
+  },
+  "lint": {
+    "counts": {
+      "ARG001": 5,
+      "B904": 6,
+      "BLE001": 3,
+      "C901": 1,
+      "DOC201": 14,
+      "DOC402": 1,
+      "DOC501": 4,
+      "DTZ005": 3,
+      "DTZ007": 2,
+      "DTZ901": 1,
+      "EM101": 3,
+      "ERA001": 40,
+      "EXE001": 1,
+      "FBT003": 2,
+      "FURB101": 1,
+      "INP001": 6,
+      "N815": 3,
+      "PLC0415": 5,
+      "PLC1901": 1,
+      "PLR0913": 1,
+      "PLR0917": 1,
+      "PLR2004": 24,
+      "PLW1510": 2,
+      "PT006": 2,
+      "PT018": 8,
+      "PTH100": 1,
+      "PTH103": 1,
+      "PTH110": 2,
+      "PTH112": 1,
+      "PTH113": 2,
+      "PTH118": 5,
+      "PTH120": 2,
+      "PTH123": 4,
+      "PTH208": 4,
+      "RUF005": 1,
+      "RUF015": 3,
+      "S101": 224,
+      "S110": 1,
+      "S310": 1,
+      "S404": 2,
+      "S603": 2,
+      "SIM105": 1,
+      "TRY003": 3,
+      "UP031": 23
+    },
+    "errors": 423,
+    "fixable": 12
+  },
+  "source_files": [],
+  "symbols": {
+    "classes": 4,
+    "expressions": 1716,
+    "expressions_top_level": 83,
+    "functions": 119,
+    "globals": 18,
+    "imports": 36,
+    "max_imports": 9,
+    "methods": 4,
+    "statements": 414,
+    "total": 145,
+    "type_aliases": 0,
+    "variables": 18
+  },
+  "waste": {
+    "single_use_functions": 107,
+    "trivial_wrappers": 5,
+    "unused_variables": 23
+  }
+}

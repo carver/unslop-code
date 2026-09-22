@@ -1,0 +1,2 @@
+{"problem": "add", "test_code": "print('ok')"}
+{"problem": "fail", "test_code": "raise SystemExit(3)"}

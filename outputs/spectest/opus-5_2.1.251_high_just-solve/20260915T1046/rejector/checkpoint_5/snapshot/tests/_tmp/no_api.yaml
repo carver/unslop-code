@@ -1,0 +1,5 @@
+task:
+  name: t
+  model: m
+  prompt:
+    user: "{question}"

@@ -1,0 +1,118 @@
+{
+  "classes": {
+    "attribute_counts_mean": 0.375,
+    "attribute_counts_sum": 3,
+    "count": 8,
+    "method_counts_mean": 0.875,
+    "method_counts_sum": 7
+  },
+  "complexity": {
+    "cc_max": 8,
+    "cc_ratings": {
+      "A": 247,
+      "B": 5,
+      "C": 0,
+      "D": 0,
+      "E": 0,
+      "F": 0
+    },
+    "cc_sum": 613,
+    "mi_min": 36.07546360929796,
+    "mi_ratings": {
+      "A": 20,
+      "B": 0,
+      "C": 0
+    },
+    "mi_sum": 1390.2383571397013,
+    "num_complex": 0
+  },
+  "file_count": 20,
+  "functions": {
+    "cc_concentration": 0.17755913539967375,
+    "cc_extreme_count": 0,
+    "cc_high_count": 0,
+    "cc_max": 8,
+    "cc_mean": 2.736607142857143,
+    "cc_normalized": 0.0005919937908614233,
+    "cc_std": 0.9965407014441756,
+    "cc_sum": 613,
+    "cc_top20": 0.30179445350734097,
+    "count": 224,
+    "depth_max": 1,
+    "extreme_cc_mean": 0.0,
+    "high_cc_mean": 0.0,
+    "lines_mean": 5.147321428571429,
+    "lines_sum": 1153
+  },
+  "graph": {
+    "cyclic_dependency_mass": 0.16666666666666666,
+    "dependency_entropy": 0.1281041143633559,
+    "edge_count": 17,
+    "node_count": 23,
+    "propagation_cost": 0.07114624505928854
+  },
+  "lines": {
+    "comments": 401,
+    "loc": 1207,
+    "multi_comment": 124,
+    "single_comment": 425,
+    "total_lines": 2324
+  },
+  "lint": {
+    "counts": {
+      "ARG001": 1,
+      "DOC201": 18,
+      "DOC501": 7,
+      "EM101": 1,
+      "ERA001": 127,
+      "EXE001": 1,
+      "FBT002": 2,
+      "INP001": 10,
+      "PLC1901": 43,
+      "PLW1510": 2,
+      "PT018": 1,
+      "PTH101": 1,
+      "RSE102": 1,
+      "RUF022": 1,
+      "S101": 332,
+      "S404": 2,
+      "S603": 2,
+      "TRY003": 1,
+      "UP022": 2,
+      "UP031": 3
+    },
+    "errors": 558,
+    "fixable": 4
+  },
+  "source_files": [
+    "xjq_core/query.py",
+    "xjq_core/css.py",
+    "xjq_core/__init__.py",
+    "xjq_core/json_input.py",
+    "xjq_core/source.py",
+    "xjq_core/extraction.py",
+    "xjq.py",
+    "xjq_core/errors.py",
+    "xjq_core/parsing.py",
+    "xjq_core/rendering.py"
+  ],
+  "symbols": {
+    "classes": 8,
+    "expressions": 1373,
+    "expressions_top_level": 22,
+    "functions": 217,
+    "globals": 20,
+    "imports": 46,
+    "max_imports": 8,
+    "methods": 7,
+    "statements": 427,
+    "total": 252,
+    "type_aliases": 0,
+    "variables": 20
+  },
+  "waste": {
+    "single_use_functions": 214,
+    "trivial_wrappers": 0,
+    "unused_variables": 17
+  }
+}

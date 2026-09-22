@@ -1,0 +1,119 @@
+{
+  "classes": {
+    "attribute_counts_mean": 1.0,
+    "attribute_counts_sum": 2,
+    "count": 2,
+    "method_counts_mean": 1.5,
+    "method_counts_sum": 3
+  },
+  "complexity": {
+    "cc_max": 22,
+    "cc_ratings": {
+      "A": 45,
+      "B": 6,
+      "C": 3,
+      "D": 1,
+      "E": 0,
+      "F": 0
+    },
+    "cc_sum": 173,
+    "mi_min": 21.969322109061903,
+    "mi_ratings": {
+      "A": 2,
+      "B": 0,
+      "C": 0
+    },
+    "mi_sum": 58.87740757257866,
+    "num_complex": 4
+  },
+  "file_count": 2,
+  "functions": {
+    "cc_concentration": 0.48638655462184877,
+    "cc_extreme_count": 0,
+    "cc_high_count": 4,
+    "cc_max": 22,
+    "cc_mean": 4.857142857142857,
+    "cc_normalized": 0.027722369224506417,
+    "cc_std": 4.784428524131279,
+    "cc_sum": 170,
+    "cc_top20": 0.5235294117647059,
+    "count": 35,
+    "depth_max": 3,
+    "extreme_cc_mean": 0.0,
+    "high_cc_mean": 15.0,
+    "lines_mean": 17.6,
+    "lines_sum": 616
+  },
+  "graph": {
+    "cyclic_dependency_mass": 0.0,
+    "dependency_entropy": 0.10714285714285714,
+    "edge_count": 23,
+    "node_count": 28,
+    "propagation_cost": 0.04497354497354497
+  },
+  "lines": {
+    "comments": 48,
+    "loc": 611,
+    "multi_comment": 8,
+    "single_comment": 56,
+    "total_lines": 835
+  },
+  "lint": {
+    "counts": {
+      "B904": 10,
+      "BLE001": 3,
+      "C901": 1,
+      "DOC201": 10,
+      "DOC501": 5,
+      "F401": 1,
+      "FURB110": 1,
+      "FURB152": 1,
+      "FURB167": 1,
+      "FURB188": 1,
+      "INP001": 2,
+      "N806": 2,
+      "PLC1901": 1,
+      "PLR0124": 1,
+      "PLR0911": 1,
+      "PLR0914": 1,
+      "PLR0915": 1,
+      "PLR2004": 27,
+      "PLR6201": 5,
+      "PTH100": 1,
+      "PTH118": 1,
+      "PTH120": 1,
+      "RUF013": 1,
+      "S404": 1,
+      "S603": 1,
+      "SIM103": 2,
+      "TRY300": 3,
+      "TRY301": 1,
+      "UP012": 1,
+      "UP031": 32
+    },
+    "errors": 120,
+    "fixable": 6
+  },
+  "source_files": [
+    "datagate.py"
+  ],
+  "symbols": {
+    "classes": 2,
+    "expressions": 956,
+    "expressions_top_level": 17,
+    "functions": 32,
+    "globals": 18,
+    "imports": 23,
+    "max_imports": 14,
+    "methods": 3,
+    "statements": 217,
+    "total": 55,
+    "type_aliases": 0,
+    "variables": 18
+  },
+  "waste": {
+    "single_use_functions": 25,
+    "trivial_wrappers": 0,
+    "unused_variables": 24
+  }
+}

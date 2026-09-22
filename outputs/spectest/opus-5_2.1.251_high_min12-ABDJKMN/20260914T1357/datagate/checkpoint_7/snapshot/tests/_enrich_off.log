@@ -1,0 +1,18 @@
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:37863
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:19:38] "GET /convert?source=http://127.0.0.1:46117/nocache-enrich-71.csv&enrich=yes HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:19:38] "GET /datasets/3fa2219a56aed71a HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:19:38] "GET /convert?source=http://127.0.0.1:46117/nocache-enrich-71.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:19:38] "GET /datasets/3fa2219a56aed71a HTTP/1.1" 200 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:42771
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:19:54] "GET /convert?source=http://127.0.0.1:43915/nocache-enrich-71.csv&enrich=yes HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:19:54] "GET /datasets/7279ac0df16c501e HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:19:54] "GET /convert?source=http://127.0.0.1:43915/nocache-enrich-71.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:19:54] "GET /datasets/7279ac0df16c501e HTTP/1.1" 200 -

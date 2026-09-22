@@ -1,0 +1,127 @@
+{
+  "classes": {
+    "attribute_counts_mean": 3.4285714285714284,
+    "attribute_counts_sum": 72,
+    "count": 21,
+    "method_counts_mean": 1.1904761904761905,
+    "method_counts_sum": 25
+  },
+  "complexity": {
+    "cc_max": 14,
+    "cc_ratings": {
+      "A": 262,
+      "B": 13,
+      "C": 1,
+      "D": 0,
+      "E": 0,
+      "F": 0
+    },
+    "cc_sum": 585,
+    "mi_min": 30.193576189166745,
+    "mi_ratings": {
+      "A": 26,
+      "B": 0,
+      "C": 0
+    },
+    "mi_sum": 1375.8122948860118,
+    "num_complex": 1
+  },
+  "file_count": 26,
+  "functions": {
+    "cc_concentration": 0.3371408251589346,
+    "cc_extreme_count": 0,
+    "cc_high_count": 0,
+    "cc_max": 10,
+    "cc_mean": 2.6908212560386473,
+    "cc_normalized": 0.002241982457748391,
+    "cc_std": 1.8330998738495272,
+    "cc_sum": 557,
+    "cc_top20": 0.41831238779174146,
+    "count": 207,
+    "depth_max": 3,
+    "extreme_cc_mean": 0.0,
+    "high_cc_mean": 0.0,
+    "lines_mean": 6.222222222222222,
+    "lines_sum": 1288
+  },
+  "graph": {
+    "cyclic_dependency_mass": 0.0,
+    "dependency_entropy": 0.20991273532576296,
+    "edge_count": 52,
+    "node_count": 66,
+    "propagation_cost": 0.0324009324009324
+  },
+  "lines": {
+    "comments": 22,
+    "loc": 1679,
+    "multi_comment": 30,
+    "single_comment": 99,
+    "total_lines": 2412
+  },
+  "lint": {
+    "counts": {
+      "ANN401": 9,
+      "ARG001": 4,
+      "ARG002": 1,
+      "DOC201": 42,
+      "DOC501": 9,
+      "EM101": 2,
+      "EM102": 26,
+      "EXE001": 2,
+      "FBT002": 2,
+      "FBT003": 7,
+      "FURB122": 1,
+      "FURB140": 1,
+      "INP001": 24,
+      "PERF203": 1,
+      "PLR2004": 13,
+      "PLW1514": 2,
+      "PT006": 7,
+      "PT018": 2,
+      "PTH103": 1,
+      "PTH118": 2,
+      "PTH123": 3,
+      "RUF043": 2,
+      "S101": 150,
+      "S311": 2,
+      "TC002": 12,
+      "TC003": 7,
+      "TRY003": 28
+    },
+    "errors": 362,
+    "fixable": 6
+  },
+  "source_files": [
+    "dataset.py",
+    "api.py",
+    "script_eval.py",
+    "runner.py",
+    "summary.py",
+    "config.py",
+    "rejector.py",
+    "judge.py",
+    "templates.py",
+    "evaluation.py",
+    "plan.py",
+    "errors.py"
+  ],
+  "symbols": {
+    "classes": 21,
+    "expressions": 2326,
+    "expressions_top_level": 64,
+    "functions": 182,
+    "globals": 48,
+    "imports": 149,
+    "max_imports": 14,
+    "methods": 25,
+    "statements": 502,
+    "total": 276,
+    "type_aliases": 0,
+    "variables": 48
+  },
+  "waste": {
+    "single_use_functions": 155,
+    "trivial_wrappers": 5,
+    "unused_variables": 67
+  }
+}

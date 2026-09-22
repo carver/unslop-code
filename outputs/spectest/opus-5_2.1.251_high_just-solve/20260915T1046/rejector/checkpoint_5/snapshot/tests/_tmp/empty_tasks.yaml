@@ -1,0 +1,4 @@
+defaults:
+  api_url: "http://x"
+  model: m
+tasks: {}

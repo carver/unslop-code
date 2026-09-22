@@ -1,0 +1,18 @@
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:59189
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [15/Sep/2026 03:35:10] "[33mGET /datasets/readiness-probe HTTP/1.1[0m" 404 -
+127.0.0.1 - - [15/Sep/2026 03:35:10] "POST /upload HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:35:10] "GET /datasets/b97998758a2ee1f0 HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:35:10] "[31m[1mPOST /upload HTTP/1.1[0m" 400 -
+127.0.0.1 - - [15/Sep/2026 03:35:10] "GET /convert?source=http://127.0.0.1:35897/lies.xlsx HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:35:10] "[31m[1mGET /convert?source=http://127.0.0.1:35897/lies.xlsx&charset=nope HTTP/1.1[0m" 400 -
+127.0.0.1 - - [15/Sep/2026 03:35:10] "POST /upload HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:35:10] "GET /datasets/492d5ea496056f1a HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:35:10] "[31m[1mGET /convert?source=http://127.0.0.1:35897/book&charset=nope HTTP/1.1[0m" 400 -
+127.0.0.1 - - [15/Sep/2026 03:35:11] "GET /convert?source=http://127.0.0.1:35897/book HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:35:11] "POST /upload HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:35:11] "GET /datasets/e0f1fdbf845a5430?_shape=objects HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:35:11] "GET /datasets/e0f1fdbf845a5430/export HTTP/1.1" 200 -

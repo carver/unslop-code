@@ -1,0 +1,120 @@
+{
+  "classes": {
+    "attribute_counts_mean": 2.588235294117647,
+    "attribute_counts_sum": 44,
+    "count": 17,
+    "method_counts_mean": 2.2941176470588234,
+    "method_counts_sum": 39
+  },
+  "complexity": {
+    "cc_max": 6,
+    "cc_ratings": {
+      "A": 99,
+      "B": 5,
+      "C": 0,
+      "D": 0,
+      "E": 0,
+      "F": 0
+    },
+    "cc_sum": 162,
+    "mi_min": 35.697865485896536,
+    "mi_ratings": {
+      "A": 12,
+      "B": 0,
+      "C": 0
+    },
+    "mi_sum": 794.4170324107022,
+    "num_complex": 0
+  },
+  "file_count": 12,
+  "functions": {
+    "cc_concentration": 0.3393787381825198,
+    "cc_extreme_count": 0,
+    "cc_high_count": 0,
+    "cc_max": 6,
+    "cc_mean": 2.056338028169014,
+    "cc_normalized": 0.00665093960271292,
+    "cc_std": 1.4130749039257005,
+    "cc_sum": 146,
+    "cc_top20": 0.4383561643835616,
+    "count": 71,
+    "depth_max": 4,
+    "extreme_cc_mean": 0.0,
+    "high_cc_mean": 0.0,
+    "lines_mean": 6.746478873239437,
+    "lines_sum": 479
+  },
+  "graph": {
+    "cyclic_dependency_mass": 0.0,
+    "dependency_entropy": 0.14810561803071662,
+    "edge_count": 32,
+    "node_count": 47,
+    "propagation_cost": 0.03700277520814061
+  },
+  "lines": {
+    "comments": 15,
+    "loc": 611,
+    "multi_comment": 44,
+    "single_comment": 53,
+    "total_lines": 909
+  },
+  "lint": {
+    "counts": {
+      "B905": 3,
+      "DOC201": 18,
+      "DOC402": 3,
+      "DOC501": 5,
+      "DTZ007": 1,
+      "EM101": 1,
+      "EM102": 10,
+      "EXE001": 1,
+      "FBT001": 2,
+      "FURB122": 1,
+      "INP001": 1,
+      "PLC1901": 1,
+      "PLR1714": 1,
+      "PLR6201": 2,
+      "PT009": 28,
+      "PTH118": 1,
+      "PTH123": 5,
+      "PYI034": 1,
+      "Q003": 1,
+      "RUF023": 1,
+      "TC001": 8,
+      "TC003": 11,
+      "TRY003": 11
+    },
+    "errors": 117,
+    "fixable": 8
+  },
+  "source_files": [
+    "csvmerge/errors.py",
+    "csvmerge/schema.py",
+    "csvmerge/types.py",
+    "csvmerge/sorting.py",
+    "csvmerge/dialect.py",
+    "csvmerge/csvio.py",
+    "csvmerge/records.py",
+    "csvmerge/casting.py",
+    "csvmerge/merge.py"
+  ],
+  "symbols": {
+    "classes": 17,
+    "expressions": 999,
+    "expressions_top_level": 47,
+    "functions": 32,
+    "globals": 16,
+    "imports": 61,
+    "max_imports": 8,
+    "methods": 39,
+    "statements": 155,
+    "total": 104,
+    "type_aliases": 0,
+    "variables": 16
+  },
+  "waste": {
+    "single_use_functions": 31,
+    "trivial_wrappers": 1,
+    "unused_variables": 23
+  }
+}

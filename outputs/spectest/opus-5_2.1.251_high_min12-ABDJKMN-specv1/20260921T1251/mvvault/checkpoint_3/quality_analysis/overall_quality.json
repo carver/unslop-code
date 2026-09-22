@@ -1,0 +1,135 @@
+{
+  "classes": {
+    "attribute_counts_mean": 4.888888888888889,
+    "attribute_counts_sum": 44,
+    "count": 9,
+    "method_counts_mean": 2.3333333333333335,
+    "method_counts_sum": 21
+  },
+  "complexity": {
+    "cc_max": 15,
+    "cc_ratings": {
+      "A": 503,
+      "B": 54,
+      "C": 6,
+      "D": 0,
+      "E": 0,
+      "F": 0
+    },
+    "cc_sum": 1788,
+    "mi_min": 0.0,
+    "mi_ratings": {
+      "A": 17,
+      "B": 0,
+      "C": 1
+    },
+    "mi_sum": 812.7247275624653,
+    "num_complex": 6
+  },
+  "file_count": 18,
+  "functions": {
+    "cc_concentration": 0.27507592298473926,
+    "cc_extreme_count": 0,
+    "cc_high_count": 5,
+    "cc_max": 15,
+    "cc_mean": 3.625766871165644,
+    "cc_normalized": 0.0005809553530443016,
+    "cc_std": 1.9325275099431616,
+    "cc_sum": 1773,
+    "cc_top20": 0.3575860124083474,
+    "count": 489,
+    "depth_max": 6,
+    "extreme_cc_mean": 0.0,
+    "high_cc_mean": 12.4,
+    "lines_mean": 8.235173824130879,
+    "lines_sum": 4027
+  },
+  "graph": {
+    "cyclic_dependency_mass": 0.0,
+    "dependency_entropy": 0.3649873285201042,
+    "edge_count": 93,
+    "node_count": 70,
+    "propagation_cost": 0.04824016563146998
+  },
+  "lines": {
+    "comments": 832,
+    "loc": 3932,
+    "multi_comment": 73,
+    "single_comment": 893,
+    "total_lines": 6125
+  },
+  "lint": {
+    "counts": {
+      "ARG001": 129,
+      "ARG002": 1,
+      "B904": 21,
+      "BLE001": 6,
+      "C901": 2,
+      "DOC201": 68,
+      "DOC501": 12,
+      "DTZ005": 7,
+      "DTZ007": 4,
+      "EM101": 4,
+      "EM102": 40,
+      "ERA001": 11,
+      "EXE001": 1,
+      "FBT002": 1,
+      "FBT003": 2,
+      "FURB113": 1,
+      "FURB188": 1,
+      "FURB192": 2,
+      "INP001": 17,
+      "N818": 2,
+      "PERF203": 1,
+      "PLC0415": 7,
+      "PLC1901": 23,
+      "PLR0911": 1,
+      "PLR0913": 19,
+      "PLR0917": 19,
+      "PLR1702": 1,
+      "PLR2004": 66,
+      "PLR6201": 1,
+      "PLR6301": 1,
+      "PLW1510": 2,
+      "PT006": 3,
+      "PT018": 15,
+      "PTH105": 2,
+      "Q003": 1,
+      "RUF005": 1,
+      "RUF015": 2,
+      "RUF100": 2,
+      "S101": 846,
+      "S110": 2,
+      "S310": 2,
+      "S404": 2,
+      "S603": 2,
+      "SIM105": 3,
+      "SLF001": 3,
+      "TRY003": 44
+    },
+    "errors": 1403,
+    "fixable": 10
+  },
+  "source_files": [
+    "mvault.py"
+  ],
+  "symbols": {
+    "classes": 9,
+    "expressions": 7350,
+    "expressions_top_level": 506,
+    "functions": 468,
+    "globals": 65,
+    "imports": 54,
+    "max_imports": 11,
+    "methods": 21,
+    "statements": 1440,
+    "total": 563,
+    "type_aliases": 0,
+    "variables": 65
+  },
+  "waste": {
+    "single_use_functions": 434,
+    "trivial_wrappers": 17,
+    "unused_variables": 81
+  }
+}

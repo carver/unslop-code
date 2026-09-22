@@ -1,0 +1,133 @@
+{
+  "classes": {
+    "attribute_counts_mean": 3.8666666666666667,
+    "attribute_counts_sum": 116,
+    "count": 30,
+    "method_counts_mean": 1.1,
+    "method_counts_sum": 33
+  },
+  "complexity": {
+    "cc_max": 12,
+    "cc_ratings": {
+      "A": 443,
+      "B": 29,
+      "C": 4,
+      "D": 0,
+      "E": 0,
+      "F": 0
+    },
+    "cc_sum": 1299,
+    "mi_min": 12.58713659601878,
+    "mi_ratings": {
+      "A": 39,
+      "B": 1,
+      "C": 0
+    },
+    "mi_sum": 2290.3019049985173,
+    "num_complex": 4
+  },
+  "file_count": 40,
+  "functions": {
+    "cc_concentration": 0.25947674512267815,
+    "cc_extreme_count": 0,
+    "cc_high_count": 2,
+    "cc_max": 12,
+    "cc_mean": 3.1666666666666665,
+    "cc_normalized": 0.0006929989257560353,
+    "cc_std": 1.6588847862878286,
+    "cc_sum": 1254,
+    "cc_top20": 0.35645933014354064,
+    "count": 396,
+    "depth_max": 4,
+    "extreme_cc_mean": 0.0,
+    "high_cc_mean": 11.5,
+    "lines_mean": 8.742424242424242,
+    "lines_sum": 3462
+  },
+  "graph": {
+    "cyclic_dependency_mass": 0.0,
+    "dependency_entropy": 0.20793417823026805,
+    "edge_count": 83,
+    "node_count": 86,
+    "propagation_cost": 0.03652530779753762
+  },
+  "lines": {
+    "comments": 439,
+    "loc": 3644,
+    "multi_comment": 99,
+    "single_comment": 569,
+    "total_lines": 5332
+  },
+  "lint": {
+    "counts": {
+      "B905": 3,
+      "C420": 1,
+      "DOC201": 73,
+      "DOC402": 2,
+      "DOC501": 21,
+      "EM101": 16,
+      "EM102": 35,
+      "ERA001": 12,
+      "EXE001": 1,
+      "FBT001": 3,
+      "FBT003": 5,
+      "INP001": 24,
+      "PERF203": 1,
+      "PLC1901": 1,
+      "PLR0913": 1,
+      "PLR2004": 98,
+      "PLW1510": 5,
+      "PLW1514": 3,
+      "PT006": 1,
+      "PT018": 1,
+      "RUF100": 1,
+      "S101": 527,
+      "S311": 1,
+      "S404": 3,
+      "S603": 5,
+      "TC001": 19,
+      "TC003": 4,
+      "TRY003": 51,
+      "UP035": 1,
+      "UP037": 2
+    },
+    "errors": 921,
+    "fixable": 10
+  },
+  "source_files": [
+    "rejector_lib/inputs.py",
+    "rejector_lib/api.py",
+    "rejector_lib/script_eval.py",
+    "rejector_lib/evaluation.py",
+    "rejector_lib/config.py",
+    "rejector_lib/scoring.py",
+    "rejector_lib/judge.py",
+    "rejector_lib/plan.py",
+    "rejector.py",
+    "rejector_lib/solutions.py",
+    "rejector_lib/report.py",
+    "rejector_lib/icl.py",
+    "rejector_lib/runner.py",
+    "rejector_lib/cli.py",
+    "rejector_lib/errors.py"
+  ],
+  "symbols": {
+    "classes": 30,
+    "expressions": 4618,
+    "expressions_top_level": 57,
+    "functions": 363,
+    "globals": 50,
+    "imports": 130,
+    "max_imports": 13,
+    "methods": 33,
+    "statements": 1029,
+    "total": 476,
+    "type_aliases": 0,
+    "variables": 50
+  },
+  "waste": {
+    "single_use_functions": 344,
+    "trivial_wrappers": 5,
+    "unused_variables": 65
+  }
+}

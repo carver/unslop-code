@@ -1,0 +1,106 @@
+{
+  "classes": {
+    "attribute_counts_mean": 3.0,
+    "attribute_counts_sum": 3,
+    "count": 1,
+    "method_counts_mean": 1.0,
+    "method_counts_sum": 1
+  },
+  "complexity": {
+    "cc_max": 8,
+    "cc_ratings": {
+      "A": 117,
+      "B": 5,
+      "C": 0,
+      "D": 0,
+      "E": 0,
+      "F": 0
+    },
+    "cc_sum": 326,
+    "mi_min": 17.681331891523662,
+    "mi_ratings": {
+      "A": 2,
+      "B": 1,
+      "C": 0
+    },
+    "mi_sum": 119.36173100559893,
+    "num_complex": 0
+  },
+  "file_count": 3,
+  "functions": {
+    "cc_concentration": 0.2112482853223594,
+    "cc_extreme_count": 0,
+    "cc_high_count": 0,
+    "cc_max": 8,
+    "cc_mean": 3.0,
+    "cc_normalized": 0.0017499326948963501,
+    "cc_std": 1.3041988266515394,
+    "cc_sum": 324,
+    "cc_top20": 0.33641975308641975,
+    "count": 108,
+    "depth_max": 2,
+    "extreme_cc_mean": 0.0,
+    "high_cc_mean": 0.0,
+    "lines_mean": 5.12037037037037,
+    "lines_sum": 553
+  },
+  "graph": {
+    "cyclic_dependency_mass": 0.0,
+    "dependency_entropy": 0.1529979173405421,
+    "edge_count": 11,
+    "node_count": 12,
+    "propagation_cost": 0.12878787878787878
+  },
+  "lines": {
+    "comments": 106,
+    "loc": 603,
+    "multi_comment": 19,
+    "single_comment": 109,
+    "total_lines": 1019
+  },
+  "lint": {
+    "counts": {
+      "DOC201": 9,
+      "ERA001": 14,
+      "EXE001": 1,
+      "FURB188": 1,
+      "INP001": 2,
+      "PLC0415": 5,
+      "PLC1901": 10,
+      "PLR6201": 1,
+      "PLW1510": 2,
+      "S101": 173,
+      "S314": 1,
+      "S404": 2,
+      "S405": 1,
+      "S603": 2,
+      "SIM105": 1,
+      "SLF001": 3,
+      "UP031": 5
+    },
+    "errors": 233,
+    "fixable": 3
+  },
+  "source_files": [
+    "xjq.py"
+  ],
+  "symbols": {
+    "classes": 1,
+    "expressions": 748,
+    "expressions_top_level": 5,
+    "functions": 107,
+    "globals": 13,
+    "imports": 19,
+    "max_imports": 8,
+    "methods": 1,
+    "statements": 249,
+    "total": 122,
+    "type_aliases": 0,
+    "variables": 13
+  },
+  "waste": {
+    "single_use_functions": 100,
+    "trivial_wrappers": 1,
+    "unused_variables": 12
+  }
+}

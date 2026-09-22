@@ -1,0 +1,223 @@
+"""Shared fixtures for the mvault spec tests.
+
+Every test drives the real CLI surface required by the spec:
+
+    | Console command | `python mvault.py <subcommand> [args...]` | Full CLI behavior |
+
+so the helpers here run `mvault.py` as a subprocess and serve the vault
+`source` URL from a real local HTTP server (the spec requires the fetch be an
+HTTP `GET` made with `urllib.request`).
+"""
+
+from __future__ import annotations
+
+import json
+import re
+import shutil
+import subprocess
+import sys
+import threading
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
+
+import pytest
+
+REPO_ROOT = Path(__file__).resolve().parent.parent
+MVAULT = REPO_ROOT / "mvault.py"
+
+# | Datetime text | `YYYY-MM-DDTHH:MM:SS` without timezone suffix |
+ISO_RE = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$")
+
+TRACKED_FIELDS = ("title", "description", "views", "likes", "preview", "removed")
+STATIC_FIELDS = ("id", "published", "width", "height")
+CATEGORIES = ("episodes", "streams", "clips")
+
+
+def make_source_entry(entry_id: str, **overrides):
+    """A source entry carrying all nine required fields with valid types."""
+    entry = {
+        "id": entry_id,
+        "published": "2024-05-01T08:30:00",
+        "width": 1920,
+        "height": 1080,
+        "title": f"Title {entry_id}",
+        "description": f"Description {entry_id}",
+        "views": 100,
+        "likes": 10,
+        "preview": f"hash-{entry_id}",
+    }
+    entry.update(overrides)
+    return entry
+
+
+def make_payload(episodes=None, streams=None, clips=None):
+    """A source response: JSON object with `episodes`, `streams`, `clips`."""
+    return {
+        "episodes": list(episodes or []),
+        "streams": list(streams or []),
+        "clips": list(clips or []),
+    }
+
+
+class SourceServer:
+    """Serves the vault source payload over real HTTP."""
+
+    def __init__(self):
+        self.payload = make_payload()
+        self.raw_body = None  # when set, served verbatim instead of `payload`
+        self.status = 200
+        self.requests = []  # (method, path) of every received request
+        self._lock = threading.Lock()
+
+        server = self
+
+        class Handler(BaseHTTPRequestHandler):
+            def do_GET(self):  # noqa: N802 - http.server API
+                with server._lock:
+                    server.requests.append(("GET", self.path))
+                    status = server.status
+                    if server.raw_body is not None:
+                        body = server.raw_body
+                        if isinstance(body, str):
+                            body = body.encode("utf-8")
+                    else:
+                        body = json.dumps(server.payload).encode("utf-8")
+                self.send_response(status)
+                self.send_header("Content-Type", "application/json")
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+
+            def do_POST(self):  # noqa: N802 - http.server API
+                with server._lock:
+                    server.requests.append(("POST", self.path))
+                self.send_response(405)
+                self.send_header("Content-Length", "0")
+                self.end_headers()
+
+            def log_message(self, *args):  # keep test output clean
+                return
+
+        self._httpd = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+        self._thread = threading.Thread(target=self._httpd.serve_forever, daemon=True)
+        self._thread.start()
+
+    @property
+    def url(self):
+        host, port = self._httpd.server_address[:2]
+        return f"http://{host}:{port}/source.json"
+
+    def set(self, payload):
+        with self._lock:
+            self.payload = payload
+            self.raw_body = None
+
+    def set_raw(self, body, status=200):
+        with self._lock:
+            self.raw_body = body
+            self.status = status
+
+    def shutdown(self):
+        self._httpd.shutdown()
+        self._httpd.server_close()
+        self._thread.join(timeout=5)
+
+
+@pytest.fixture
+def source():
+    server = SourceServer()
+    try:
+        yield server
+    finally:
+        server.shutdown()
+
+
+@pytest.fixture
+def run_cli(tmp_path):
+    """Run `python mvault.py ...` in an isolated working directory."""
+
+    def _run(*args, cwd=None):
+        return subprocess.run(
+            [sys.executable, str(MVAULT), *[str(a) for a in args]],
+            cwd=str(cwd or tmp_path),
+            capture_output=True,
+            text=True,
+            timeout=60,
+        )
+
+    return _run
+
+
+@pytest.fixture
+def workdir(tmp_path):
+    return tmp_path
+
+
+def read_catalog(workdir, name="vault"):
+    return json.loads((Path(workdir) / name / "catalog.json").read_text(encoding="utf-8"))
+
+
+def find_entry(catalog, entry_id, category=None):
+    for cat in ((category,) if category else CATEGORIES):
+        for entry in catalog[cat]:
+            if entry["id"] == entry_id:
+                return entry
+    return None
+
+
+def latest_key(history):
+    """Current value key = latest datetime key, in chronological order."""
+    return sorted(history)[-1]
+
+
+def current(history):
+    return history[latest_key(history)]
+
+
+def keys_sorted(history):
+    return sorted(history)
+
+
+@pytest.fixture
+def vault(run_cli, workdir, source):
+    """An initialized vault named `vault` pointed at the local source server."""
+    result = run_cli("init", "vault", source.url)
+    assert result.returncode == 0, result.stderr
+    return Path(workdir) / "vault"
+
+
+@pytest.fixture
+def helpers():
+    class _H:
+        make_source_entry = staticmethod(make_source_entry)
+        make_payload = staticmethod(make_payload)
+        read_catalog = staticmethod(read_catalog)
+        find_entry = staticmethod(find_entry)
+        latest_key = staticmethod(latest_key)
+        current = staticmethod(current)
+        keys_sorted = staticmethod(keys_sorted)
+
+    return _H
+
+
+def copy_tree_snapshot(path):
+    """Byte-level snapshot of a directory, for `leave the vault unchanged`."""
+    snap = {}
+    for item in sorted(Path(path).rglob("*")):
+        if item.is_file():
+            snap[str(item.relative_to(path))] = item.read_bytes()
+    return snap
+
+
+@pytest.fixture
+def snapshot():
+    return copy_tree_snapshot
+
+
+@pytest.fixture
+def restore():
+    def _restore(src, dst):
+        shutil.rmtree(dst)
+        shutil.copytree(src, dst)
+
+    return _restore

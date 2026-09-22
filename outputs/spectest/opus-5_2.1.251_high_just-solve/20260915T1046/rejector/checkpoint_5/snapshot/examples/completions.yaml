@@ -1,0 +1,26 @@
+defaults:
+  api_url: "http://localhost:8000"
+  model: "meta-llama/llama-3-70b"
+  rpm: 60
+  api_type: "completions"
+  chat_template: "llama3"
+  prompt:
+    system: "Solve the math problem. Put your final answer after ####."
+    user: "{question}"
+  generation:
+    scheme: "greedy"
+    max_tokens: 512
+  evaluation:
+    type: "exact_match"
+    answer_field: "answer"
+    extract: "last_number"
+  output_field: "solution"
+
+tasks:
+  gsm8k:
+    chat_template: "chatml"
+  mmlu:
+    prompt:
+      system: "Answer with a single letter."
+    evaluation:
+      extract: "letter"

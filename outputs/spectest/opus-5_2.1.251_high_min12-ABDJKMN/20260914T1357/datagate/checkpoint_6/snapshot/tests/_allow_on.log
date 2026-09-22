@@ -1,0 +1,62 @@
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:52977
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:01:13] "[33mGET /datasets/abc HTTP/1.1[0m" 404 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:46119
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:05:11] "[31m[1mGET /convert?source=http://example.com/a.csv HTTP/1.1[0m" 403 -
+127.0.0.1 - - [14/Sep/2026 22:05:11] "[31m[1mGET /upload HTTP/1.1[0m" 403 -
+127.0.0.1 - - [14/Sep/2026 22:05:11] "[31m[1mGET /datasets/abc HTTP/1.1[0m" 403 -
+127.0.0.1 - - [14/Sep/2026 22:05:11] "[31m[1mGET /datasets/abc/export HTTP/1.1[0m" 403 -
+127.0.0.1 - - [14/Sep/2026 22:05:11] "[31m[1mGET / HTTP/1.1[0m" 403 -
+127.0.0.1 - - [14/Sep/2026 22:05:11] "[31m[1mGET /nothing-here HTTP/1.1[0m" 403 -
+127.0.0.1 - - [14/Sep/2026 22:05:11] "[31m[1mPOST /upload HTTP/1.1[0m" 403 -
+127.0.0.1 - - [14/Sep/2026 22:05:11] "[31m[1mGET /datasets/abc HTTP/1.1[0m" 403 -
+127.0.0.1 - - [14/Sep/2026 22:05:11] "[33mGET /datasets/unknown HTTP/1.1[0m" 404 -
+127.0.0.1 - - [14/Sep/2026 22:05:11] "GET /convert?source=http://127.0.0.1:46587/allow-convert-1.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:05:11] "GET /datasets/39f146598939138d HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:05:11] "POST /upload HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:05:11] "[33mGET /datasets/unknown HTTP/1.1[0m" 404 -
+127.0.0.1 - - [14/Sep/2026 22:05:11] "[33mGET /datasets/unknown HTTP/1.1[0m" 404 -
+127.0.0.1 - - [14/Sep/2026 22:05:11] "[33mGET /datasets/unknown HTTP/1.1[0m" 404 -
+127.0.0.1 - - [14/Sep/2026 22:05:11] "[33mGET /datasets/unknown HTTP/1.1[0m" 404 -
+127.0.0.1 - - [14/Sep/2026 22:05:11] "[33mGET /datasets/unknown HTTP/1.1[0m" 404 -
+127.0.0.1 - - [14/Sep/2026 22:05:11] "[33mGET /datasets/unknown HTTP/1.1[0m" 404 -
+127.0.0.1 - - [14/Sep/2026 22:05:11] "[31m[1mGET /datasets/unknown HTTP/1.1[0m" 403 -
+127.0.0.1 - - [14/Sep/2026 22:05:11] "[31m[1mGET /datasets/unknown HTTP/1.1[0m" 403 -
+127.0.0.1 - - [14/Sep/2026 22:05:11] "[31m[1mGET /datasets/unknown HTTP/1.1[0m" 403 -
+127.0.0.1 - - [14/Sep/2026 22:05:11] "[31m[1mGET /datasets/unknown HTTP/1.1[0m" 403 -
+127.0.0.1 - - [14/Sep/2026 22:05:11] "[31m[1mGET /datasets/unknown HTTP/1.1[0m" 403 -
+127.0.0.1 - - [14/Sep/2026 22:05:11] "[31m[1mGET /datasets/unknown HTTP/1.1[0m" 403 -
+127.0.0.1 - - [14/Sep/2026 22:05:11] "[31m[1mGET /datasets/unknown HTTP/1.1[0m" 403 -
+127.0.0.1 - - [14/Sep/2026 22:05:11] "[33mGET /datasets/unknown HTTP/1.1[0m" 404 -
+127.0.0.1 - - [14/Sep/2026 22:05:11] "[33mGET /datasets/unknown HTTP/1.1[0m" 404 -
+127.0.0.1 - - [14/Sep/2026 22:05:11] "[33mGET /datasets/unknown HTTP/1.1[0m" 404 -
+127.0.0.1 - - [14/Sep/2026 22:05:11] "[33mGET /datasets/unknown HTTP/1.1[0m" 404 -
+127.0.0.1 - - [14/Sep/2026 22:05:11] "[33mGET /datasets/unknown HTTP/1.1[0m" 404 -
+127.0.0.1 - - [14/Sep/2026 22:05:11] "[31m[1mGET /datasets/unknown HTTP/1.1[0m" 403 -
+127.0.0.1 - - [14/Sep/2026 22:05:11] "[31m[1mGET /datasets/unknown HTTP/1.1[0m" 403 -
+127.0.0.1 - - [14/Sep/2026 22:05:11] "[31m[1mGET /datasets/unknown HTTP/1.1[0m" 403 -
+127.0.0.1 - - [14/Sep/2026 22:05:11] "[31m[1mGET /datasets/unknown HTTP/1.1[0m" 403 -
+127.0.0.1 - - [14/Sep/2026 22:05:11] "[31m[1mGET /datasets/unknown HTTP/1.1[0m" 403 -
+127.0.0.1 - - [14/Sep/2026 22:05:11] "[31m[1mGET /datasets/unknown HTTP/1.1[0m" 403 -
+127.0.0.1 - - [14/Sep/2026 22:05:11] "[31m[1mGET /datasets/unknown HTTP/1.1[0m" 403 -
+127.0.0.1 - - [14/Sep/2026 22:05:11] "[31m[1mGET /datasets/unknown HTTP/1.1[0m" 403 -
+127.0.0.1 - - [14/Sep/2026 22:05:11] "[31m[1mGET /datasets/unknown HTTP/1.1[0m" 403 -
+127.0.0.1 - - [14/Sep/2026 22:05:11] "[33mGET /datasets/unknown HTTP/1.1[0m" 404 -
+127.0.0.1 - - [14/Sep/2026 22:05:11] "[33mGET /datasets/unknown HTTP/1.1[0m" 404 -
+127.0.0.1 - - [14/Sep/2026 22:05:11] "[33mGET /datasets/unknown HTTP/1.1[0m" 404 -
+127.0.0.1 - - [14/Sep/2026 22:05:11] "[33mGET /datasets/unknown HTTP/1.1[0m" 404 -
+127.0.0.1 - - [14/Sep/2026 22:05:14] "[33mGET /datasets/unknown HTTP/1.1[0m" 404 -
+127.0.0.1 - - [14/Sep/2026 22:05:14] "[31m[1mGET /datasets/unknown HTTP/1.1[0m" 403 -
+127.0.0.1 - - [14/Sep/2026 22:05:14] "[31m[1mPOST /upload HTTP/1.1[0m" 403 -
+127.0.0.1 - - [14/Sep/2026 22:05:14] "POST /upload HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:05:14] "[31m[1mGET /no/such/route HTTP/1.1[0m" 403 -
+127.0.0.1 - - [14/Sep/2026 22:05:14] "[31m[1mGET /upload HTTP/1.1[0m" 403 -
+127.0.0.1 - - [14/Sep/2026 22:05:14] "[31m[1mOPTIONS /convert HTTP/1.1[0m" 403 -
+127.0.0.1 - - [14/Sep/2026 22:05:14] "[31m[1mGET /convert HTTP/1.1[0m" 403 -

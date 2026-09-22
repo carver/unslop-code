@@ -1,0 +1,50 @@
+task:
+  name: "data_lookup"
+  api_url: "http://127.0.0.1:53853"
+  model: "gpt-4"
+  rpm: 600
+  prompt:
+    system: "You are a data analysis assistant. Use the provided tools."
+    user: "{question}"
+  generation:
+    scheme: "agentic"
+    max_iterations: 10
+    temperature: 0.0
+    max_tokens: 512
+  num_solutions: 2
+  evaluation:
+    type: "exact_match"
+    answer_field: "answer"
+    extract: "last_number"
+  output_field: "answer"
+  tools:
+    - name: "lookup"
+      description: "Look up a value in the database by key"
+      parameters:
+        type: "object"
+        properties:
+          key:
+            type: "string"
+            description: "The database key to look up"
+        required: ["key"]
+      handler:
+        type: "static_map"
+        mapping:
+          "revenue_q1": "1250000"
+          "revenue_q2": "1480000"
+          "employees": "142"
+        default: "KEY_NOT_FOUND"
+    - name: "calculate"
+      description: "Evaluate a mathematical expression"
+      parameters:
+        type: "object"
+        properties:
+          code:
+            type: "string"
+            description: "The code to run"
+        required: ["code"]
+      handler:
+        type: "script"
+        command: "python3 -c"
+        arg_field: "code"
+

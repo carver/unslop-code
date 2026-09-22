@@ -1,0 +1,128 @@
+{
+  "schema_version": 1,
+  "problem_name": "sith",
+  "problem_version": 2,
+  "checkpoint_name": "checkpoint_2",
+  "checkpoint_version": 2,
+  "duration": 20.32174801826477,
+  "entrypoint": "uv run sith.py",
+  "tests": {
+    "checkpoint_1-Regression": {
+      "passed": [
+        "test_checkpoint_name_fixture_is_wired",
+        "test_complete_attribute_on_instance_includes_methods_and_init_attrs",
+        "test_complete_attribute_prefix_filters_attrs",
+        "test_complete_case_insensitive_complete_field_strips_by_length",
+        "test_complete_case_insensitive_ordering_includes_both_spellings",
+        "test_complete_case_insensitive_prefix",
+        "test_complete_class_body_name_not_visible_in_method",
+        "test_complete_column_out_of_range_exits_1",
+        "test_complete_comprehension_var_not_visible_outside",
+        "test_complete_directory_path_exits_1",
+        "test_complete_enclosing_scope_name_visible",
+        "test_complete_file_not_found_exits_1",
+        "test_complete_from_import_name_visible",
+        "test_complete_fuzzy_is_case_insensitive_and_ordered",
+        "test_complete_fuzzy_matching_relaxes_prefix",
+        "test_complete_includes_builtin_name",
+        "test_complete_inherited_attribute_from_base_class",
+        "test_complete_invalid_utf8_exits_1",
+        "test_complete_keywords_not_in_attribute_context",
+        "test_complete_line_out_of_range_exits_1",
+        "test_complete_line_zero_exits_1",
+        "test_complete_literal_attribute_sets[\"abc\"-upper]",
+        "test_complete_literal_attribute_sets[[]-append]",
+        "test_complete_literal_attribute_sets[{1}-add]",
+        "test_complete_literal_attribute_sets[{}-keys]",
+        "test_complete_local_name_shadows_global",
+        "test_complete_metadata_for_function_class_and_keyword",
+        "test_complete_module_attribute_respects_all",
+        "test_complete_multiple_inheritance_mro",
+        "test_complete_name_defined_after_cursor_not_visible",
+        "test_complete_name_scope_prefix_and_insert_text",
+        "test_complete_names_are_visible_on_their_definition_line",
+        "test_complete_nested_scope_shadowing_prefers_innermost_name",
+        "test_complete_no_prefix_after_dot_returns_all_attrs",
+        "test_complete_ordering_public_private_dunder_then_keywords",
+        "test_complete_star_import_uses_all",
+        "test_complete_star_import_without_all_uses_public_names",
+        "test_complete_tolerates_syntax_errors"
+      ],
+      "failed": [
+        "test_complete_function_param_is_visible_with_param_metadata"
+      ],
+      "skipped": []
+    },
+    "checkpoint_2-Functionality": {
+      "passed": [
+        "test_complete_dataclass_fully_qualified_decorator",
+        "test_complete_dataclass_init_false_field_visible_on_instance",
+        "test_complete_dataclass_instance_attrs_from_imported_decorator",
+        "test_complete_frozen_dataclass_fields_visible_on_instance",
+        "test_complete_isinstance_narrowing_attribute_completion",
+        "test_complete_none_branch_excludes_string_attributes",
+        "test_complete_union_attribute_dedupes_name",
+        "test_complete_union_dedupe_keeps_single_candidate",
+        "test_goto_ambiguous_conditional_assignments_returns_all_definitions_sorted",
+        "test_goto_definition_fields_are_populated",
+        "test_goto_nested_full_name_for_method",
+        "test_infer_attribute_access_on_instance",
+        "test_infer_bare_function_name_returns_function_type",
+        "test_infer_bare_return_yields_none",
+        "test_infer_deep_assignment_chain",
+        "test_infer_function_docstring_on_symbol",
+        "test_infer_instance_description_field",
+        "test_infer_literal_type_table_additional_coverage[3.14-float]",
+        "test_infer_literal_type_table_additional_coverage[b'x'-bytes]",
+        "test_infer_multiple_definitions_sorted_by_location",
+        "test_infer_none_narrowing_in_if_branch",
+        "test_infer_tuple_isinstance_narrowing_yields_union",
+        "test_infer_unresolved_name_returns_empty_array",
+        "test_infer_literal_type_table_additional_coverage[(1, 2)-tuple]",
+        "test_infer_literal_type_table_additional_coverage[{'a': 1}-dict]",
+        "test_infer_literal_type_table_additional_coverage[[1, 2]-list]",
+        "test_infer_literal_type_table_additional_coverage[{1, 2}-set]"
+      ],
+      "failed": [
+        "test_infer_is_not_none_narrowing_excludes_none"
+      ],
+      "skipped": []
+    },
+    "checkpoint_2-Error": {
+      "passed": [
+        "test_goto_cursor_not_on_name_exits_1",
+        "test_infer_cursor_not_on_name_exits_1"
+      ],
+      "failed": [],
+      "skipped": []
+    },
+    "checkpoint_2-Core": {
+      "passed": [
+        "test_goto_on_variable_name_returns_assignment_site",
+        "test_goto_unresolved_name_returns_empty_array",
+        "test_infer_follows_assignment_chain_and_call",
+        "test_infer_implicit_none_for_no_return",
+        "test_infer_literal_points_to_builtin_metadata",
+        "test_infer_union_from_multiple_return_paths"
+      ],
+      "failed": [],
+      "skipped": []
+    }
+  },
+  "pass_counts": {
+    "Core": 6,
+    "Functionality": 27,
+    "Regression": 38,
+    "Error": 2
+  },
+  "total_counts": {
+    "Core": 6,
+    "Functionality": 28,
+    "Regression": 39,
+    "Error": 2
+  },
+  "pytest_exit_code": 1,
+  "pytest_collected": 71,
+  "test_collection_hash": "333ef4b5a117fe8e3574925b6b80338c3f1a20ed6e6404b39116e3b843178b67",
+  "infrastructure_failure": false
+}

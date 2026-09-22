@@ -1,0 +1,648 @@
+"""Tests for merge_files.py, run with: python -m unittest -v"""
+
+from __future__ import annotations
+
+import csv
+import gzip
+import io
+import json
+import subprocess
+import sys
+import tempfile
+import unittest
+from contextlib import redirect_stderr
+from datetime import date, datetime
+from pathlib import Path
+
+import pyarrow as pa
+import pyarrow.parquet as pq
+
+import merge_files
+
+
+class MergeTestCase(unittest.TestCase):
+    """Base class giving each test a scratch directory and a runner."""
+
+    def setUp(self) -> None:
+        self._workspace = tempfile.TemporaryDirectory()
+        self.addCleanup(self._workspace.cleanup)
+        self.directory = Path(self._workspace.name)
+        self.output = self.directory / "merged.csv"
+
+    def write(self, name: str, text: str) -> str:
+        path = self.directory / name
+        path.write_text(text, encoding="utf-8")
+        return str(path)
+
+    def write_gzip(self, name: str, text: str) -> str:
+        path = self.directory / name
+        path.write_bytes(gzip.compress(text.encode("utf-8")))
+        return str(path)
+
+    def write_jsonl(self, name: str, *objects: dict) -> str:
+        return self.write(name, "".join(json.dumps(item) + "\n" for item in objects))
+
+    def write_parquet(self, name: str, table: pa.Table, **options: int) -> str:
+        path = self.directory / name
+        pq.write_table(table, path, **options)
+        return str(path)
+
+    def schema_file(self, *columns: tuple[str, str]) -> str:
+        document = {"columns": [{"name": name, "type": kind} for name, kind in columns]}
+        return self.write("schema.json", json.dumps(document))
+
+    def run_merge(self, *argv: str) -> tuple[int, list[list[str]]]:
+        """Run the tool into a scratch file and return its exit code and rows.
+
+        The raw output text is kept on ``self.raw`` and stderr on ``self.stderr``.
+        """
+        stderr = io.StringIO()
+        with redirect_stderr(stderr):
+            code = merge_files.main(["--output", str(self.output), *argv])
+        self.stderr = stderr.getvalue()
+        self.raw = self.output.read_text(encoding="utf-8") if self.output.exists() else ""
+        return code, list(csv.reader(io.StringIO(self.raw)))
+
+
+class SchemaResolutionTests(MergeTestCase):
+    def test_explicit_schema_orders_ignores_and_fills_columns(self):
+        first = self.write("a.csv", "id,note,dropped\n1,alpha,x\n")
+        second = self.write("b.csv", "note,id\nbeta,2\n")
+        schema = self.schema_file(("id", "int"), ("note", "string"), ("missing", "string"))
+        code, rows = self.run_merge("--key", "id", "--schema", schema, first, second)
+        self.assertEqual(code, 0)
+        self.assertEqual(rows, [["id", "note", "missing"], ["1", "alpha", ""], ["2", "beta", ""]])
+
+    def test_inferred_columns_are_the_lexicographic_header_union(self):
+        first = self.write("a.csv", "b,a\n1,2\n")
+        second = self.write("b.csv", "c,a\n3,4\n")
+        _code, rows = self.run_merge("--key", "a", first, second)
+        self.assertEqual(rows[0], ["a", "b", "c"])
+
+    def test_strict_inference_falls_back_to_string_when_files_disagree(self):
+        first = self.write("a.csv", "n\n1\n2\n")
+        second = self.write("b.csv", "n\n2.5\n")
+        _code, rows = self.run_merge("--key", "n", "--infer", "strict", first, second)
+        self.assertEqual([row[0] for row in rows[1:]], ["1", "2", "2.5"])
+
+    def test_loose_inference_pools_values_into_one_numeric_type(self):
+        first = self.write("a.csv", "n\n1\n2\n")
+        second = self.write("b.csv", "n\n2.5\n")
+        _code, rows = self.run_merge("--key", "n", "--infer", "loose", first, second)
+        self.assertEqual([row[0] for row in rows[1:]], ["1.0", "2.0", "2.5"])
+
+    def test_a_column_of_nulls_is_a_string_column(self):
+        source = self.write("a.csv", "n,empty\n1,\n,\n3,\n")
+        _code, rows = self.run_merge("--key", "n", "--infer", "loose", source)
+        self.assertEqual(rows[0], ["empty", "n"])
+        self.assertEqual([row[1] for row in rows[1:]], ["", "1", "3"])
+
+    def test_unknown_key_column_is_an_error(self):
+        source = self.write("a.csv", "id\n1\n")
+        code, _rows = self.run_merge("--key", "nope", source)
+        self.assertEqual(code, 3)
+        self.assertIn("nope", self.stderr)
+
+    def test_unknown_type_in_schema_is_an_error(self):
+        source = self.write("a.csv", "id\n1\n")
+        schema = self.schema_file(("id", "integer"))
+        code, _rows = self.run_merge("--key", "id", "--schema", schema, source)
+        self.assertEqual(code, 6)
+        self.assertIn("unknown column type", self.stderr)
+
+
+class CastingTests(MergeTestCase):
+    def test_types_are_rendered_canonically(self):
+        source = self.write(
+            "a.csv",
+            "i,f,b,d,t\n"
+            "007,2,1,2024-07-01,2024-07-01T12:00:00+02:00\n"
+            "-1,3.50,false,2024-01-31,2024-07-01 08:00:00.500\n",
+        )
+        schema = self.schema_file(
+            ("i", "int"), ("f", "float"), ("b", "bool"), ("d", "date"), ("t", "timestamp")
+        )
+        _code, rows = self.run_merge("--key", "i", "--schema", schema, source)
+        self.assertEqual(rows[1], ["-1", "3.5", "false", "2024-01-31", "2024-07-01T08:00:00.500Z"])
+        self.assertEqual(rows[2], ["7", "2.0", "true", "2024-07-01", "2024-07-01T10:00:00Z"])
+
+    def test_coerce_null_replaces_unparsable_cells(self):
+        source = self.write("a.csv", "id,amount\n1,oops\n")
+        schema = self.schema_file(("id", "int"), ("amount", "float"))
+        _code, rows = self.run_merge("--key", "id", "--schema", schema, source)
+        self.assertEqual(rows[1], ["1", ""])
+
+    def test_keep_string_preserves_the_original_text(self):
+        source = self.write("a.csv", "id,amount\n1,oops\n")
+        schema = self.schema_file(("id", "int"), ("amount", "float"))
+        _code, rows = self.run_merge(
+            "--key", "id", "--schema", schema, "--on-type-error", "keep-string", source
+        )
+        self.assertEqual(rows[1], ["1", "oops"])
+
+    def test_fail_reports_the_bad_cell_and_exits_non_zero(self):
+        source = self.write("a.csv", "id,amount\n1,oops\n")
+        schema = self.schema_file(("id", "int"), ("amount", "float"))
+        code, _rows = self.run_merge(
+            "--key", "id", "--schema", schema, "--on-type-error", "fail", source
+        )
+        self.assertEqual(code, 4)
+        self.assertIn("amount", self.stderr)
+
+    def test_null_literal_is_used_for_missing_values(self):
+        first = self.write("a.csv", "id,note\n1,\n")
+        second = self.write("b.csv", "id\n2\n")
+        _code, rows = self.run_merge("--key", "id", "--csv-null-literal", "NULL", first, second)
+        self.assertEqual(rows[1:], [["1", "NULL"], ["2", "NULL"]])
+
+    def test_short_rows_are_padded_with_nulls(self):
+        source = self.write("a.csv", "id,note\n1\n2,here\n")
+        _code, rows = self.run_merge("--key", "id", source)
+        self.assertEqual(rows[1:], [["1", ""], ["2", "here"]])
+
+
+class SortingTests(MergeTestCase):
+    def test_composite_key_and_descending_order(self):
+        source = self.write("a.csv", "a,b\n1,2\n1,1\n2,1\n")
+        schema = self.schema_file(("a", "int"), ("b", "int"))
+        _code, rows = self.run_merge("--key", "a,b", "--desc", "--schema", schema, source)
+        self.assertEqual(rows[1:], [["2", "1"], ["1", "2"], ["1", "1"]])
+
+    def test_nulls_sort_first_ascending_and_last_descending(self):
+        source = self.write("a.csv", "id,k\n1,5\n2,\n3,1\n")
+        schema = self.schema_file(("id", "int"), ("k", "int"))
+        _code, ascending = self.run_merge("--key", "k", "--schema", schema, source)
+        self.assertEqual([row[0] for row in ascending[1:]], ["2", "3", "1"])
+        _code, descending = self.run_merge("--key", "k", "--desc", "--schema", schema, source)
+        self.assertEqual([row[0] for row in descending[1:]], ["1", "3", "2"])
+
+    def test_sort_is_stable_across_files_in_both_directions(self):
+        first = self.write("a.csv", "k,v\n1,a1\n1,a2\n")
+        second = self.write("b.csv", "k,v\n1,b1\n1,b2\n")
+        schema = self.schema_file(("k", "int"), ("v", "string"))
+        for extra in ([], ["--desc"]):
+            with self.subTest(order=extra):
+                _code, rows = self.run_merge("--key", "k", "--schema", schema, *extra, first, second)
+                self.assertEqual([row[1] for row in rows[1:]], ["a1", "a2", "b1", "b2"])
+
+    def test_spilled_runs_sort_like_an_in_memory_sort(self):
+        values = [(index * 7919) % 1000 for index in range(1000)]
+        source = self.write("a.csv", "k\n" + "".join(f"{value}\n" for value in values))
+        schema = self.schema_file(("k", "int"))
+        _code, buffered = self.run_merge("--key", "k", "--schema", schema, source)
+        self.assertEqual([int(row[0]) for row in buffered[1:]], sorted(values))
+        _code, spilled = self.run_merge(
+            "--key", "k", "--schema", schema, "--memory-limit-mb", "0", source
+        )
+        self.assertEqual(spilled, buffered)
+
+    def test_timestamps_sort_by_instant_not_by_text(self):
+        source = self.write(
+            "a.csv",
+            "id,t\n1,2024-07-01T12:00:00Z\n2,2024-07-01T09:00:00-05:00\n3,2024-07-01T12:00:00.5Z\n",
+        )
+        schema = self.schema_file(("id", "int"), ("t", "timestamp"))
+        _code, rows = self.run_merge(
+            "--key", "t", "--schema", schema, "--memory-limit-mb", "0", source
+        )
+        self.assertEqual([row[0] for row in rows[1:]], ["1", "3", "2"])
+
+    def test_kept_strings_sort_after_the_values_of_their_column(self):
+        source = self.write("a.csv", "id,k\n1,oops\n2,10\n3,\n")
+        schema = self.schema_file(("id", "int"), ("k", "int"))
+        _code, rows = self.run_merge(
+            "--key", "k", "--schema", schema, "--on-type-error", "keep-string", source
+        )
+        self.assertEqual([row[0] for row in rows[1:]], ["3", "2", "1"])
+
+
+class DialectTests(MergeTestCase):
+    def test_both_escape_styles_are_read_and_quotes_are_doubled_on_output(self):
+        source = self.write("a.csv", 'id,note\n1,"a\\"b"\n2,"c""d"\n3,"e,f"\n')
+        _code, rows = self.run_merge("--key", "id", source)
+        self.assertEqual([row[1] for row in rows[1:]], ['a"b', 'c"d', "e,f"])
+        self.assertIn('"a""b"', self.raw)
+
+    def test_custom_quote_character_is_read_and_written(self):
+        source = self.write("a.csv", "id,note\n7,'c,d'\n")
+        code, _rows = self.run_merge("--key", "id", "--csv-quotechar", "'", source)
+        self.assertEqual(code, 0)
+        self.assertEqual(self.raw, "id,note\n7,'c,d'\n")
+
+    def test_output_uses_newline_line_endings(self):
+        source = self.write("a.csv", "id\n2\n1\n")
+        code, _rows = self.run_merge("--key", "id", source)
+        self.assertEqual(code, 0)
+        self.assertEqual(self.output.read_bytes(), b"id\n1\n2\n")
+
+    def test_dash_writes_the_merged_csv_to_stdout(self):
+        source = self.write("a.csv", "id\n2\n1\n")
+        finished = subprocess.run(
+            [sys.executable, str(Path(merge_files.__file__)), "--output", "-", "--key", "id", source],
+            capture_output=True,
+            check=True,
+        )
+        self.assertEqual(finished.stdout, b"id\n1\n2\n")
+
+    def test_temporary_runs_are_removed(self):
+        temp_dir = self.directory / "spill"
+        temp_dir.mkdir()
+        source = self.write("a.csv", "id\n" + "".join(f"{value}\n" for value in range(500)))
+        code, _rows = self.run_merge(
+            "--key", "id", "--memory-limit-mb", "0", "--temp-dir", str(temp_dir), source
+        )
+        self.assertEqual(code, 0)
+        self.assertEqual(list(temp_dir.iterdir()), [])
+
+
+class FormatDetectionTests(MergeTestCase):
+    def test_extensions_name_the_format(self):
+        csv_input = self.write("a.csv", "id\n1\n")
+        tsv_input = self.write("b.tsv", "id\n2\n")
+        jsonl_input = self.write_jsonl("c.jsonl", {"id": 3})
+        ndjson_input = self.write_jsonl("d.ndjson", {"id": 4})
+        parquet_input = self.write_parquet("e.parquet", pa.table({"id": [5]}))
+        code, rows = self.run_merge(
+            "--key", "id", csv_input, tsv_input, jsonl_input, ndjson_input, parquet_input
+        )
+        self.assertEqual(code, 0)
+        self.assertEqual([row[0] for row in rows[1:]], ["1", "2", "3", "4", "5"])
+
+    def test_gzip_suffix_follows_the_base_extension(self):
+        csv_input = self.write_gzip("a.csv.gz", "id\n1\n")
+        jsonl_input = self.write_gzip("b.jsonl.gz", '{"id": 2}\n')
+        _code, rows = self.run_merge("--key", "id", csv_input, jsonl_input)
+        self.assertEqual([row[0] for row in rows[1:]], ["1", "2"])
+
+    def test_parquet_magic_bytes_settle_an_unknown_extension(self):
+        mystery = self.write_parquet("data.bin", pa.table({"id": [7]}))
+        _code, rows = self.run_merge("--key", "id", mystery)
+        self.assertEqual(rows[1:], [["7"]])
+
+    def test_an_undetectable_extension_is_a_usage_error(self):
+        mystery = self.write("data.txt", "id\n1\n")
+        code, _rows = self.run_merge("--key", "id", mystery)
+        self.assertEqual(code, 2)
+        self.assertIn("--input-format", self.stderr)
+
+    def test_input_format_overrides_the_extension(self):
+        mystery = self.write("data.txt", "id\tnote\n41\tx\n")
+        _code, rows = self.run_merge("--key", "id", "--input-format", "tsv", mystery)
+        self.assertEqual(rows, [["id", "note"], ["41", "x"]])
+
+    def test_forced_gzip_on_plain_data_is_a_compression_error(self):
+        source = self.write("a.csv", "id\n1\n")
+        code, _rows = self.run_merge("--key", "id", "--compression", "gzip", source)
+        self.assertEqual(code, 5)
+        self.assertIn("compression", self.stderr)
+
+    def test_forced_none_on_gzip_data_is_a_compression_error(self):
+        source = self.write_gzip("a.csv.gz", "id\n1\n")
+        code, _rows = self.run_merge("--key", "id", "--compression", "none", source)
+        self.assertEqual(code, 5)
+
+    def test_a_gz_name_without_gzip_content_is_a_compression_error(self):
+        source = self.write("a.csv.gz", "id\n1\n")
+        code, _rows = self.run_merge("--key", "id", source)
+        self.assertEqual(code, 5)
+
+    def test_a_truncated_gzip_stream_is_a_data_error(self):
+        whole = gzip.compress(b"id\n1\n")
+        source = self.directory / "a.csv.gz"
+        source.write_bytes(whole[: len(whole) - 4])
+        code, _rows = self.run_merge("--key", "id", str(source))
+        self.assertEqual(code, 5)
+
+    def test_a_file_that_only_looks_like_parquet_is_a_data_error(self):
+        source = self.write("a.parquet", "PAR1 and nothing else")
+        code, _rows = self.run_merge("--key", "id", source)
+        self.assertEqual(code, 5)
+
+    def test_a_missing_input_is_reported_without_a_traceback(self):
+        code, _rows = self.run_merge("--key", "id", str(self.directory / "absent.csv"))
+        self.assertEqual(code, 1)
+        self.assertIn("absent.csv", self.stderr)
+
+
+class TsvTests(MergeTestCase):
+    def test_tabs_separate_fields_and_crlf_endings_are_accepted(self):
+        source = self.write("a.tsv", "id\tnote\r\n2\tb\r\n1\ta\r\n")
+        _code, rows = self.run_merge("--key", "id", source)
+        self.assertEqual(rows, [["id", "note"], ["1", "a"], ["2", "b"]])
+
+    def test_quotes_are_data_rather_than_quoting(self):
+        source = self.write("a.tsv", 'id\tnote\n41\t"a,b"\n')
+        _code, rows = self.run_merge("--key", "id", source)
+        self.assertEqual(rows[1], ["41", '"a,b"'])
+
+    def test_a_literal_tab_inside_a_field_is_a_data_error(self):
+        source = self.write("a.tsv", "id\tnote\n1\ta\tb\n")
+        code, _rows = self.run_merge("--key", "id", source)
+        self.assertEqual(code, 5)
+        self.assertIn("tab", self.stderr)
+
+
+class JsonlTests(MergeTestCase):
+    def test_values_arrive_typed_and_blank_lines_are_ignored(self):
+        source = self.write("a.jsonl", '{"id": 1, "ok": true}\n\n   \n{"id": 2, "ok": false}\n')
+        _code, rows = self.run_merge("--key", "id", source)
+        self.assertEqual(rows, [["id", "ok"], ["1", "true"], ["2", "false"]])
+
+    def test_the_column_set_is_the_union_of_the_object_keys(self):
+        source = self.write_jsonl("a.jsonl", {"b": 1}, {"a": 2})
+        _code, rows = self.run_merge("--key", "a", source)
+        self.assertEqual(rows, [["a", "b"], ["", "1"], ["2", ""]])
+
+    def test_keys_are_case_sensitive(self):
+        source = self.write_jsonl("a.jsonl", {"id": 1, "ID": 2})
+        _code, rows = self.run_merge("--key", "id", source)
+        self.assertEqual(rows, [["ID", "id"], ["2", "1"]])
+
+    def test_a_whole_number_stays_an_integer_and_a_fraction_becomes_a_float(self):
+        source = self.write_jsonl("a.jsonl", {"n": 1.0}, {"n": 2.5})
+        _code, rows = self.run_merge("--key", "n", "--infer", "loose", source)
+        self.assertEqual([row[0] for row in rows[1:]], ["1.0", "2.5"])
+
+    def test_the_number_one_is_not_a_boolean(self):
+        source = self.write_jsonl("a.jsonl", {"n": 1}, {"n": 0})
+        _code, rows = self.run_merge("--key", "n", source)
+        self.assertEqual([row[0] for row in rows[1:]], ["0", "1"])
+
+    def test_null_becomes_the_null_literal(self):
+        source = self.write_jsonl("a.jsonl", {"id": 1, "note": None})
+        _code, rows = self.run_merge("--key", "id", "--csv-null-literal", "NULL", source)
+        self.assertEqual(rows[1], ["1", "NULL"])
+
+    def test_a_nested_value_is_a_schema_error(self):
+        source = self.write("a.jsonl", '{"id": 1, "tags": ["x"], "meta": {"k": 1}}\n')
+        code, _rows = self.run_merge("--key", "id", source)
+        self.assertEqual(code, 6)
+        self.assertIn("meta, tags", self.stderr)
+
+    def test_a_broken_line_is_a_data_error(self):
+        source = self.write("a.jsonl", '{"id": 1}\n{"id":\n')
+        code, _rows = self.run_merge("--key", "id", source)
+        self.assertEqual(code, 5)
+        self.assertIn("line 2", self.stderr)
+
+    def test_a_line_that_is_not_an_object_is_a_data_error(self):
+        source = self.write("a.jsonl", "[1, 2]\n")
+        code, _rows = self.run_merge("--key", "id", source)
+        self.assertEqual(code, 5)
+
+
+class ParquetTests(MergeTestCase):
+    def test_declared_types_are_used_and_rendered_canonically(self):
+        table = pa.table(
+            {
+                "id": pa.array([2, 1], pa.int32()),
+                "amount": pa.array([1.5, None], pa.float64()),
+                "day": pa.array([date(2024, 3, 1), date(2024, 2, 1)]),
+                "seen": pa.array([datetime(2024, 3, 1, 12, 30), None], pa.timestamp("ms")),
+                "ok": pa.array([True, False]),
+                "tag": pa.array(["b", "a"]),
+            }
+        )
+        source = self.write_parquet("a.parquet", table)
+        _code, rows = self.run_merge("--key", "id", source)
+        self.assertEqual(rows[0], ["amount", "day", "id", "ok", "seen", "tag"])
+        self.assertEqual(rows[1], ["", "2024-02-01", "1", "false", "", "a"])
+        self.assertEqual(rows[2], ["1.5", "2024-03-01", "2", "true", "2024-03-01T12:30:00Z", "b"])
+
+    def test_a_nested_column_is_a_schema_error(self):
+        table = pa.table({"id": [1], "tags": [["x", "y"]]})
+        source = self.write_parquet("a.parquet", table)
+        code, _rows = self.run_merge("--key", "id", source)
+        self.assertEqual(code, 6)
+        self.assertIn("tags", self.stderr)
+
+    def test_every_row_group_is_read_with_a_small_batch_budget(self):
+        table = pa.table({"id": list(range(500, 0, -1))})
+        source = self.write_parquet("a.parquet", table, row_group_size=50)
+        code, rows = self.run_merge(
+            "--key", "id", "--parquet-row-group-bytes", "64", "--memory-limit-mb", "64", source
+        )
+        self.assertEqual(code, 0)
+        self.assertEqual([int(row[0]) for row in rows[1:]], list(range(1, 501)))
+
+    def test_a_gzipped_parquet_file_is_read(self):
+        plain = Path(self.write_parquet("a.parquet", pa.table({"id": [4, 3]})))
+        source = self.directory / "a.parquet.gz"
+        source.write_bytes(gzip.compress(plain.read_bytes()))
+        _code, rows = self.run_merge("--key", "id", str(source))
+        self.assertEqual([row[0] for row in rows[1:]], ["3", "4"])
+
+
+class SchemaStrategyTests(MergeTestCase):
+    def test_authoritative_prefers_the_parquet_type(self):
+        typed = self.write_parquet("a.parquet", pa.table({"n": pa.array([1.5], pa.float64())}))
+        text = self.write("b.csv", "n\n2\n")
+        _code, rows = self.run_merge("--key", "n", typed, text)
+        self.assertEqual([row[0] for row in rows[1:]], ["1.5", "2.0"])
+
+    def test_authoritative_lets_csv_outrank_tsv(self):
+        text = self.write("a.csv", "n\n5\n")
+        weak = self.write("b.tsv", "n\nnot-a-number\n")
+        _code, rows = self.run_merge("--key", "n", text, weak)
+        self.assertEqual([row[0] for row in rows[1:]], ["", "5"])
+
+    def test_authoritative_ranks_jsonl_with_csv_so_they_disagree(self):
+        text = self.write("a.csv", "n\n5\n")
+        objects = self.write_jsonl("b.jsonl", {"n": 2.5})
+        _code, rows = self.run_merge("--key", "n", text, objects)
+        self.assertEqual([row[0] for row in rows[1:]], ["2.5", "5"])
+
+    def test_consensus_follows_the_majority_of_files(self):
+        first = self.write("a.csv", "n\n5\n")
+        second = self.write("b.csv", "n\n7\n")
+        third = self.write("c.csv", "n\n2.5\n")
+        _code, rows = self.run_merge(
+            "--key", "n", "--schema-strategy", "consensus", first, second, third
+        )
+        self.assertEqual([row[0] for row in rows[1:]], ["", "5", "7"])
+
+    def test_consensus_reconciles_a_tie_the_way_infer_asks(self):
+        first = self.write("a.csv", "n\n5\n")
+        second = self.write("b.csv", "n\n2.5\n")
+        _code, strict = self.run_merge(
+            "--key", "n", "--schema-strategy", "consensus", first, second
+        )
+        self.assertEqual([row[0] for row in strict[1:]], ["2.5", "5"])
+        _code, loose = self.run_merge(
+            "--key", "n", "--schema-strategy", "consensus", "--infer", "loose", first, second
+        )
+        self.assertEqual([row[0] for row in loose[1:]], ["2.5", "5.0"])
+
+    def test_union_widens_to_hold_every_value(self):
+        typed = self.write_parquet("a.parquet", pa.table({"n": pa.array([5], pa.int64())}))
+        objects = self.write_jsonl("b.jsonl", {"n": 2.5})
+        _code, rows = self.run_merge("--key", "n", "--schema-strategy", "union", typed, objects)
+        self.assertEqual([row[0] for row in rows[1:]], ["2.5", "5.0"])
+
+    def test_a_provided_schema_ignores_the_strategies(self):
+        objects = self.write_jsonl("a.jsonl", {"id": 1, "extra": "dropped"})
+        typed = self.write_parquet("b.parquet", pa.table({"id": pa.array([2], pa.int64())}))
+        schema = self.schema_file(("id", "string"), ("missing", "int"))
+        _code, rows = self.run_merge("--key", "id", "--schema", schema, objects, typed)
+        self.assertEqual(rows, [["id", "missing"], ["1", ""], ["2", ""]])
+
+    def test_a_key_outside_the_resolved_schema_is_an_error(self):
+        objects = self.write_jsonl("a.jsonl", {"id": 1})
+        code, _rows = self.run_merge("--key", "id,when", objects)
+        self.assertEqual(code, 3)
+        self.assertIn("when", self.stderr)
+
+
+class MixedSourceTests(MergeTestCase):
+    def build_inputs(self) -> list[str]:
+        """One row per format, each with the same three columns."""
+        return [
+            self.write("a.csv", "ts,id,src\n2024-01-02T00:00:00Z,2,csv\n"),
+            self.write_gzip(
+                "b.jsonl.gz", '{"ts": "2024-01-01T00:00:00Z", "id": 3, "src": "jsonl"}\n'
+            ),
+            self.write_parquet(
+                "c.parquet",
+                pa.table(
+                    {
+                        "ts": pa.array([datetime(2024, 1, 1)], pa.timestamp("ms")),
+                        "id": pa.array([1], pa.int64()),
+                        "src": ["parquet"],
+                    }
+                ),
+            ),
+        ]
+
+    def test_composite_key_sorts_across_formats(self):
+        code, rows = self.run_merge(
+            "--key", "ts,id", "--schema-strategy", "consensus", *self.build_inputs()
+        )
+        self.assertEqual(code, 0)
+        self.assertEqual(rows[0], ["id", "src", "ts"])
+        self.assertEqual([row[1] for row in rows[1:]], ["parquet", "jsonl", "csv"])
+
+    def test_descending_order_reverses_the_mixed_result(self):
+        _code, rows = self.run_merge(
+            "--key", "ts,id", "--desc", "--schema-strategy", "consensus", *self.build_inputs()
+        )
+        self.assertEqual([row[1] for row in rows[1:]], ["csv", "jsonl", "parquet"])
+
+    def test_equal_keys_keep_the_order_of_the_sources(self):
+        first = self.write("a.csv", "k,v\n1,csv\n")
+        second = self.write_jsonl("b.jsonl", {"k": 1, "v": "jsonl"})
+        third = self.write_parquet(
+            "c.parquet", pa.table({"k": pa.array([1], pa.int64()), "v": ["parquet"]})
+        )
+        for extra in ([], ["--desc"]):
+            with self.subTest(order=extra):
+                _code, rows = self.run_merge("--key", "k", *extra, first, second, third)
+                self.assertEqual([row[1] for row in rows[1:]], ["csv", "jsonl", "parquet"])
+
+    def test_every_row_appears_once_when_the_sort_spills(self):
+        rows_per_source = 300
+        csv_input = self.write(
+            "a.csv", "k\n" + "".join(f"{value}\n" for value in range(rows_per_source))
+        )
+        jsonl_input = self.write_jsonl(
+            "b.jsonl", *({"k": value} for value in range(rows_per_source))
+        )
+        parquet_input = self.write_parquet(
+            "c.parquet",
+            pa.table({"k": pa.array(list(range(rows_per_source)), pa.int64())}),
+            row_group_size=64,
+        )
+        _code, rows = self.run_merge(
+            "--key", "k", "--memory-limit-mb", "0", csv_input, jsonl_input, parquet_input
+        )
+        keys = [int(row[0]) for row in rows[1:]]
+        self.assertEqual(len(keys), 3 * rows_per_source)
+        self.assertEqual(keys, sorted(keys))
+
+
+class OutputTests(MergeTestCase):
+    def test_a_failed_run_leaves_neither_output_nor_partial_file(self):
+        source = self.write("a.csv", "id,amount\n1,oops\n")
+        schema = self.schema_file(("id", "int"), ("amount", "float"))
+        code, _rows = self.run_merge(
+            "--key", "id", "--schema", schema, "--on-type-error", "fail", source
+        )
+        self.assertEqual(code, 4)
+        self.assertFalse(self.output.exists())
+        self.assertEqual(sorted(path.name for path in self.directory.glob("*.part")), [])
+
+    def test_an_existing_output_is_replaced_in_one_step(self):
+        source = self.write("a.csv", "id\n41\n")
+        self.output.write_text("stale\n", encoding="utf-8")
+        code, rows = self.run_merge("--key", "id", source)
+        self.assertEqual(code, 0)
+        self.assertEqual(rows, [["id"], ["41"]])
+
+
+class DocumentedExampleTests(MergeTestCase):
+    def test_mixed_sources_with_consensus_inference(self):
+        users = self.write("users.csv", "ts,id,name\n2024-01-03T00:00:00Z,7,ada\n")
+        events = self.write_gzip(
+            "events.jsonl.gz", '{"ts": "2024-01-01T00:00:00Z", "id": 9, "event": "login"}\n'
+        )
+        metrics = self.write_parquet(
+            "metrics.parquet",
+            pa.table(
+                {
+                    "ts": pa.array([datetime(2024, 1, 2)], pa.timestamp("us")),
+                    "id": pa.array([8], pa.int64()),
+                    "value": pa.array([1.25], pa.float64()),
+                }
+            ),
+        )
+        code, rows = self.run_merge(
+            "--key", "ts,id", "--schema-strategy", "consensus", users, events, metrics
+        )
+        self.assertEqual(code, 0)
+        self.assertEqual(rows[0], ["event", "id", "name", "ts", "value"])
+        self.assertEqual(
+            rows[1:],
+            [
+                ["login", "9", "", "2024-01-01T00:00:00Z", ""],
+                ["", "8", "", "2024-01-02T00:00:00Z", "1.25"],
+                ["", "7", "ada", "2024-01-03T00:00:00Z", ""],
+            ],
+        )
+
+    def test_provided_schema_over_gzipped_tsv_to_stdout_descending(self):
+        self.write_gzip(
+            "data-1.tsv.gz", "created_at\tid\tnote\n2024-05-01T10:00:00Z\t1\tfirst\n"
+        )
+        self.write_gzip(
+            "data-2.tsv.gz", "created_at\tid\tnote\n2024-05-02T10:00:00Z\t2\tsecond\n"
+        )
+        schema = self.schema_file(("created_at", "timestamp"), ("id", "int"), ("note", "string"))
+        finished = subprocess.run(
+            [
+                sys.executable,
+                str(Path(merge_files.__file__)),
+                "--output",
+                "-",
+                "--key",
+                "created_at,id",
+                "--desc",
+                "--schema",
+                schema,
+                "--input-format",
+                "tsv",
+                "--compression",
+                "gzip",
+                *sorted(str(path) for path in self.directory.glob("*.tsv.gz")),
+            ],
+            capture_output=True,
+            check=True,
+        )
+        self.assertEqual(
+            finished.stdout.decode(),
+            "created_at,id,note\n"
+            "2024-05-02T10:00:00Z,2,second\n"
+            "2024-05-01T10:00:00Z,1,first\n",
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()

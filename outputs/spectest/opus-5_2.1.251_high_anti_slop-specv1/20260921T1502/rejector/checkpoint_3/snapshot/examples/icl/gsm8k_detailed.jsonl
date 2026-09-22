@@ -1,0 +1,3 @@
+{"input": {"question": "What is 10 / 2?"}, "output": "10 divided by 2 is 5.\n#### 5"}
+{"input": {"question": "A box holds 12 pens. How many pens are in 3 boxes?"}, "output": "Each box holds 12 pens.\n12 * 3 = 36\n#### 36"}
+{"input": {"question": "Sam had 9 apples and ate 4. How many are left?"}, "output": "Sam started with 9 apples.\nHe ate 4 of them.\n9 - 4 = 5\n#### 5"}

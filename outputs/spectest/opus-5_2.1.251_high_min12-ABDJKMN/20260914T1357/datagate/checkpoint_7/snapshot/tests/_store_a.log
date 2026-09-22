@@ -1,0 +1,106 @@
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:57263
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:05:19] "GET /convert?source=http://127.0.0.1:46587/persist-convert-3.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:05:19] "GET /datasets/b4c6de5525d7eff4 HTTP/1.1" 200 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:58791
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:05:20] "POST /upload HTTP/1.1" 200 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:42039
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:05:22] "POST /upload HTTP/1.1" 200 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:55505
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:05:23] "GET /convert?source=http://127.0.0.1:46587/persist-cache-4.csv HTTP/1.1" 200 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:45467
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:05:24] "POST /upload HTTP/1.1" 200 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:41193
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:05:25] "POST /upload HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:05:25] "POST /upload HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:05:25] "POST /upload HTTP/1.1" 200 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:59785
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:05:26] "POST /upload HTTP/1.1" 200 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:37561
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:05:27] "GET /convert?source=http://127.0.0.1:46587/persist-replace-5.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:05:27] "GET /convert?source=http://127.0.0.1:46587/persist-replace-5.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:05:27] "GET /datasets/2f91831126adff8c HTTP/1.1" 200 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:39729
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:20:07] "GET /convert?source=http://127.0.0.1:34649/persist-convert-26.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:20:07] "GET /datasets/69ab9c4081583b9d HTTP/1.1" 200 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:46387
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:20:08] "POST /upload HTTP/1.1" 200 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:54751
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:20:09] "POST /upload HTTP/1.1" 200 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:40089
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:20:10] "GET /convert?source=http://127.0.0.1:34649/persist-cache-27.csv HTTP/1.1" 200 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:54285
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:20:12] "POST /upload HTTP/1.1" 200 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:35481
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:20:13] "POST /upload HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:20:13] "POST /upload HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:20:13] "POST /upload HTTP/1.1" 200 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:54225
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:20:15] "POST /upload HTTP/1.1" 200 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:35329
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:20:16] "GET /convert?source=http://127.0.0.1:34649/persist-replace-28.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:20:16] "GET /convert?source=http://127.0.0.1:34649/persist-replace-28.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:20:16] "GET /datasets/5db757903cfc2835 HTTP/1.1" 200 -

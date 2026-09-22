@@ -1,0 +1,172 @@
+{
+  "model": "opus-5",
+  "thinking": "high",
+  "prompt": "just-solve",
+  "agent_type": "claude_code",
+  "agent_version": "2.1.251",
+  "num_problems": 1,
+  "num_checkpoints": 5,
+  "expected_checkpoints": 5,
+  "costs": {
+    "checkpoint": {
+      "mean": 1.1825713,
+      "stddev": 0.5624924644522582,
+      "min": 0.584345,
+      "max": 1.9570535,
+      "median": 0.9083809999999999,
+      "count": 5
+    },
+    "problem": {
+      "mean": 5.9128565,
+      "stddev": null,
+      "min": 5.9128565,
+      "max": 5.9128565,
+      "median": 5.9128565,
+      "count": 1
+    },
+    "total": 5.9128565
+  },
+  "time": {
+    "checkpoint": {
+      "mean": 235.9386854,
+      "stddev": 133.83037786677892,
+      "min": 139.597738,
+      "max": 471.419,
+      "median": 181.397543,
+      "count": 5
+    },
+    "problem": {
+      "mean": 1179.693427,
+      "stddev": null,
+      "min": 1179.693427,
+      "max": 1179.693427,
+      "median": 1179.693427,
+      "count": 1
+    }
+  },
+  "tokens": {
+    "input": 26934,
+    "output": 91003,
+    "cache_read": 2668121,
+    "cache_write": 216238,
+    "reasoning": 0,
+    "problem": {
+      "input": 26934.0,
+      "output": 91003.0,
+      "cache_read": 2668121.0,
+      "cache_write": 216238.0,
+      "reasoning": 0.0
+    },
+    "checkpoint": {
+      "input": 5386.8,
+      "output": 18200.6,
+      "cache_read": 533624.2,
+      "cache_write": 43247.6,
+      "reasoning": 0.0
+    }
+  },
+  "steps": {
+    "checkpoint": {
+      "mean": 12.6,
+      "stddev": 3.7815340802378072,
+      "min": 10.0,
+      "max": 19.0,
+      "median": 11.0,
+      "count": 5
+    },
+    "problem": {
+      "mean": 63.0,
+      "stddev": null,
+      "min": 63.0,
+      "max": 63.0,
+      "median": 63.0,
+      "count": 1
+    }
+  },
+  "checkpoints_solved": 5,
+  "checkpoints_iso_solved": 5,
+  "checkpoints_core_solved": 5,
+  "problem_solved": 1.0,
+  "problem_partial": 1.0,
+  "pct_checkpoints_solved": 100.0,
+  "pct_checkpoints_iso_solved": 100.0,
+  "pct_problems_solved": 100.0,
+  "pct_problems_partial": 100.0,
+  "pct_checkpoints_core_solved": 100.0,
+  "pass_rates": {
+    "problem": {
+      "core": 1.0,
+      "total": 1.0,
+      "error": 1.0,
+      "functionality": 1.0,
+      "regression": 1.0
+    },
+    "checkpoint": {
+      "core": 1.0,
+      "total": 1.0,
+      "error": 1.0,
+      "functionality": 1.0,
+      "regression": 1.0
+    }
+  },
+  "cc": {
+    "high_count": {
+      "mean": 2.0,
+      "stddev": 1.224744871391589,
+      "min": 0.0,
+      "max": 3.0,
+      "median": 2.0,
+      "count": 5
+    },
+    "high_mean": {
+      "mean": 11.7,
+      "stddev": 6.833739825307955,
+      "min": 0.0,
+      "max": 18.0,
+      "median": 13.5,
+      "count": 5
+    },
+    "max": {
+      "mean": 15.6,
+      "stddev": 3.5777087639996634,
+      "min": 10.0,
+      "max": 20.0,
+      "median": 16.0,
+      "count": 5
+    }
+  },
+  "ratios": {
+    "rubric": {
+      "mean": null,
+      "stddev": null,
+      "min": null,
+      "max": null,
+      "median": null,
+      "count": 0
+    },
+    "lint": {
+      "mean": 0.0955666930844341,
+      "stddev": 0.0056113753682713865,
+      "min": 0.08900523560209424,
+      "max": 0.10207100591715976,
+      "median": 0.0981067125645439,
+      "count": 5
+    }
+  },
+  "verbosity": {
+    "mean": 0.2088744768126272,
+    "stddev": 0.05327876441490716,
+    "min": 0.16523605150214593,
+    "max": 0.30158730158730157,
+    "median": 0.19452054794520549,
+    "count": 5
+  },
+  "erosion": {
+    "mean": 0.32132969033382264,
+    "stddev": 0.18664530648348795,
+    "min": 0.0,
+    "max": 0.4718952392944231,
+    "median": 0.3990017093555955,
+    "count": 5
+  }
+}

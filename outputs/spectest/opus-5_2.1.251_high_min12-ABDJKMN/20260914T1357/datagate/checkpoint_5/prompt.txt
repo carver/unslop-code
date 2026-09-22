@@ -1,0 +1,79 @@
+# Task Directions
+
+Fully implement the following spec. Use the approach:
+- Environment setup
+- Write tests from the spec
+- Implement
+- Declare complete
+
+Specifically:
+
+# Environment
+
+Keep using the same virtual environment you started with, update `requirements.txt` with any new dependencies you need.
+Touch an IN_PROGRESS file. Delete any COMPLETED file.
+
+When killing a process never run a pkill. Instead, pgrep.
+Make sure only one process is found, then kill that one by PID.
+Why? It's too easy to pkill your own Bash argv.
+
+For long-lived processes, log to a file or /dev/null instead of an undrained pipe.
+
+# Testing
+
+Split the spec file into minimal possible logical phrases and minimal context, and iterate through each phrase.
+For each phrase, add a test section with a comment of the phrase & context.
+
+If the spec is non-trivially under-specified, such that alternative interpretations would change the behavior of a conforming implementation on some input, then never ask for clarification.
+Instead, make your best choice at how to interpret the intention of the spec.
+Then, add a numbered entry to an AMBIGUITIES.md file, starting with T1.
+The entry must have sections for Spec Text, Alternatives, Choice, and Risk.
+The entry will quote the relevant spec source verbatim, explain the reasonable alternative interpretations, and your choice & why it seems to best fit the spec.
+The "### Risk: N" section
+Risk is a number from 0 to 100: the chance that the spec's author, who has an implementation of their own and writes the hidden tests against it, prefers a different reading from your choice on some tested input.
+Reason about what the author's implementation most likely does and what fixture they would naturally write, not only about which reading the prose supports best.
+If Risk is above 0, name the reading the author most likely prefers in one line.
+Use the whole range: a flat number on every entry is useless.
+
+If a previous ambiguity is resolved by the current spec, annotate the entry instead of removing it.
+
+You run tests only to validate the tests themselves: collection succeeds, helpers and generators work, and each failure is because behavior is missing, not because the test is broken. Quick, targeted runs.
+
+Never run the full suite to completion or long hypothesis runs; a green suite is the implementer's job, not yours.
+
+# Implement
+# Declare complete
+
+touch a COMPLETED file. rm the IN_PROGRESS file.
+
+# Spec
+## Caching and Cache Controls
+
+`/convert` caches results by default.
+
+### Cache behavior
+
+With caching enabled, repeated `/convert` requests for the same source URL can return the cached dataset id without re-downloading.
+Cache responses are identical to fresh parse responses.
+
+### `CACHE_ENABLED`
+
+`CACHE_ENABLED` accepts strict case-insensitive values:
+
+- true: `1`, `true`, `yes`, `on`
+- false: `0`, `false`, `no`, `off`
+
+Invalid values fail startup.
+When disabled, every `/convert` request re-downloads/parses and replaces stored data.
+
+### Per-request bypass
+
+`force` is a presence flag. If present once, it forces re-ingestion and replaces the cached dataset.
+Any additional `force` value is `HTTP 400`.
+
+If caching is disabled, `force` has no additional effect.
+
+### Error handling
+
+- Re-ingestion failures keep existing error codes and envelope.
+- Forced re-ingestion failure keeps prior dataset queryable.

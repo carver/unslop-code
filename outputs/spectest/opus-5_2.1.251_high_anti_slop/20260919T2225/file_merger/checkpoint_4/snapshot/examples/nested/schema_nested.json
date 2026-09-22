@@ -1,0 +1,34 @@
+{
+  "columns": [
+    { "name": "id", "type": "integer" },
+    { "name": "event_time", "type": "datetime" },
+    {
+      "name": "user",
+      "type": {
+        "struct": {
+          "fields": [
+            { "name": "id", "type": "int" },
+            { "name": "name", "type": "string" },
+            { "name": "prefs", "type": { "map": { "key": "string", "value": "string" } } }
+          ]
+        }
+      }
+    },
+    { "name": "attrs", "type": "map<string,string>" },
+    {
+      "name": "items",
+      "type": {
+        "array": {
+          "element": {
+            "struct": {
+              "fields": [
+                { "name": "sku", "type": "uuid" },
+                { "name": "qty", "type": "smallint" }
+              ]
+            }
+          }
+        }
+      }
+    }
+  ]
+}

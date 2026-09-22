@@ -1,0 +1,1 @@
+{"columns": ["name", "age"], "rows": [["ada", 36], ["grace", 45]], "metadata": {"dataset_summary": {"filetype": "csv", "row_count": 2, "column_count": 2}, "column_details": {"name": {"type": "text", "distinct_count": 2, "missing_count": 0}, "age": {"type": "integer", "distinct_count": 2, "missing_count": 0}}}}

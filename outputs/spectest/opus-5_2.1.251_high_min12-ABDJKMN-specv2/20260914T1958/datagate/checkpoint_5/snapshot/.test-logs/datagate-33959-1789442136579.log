@@ -1,0 +1,29 @@
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:33959
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [15/Sep/2026 03:15:37] "[33mGET /datasets/readiness-probe HTTP/1.1[0m" 404 -
+127.0.0.1 - - [15/Sep/2026 03:15:37] "GET /convert?source=http://127.0.0.1:44809/env-ok.csv HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:15:37] "GET /datasets/79bea1114b126c43 HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:15:37] "[31m[1mGET /convert HTTP/1.1[0m" 400 -
+127.0.0.1 - - [15/Sep/2026 03:15:37] "[31m[1mGET /convert?source=not+a+url HTTP/1.1[0m" 400 -
+127.0.0.1 - - [15/Sep/2026 03:15:37] "[33mGET /convert?source=http://127.0.0.1:1/x.csv HTTP/1.1[0m" 404 -
+127.0.0.1 - - [15/Sep/2026 03:15:37] "[33mGET /datasets/unknown-id HTTP/1.1[0m" 404 -
+127.0.0.1 - - [15/Sep/2026 03:15:37] "[33mGET /no-such-route HTTP/1.1[0m" 404 -
+127.0.0.1 - - [15/Sep/2026 03:15:37] "[31m[1mGET /convert HTTP/1.1[0m" 400 -
+127.0.0.1 - - [15/Sep/2026 03:15:37] "[33mGET /datasets/unknown HTTP/1.1[0m" 404 -
+127.0.0.1 - - [15/Sep/2026 03:15:37] "[33mGET /nope HTTP/1.1[0m" 404 -
+127.0.0.1 - - [15/Sep/2026 03:15:37] "[33mGET / HTTP/1.1[0m" 404 -
+127.0.0.1 - - [15/Sep/2026 03:15:37] "[33mGET / HTTP/1.1[0m" 404 -
+127.0.0.1 - - [15/Sep/2026 03:15:37] "[33mGET /nope HTTP/1.1[0m" 404 -
+127.0.0.1 - - [15/Sep/2026 03:15:37] "[33mGET /datasets HTTP/1.1[0m" 404 -
+127.0.0.1 - - [15/Sep/2026 03:15:37] "[33mGET /convert/extra HTTP/1.1[0m" 404 -
+127.0.0.1 - - [15/Sep/2026 03:15:37] "[33mGET /a/b/c HTTP/1.1[0m" 404 -
+127.0.0.1 - - [15/Sep/2026 03:15:37] "[31m[1mPOST /convert HTTP/1.1[0m" 405 -
+127.0.0.1 - - [15/Sep/2026 03:15:37] "GET /convert?source=http://127.0.0.1:44809/cors.csv HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:15:37] "GET /datasets/95d61c3a4b049029 HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:15:37] "[31m[1mGET /convert HTTP/1.1[0m" 400 -
+127.0.0.1 - - [15/Sep/2026 03:15:37] "[33mGET /datasets/unknown HTTP/1.1[0m" 404 -
+127.0.0.1 - - [15/Sep/2026 03:15:37] "[33mGET /nope HTTP/1.1[0m" 404 -
+127.0.0.1 - - [15/Sep/2026 03:15:37] "[35m[1mOPTIONS /convert HTTP/1.1[0m" 204 -

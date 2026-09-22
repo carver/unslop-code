@@ -1,0 +1,2 @@
+# mvault uses only the Python standard library (argparse, json, urllib.request).
+# No third-party dependencies are required.

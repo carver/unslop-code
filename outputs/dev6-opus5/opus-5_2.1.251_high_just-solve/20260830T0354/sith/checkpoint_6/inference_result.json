@@ -1,0 +1,28 @@
+{
+  "artifacts_dir": "agent",
+  "checkpoint_path": "outputs/dev6-opus5/opus-5_2.1.251_high_just-solve/20260830T0354/sith/checkpoint_6",
+  "completed": "2026-08-30T12:59:57.129182",
+  "elapsed": 772.944293,
+  "error_message": null,
+  "had_error": false,
+  "snapshot_dir": "snapshot",
+  "started": "2026-08-30T12:47:04.184889",
+  "usage": {
+    "cost": 4.717617,
+    "current_tokens": {
+      "cache_read": 4536582,
+      "cache_write": 97654,
+      "input": 4288,
+      "output": 57934,
+      "reasoning": 0
+    },
+    "net_tokens": {
+      "cache_read": 4536582,
+      "cache_write": 97654,
+      "input": 4288,
+      "output": 57934,
+      "reasoning": 0
+    },
+    "steps": 55
+  }
+}

@@ -1,0 +1,118 @@
+{
+  "classes": {
+    "attribute_counts_mean": 2.1818181818181817,
+    "attribute_counts_sum": 24,
+    "count": 11,
+    "method_counts_mean": 0.6363636363636364,
+    "method_counts_sum": 7
+  },
+  "complexity": {
+    "cc_max": 8,
+    "cc_ratings": {
+      "A": 141,
+      "B": 11,
+      "C": 0,
+      "D": 0,
+      "E": 0,
+      "F": 0
+    },
+    "cc_sum": 279,
+    "mi_min": 36.22105150126635,
+    "mi_ratings": {
+      "A": 16,
+      "B": 0,
+      "C": 0
+    },
+    "mi_sum": 999.0465188318412,
+    "num_complex": 0
+  },
+  "file_count": 16,
+  "functions": {
+    "cc_concentration": 0.35512820512820514,
+    "cc_extreme_count": 0,
+    "cc_high_count": 0,
+    "cc_max": 8,
+    "cc_mean": 2.73,
+    "cc_normalized": 0.004658345317685977,
+    "cc_std": 1.8632815626786472,
+    "cc_sum": 273,
+    "cc_top20": 0.42857142857142855,
+    "count": 100,
+    "depth_max": 3,
+    "extreme_cc_mean": 0.0,
+    "high_cc_mean": 0.0,
+    "lines_mean": 7.7,
+    "lines_sum": 770
+  },
+  "graph": {
+    "cyclic_dependency_mass": 0.0,
+    "dependency_entropy": 0.2883601183934897,
+    "edge_count": 123,
+    "node_count": 100,
+    "propagation_cost": 0.037171717171717175
+  },
+  "lines": {
+    "comments": 19,
+    "loc": 800,
+    "multi_comment": 96,
+    "single_comment": 125,
+    "total_lines": 1309
+  },
+  "lint": {
+    "counts": {
+      "B905": 1,
+      "DOC201": 79,
+      "DOC501": 14,
+      "DTZ005": 3,
+      "EM101": 1,
+      "EM102": 26,
+      "EXE001": 1,
+      "FBT003": 2,
+      "FURB118": 2,
+      "PLR2004": 8,
+      "Q003": 1,
+      "RUF005": 2,
+      "TRY003": 27,
+      "UP035": 1
+    },
+    "errors": 168,
+    "fixable": 2
+  },
+  "source_files": [
+    "vault/catalog.py",
+    "mvault.py",
+    "vault/__init__.py",
+    "vault/routes.py",
+    "vault/digest.py",
+    "vault/viewer.py",
+    "vault/changes.py",
+    "vault/pages.py",
+    "vault/server.py",
+    "vault/versions.py",
+    "vault/errors.py",
+    "vault/source.py",
+    "vault/downloads.py",
+    "vault/recent.py",
+    "vault/history.py",
+    "vault/syncing.py"
+  ],
+  "symbols": {
+    "classes": 11,
+    "expressions": 989,
+    "expressions_top_level": 38,
+    "functions": 93,
+    "globals": 41,
+    "imports": 57,
+    "max_imports": 8,
+    "methods": 7,
+    "statements": 268,
+    "total": 152,
+    "type_aliases": 0,
+    "variables": 41
+  },
+  "waste": {
+    "single_use_functions": 76,
+    "trivial_wrappers": 0,
+    "unused_variables": 39
+  }
+}

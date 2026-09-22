@@ -1,0 +1,8 @@
+# mvault itself uses only the Python standard library (argparse, datetime,
+# html, http.cookies, http.server, json, mimetypes, os, re, shutil, sys,
+# threading, urllib.error, urllib.parse, urllib.request, webbrowser).
+# No third-party dependency is required to run it.
+
+# Test-only: an HTTP client used to exercise the viewer's annotation routes
+# (POST/PATCH/DELETE and redirect following) against a running server.
+requests>=2.31

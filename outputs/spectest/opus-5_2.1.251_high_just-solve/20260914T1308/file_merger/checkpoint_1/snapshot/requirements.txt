@@ -1,0 +1,2 @@
+# merge_files.py uses only the Python standard library (3.8+).
+# No third-party dependencies are required.

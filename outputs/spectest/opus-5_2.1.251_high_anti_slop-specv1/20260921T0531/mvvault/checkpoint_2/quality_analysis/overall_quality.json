@@ -1,0 +1,115 @@
+{
+  "classes": {
+    "attribute_counts_mean": 0.42105263157894735,
+    "attribute_counts_sum": 8,
+    "count": 19,
+    "method_counts_mean": 3.9473684210526314,
+    "method_counts_sum": 75
+  },
+  "complexity": {
+    "cc_max": 7,
+    "cc_ratings": {
+      "A": 146,
+      "B": 3,
+      "C": 0,
+      "D": 0,
+      "E": 0,
+      "F": 0
+    },
+    "cc_sum": 196,
+    "mi_min": 25.45572487262025,
+    "mi_ratings": {
+      "A": 14,
+      "B": 0,
+      "C": 0
+    },
+    "mi_sum": 896.9901549513174,
+    "num_complex": 0
+  },
+  "file_count": 14,
+  "functions": {
+    "cc_concentration": 0.3182418411620449,
+    "cc_extreme_count": 0,
+    "cc_high_count": 0,
+    "cc_max": 7,
+    "cc_mean": 1.631578947368421,
+    "cc_normalized": 0.005730878908708051,
+    "cc_std": 1.3187763025585624,
+    "cc_sum": 186,
+    "cc_top20": 0.46774193548387094,
+    "count": 114,
+    "depth_max": 2,
+    "extreme_cc_mean": 0.0,
+    "high_cc_mean": 0.0,
+    "lines_mean": 7.614035087719298,
+    "lines_sum": 868
+  },
+  "graph": {
+    "cyclic_dependency_mass": 0.0,
+    "dependency_entropy": 0.2140079955149862,
+    "edge_count": 37,
+    "node_count": 37,
+    "propagation_cost": 0.07282282282282282
+  },
+  "lines": {
+    "comments": 2,
+    "loc": 828,
+    "multi_comment": 74,
+    "single_comment": 43,
+    "total_lines": 1215
+  },
+  "lint": {
+    "counts": {
+      "DOC201": 26,
+      "DOC501": 12,
+      "DTZ005": 2,
+      "EM101": 1,
+      "EM102": 23,
+      "EXE001": 1,
+      "FBT003": 4,
+      "INP001": 3,
+      "PLW1510": 1,
+      "PT009": 113,
+      "PT027": 2,
+      "PYI024": 1,
+      "S310": 1,
+      "S404": 1,
+      "S603": 1,
+      "TRY003": 24,
+      "UP032": 1
+    },
+    "errors": 217,
+    "fixable": 2
+  },
+  "source_files": [
+    "vault/versions.py",
+    "vault/sync.py",
+    "vault/errors.py",
+    "vault/entries.py",
+    "vault/history.py",
+    "mvault.py",
+    "vault/catalog.py",
+    "vault/cli.py",
+    "vault/source.py",
+    "vault/timestamps.py"
+  ],
+  "symbols": {
+    "classes": 19,
+    "expressions": 2383,
+    "expressions_top_level": 249,
+    "functions": 39,
+    "globals": 16,
+    "imports": 46,
+    "max_imports": 8,
+    "methods": 75,
+    "statements": 151,
+    "total": 149,
+    "type_aliases": 0,
+    "variables": 16
+  },
+  "waste": {
+    "single_use_functions": 32,
+    "trivial_wrappers": 2,
+    "unused_variables": 26
+  }
+}

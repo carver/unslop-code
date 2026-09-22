@@ -1,0 +1,74 @@
+agent_dir: agent
+agent_tar: agent.tar.gz
+agent_type: claude_code
+agent_version: 2.1.251
+checkpoint_file: checkpoint.yaml
+compress_artifacts: false
+concurrent_evaluation: false
+debug: false
+environment_file: environment.yaml
+image: slop-code:claude_code-2.1.251-python3.12
+inference_result_file: inference_result.json
+model_name: opus-5
+pass_policy: any
+problem_file: problem.yaml
+prompt_file: prompt.txt
+run_info_file: run_info.yaml
+seed: 42
+skip_evaluation: false
+snapshot_dir: snapshot
+summary:
+  checkpoints:
+    checkpoint_1: ran
+    checkpoint_2: ran
+    checkpoint_3: ran
+    checkpoint_4: ran
+    checkpoint_5: ran
+    checkpoint_6: ran
+  duration_seconds: 963.470664
+  ended: '2026-09-15T10:45:56.117216'
+  error_message: null
+  error_traceback: null
+  error_type: null
+  passed_policy: true
+  started: '2026-09-15T10:29:52.646552'
+  state: completed
+  total_cost: 15.187069499999998
+  total_steps: 137
+  total_usage:
+    cost: 15.187069499999998
+    current_tokens:
+      cache_read: 3152795
+      cache_write: 103123
+      input: 3936
+      output: 54125
+      reasoning: 0
+    net_tokens:
+      cache_read: 10224521
+      cache_write: 422707
+      input: 31989
+      output: 226855
+      reasoning: 0
+    steps: 137
+template: 'Implement a program that 100% solves the specification. That is all you
+  need to do.
+
+  {% if not is_continuation -%}
+
+  Use a virtual environment and ensure that a `requirements.txt` is present with any
+  dependencies you need to solve the problem.
+
+  {% else -%}
+
+  Keep using the same virtual environment you started with, update `requirements.txt`
+  with any new dependencies you need.
+
+  {% endif -%}
+
+
+  Your task is:
+
+  {{ spec.strip() }}
+
+  '
+verbose: false

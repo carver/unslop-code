@@ -1,0 +1,28 @@
+{
+  "artifacts_dir": "agent",
+  "checkpoint_path": "/home/carver/code/claudedev/unslop-code-bench/outputs/spectest/opus-5_2.1.251_high_anti_slop/20260919T2123/datagate/checkpoint_5",
+  "completed": "2026-09-19T21:58:36.795028",
+  "elapsed": 207.183947,
+  "error_message": null,
+  "had_error": false,
+  "snapshot_dir": "snapshot",
+  "started": "2026-09-19T21:55:09.611081",
+  "usage": {
+    "cost": 1.4791029999999998,
+    "current_tokens": {
+      "cache_read": 1210996,
+      "cache_write": 43798,
+      "input": 3969,
+      "output": 16573,
+      "reasoning": 0
+    },
+    "net_tokens": {
+      "cache_read": 1210996,
+      "cache_write": 43798,
+      "input": 3969,
+      "output": 16573,
+      "reasoning": 0
+    },
+    "steps": 22
+  }
+}

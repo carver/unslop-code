@@ -1,0 +1,130 @@
+{
+  "classes": {
+    "attribute_counts_mean": 2.625,
+    "attribute_counts_sum": 21,
+    "count": 8,
+    "method_counts_mean": 0.625,
+    "method_counts_sum": 5
+  },
+  "complexity": {
+    "cc_max": 7,
+    "cc_ratings": {
+      "A": 353,
+      "B": 7,
+      "C": 0,
+      "D": 0,
+      "E": 0,
+      "F": 0
+    },
+    "cc_sum": 769,
+    "mi_min": 41.94618974987647,
+    "mi_ratings": {
+      "A": 32,
+      "B": 0,
+      "C": 0
+    },
+    "mi_sum": 2168.1557467188827,
+    "num_complex": 0
+  },
+  "file_count": 32,
+  "functions": {
+    "cc_concentration": 0.20819885309855252,
+    "cc_extreme_count": 0,
+    "cc_high_count": 0,
+    "cc_max": 7,
+    "cc_mean": 2.5213114754098362,
+    "cc_normalized": 0.0005770253079893574,
+    "cc_std": 1.0577276341566724,
+    "cc_sum": 769,
+    "cc_top20": 0.3198959687906372,
+    "count": 305,
+    "depth_max": 4,
+    "extreme_cc_mean": 0.0,
+    "high_cc_mean": 0.0,
+    "lines_mean": 5.340983606557377,
+    "lines_sum": 1629
+  },
+  "graph": {
+    "cyclic_dependency_mass": 0.0,
+    "dependency_entropy": 0.13928528727321873,
+    "edge_count": 54,
+    "node_count": 57,
+    "propagation_cost": 0.045426065162907266
+  },
+  "lines": {
+    "comments": 233,
+    "loc": 1521,
+    "multi_comment": 62,
+    "single_comment": 310,
+    "total_lines": 2852
+  },
+  "lint": {
+    "counts": {
+      "ANN401": 5,
+      "ARG001": 1,
+      "B905": 1,
+      "DOC201": 45,
+      "DOC402": 1,
+      "DOC501": 15,
+      "DTZ001": 1,
+      "EM101": 6,
+      "EM102": 18,
+      "ERA001": 100,
+      "FBT001": 1,
+      "FURB152": 2,
+      "INP001": 16,
+      "PLC0207": 1,
+      "PLR0402": 1,
+      "PLR2004": 97,
+      "PLR6201": 1,
+      "PT018": 1,
+      "RUF100": 1,
+      "S101": 325,
+      "S104": 2,
+      "S404": 1,
+      "S603": 1,
+      "TRY003": 24,
+      "UP012": 4,
+      "UP035": 1
+    },
+    "errors": 672,
+    "fixable": 10
+  },
+  "source_files": [
+    "datagate_app/store.py",
+    "datagate_app/controls.py",
+    "datagate_app/values.py",
+    "datagate_app/exporting.py",
+    "datagate_app/spreadsheets.py",
+    "datagate_app/decoding.py",
+    "datagate_app/server.py",
+    "datagate_app/fetching.py",
+    "datagate_app/results.py",
+    "datagate.py",
+    "datagate_app/parsing.py",
+    "datagate_app/uploads.py",
+    "datagate_app/formats.py",
+    "datagate_app/filtering.py",
+    "datagate_app/errors.py",
+    "datagate_app/ingestion.py"
+  ],
+  "symbols": {
+    "classes": 8,
+    "expressions": 2342,
+    "expressions_top_level": 20,
+    "functions": 300,
+    "globals": 47,
+    "imports": 114,
+    "max_imports": 13,
+    "methods": 5,
+    "statements": 591,
+    "total": 360,
+    "type_aliases": 0,
+    "variables": 47
+  },
+  "waste": {
+    "single_use_functions": 287,
+    "trivial_wrappers": 0,
+    "unused_variables": 51
+  }
+}

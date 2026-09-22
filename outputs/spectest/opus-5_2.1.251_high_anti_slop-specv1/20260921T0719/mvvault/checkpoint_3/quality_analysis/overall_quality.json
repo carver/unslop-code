@@ -1,0 +1,124 @@
+{
+  "classes": {
+    "attribute_counts_mean": 1.5454545454545454,
+    "attribute_counts_sum": 34,
+    "count": 22,
+    "method_counts_mean": 3.9545454545454546,
+    "method_counts_sum": 87
+  },
+  "complexity": {
+    "cc_max": 10,
+    "cc_ratings": {
+      "A": 207,
+      "B": 8,
+      "C": 0,
+      "D": 0,
+      "E": 0,
+      "F": 0
+    },
+    "cc_sum": 311,
+    "mi_min": 9.476795848778949,
+    "mi_ratings": {
+      "A": 12,
+      "B": 1,
+      "C": 0
+    },
+    "mi_sum": 716.5264184060446,
+    "num_complex": 0
+  },
+  "file_count": 13,
+  "functions": {
+    "cc_concentration": 0.3550307823664225,
+    "cc_extreme_count": 0,
+    "cc_high_count": 0,
+    "cc_max": 10,
+    "cc_mean": 1.8766233766233766,
+    "cc_normalized": 0.004804317930921526,
+    "cc_std": 1.61418516678,
+    "cc_sum": 289,
+    "cc_top20": 0.4740484429065744,
+    "count": 154,
+    "depth_max": 3,
+    "extreme_cc_mean": 0.0,
+    "high_cc_mean": 0.0,
+    "lines_mean": 8.564935064935066,
+    "lines_sum": 1319
+  },
+  "graph": {
+    "cyclic_dependency_mass": 0.0,
+    "dependency_entropy": 0.28900477151700793,
+    "edge_count": 69,
+    "node_count": 62,
+    "propagation_cost": 0.07112638815441566
+  },
+  "lines": {
+    "comments": 22,
+    "loc": 1306,
+    "multi_comment": 133,
+    "single_comment": 89,
+    "total_lines": 1876
+  },
+  "lint": {
+    "counts": {
+      "ANN401": 12,
+      "B008": 1,
+      "DOC201": 68,
+      "DOC501": 16,
+      "DTZ005": 4,
+      "DTZ007": 1,
+      "EM102": 23,
+      "FBT003": 4,
+      "FURB118": 2,
+      "INP001": 13,
+      "PERF203": 1,
+      "PLR2004": 5,
+      "PLW1510": 1,
+      "PT009": 153,
+      "RUF005": 3,
+      "RUF015": 2,
+      "S310": 3,
+      "S404": 1,
+      "S603": 1,
+      "TRY003": 23,
+      "UP012": 1,
+      "UP031": 1,
+      "UP035": 4,
+      "UP045": 9
+    },
+    "errors": 352,
+    "fixable": 15
+  },
+  "source_files": [
+    "errors.py",
+    "vault.py",
+    "catalogs.py",
+    "downloads.py",
+    "source.py",
+    "migrations.py",
+    "history.py",
+    "timestamps.py",
+    "mvault.py",
+    "digest.py",
+    "views.py",
+    "merging.py"
+  ],
+  "symbols": {
+    "classes": 22,
+    "expressions": 3813,
+    "expressions_top_level": 288,
+    "functions": 67,
+    "globals": 39,
+    "imports": 75,
+    "max_imports": 11,
+    "methods": 87,
+    "statements": 250,
+    "total": 215,
+    "type_aliases": 0,
+    "variables": 39
+  },
+  "waste": {
+    "single_use_functions": 56,
+    "trivial_wrappers": 0,
+    "unused_variables": 96
+  }
+}

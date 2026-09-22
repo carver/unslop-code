@@ -1,0 +1,112 @@
+{
+  "classes": {
+    "attribute_counts_mean": 0.2,
+    "attribute_counts_sum": 3,
+    "count": 15,
+    "method_counts_mean": 8.2,
+    "method_counts_sum": 123
+  },
+  "complexity": {
+    "cc_max": 30,
+    "cc_ratings": {
+      "A": 143,
+      "B": 9,
+      "C": 3,
+      "D": 3,
+      "E": 0,
+      "F": 0
+    },
+    "cc_sum": 520,
+    "mi_min": 0.0,
+    "mi_ratings": {
+      "A": 1,
+      "B": 0,
+      "C": 1
+    },
+    "mi_sum": 43.540937500081625,
+    "num_complex": 6
+  },
+  "file_count": 2,
+  "functions": {
+    "cc_concentration": 0.18128544423440454,
+    "cc_extreme_count": 0,
+    "cc_high_count": 0,
+    "cc_max": 7,
+    "cc_mean": 2.5,
+    "cc_normalized": 0.0012059663598857505,
+    "cc_std": 1.0198754754387713,
+    "cc_sum": 345,
+    "cc_top20": 0.32463768115942027,
+    "count": 138,
+    "depth_max": 2,
+    "extreme_cc_mean": 0.0,
+    "high_cc_mean": 0.0,
+    "lines_mean": 3.949275362318841,
+    "lines_sum": 545
+  },
+  "graph": {
+    "cyclic_dependency_mass": 0.0,
+    "dependency_entropy": 0.16666666666666666,
+    "edge_count": 13,
+    "node_count": 12,
+    "propagation_cost": 0.1590909090909091
+  },
+  "lines": {
+    "comments": 67,
+    "loc": 602,
+    "multi_comment": 10,
+    "single_comment": 77,
+    "total_lines": 914
+  },
+  "lint": {
+    "counts": {
+      "DOC201": 9,
+      "DOC501": 1,
+      "ERA001": 9,
+      "EXE001": 1,
+      "INP001": 1,
+      "PLC1901": 3,
+      "PLR0904": 2,
+      "PLR6301": 119,
+      "PLW1510": 3,
+      "PT018": 1,
+      "PTH100": 1,
+      "PTH113": 1,
+      "PTH118": 1,
+      "PTH120": 1,
+      "PTH123": 1,
+      "Q003": 1,
+      "RUF012": 2,
+      "S101": 166,
+      "S404": 1,
+      "S603": 3,
+      "SLF001": 1,
+      "UP022": 3,
+      "UP032": 6
+    },
+    "errors": 337,
+    "fixable": 12
+  },
+  "source_files": [
+    "xjq.py"
+  ],
+  "symbols": {
+    "classes": 15,
+    "expressions": 1268,
+    "expressions_top_level": 8,
+    "functions": 15,
+    "globals": 5,
+    "imports": 9,
+    "max_imports": 5,
+    "methods": 123,
+    "statements": 384,
+    "total": 158,
+    "type_aliases": 0,
+    "variables": 5
+  },
+  "waste": {
+    "single_use_functions": 11,
+    "trivial_wrappers": 2,
+    "unused_variables": 5
+  }
+}

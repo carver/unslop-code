@@ -1,0 +1,130 @@
+{
+  "classes": {
+    "attribute_counts_mean": 0.8888888888888888,
+    "attribute_counts_sum": 8,
+    "count": 9,
+    "method_counts_mean": 1.4444444444444444,
+    "method_counts_sum": 13
+  },
+  "complexity": {
+    "cc_max": 36,
+    "cc_ratings": {
+      "A": 176,
+      "B": 19,
+      "C": 6,
+      "D": 0,
+      "E": 1,
+      "F": 0
+    },
+    "cc_sum": 437,
+    "mi_min": 0.0,
+    "mi_ratings": {
+      "A": 4,
+      "B": 0,
+      "C": 1
+    },
+    "mi_sum": 139.67103588332154,
+    "num_complex": 7
+  },
+  "file_count": 5,
+  "functions": {
+    "cc_concentration": 0.4535127911416571,
+    "cc_extreme_count": 1,
+    "cc_high_count": 7,
+    "cc_max": 36,
+    "cc_mean": 4.453608247422681,
+    "cc_normalized": 0.010991016696673524,
+    "cc_std": 4.598506593079751,
+    "cc_sum": 432,
+    "cc_top20": 0.5092592592592593,
+    "count": 97,
+    "depth_max": 4,
+    "extreme_cc_mean": 36.0,
+    "high_cc_mean": 15.714285714285714,
+    "lines_mean": 12.958762886597938,
+    "lines_sum": 1257
+  },
+  "graph": {
+    "cyclic_dependency_mass": 0.0,
+    "dependency_entropy": 0.2164953933486049,
+    "edge_count": 66,
+    "node_count": 53,
+    "propagation_cost": 0.06567489114658925
+  },
+  "lines": {
+    "comments": 121,
+    "loc": 1599,
+    "multi_comment": 18,
+    "single_comment": 132,
+    "total_lines": 2104
+  },
+  "lint": {
+    "counts": {
+      "B018": 1,
+      "B904": 16,
+      "B905": 1,
+      "BLE001": 16,
+      "C901": 2,
+      "DOC201": 22,
+      "DOC501": 8,
+      "DTZ001": 2,
+      "EM101": 24,
+      "EM102": 22,
+      "F401": 1,
+      "FURB188": 1,
+      "INP001": 5,
+      "N818": 2,
+      "PERF203": 1,
+      "PERF401": 1,
+      "PERF403": 1,
+      "PLC0415": 4,
+      "PLC1901": 2,
+      "PLR0911": 3,
+      "PLR0913": 1,
+      "PLR0914": 1,
+      "PLR0915": 1,
+      "PLR0917": 1,
+      "PLR2004": 121,
+      "PLR6201": 3,
+      "Q003": 1,
+      "RSE102": 1,
+      "RUF005": 1,
+      "S110": 2,
+      "S310": 14,
+      "S404": 4,
+      "S603": 4,
+      "SIM105": 1,
+      "SIM118": 1,
+      "SIM401": 1,
+      "TRY003": 46,
+      "TRY300": 1,
+      "TRY301": 2,
+      "UP012": 6,
+      "UP031": 4
+    },
+    "errors": 352,
+    "fixable": 10
+  },
+  "source_files": [
+    "datagate.py"
+  ],
+  "symbols": {
+    "classes": 9,
+    "expressions": 1508,
+    "expressions_top_level": 44,
+    "functions": 84,
+    "globals": 96,
+    "imports": 30,
+    "max_imports": 22,
+    "methods": 13,
+    "statements": 602,
+    "total": 202,
+    "type_aliases": 0,
+    "variables": 96
+  },
+  "waste": {
+    "single_use_functions": 36,
+    "trivial_wrappers": 3,
+    "unused_variables": 51
+  }
+}

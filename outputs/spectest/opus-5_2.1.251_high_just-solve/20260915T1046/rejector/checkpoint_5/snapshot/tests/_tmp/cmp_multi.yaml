@@ -1,0 +1,14 @@
+defaults:
+  api_url: "http://127.0.0.1:53853"
+  model: "m"
+  rpm: 600
+  api_type: "completions"
+  chat_template: "llama3"
+  prompt:
+    system: "SYS"
+    user: "{question}"
+  output_field: "solution"
+tasks:
+  a: {}
+  b:
+    chat_template: "mistral"

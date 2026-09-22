@@ -1,0 +1,1 @@
+datagate: invalid config at /tmp/pytest-of-agent/pytest-2/test_malformed_config_line_is_0/datagate.conf:2: expected KEY=VALUE, got 'this is not a setting'

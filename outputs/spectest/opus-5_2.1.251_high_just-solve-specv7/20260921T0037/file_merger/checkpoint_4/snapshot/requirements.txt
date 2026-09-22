@@ -1,0 +1,3 @@
+# merge_files.py needs pyarrow only for Parquet inputs; CSV, TSV and JSON
+# Lines are handled with the standard library alone.
+pyarrow>=14.0

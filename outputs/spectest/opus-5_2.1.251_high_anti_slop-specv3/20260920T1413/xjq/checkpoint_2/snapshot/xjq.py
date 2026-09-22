@@ -1,0 +1,75 @@
+#!/usr/bin/env python3
+"""Query an XML or HTML document read from stdin with XPath 1.0 or CSS selectors."""
+
+import argparse
+import sys
+
+from css_query import evaluate_css
+from errors import XjqError
+from render import render
+from text_extract import TextMode, extract_text
+from xml_input import parse_document
+from xpath_query import evaluate
+
+
+def parse_args(argv=None) -> argparse.Namespace:
+    """Parse the command line into a query, flags and an ignored input file name."""
+    parser = argparse.ArgumentParser(
+        prog="xjq.py",
+        description="Evaluate an XPath 1.0 or CSS query against the XML/HTML document on stdin.",
+    )
+    parser.add_argument("query", metavar="QUERY", help="XPath 1.0 expression, or CSS selector with --css")
+    parser.add_argument(
+        "infile",
+        metavar="INFILE",
+        nargs="?",
+        help="accepted for compatibility and ignored; the document is read from stdin",
+    )
+    parser.add_argument("--css", action="store_true", help="interpret QUERY as a CSS selector")
+    parser.add_argument(
+        "-t",
+        "--text",
+        action="store_true",
+        help="print the direct text of each matched element",
+    )
+    parser.add_argument(
+        "--text-all",
+        action="store_true",
+        help="print the text of each matched element and all of its descendants",
+    )
+    return parser.parse_args(argv)
+
+
+def text_mode(args: argparse.Namespace):
+    """Return the ``TextMode`` the flags ask for, or ``None``.
+
+    ``--text-all`` wins over ``--text`` when both are given.
+    """
+    if args.text_all:
+        return TextMode.DESCENDANT
+    if args.text:
+        return TextMode.DIRECT
+    return None
+
+
+def main(argv=None) -> int:
+    """Run the tool, returning the process exit code."""
+    args = parse_args(argv)
+    try:
+        document = parse_document(sys.stdin.buffer.read())
+        if args.css:
+            result = evaluate_css(document, args.query)
+        else:
+            result = evaluate(document, args.query)
+        mode = text_mode(args)
+        if mode is not None:
+            result = extract_text(result, mode)
+    except XjqError as exc:
+        print(exc, file=sys.stderr)
+        return 1
+    sys.stdout.write(render(result))
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

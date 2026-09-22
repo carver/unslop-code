@@ -1,0 +1,127 @@
+{
+  "classes": {
+    "attribute_counts_mean": 1.7777777777777777,
+    "attribute_counts_sum": 16,
+    "count": 9,
+    "method_counts_mean": 2.3333333333333335,
+    "method_counts_sum": 21
+  },
+  "complexity": {
+    "cc_max": 19,
+    "cc_ratings": {
+      "A": 162,
+      "B": 5,
+      "C": 1,
+      "D": 0,
+      "E": 0,
+      "F": 0
+    },
+    "cc_sum": 319,
+    "mi_min": 31.548050962236236,
+    "mi_ratings": {
+      "A": 22,
+      "B": 0,
+      "C": 0
+    },
+    "mi_sum": 1359.5642958678836,
+    "num_complex": 1
+  },
+  "file_count": 22,
+  "functions": {
+    "cc_concentration": 0.32305669199298653,
+    "cc_extreme_count": 0,
+    "cc_high_count": 0,
+    "cc_max": 9,
+    "cc_mean": 2.543103448275862,
+    "cc_normalized": 0.003300900540824101,
+    "cc_std": 1.5736539666002503,
+    "cc_sum": 295,
+    "cc_top20": 0.4067796610169492,
+    "count": 116,
+    "depth_max": 3,
+    "extreme_cc_mean": 0.0,
+    "high_cc_mean": 0.0,
+    "lines_mean": 8.46551724137931,
+    "lines_sum": 982
+  },
+  "graph": {
+    "cyclic_dependency_mass": 0.0,
+    "dependency_entropy": 0.3143971966607987,
+    "edge_count": 136,
+    "node_count": 116,
+    "propagation_cost": 0.032083958020989505
+  },
+  "lines": {
+    "comments": 1,
+    "loc": 946,
+    "multi_comment": 184,
+    "single_comment": 97,
+    "total_lines": 1564
+  },
+  "lint": {
+    "counts": {
+      "A002": 1,
+      "DOC201": 79,
+      "DOC501": 20,
+      "DTZ005": 3,
+      "DTZ007": 1,
+      "EM101": 3,
+      "EM102": 33,
+      "EXE001": 1,
+      "FBT003": 3,
+      "FURB113": 1,
+      "FURB118": 2,
+      "PERF401": 1,
+      "PLR2004": 3,
+      "PLR6201": 1,
+      "PLR6301": 1,
+      "Q003": 1,
+      "RUF005": 3,
+      "TRY003": 36,
+      "TRY300": 1
+    },
+    "errors": 194,
+    "fixable": 1
+  },
+  "source_files": [
+    "vault/schema.py",
+    "vault/viewer/links.py",
+    "vault/timestamps.py",
+    "vault/sync.py",
+    "vault/history.py",
+    "vault/download.py",
+    "vault/source.py",
+    "vault/catalog.py",
+    "vault/viewer/recents.py",
+    "mvault.py",
+    "vault/changes.py",
+    "vault/digest.py",
+    "vault/report.py",
+    "vault/errors.py",
+    "vault/viewer/server.py",
+    "vault/cli.py",
+    "vault/viewer/pages.py",
+    "vault/viewer/listing.py",
+    "vault/migration.py",
+    "vault/views.py"
+  ],
+  "symbols": {
+    "classes": 9,
+    "expressions": 1124,
+    "expressions_top_level": 51,
+    "functions": 95,
+    "globals": 43,
+    "imports": 86,
+    "max_imports": 16,
+    "methods": 21,
+    "statements": 320,
+    "total": 168,
+    "type_aliases": 0,
+    "variables": 43
+  },
+  "waste": {
+    "single_use_functions": 82,
+    "trivial_wrappers": 0,
+    "unused_variables": 42
+  }
+}

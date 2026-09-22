@@ -1,0 +1,99 @@
+# Task Directions
+
+Fully implement the following spec. Use the approach:
+- Environment setup
+- Write tests from the spec
+- Implement
+- Declare complete
+
+Specifically:
+
+# Environment
+
+Keep using the same virtual environment you started with, update `requirements.txt` with any new dependencies you need.
+Touch an IN_PROGRESS file. Delete any COMPLETED file.
+
+When killing a process never run a pkill. Instead, pgrep.
+Make sure only one process is found, then kill that one by PID.
+Why? It's too easy to pkill your own Bash argv.
+
+For long-lived processes, log to a file or /dev/null instead of an undrained pipe.
+
+# Testing
+
+Split the spec file into minimal possible logical phrases and minimal context, and iterate through each phrase.
+For each phrase, add a test section with a comment of the phrase & context.
+
+If the spec is non-trivially under-specified, such that alternative interpretations would change the behavior of a conforming implementation on some input, then never ask for clarification.
+Instead, make your best choice at how to interpret the intention of the spec.
+Then, add a numbered entry to an AMBIGUITIES.md file, starting with T1.
+The entry must have sections for Spec Text, Alternatives, Choice, and Risk.
+The entry will quote the relevant spec source verbatim, explain the reasonable alternative interpretations, and your choice & why it seems to best fit the spec.
+The "### Risk: N" section
+Risk is a number from 0 to 100: the chance that the spec's author, who has an implementation of their own and writes the hidden tests against it, prefers a different reading from your choice on some tested input.
+Reason about what the author's implementation most likely does and what fixture they would naturally write, not only about which reading the prose supports best.
+If Risk is above 0, name the reading the author most likely prefers in one line.
+Use the whole range: a flat number on every entry is useless.
+
+If a previous ambiguity is resolved by the current spec, annotate the entry instead of removing it.
+
+You run tests only to validate the tests themselves: collection succeeds, helpers and generators work, and each failure is because behavior is missing, not because the test is broken. Quick, targeted runs.
+
+Never run the full suite to completion or long hypothesis runs; a green suite is the implementer's job, not yours.
+
+# Implement
+# Declare complete
+
+touch a COMPLETED file. rm the IN_PROGRESS file.
+
+# Spec
+## Export, Upload, and Multi-Format Support
+
+`GET /datasets/<id>/export` returns CSV bytes with:
+
+- `Content-Type: text/csv`
+- `Content-Disposition: attachment; filename="<dataset-id>.csv"`
+
+The CSV uses source column order and applies the same filters, sort, and pagination as `/datasets/<id>`.
+`_shape`, `_rowid`, and `_total` do not affect CSV output.
+
+### File Upload
+
+`POST /upload` accepts multipart form with field `file` or `attachment`, and `charset` query parameter.
+
+Success:
+
+```json
+{"ok": true, "endpoint": "/datasets/<id>"}
+```
+
+Re-uploading the same file bytes yields the same dataset id.
+
+Upload status:
+
+- non-multipart request: `HTTP 415`
+- malformed multipart or missing both `file` and `attachment`: `HTTP 400`
+
+### Multi-Format Ingestion
+
+`/convert` and `/upload` accept CSV, `.xls`, and `.xlsx`.
+Only the first worksheet is ingested.
+The first sheet must be tabular (header + at least one data row) or `HTTP 400`.
+`charset` applies and validates only for text CSV sources.
+Unrecognized format: `HTTP 400`.
+
+Formula/computed-cell behavior is not required.
+
+### Error Handling
+
+- missing file field: `HTTP 400`
+- non-multipart upload: `HTTP 415`
+- unsupported format: `HTTP 400`
+- all errors use the standard JSON envelope
+
+### Determinism
+
+- export columns follow source column order.
+- export rows follow filter -> sort -> paginate.
+- spreadsheet columns preserve source order.
+- semantically-correct CSV is required; exact newline/quoting is not.

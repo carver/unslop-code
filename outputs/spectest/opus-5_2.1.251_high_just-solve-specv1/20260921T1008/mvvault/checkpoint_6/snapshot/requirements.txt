@@ -1,0 +1,4 @@
+# mvault uses only the Python standard library (argparse, html, http.cookies,
+# http.server, json, mimetypes, tempfile, threading, urllib.parse,
+# urllib.request, urllib.error, webbrowser, datetime).
+# No third-party dependencies are required.

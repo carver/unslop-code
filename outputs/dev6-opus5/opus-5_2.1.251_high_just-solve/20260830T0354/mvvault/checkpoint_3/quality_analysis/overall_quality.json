@@ -1,0 +1,86 @@
+{
+  "classes": {
+    "attribute_counts_mean": 0.16666666666666666,
+    "attribute_counts_sum": 1,
+    "count": 6,
+    "method_counts_mean": 1.1666666666666667,
+    "method_counts_sum": 7
+  },
+  "complexity": {
+    "cc_max": 20,
+    "cc_ratings": {
+      "A": 172,
+      "B": 18,
+      "C": 6,
+      "D": 0,
+      "E": 0,
+      "F": 0
+    },
+    "cc_sum": 393,
+    "mi_min": 0.0,
+    "mi_ratings": {
+      "A": 3,
+      "B": 0,
+      "C": 1
+    },
+    "mi_sum": 101.8517674571725,
+    "num_complex": 6
+  },
+  "file_count": 4,
+  "functions": {
+    "cc_concentration": 0.47516744238846637,
+    "cc_extreme_count": 0,
+    "cc_high_count": 6,
+    "cc_max": 20,
+    "cc_mean": 4.163043478260869,
+    "cc_normalized": 0.010204065579724288,
+    "cc_std": 4.033587484868633,
+    "cc_sum": 383,
+    "cc_top20": 0.5378590078328982,
+    "count": 92,
+    "depth_max": 5,
+    "extreme_cc_mean": 0.0,
+    "high_cc_mean": 15.166666666666666,
+    "lines_mean": 11.804347826086957,
+    "lines_sum": 1086
+  },
+  "graph": {
+    "cyclic_dependency_mass": 0.0,
+    "dependency_entropy": 0.29768853250379257,
+    "edge_count": 89,
+    "node_count": 61,
+    "propagation_cost": 0.06885245901639345
+  },
+  "lines": {
+    "comments": 100,
+    "loc": 1610,
+    "multi_comment": 20,
+    "single_comment": 125,
+    "total_lines": 2077
+  },
+  "lint": {
+    "counts": {},
+    "errors": 0,
+    "fixable": 0
+  },
+  "source_files": [],
+  "symbols": {
+    "classes": 6,
+    "expressions": 1334,
+    "expressions_top_level": 46,
+    "functions": 85,
+    "globals": 98,
+    "imports": 22,
+    "max_imports": 15,
+    "methods": 7,
+    "statements": 529,
+    "total": 196,
+    "type_aliases": 0,
+    "variables": 98
+  },
+  "waste": {
+    "single_use_functions": 37,
+    "trivial_wrappers": 6,
+    "unused_variables": 40
+  }
+}

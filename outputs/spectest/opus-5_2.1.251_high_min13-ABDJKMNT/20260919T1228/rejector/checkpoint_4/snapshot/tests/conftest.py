@@ -1,0 +1,339 @@
+"""Shared fixtures: a mock API server and a helper that runs the CLI."""
+
+from __future__ import annotations
+
+import json
+import subprocess
+import sys
+from dataclasses import dataclass
+from pathlib import Path
+
+import pytest
+import yaml
+
+from mock_server import MockServer, Script
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+
+
+@dataclass
+class MultiResult:
+    """A run of a multi-task config, whose outputs live in a directory."""
+
+    exit_code: int
+    stdout: str
+    stderr: str
+    output_dir: Path
+
+    @property
+    def summary(self) -> dict:
+        return json.loads(self.stdout.strip().splitlines()[-1])
+
+    def path(self, task: str) -> Path:
+        return self.output_dir / f"{task}.jsonl"
+
+    def rows(self, task: str) -> list[dict]:
+        text = self.path(task).read_text()
+        return [json.loads(line) for line in text.splitlines() if line.strip()]
+
+    def written_tasks(self) -> set[str]:
+        return {path.stem for path in self.output_dir.glob("*.jsonl")}
+
+
+@dataclass
+class CliResult:
+    exit_code: int
+    stdout: str
+    stderr: str
+    output_path: Path
+
+    @property
+    def summary(self) -> dict:
+        return json.loads(self.stdout.strip().splitlines()[-1])
+
+    @property
+    def rows(self) -> list[dict]:
+        text = self.output_path.read_text()
+        return [json.loads(line) for line in text.splitlines() if line.strip()]
+
+
+def make_config(server_url: str, **overrides) -> dict:
+    """A valid greedy config against `server_url`, with `task` keys overridden."""
+    task = {
+        "name": "gsm8k_solve",
+        "api_url": server_url,
+        "model": "gpt-4",
+        "rpm": 600,
+        "prompt": {
+            "system": "Solve the math problem. Put your final answer after ####.",
+            "user": "{question}",
+        },
+        "generation": {"scheme": "greedy", "temperature": 0.0, "max_tokens": 512, "n": 1},
+        "evaluation": {
+            "type": "exact_match",
+            "answer_field": "answer",
+            "extract": "last_number",
+        },
+        "output_field": "solution",
+    }
+    task.update(overrides)
+    return {"task": task}
+
+
+def write_files(directory: Path, files: dict | None) -> None:
+    """Write `{relative path: text}` next to the config, creating directories."""
+    for name, content in (files or {}).items():
+        path = directory / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(content)
+
+
+def icl_setup(name: str, *outputs: str) -> dict:
+    """An inline setup whose examples are recognisable in a recorded request.
+
+    Each example asks ``"<name> example <i>?"``, so a request's ICL turns say
+    which setup built it, and answers with the given output text.
+    """
+    return {
+        "name": name,
+        "examples": [
+            {"input": {"question": f"{name} example {index}?"}, "output": output}
+            for index, output in enumerate(outputs)
+        ],
+    }
+
+
+def setups_used(server) -> list[str | None]:
+    """The setup name behind each recorded request, in call order.
+
+    Reads the first ICL user turn of configs built by `icl_setup`, which
+    follows the system message; a request with no ICL turns reports `None`.
+    """
+    names = []
+    for payload in server.payloads:
+        messages = payload["messages"]
+        example = messages[1]["content"] if len(messages) > 2 else ""
+        names.append(example.split(" example")[0] if " example" in example else None)
+    return names
+
+
+@pytest.fixture
+def servers():
+    """Factory for mock servers; every server started is stopped at teardown."""
+    started: list[MockServer] = []
+
+    def factory(**script_kwargs) -> MockServer:
+        server = MockServer(Script(**script_kwargs)).start()
+        started.append(server)
+        return server
+
+    yield factory
+    for server in started:
+        server.stop()
+
+
+@pytest.fixture
+def server(servers) -> MockServer:
+    return servers()
+
+
+@pytest.fixture
+def run_cli(tmp_path):
+    """Run `python rejector.py run ...` against files written under tmp_path."""
+
+    def runner(config, rows, *extra_args, files=None, timeout=120) -> CliResult:
+        config_path = tmp_path / "task.yaml"
+        input_path = tmp_path / "data.jsonl"
+        output_path = tmp_path / "results.jsonl"
+        config_path.write_text(
+            config if isinstance(config, str) else yaml.safe_dump(config)
+        )
+        write_files(tmp_path, files)
+        input_path.write_text(
+            rows
+            if isinstance(rows, str)
+            else "".join(json.dumps(row) + "\n" for row in rows)
+        )
+        proc = subprocess.run(
+            [
+                sys.executable,
+                str(PROJECT_ROOT / "rejector.py"),
+                "run",
+                "--config",
+                str(config_path),
+                "--input",
+                str(input_path),
+                "--output",
+                str(output_path),
+                *extra_args,
+            ],
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+            cwd=PROJECT_ROOT,
+        )
+        return CliResult(proc.returncode, proc.stdout, proc.stderr, output_path)
+
+    return runner
+
+
+def make_multi_config(server_url: str, tasks: dict, **defaults) -> dict:
+    """A `defaults` + `tasks` config: shared connection settings plus tasks."""
+    shared = {
+        "api_url": server_url,
+        "model": "gpt-4",
+        "rpm": 600,
+        "generation": {"max_tokens": 512},
+    }
+    shared.update(defaults)
+    return {"defaults": shared, "tasks": tasks}
+
+
+def exact_match_task(**overrides) -> dict:
+    """A greedy `exact_match` task body, for configs that need a second task."""
+    task = {
+        "prompt": {"system": "Solve it.", "user": "{question}"},
+        "generation": {"scheme": "greedy"},
+        "evaluation": {
+            "type": "exact_match",
+            "answer_field": "answer",
+            "extract": "last_number",
+        },
+        "output_field": "solution",
+    }
+    task.update(overrides)
+    return task
+
+
+@pytest.fixture
+def run_multi(tmp_path):
+    """Run the CLI over a multi-task config, in mapping or directory mode."""
+
+    def runner(
+        config,
+        inputs: dict,
+        *extra_args,
+        mode: str = "mapping",
+        output: Path | None = None,
+        files: dict | None = None,
+        timeout: int = 120,
+    ) -> MultiResult:
+        config_path = tmp_path / "multi.yaml"
+        config_path.write_text(
+            config if isinstance(config, str) else yaml.safe_dump(config)
+        )
+        write_files(tmp_path, files)
+        data_dir = tmp_path / "data"
+        data_dir.mkdir(exist_ok=True)
+        input_args = []
+        for task, rows in inputs.items():
+            path = data_dir / f"{task}.jsonl"
+            path.write_text("".join(json.dumps(row) + "\n" for row in rows))
+            if mode == "mapping":
+                input_args += ["--input", f"{task}={path}"]
+        if mode == "dir":
+            input_args = ["--input-dir", str(data_dir)]
+
+        output_dir = tmp_path / "results" if output is None else output
+        proc = subprocess.run(
+            [
+                sys.executable,
+                str(PROJECT_ROOT / "rejector.py"),
+                "run",
+                "--config",
+                str(config_path),
+                *input_args,
+                "--output",
+                str(output_dir),
+                *extra_args,
+            ],
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+            cwd=PROJECT_ROOT,
+        )
+        return MultiResult(proc.returncode, proc.stdout, proc.stderr, output_dir)
+
+    return runner
+
+
+LOOKUP_TOOL = {
+    "name": "lookup",
+    "description": "Look up a value in the database by key",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "key": {"type": "string", "description": "The database key to look up"}
+        },
+        "required": ["key"],
+    },
+    "handler": {
+        "type": "static_map",
+        "mapping": {
+            "revenue_q1": "1250000",
+            "revenue_q2": "1480000",
+            "employees": "142",
+        },
+        "default": "KEY_NOT_FOUND",
+    },
+}
+
+CALCULATE_TOOL = {
+    "name": "calculate",
+    "description": "Evaluate a mathematical expression",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "expression": {"type": "string", "description": "The math expression"}
+        },
+        "required": ["expression"],
+    },
+    "handler": {"type": "echo"},
+}
+
+
+def agentic_config(server_url, tools=None, generation=None, **overrides):
+    """The spec's agentic task: a lookup tool, `answer` output, exact match."""
+    settings = {"scheme": "agentic", "max_iterations": 10, "temperature": 0.0}
+    settings.update(generation or {})
+    task = {
+        "prompt": {
+            "system": "You are a data analysis assistant. Use the provided tools.",
+            "user": "{question}",
+        },
+        "generation": settings,
+        "evaluation": {
+            "type": "exact_match",
+            "answer_field": "answer",
+            "extract": "last_number",
+        },
+        "output_field": "answer",
+        "tools": [LOOKUP_TOOL] if tools is None else tools,
+    }
+    task.update(overrides)
+    return make_config(server_url, **task)
+
+
+def turn_responder(*replies):
+    """Script a loop turn by turn, independently of how rows interleave.
+
+    A request's turn is how many tool-calling assistant turns its conversation
+    already carries, so each row walks `replies` from the start and the last
+    entry repeats.
+    """
+
+    def respond(payload, path, index):
+        return replies[min(_turns_done(payload), len(replies) - 1)]
+
+    return respond
+
+
+def _turns_done(payload: dict) -> int:
+    """Tool-calling turns already in one request, in either API shape.
+
+    A rendered prompt also describes the `<tool_call>` format, so turns are
+    counted by the filled-in arguments of real calls rather than by the tag.
+    """
+    if "prompt" in payload:
+        return payload["prompt"].count('"arguments": {"')
+    return sum(1 for message in payload["messages"] if message.get("tool_calls"))

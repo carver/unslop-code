@@ -1,0 +1,219 @@
+# mvault
+
+`mvault` keeps a local vault of media-platform metadata, records how the
+tracked fields of each entry change from one sync to the next, downloads
+the media behind those entries and browses the result in a local viewer.
+
+## Usage
+
+```
+python mvault.py init <name> <url>   # create <name>/catalog.json for a source URL
+python mvault.py sync <name>         # record what changed, then download what is missing
+python mvault.py migrate <name>      # rewrite a legacy catalog in version 3
+python mvault.py digest <name>       # summarize the notable changes a vault recorded
+python mvault.py serve [<name>]      # browse the vaults of this directory
+```
+
+## Vault layout
+
+`<name>/catalog.json` holds the `episodes`, `streams` and `clips` categories.
+Each entry keeps `id`, `published`, `width` and `height` as static values, plus
+one history object per tracked field (`title`, `description`, `views`, `likes`,
+`preview`, `removed`). A history maps a `YYYY-MM-DDTHH:MM:SS` sync timestamp to
+the value the field took from that moment on, so the newest key holds the
+current value. Entries are never deleted; disappearing from the source records
+`removed: true`, and reappearing records `removed: false`. Each entry also
+carries an `annotations` list: the timecoded notes the viewer writes, each one
+a `title`, a `timecode` in whole seconds, an optional `body` and an `id` unique
+inside the entry, kept in the order they were created.
+
+Downloaded files live beside the catalog: media under `<name>/media/` and
+preview images under `<name>/previews/`, each named after the entry it belongs
+to. Every catalog write backs the previous catalog up to `<name>/catalog.bak`
+first.
+
+## `sync`
+
+A sync runs in two phases. The metadata phase fetches the source, folds it into
+the catalog and saves the result; the download phase then fetches the media and
+preview file of every entry the vault does not hold yet. The catalog is on disk
+before the first byte of media is requested, so unreachable media never costs
+the vault what it just learned. Downloads that fail are reported on stderr and
+skipped, and the run still succeeds.
+
+| Option | Effect |
+|---|---|
+| `--episodes=<n>` | download at most `n` episode media files |
+| `--streams=<n>` | download at most `n` stream media files |
+| `--clips=<n>` | download at most `n` clip media files |
+| `--skip-metadata` | download only, against the catalog as it stands |
+| `--skip-download` | record metadata only |
+| `--format=<str>` | ask the source for one format and store the file under it |
+
+Candidates are the entries of a category, in catalog order, that no file in
+`<name>/media/` is named after; a limit takes the first `n` of them. Leftovers
+of an interrupted download end in `.part`, so they neither count as a held file
+nor survive the next attempt. Without `--format` the extension of a downloaded
+file follows the `Content-Type` of the response. A sync closes by reporting how
+many entries it added, removed and updated, and then names each of them beside
+the viewer address it can be read at.
+
+## `digest`
+
+`digest` prints the notable changes the histories of a vault hold, grouped by
+category and then by kind: entries that have just been removed, entries that
+have only ever been observed once, and entries whose tracked fields took a new
+value, listed with the names of the fields that moved and with a note when an
+entry came back after a removal. Each entry is reported once, under the first
+of those kinds that fits it. Every reported entry carries the viewer address
+it can be read at, on the line of its title. The closing line names the vault,
+the catalog version it was read in and the source it tracks.
+
+A digest reads whichever version the catalog is written in and never writes to
+the vault, so it works on a legacy vault without migrating it first. Version 1
+and version 2 catalogs have no `removed` history, so no removals are reported
+for them, and version 1 keeps all of its entries in a single `Entries` group.
+
+## `serve`
+
+`serve` runs a viewer for the vaults of the working directory on
+`127.0.0.1:8840` and opens a browser on it: on the landing page, or, when a
+vault is named, on the page that vault opens with. `--host=<host>` and
+`--port=<port>` move it elsewhere, and the browser follows. The viewer reads
+every catalog version where it lies, so a legacy vault needs no migration to
+be browsed; the only thing it ever writes to a vault is an annotation.
+
+| Route | Page |
+|---|---|
+| `/` | Ask for a vault by name, and offer the ones visited before, newest first |
+| `/catalog/<name>` | Redirects to the category the vault version opens on |
+| `/catalog/<name>/<category>` | The entries of one category, in catalog order |
+| `/catalog/<name>/<category>/<id>` | Everything the vault knows about one entry, and its annotations |
+| `/vault/<name>/media/<file>` | One media file the vault downloaded |
+| `/vault/<name>/preview/<id>` | The preview image of one entry |
+
+A version 1 vault keeps its entries under `entries`; version 2 and 3 vaults
+use `episodes`, `streams` and `clips`. Category names are matched exactly, and
+one that the vault version does not know opens its default category instead.
+Each listed entry shows its current title, whether the vault holds the media
+behind it and, for a version 3 vault, whether the source has dropped it. A
+vault the viewer cannot read sends the visitor back to the landing page, which
+says which name it was.
+
+An entry has a page of its own, holding its current title and description,
+when it was published, how large it is, and a link to the page it has on the
+platform the vault tracks. An entry the vault downloaded the media of plays it
+there, from the file the vault stored it under; one whose media is missing, or
+which the source has dropped, reads the same otherwise. The `views` and `likes`
+a vault watched move are drawn as a line each, and the points they are drawn
+from are embedded beside them as JSON, oldest first, under `YYYY-MM-DDTHH:MM:SS`
+timestamps whichever key format the catalog version stores them in. A field
+observed only once has no shape to show and is left off the charts. A `likes`
+the source never reported stays null in the embedded points.
+
+The two file routes serve what a sync downloaded: media by the filename it was
+stored under, and a preview by the entry its filename names. Neither reaches
+outside the directory it serves, so a path climbing out of `media/` or
+`previews/` finds nothing there. A file the vault does not hold is a `404`, and
+a vault the viewer cannot read sends the visitor back to the landing page,
+whichever route asked for it.
+
+### Annotations
+
+An entry detail page is the one place the viewer writes to a vault. Its own
+address answers three more methods, each taking a JSON body and answering a
+redirect back to the page:
+
+| Method | Body | Answer |
+|---|---|---|
+| `POST` | `title`, `timecode`, optional `body` | the page, opened at `?timecode=<seconds>` |
+| `PATCH` | `id`, and `title` and `body` to replace | the page |
+| `DELETE` | `id` | the page |
+
+A `timecode` is `SS`, `MM:SS` or `HH:MM:SS` of non-negative integers, leading
+zeros welcome and clock bounds not enforced: `"90"` and `"1:30"` are both
+ninety seconds, `"1:01:30"` is `3690` and `"90:00"` is the `5400` it reads as.
+It is stored, and shown, as those whole seconds. A `PATCH` replaces only the
+fields it carries and leaves the rest of the annotation alone; a body the
+`POST` leaves out is stored as `null`.
+
+The page lists what the entry carries, in stored order, each annotation
+linking to the second it marks; opening the page with a `timecode` query seeks
+the player to it. A request naming no title, no timecode or no `id`, or one
+whose timecode is not a timecode, is a `400` naming what was wrong; an `id` the
+entry does not carry is a `404`; and nothing is written to the vault either way.
+
+Annotations need a version 3 catalog, since no earlier version has the field
+they live in. Writing one to a legacy vault therefore migrates the whole
+catalog first, by the rules of `migrate`, and saves the migration and the
+annotation together, so `catalog.bak` holds the vault as it stood before both.
+A version 1 vault is annotated under the `entries` its stored catalog names,
+and answers with the `episodes` its entry has moved to; afterwards the vault is
+a version 3 one like any other, so `entries` is no longer a category it knows.
+A catalog that cannot be migrated is a `500` and stays exactly as it was.
+
+The vaults the landing page offers are the ones the viewer was browsed for
+before, kept in `.mvault-recent.json` beside them, so a later browser session
+still finds them.
+
+The addresses printed by `digest` and `sync` point into this viewer, so a
+report read in a terminal opens in a server started next to it.
+
+## Catalog versions
+
+Catalogs declare the version they were written in, and every command reads all
+of them:
+
+| Version | Layout |
+|---|---|
+| 1 | one flat `entries` list, a short `source_id`, UNIX-epoch history keys, no `removed` or `annotations` |
+| 2 | the three categories and a full `source`, ISO 8601 history keys, no `removed` or `annotations` |
+| 3 | the layout above; written by this release |
+
+An older catalog is upgraded in memory as it is loaded, so reading a vault
+leaves its file alone. `sync` writes the result back, `migrate` upgrades a vault
+on its own, and annotating an entry of a legacy vault upgrades it on the way;
+all three back the original catalog up before writing it, and `migrate` leaves a
+vault that is already at version 3 untouched. A version 1
+vault names its platform rather than its feed, so its source URL is
+`https://media.example.com/channel/<source_id>` -- the URL a sync of such a
+vault fetches its metadata and its media from, and the one the viewer links an
+entry of such a vault to the source of, under `<source>/entry/<id>` like any
+other version.
+
+## Modules
+
+| File | Responsibility |
+|---|---|
+| `mvault.py` | Command line entry point |
+| `vault.py` | `init`, `sync` and `migrate` behavior |
+| `merging.py` | Folding fetched source entries into a catalog |
+| `downloads.py` | Media and preview downloads |
+| `digest.py` | `digest` behavior: classifying and reporting changes |
+| `server.py` | `serve` behavior: the viewer HTTP server |
+| `routes.py` | What the viewer answers to each request |
+| `responses.py` | The shapes the viewer answers in |
+| `editing.py` | Annotation writes, migrating a legacy vault on the way |
+| `annotations.py` | The timecoded notes an entry carries |
+| `pages.py` | The HTML the viewer serves |
+| `notes.py` | The annotations section of an entry detail page |
+| `recents.py` | Vaults the viewer was browsed for before |
+| `viewer.py` | Viewer addresses, shared by the server and the reports |
+| `charts.py` | The `views` and `likes` charts of an entry detail page |
+| `assets.py` | The downloaded files a vault holds, looked up for the viewer |
+| `views.py` | Read-only views over a catalog of any version |
+| `catalogs.py` | Catalog schema, ordering and persistence |
+| `migrations.py` | Version detection and upgrade of legacy catalogs |
+| `history.py` | Tracked-field history objects |
+| `source.py` | Source download and schema validation |
+| `timestamps.py` | Canonical datetime text |
+| `errors.py` | User-facing failure type |
+
+## Development
+
+```
+python -m venv .venv && .venv/bin/pip install -r requirements.txt
+.venv/bin/python -m unittest test_mvault
+```
+
+`requirements.txt` is empty: mvault uses only the standard library.

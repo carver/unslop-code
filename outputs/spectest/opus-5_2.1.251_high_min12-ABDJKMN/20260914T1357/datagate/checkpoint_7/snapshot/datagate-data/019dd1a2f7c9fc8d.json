@@ -1,0 +1,1 @@
+{"columns": ["name", "age", "city"], "rows": [["ada", 36, "London"], ["grace", 45, "Paris"]], "metadata": {"dataset_summary": {"filetype": "excel", "row_count": 2, "column_count": 3}}}

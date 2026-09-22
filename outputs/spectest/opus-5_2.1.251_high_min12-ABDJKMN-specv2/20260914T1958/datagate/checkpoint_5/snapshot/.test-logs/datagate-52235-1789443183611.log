@@ -1,0 +1,46 @@
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:52235
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [15/Sep/2026 03:33:04] "[33mGET /datasets/readiness-probe HTTP/1.1[0m" 404 -
+127.0.0.1 - - [15/Sep/2026 03:33:04] "POST /upload HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:33:04] "POST /upload HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:33:04] "POST /upload HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:33:04] "POST /upload HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:33:04] "POST /upload HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:33:04] "POST /upload HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:33:04] "GET /datasets/c9c7e25083eb1973 HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:33:04] "POST /upload HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:33:04] "GET /datasets/c9c7e25083eb1973?_sort_desc=age&_size=1 HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:33:04] "POST /upload HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:33:04] "GET /datasets/c9c7e25083eb1973/export HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:33:04] "POST /upload HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:33:04] "POST /upload HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:33:04] "POST /upload HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:33:04] "POST /upload HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:33:04] "POST /upload HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:33:04] "POST /upload HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:33:04] "POST /upload HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:33:04] "POST /upload HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:33:04] "POST /upload?charset=latin-1 HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:33:04] "GET /datasets/921964657721bee9 HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:33:04] "POST /upload?charset=latin-1 HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:33:04] "GET /datasets/83aed70a28b63c74 HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:33:04] "[31m[1mPOST /upload?charset=not-a-charset HTTP/1.1[0m" 400 -
+127.0.0.1 - - [15/Sep/2026 03:33:04] "[31m[1mPOST /upload HTTP/1.1[0m" 415 -
+127.0.0.1 - - [15/Sep/2026 03:33:04] "[31m[1mPOST /upload HTTP/1.1[0m" 415 -
+127.0.0.1 - - [15/Sep/2026 03:33:04] "[31m[1mPOST /upload HTTP/1.1[0m" 415 -
+127.0.0.1 - - [15/Sep/2026 03:33:04] "[31m[1mPOST /upload HTTP/1.1[0m" 415 -
+127.0.0.1 - - [15/Sep/2026 03:33:04] "[31m[1mPOST /upload HTTP/1.1[0m" 400 -
+127.0.0.1 - - [15/Sep/2026 03:33:04] "[31m[1mPOST /upload HTTP/1.1[0m" 400 -
+127.0.0.1 - - [15/Sep/2026 03:33:04] "[31m[1mPOST /upload HTTP/1.1[0m" 400 -
+127.0.0.1 - - [15/Sep/2026 03:33:04] "[31m[1mPOST /upload HTTP/1.1[0m" 400 -
+127.0.0.1 - - [15/Sep/2026 03:33:04] "[31m[1mPOST /upload HTTP/1.1[0m" 400 -
+127.0.0.1 - - [15/Sep/2026 03:33:04] "[31m[1mPOST /upload HTTP/1.1[0m" 400 -
+127.0.0.1 - - [15/Sep/2026 03:33:04] "[31m[1mPOST /upload HTTP/1.1[0m" 415 -
+127.0.0.1 - - [15/Sep/2026 03:33:04] "[31m[1mPOST /upload HTTP/1.1[0m" 400 -
+127.0.0.1 - - [15/Sep/2026 03:33:04] "[31m[1mPOST /upload HTTP/1.1[0m" 400 -
+127.0.0.1 - - [15/Sep/2026 03:33:04] "[31m[1mGET /upload HTTP/1.1[0m" 405 -
+127.0.0.1 - - [15/Sep/2026 03:33:04] "[31m[1mPOST /upload HTTP/1.1[0m" 400 -
+127.0.0.1 - - [15/Sep/2026 03:33:04] "[31m[1mPOST /upload HTTP/1.1[0m" 400 -

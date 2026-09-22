@@ -1,0 +1,28 @@
+{
+  "artifacts_dir": "agent",
+  "checkpoint_path": "outputs/spectest/opus-5_2.1.251_high_min13-ABDJKMNT-specv1/20260920T1529/mvvault/checkpoint_4",
+  "completed": "2026-09-20T16:30:58.388457",
+  "elapsed": 1135.442161,
+  "error_message": null,
+  "had_error": false,
+  "snapshot_dir": "snapshot",
+  "started": "2026-09-20T16:12:02.946296",
+  "usage": {
+    "cost": 5.540351500000001,
+    "current_tokens": {
+      "cache_read": 4453483,
+      "cache_write": 128605,
+      "input": 7660,
+      "output": 79439,
+      "reasoning": 0
+    },
+    "net_tokens": {
+      "cache_read": 4453483,
+      "cache_write": 128605,
+      "input": 7660,
+      "output": 79439,
+      "reasoning": 0
+    },
+    "steps": 44
+  }
+}

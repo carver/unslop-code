@@ -1,0 +1,101 @@
+{
+  "schema_version": 1,
+  "problem_name": "rejector",
+  "problem_version": 1,
+  "checkpoint_name": "checkpoint_3",
+  "checkpoint_version": 1,
+  "duration": 71.80228042602539,
+  "entrypoint": "uv run rejector.py",
+  "tests": {
+    "checkpoint_1-Regression": {
+      "passed": [
+        "test_api_failure_after_max_retries",
+        "test_api_retry_on_5xx",
+        "test_cli_override_flags",
+        "test_concurrency_throughput",
+        "test_contains_evaluation",
+        "test_extract_full",
+        "test_extract_last_line",
+        "test_greedy_exact_match_last_number",
+        "test_invalid_config_exits_1[rejection_no_eval]",
+        "test_invalid_config_exits_1[rejection_zero_temp]",
+        "test_invalid_config_exits_1[sample_zero_temp]",
+        "test_missing_template_field_exits_1",
+        "test_no_evaluation_passed_is_null",
+        "test_output_order_matches_input",
+        "test_prompt_template_rendering",
+        "test_regex_evaluation",
+        "test_regex_without_pattern_exits_1_before_requests",
+        "test_rejection_all_attempts_fail",
+        "test_rejection_succeeds_after_failures",
+        "test_sample_generation",
+        "test_stdout_summary"
+      ],
+      "failed": [],
+      "skipped": []
+    },
+    "checkpoint_2-Regression": {
+      "passed": [
+        "test_backward_compat_single_task",
+        "test_eval_model_override",
+        "test_first_number_extract",
+        "test_input_dir_mode",
+        "test_letter_extract",
+        "test_llm_judge_fail",
+        "test_llm_judge_pass",
+        "test_missing_task_input_exits_1",
+        "test_multi_task_execution",
+        "test_script_eval_with_rejection",
+        "test_script_evaluation_pass_and_fail",
+        "test_script_evaluation_timeout",
+        "test_task_filter"
+      ],
+      "failed": [],
+      "skipped": []
+    },
+    "checkpoint_3-Core": {
+      "passed": [
+        "test_backward_compat_no_icl_single_solution",
+        "test_greedy_icl_capped_by_setups",
+        "test_greedy_icl_num_solutions",
+        "test_icl_file_based_examples",
+        "test_icl_inline_prompt_construction",
+        "test_icl_k_truncation",
+        "test_icl_round_robin_strategy",
+        "test_list_mode_without_evaluation_uses_null_eval_meta_and_count_result",
+        "test_rejection_exhausts_max_attempts",
+        "test_rejection_icl_collects_passing",
+        "test_rejection_single_solution_without_icl_keeps_legacy_n_semantics",
+        "test_sample_num_solutions_no_icl",
+        "test_summary_multi_solution_stats"
+      ],
+      "failed": [],
+      "skipped": []
+    },
+    "checkpoint_3-Functionality": {
+      "passed": [
+        "test_cli_icl_overrides",
+        "test_cli_num_solutions_override",
+        "test_invalid_icl_file_fails_before_any_api_requests"
+      ],
+      "failed": [],
+      "skipped": []
+    }
+  },
+  "pass_counts": {
+    "Core": 13,
+    "Functionality": 3,
+    "Regression": 34,
+    "Error": 0
+  },
+  "total_counts": {
+    "Core": 13,
+    "Functionality": 3,
+    "Regression": 34,
+    "Error": 0
+  },
+  "pytest_exit_code": 0,
+  "pytest_collected": 50,
+  "test_collection_hash": "5e68a96ce24813c468ba0f369af38f606c0eea7cb7172bf27a137933e32030ba",
+  "infrastructure_failure": false
+}

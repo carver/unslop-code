@@ -1,0 +1,3 @@
+{"problem": "write good code", "test_code": "echo '{__response__}' | grep -q 'good code'"}
+{"problem": "write good code", "test_code": "echo '{__response__}' | grep -q 'nope-nope'"}
+{"problem": "slow", "test_code": "sleep 30"}

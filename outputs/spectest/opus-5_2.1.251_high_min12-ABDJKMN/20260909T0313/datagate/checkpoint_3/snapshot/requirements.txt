@@ -1,0 +1,4 @@
+Flask>=3.0
+requests>=2.31
+charset-normalizer>=3.3
+pytest>=8.0

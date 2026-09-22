@@ -1,0 +1,140 @@
+{
+  "classes": {
+    "attribute_counts_mean": 2.2758620689655173,
+    "attribute_counts_sum": 66,
+    "count": 29,
+    "method_counts_mean": 1.3793103448275863,
+    "method_counts_sum": 40
+  },
+  "complexity": {
+    "cc_max": 14,
+    "cc_ratings": {
+      "A": 257,
+      "B": 20,
+      "C": 2,
+      "D": 0,
+      "E": 0,
+      "F": 0
+    },
+    "cc_sum": 647,
+    "mi_min": 26.90975405294129,
+    "mi_ratings": {
+      "A": 22,
+      "B": 0,
+      "C": 0
+    },
+    "mi_sum": 1172.82224521421,
+    "num_complex": 2
+  },
+  "file_count": 22,
+  "functions": {
+    "cc_concentration": 0.32699673214097474,
+    "cc_extreme_count": 0,
+    "cc_high_count": 2,
+    "cc_max": 14,
+    "cc_mean": 3.1204188481675392,
+    "cc_normalized": 0.0021627759773741816,
+    "cc_std": 2.0055585473380657,
+    "cc_sum": 596,
+    "cc_top20": 0.40604026845637586,
+    "count": 191,
+    "depth_max": 4,
+    "extreme_cc_mean": 0.0,
+    "high_cc_mean": 12.5,
+    "lines_mean": 8.963350785340314,
+    "lines_sum": 1712
+  },
+  "graph": {
+    "cyclic_dependency_mass": 0.10619469026548672,
+    "dependency_entropy": 0.24918647293453625,
+    "edge_count": 100,
+    "node_count": 111,
+    "propagation_cost": 0.020802620802620804
+  },
+  "lines": {
+    "comments": 46,
+    "loc": 1966,
+    "multi_comment": 243,
+    "single_comment": 130,
+    "total_lines": 2920
+  },
+  "lint": {
+    "counts": {
+      "ANN401": 24,
+      "ARG001": 1,
+      "ARG002": 1,
+      "ARG005": 1,
+      "B905": 4,
+      "DOC201": 61,
+      "DOC402": 5,
+      "DOC501": 14,
+      "DTZ007": 1,
+      "EM102": 31,
+      "EXE001": 1,
+      "FBT001": 4,
+      "FURB118": 1,
+      "INP001": 5,
+      "PLC0415": 1,
+      "PLC1901": 1,
+      "PLR0911": 1,
+      "PLR1714": 1,
+      "PLR2004": 16,
+      "PLR6301": 2,
+      "PLW1510": 1,
+      "PT006": 2,
+      "PT018": 1,
+      "PTH123": 1,
+      "S101": 124,
+      "S301": 1,
+      "S403": 1,
+      "S404": 1,
+      "S603": 1,
+      "TC001": 11,
+      "TC003": 4,
+      "TRY003": 31,
+      "UP006": 9,
+      "UP007": 1,
+      "UP035": 17,
+      "UP037": 4
+    },
+    "errors": 386,
+    "fixable": 24
+  },
+  "source_files": [
+    "csvmerge/partition.py",
+    "csvmerge/sorting.py",
+    "csvmerge/aliases.py",
+    "merge_files.py",
+    "csvmerge/sources.py",
+    "csvmerge/schema.py",
+    "csvmerge/formats.py",
+    "csvmerge/paths.py",
+    "csvmerge/types.py",
+    "csvmerge/output.py",
+    "csvmerge/nested.py",
+    "csvmerge/parquetio.py",
+    "csvmerge/csvio.py",
+    "csvmerge/records.py",
+    "csvmerge/errors.py",
+    "csvmerge/values.py"
+  ],
+  "symbols": {
+    "classes": 29,
+    "expressions": 2330,
+    "expressions_top_level": 69,
+    "functions": 151,
+    "globals": 59,
+    "imports": 141,
+    "max_imports": 15,
+    "methods": 40,
+    "statements": 605,
+    "total": 279,
+    "type_aliases": 0,
+    "variables": 59
+  },
+  "waste": {
+    "single_use_functions": 129,
+    "trivial_wrappers": 1,
+    "unused_variables": 75
+  }
+}

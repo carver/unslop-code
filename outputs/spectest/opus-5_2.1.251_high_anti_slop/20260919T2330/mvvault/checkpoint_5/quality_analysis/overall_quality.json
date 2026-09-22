@@ -1,0 +1,122 @@
+{
+  "classes": {
+    "attribute_counts_mean": 2.9166666666666665,
+    "attribute_counts_sum": 35,
+    "count": 12,
+    "method_counts_mean": 0.5833333333333334,
+    "method_counts_sum": 7
+  },
+  "complexity": {
+    "cc_max": 8,
+    "cc_ratings": {
+      "A": 184,
+      "B": 12,
+      "C": 0,
+      "D": 0,
+      "E": 0,
+      "F": 0
+    },
+    "cc_sum": 358,
+    "mi_min": 36.22105150126635,
+    "mi_ratings": {
+      "A": 19,
+      "B": 0,
+      "C": 0
+    },
+    "mi_sum": 1163.6403743891467,
+    "num_complex": 0
+  },
+  "file_count": 19,
+  "functions": {
+    "cc_concentration": 0.3565771349862259,
+    "cc_extreme_count": 0,
+    "cc_high_count": 0,
+    "cc_max": 8,
+    "cc_mean": 2.6666666666666665,
+    "cc_normalized": 0.0036378816793893134,
+    "cc_std": 1.8479064558900435,
+    "cc_sum": 352,
+    "cc_top20": 0.4375,
+    "count": 132,
+    "depth_max": 3,
+    "extreme_cc_mean": 0.0,
+    "high_cc_mean": 0.0,
+    "lines_mean": 7.704545454545454,
+    "lines_sum": 1017
+  },
+  "graph": {
+    "cyclic_dependency_mass": 0.0,
+    "dependency_entropy": 0.2885669538831137,
+    "edge_count": 173,
+    "node_count": 131,
+    "propagation_cost": 0.03476218438050499
+  },
+  "lines": {
+    "comments": 25,
+    "loc": 1041,
+    "multi_comment": 139,
+    "single_comment": 158,
+    "total_lines": 1711
+  },
+  "lint": {
+    "counts": {
+      "B905": 1,
+      "DOC201": 110,
+      "DOC501": 14,
+      "DTZ005": 3,
+      "EM101": 1,
+      "EM102": 26,
+      "EXE001": 1,
+      "FBT003": 2,
+      "FURB118": 2,
+      "FURB140": 2,
+      "PLR2004": 9,
+      "Q003": 1,
+      "RUF005": 2,
+      "TRY003": 27,
+      "UP035": 1
+    },
+    "errors": 202,
+    "fixable": 4
+  },
+  "source_files": [
+    "vault/recent.py",
+    "vault/versions.py",
+    "mvault.py",
+    "vault/server.py",
+    "vault/pages.py",
+    "vault/digest.py",
+    "vault/assets.py",
+    "vault/errors.py",
+    "vault/catalog.py",
+    "vault/__init__.py",
+    "vault/history.py",
+    "vault/routes.py",
+    "vault/detail.py",
+    "vault/source.py",
+    "vault/syncing.py",
+    "vault/changes.py",
+    "vault/charts.py",
+    "vault/viewer.py",
+    "vault/downloads.py"
+  ],
+  "symbols": {
+    "classes": 12,
+    "expressions": 1274,
+    "expressions_top_level": 38,
+    "functions": 125,
+    "globals": 52,
+    "imports": 68,
+    "max_imports": 8,
+    "methods": 7,
+    "statements": 336,
+    "total": 196,
+    "type_aliases": 0,
+    "variables": 52
+  },
+  "waste": {
+    "single_use_functions": 103,
+    "trivial_wrappers": 0,
+    "unused_variables": 50
+  }
+}

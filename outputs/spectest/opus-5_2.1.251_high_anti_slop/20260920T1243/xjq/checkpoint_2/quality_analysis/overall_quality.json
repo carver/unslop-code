@@ -1,0 +1,100 @@
+{
+  "classes": {
+    "attribute_counts_mean": 0.0,
+    "attribute_counts_sum": 0,
+    "count": 3,
+    "method_counts_mean": 0.0,
+    "method_counts_sum": 0
+  },
+  "complexity": {
+    "cc_max": 6,
+    "cc_ratings": {
+      "A": 25,
+      "B": 1,
+      "C": 0,
+      "D": 0,
+      "E": 0,
+      "F": 0
+    },
+    "cc_sum": 52,
+    "mi_min": 49.96674797836754,
+    "mi_ratings": {
+      "A": 5,
+      "B": 0,
+      "C": 0
+    },
+    "mi_sum": 328.98857298269286,
+    "num_complex": 0
+  },
+  "file_count": 5,
+  "functions": {
+    "cc_concentration": 0.27149321266968324,
+    "cc_extreme_count": 0,
+    "cc_high_count": 0,
+    "cc_max": 6,
+    "cc_mean": 3.0588235294117645,
+    "cc_normalized": 0.014515532544378696,
+    "cc_std": 1.5194813356575871,
+    "cc_sum": 52,
+    "cc_top20": 0.38461538461538464,
+    "count": 17,
+    "depth_max": 2,
+    "extreme_cc_mean": 0.0,
+    "high_cc_mean": 0.0,
+    "lines_mean": 9.941176470588236,
+    "lines_sum": 169
+  },
+  "graph": {
+    "cyclic_dependency_mass": 0.0,
+    "dependency_entropy": 0.2813521352038921,
+    "edge_count": 17,
+    "node_count": 17,
+    "propagation_cost": 0.1213235294117647
+  },
+  "lines": {
+    "comments": 1,
+    "loc": 148,
+    "multi_comment": 39,
+    "single_comment": 18,
+    "total_lines": 268
+  },
+  "lint": {
+    "counts": {
+      "DOC201": 17,
+      "DOC501": 4,
+      "EM101": 1,
+      "EM102": 1,
+      "EXE001": 1,
+      "INP001": 4,
+      "TRY003": 2
+    },
+    "errors": 30,
+    "fixable": 0
+  },
+  "source_files": [
+    "cssquery.py",
+    "textnodes.py",
+    "render.py",
+    "xjq.py",
+    "xmldoc.py"
+  ],
+  "symbols": {
+    "classes": 3,
+    "expressions": 142,
+    "expressions_top_level": 6,
+    "functions": 17,
+    "globals": 6,
+    "imports": 14,
+    "max_imports": 6,
+    "methods": 0,
+    "statements": 66,
+    "total": 26,
+    "type_aliases": 0,
+    "variables": 6
+  },
+  "waste": {
+    "single_use_functions": 13,
+    "trivial_wrappers": 0,
+    "unused_variables": 4
+  }
+}

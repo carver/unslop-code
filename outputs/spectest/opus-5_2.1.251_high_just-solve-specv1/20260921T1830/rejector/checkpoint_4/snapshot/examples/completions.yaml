@@ -1,0 +1,36 @@
+# Template-driven requests against /v1/completions.
+defaults:
+  api_url: "http://localhost:8000"
+  model: "meta-llama/llama-3-70b"
+  rpm: 60
+  api_type: "completions"
+  chat_template: "llama3"
+  generation:
+    max_tokens: 512
+
+tasks:
+  gsm8k:
+    prompt:
+      system: "Solve the math problem step by step. Put your final answer after ####."
+      user: "{question}"
+    generation:
+      scheme: "greedy"
+    evaluation:
+      type: "exact_match"
+      answer_field: "answer"
+      extract: "last_number"
+    output_field: "solution"
+
+  mmlu:
+    # per-task override: this task uses a different template
+    chat_template: "chatml"
+    prompt:
+      system: "Answer the multiple choice question with a single letter."
+      user: "{question}\n\nA) {a}\nB) {b}\nC) {c}\nD) {d}"
+    generation:
+      scheme: "greedy"
+    evaluation:
+      type: "exact_match"
+      answer_field: "answer"
+      extract: "letter"
+    output_field: "choice"

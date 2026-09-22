@@ -1,0 +1,124 @@
+{
+  "classes": {
+    "attribute_counts_mean": 3.823529411764706,
+    "attribute_counts_sum": 65,
+    "count": 17,
+    "method_counts_mean": 1.2941176470588236,
+    "method_counts_sum": 22
+  },
+  "complexity": {
+    "cc_max": 10,
+    "cc_ratings": {
+      "A": 220,
+      "B": 18,
+      "C": 0,
+      "D": 0,
+      "E": 0,
+      "F": 0
+    },
+    "cc_sum": 567,
+    "mi_min": 37.73695371017183,
+    "mi_ratings": {
+      "A": 22,
+      "B": 0,
+      "C": 0
+    },
+    "mi_sum": 1344.6664200408911,
+    "num_complex": 0
+  },
+  "file_count": 22,
+  "functions": {
+    "cc_concentration": 0.31750829937113706,
+    "cc_extreme_count": 0,
+    "cc_high_count": 0,
+    "cc_max": 10,
+    "cc_mean": 2.7512437810945274,
+    "cc_normalized": 0.0019309438244132773,
+    "cc_std": 1.7140043597592254,
+    "cc_sum": 553,
+    "cc_top20": 0.40325497287522605,
+    "count": 201,
+    "depth_max": 3,
+    "extreme_cc_mean": 0.0,
+    "high_cc_mean": 0.0,
+    "lines_mean": 8.059701492537313,
+    "lines_sum": 1620
+  },
+  "graph": {
+    "cyclic_dependency_mass": 0.0,
+    "dependency_entropy": 0.1500690691401907,
+    "edge_count": 35,
+    "node_count": 45,
+    "propagation_cost": 0.03484848484848485
+  },
+  "lines": {
+    "comments": 253,
+    "loc": 1724,
+    "multi_comment": 18,
+    "single_comment": 306,
+    "total_lines": 2559
+  },
+  "lint": {
+    "counts": {
+      "ANN401": 8,
+      "ARG001": 8,
+      "ARG005": 3,
+      "B905": 1,
+      "DOC201": 26,
+      "DOC501": 4,
+      "EM101": 4,
+      "EM102": 15,
+      "ERA001": 46,
+      "EXE001": 1,
+      "FBT003": 1,
+      "FURB122": 1,
+      "INP001": 11,
+      "PLC0415": 3,
+      "PLC1901": 3,
+      "PLR2004": 57,
+      "PLW1510": 2,
+      "PLW1514": 3,
+      "PT006": 1,
+      "RUF100": 1,
+      "S101": 225,
+      "S404": 2,
+      "S603": 2,
+      "TC001": 7,
+      "TRY003": 19,
+      "UP035": 10,
+      "UP037": 1
+    },
+    "errors": 465,
+    "fixable": 15
+  },
+  "source_files": [
+    "taskrunner/config.py",
+    "taskrunner/jsonl.py",
+    "taskrunner/records.py",
+    "taskrunner/api.py",
+    "taskrunner/prompts.py",
+    "taskrunner/cli.py",
+    "taskrunner/generation.py",
+    "taskrunner/evaluation.py",
+    "taskrunner/runner.py"
+  ],
+  "symbols": {
+    "classes": 17,
+    "expressions": 2470,
+    "expressions_top_level": 35,
+    "functions": 179,
+    "globals": 20,
+    "imports": 89,
+    "max_imports": 10,
+    "methods": 22,
+    "statements": 536,
+    "total": 238,
+    "type_aliases": 0,
+    "variables": 20
+  },
+  "waste": {
+    "single_use_functions": 171,
+    "trivial_wrappers": 4,
+    "unused_variables": 35
+  }
+}

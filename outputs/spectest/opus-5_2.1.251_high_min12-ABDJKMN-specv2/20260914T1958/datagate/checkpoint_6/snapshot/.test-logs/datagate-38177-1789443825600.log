@@ -1,0 +1,9 @@
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:38177
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [15/Sep/2026 03:43:46] "[33mGET /datasets/readiness-probe HTTP/1.1[0m" 404 -
+127.0.0.1 - - [15/Sep/2026 03:43:46] "GET /convert?source=http://127.0.0.1:39979/cache-false-no.csv HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:43:46] "GET /convert?source=http://127.0.0.1:39979/cache-false-no.csv HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:43:46] "GET /datasets/b2c98d8c0db2c1cf HTTP/1.1" 200 -

@@ -1,0 +1,3 @@
+{"input": {"question": "What is 10 / 2?"}, "output": "10 divided by 2 is 5.\n#### 5"}
+{"input": {"question": "A box holds 4 pens. How many pens are in 3 boxes?"}, "output": "Each box holds 4 pens.\n3 boxes hold 3 * 4 = 12 pens.\n#### 12"}
+{"input": {"question": "What is 7 - 9?"}, "output": "Subtracting 9 from 7 gives a negative result.\n7 - 9 = -2\n#### -2"}

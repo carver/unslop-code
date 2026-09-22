@@ -1,0 +1,136 @@
+{
+  "classes": {
+    "attribute_counts_mean": 5.0,
+    "attribute_counts_sum": 55,
+    "count": 11,
+    "method_counts_mean": 1.2727272727272727,
+    "method_counts_sum": 14
+  },
+  "complexity": {
+    "cc_max": 72,
+    "cc_ratings": {
+      "A": 117,
+      "B": 11,
+      "C": 10,
+      "D": 3,
+      "E": 0,
+      "F": 2
+    },
+    "cc_sum": 569,
+    "mi_min": 0.0,
+    "mi_ratings": {
+      "A": 2,
+      "B": 1,
+      "C": 1
+    },
+    "mi_sum": 89.16678479772249,
+    "num_complex": 15
+  },
+  "file_count": 4,
+  "functions": {
+    "cc_concentration": 0.5807227211654056,
+    "cc_extreme_count": 2,
+    "cc_high_count": 14,
+    "cc_max": 72,
+    "cc_mean": 6.7974683544303796,
+    "cc_normalized": 0.03006742340720681,
+    "cc_std": 10.47632220017762,
+    "cc_sum": 537,
+    "cc_top20": 0.638733705772812,
+    "count": 79,
+    "depth_max": 5,
+    "extreme_cc_mean": 58.0,
+    "high_cc_mean": 23.285714285714285,
+    "lines_mean": 31.189873417721518,
+    "lines_sum": 2464
+  },
+  "graph": {
+    "cyclic_dependency_mass": 0.0,
+    "dependency_entropy": 0.22268361622827917,
+    "edge_count": 58,
+    "node_count": 54,
+    "propagation_cost": 0.04891684136967156
+  },
+  "lines": {
+    "comments": 99,
+    "loc": 2500,
+    "multi_comment": 26,
+    "single_comment": 93,
+    "total_lines": 2998
+  },
+  "lint": {
+    "counts": {
+      "ANN401": 15,
+      "B904": 2,
+      "BLE001": 2,
+      "C420": 1,
+      "C901": 6,
+      "DOC201": 9,
+      "DOC501": 3,
+      "EM101": 9,
+      "EM102": 61,
+      "EXE001": 4,
+      "FBT001": 5,
+      "FBT002": 3,
+      "FURB101": 1,
+      "FURB103": 2,
+      "FURB122": 1,
+      "FURB167": 1,
+      "PERF203": 2,
+      "PLC1901": 3,
+      "PLR0911": 2,
+      "PLR0912": 4,
+      "PLR0913": 4,
+      "PLR0914": 4,
+      "PLR0915": 4,
+      "PLR0917": 3,
+      "PLR2004": 33,
+      "PLR6201": 3,
+      "PLW0603": 6,
+      "PLW1510": 2,
+      "PLW1514": 1,
+      "PTH100": 2,
+      "PTH103": 3,
+      "PTH110": 5,
+      "PTH112": 3,
+      "PTH113": 2,
+      "PTH118": 60,
+      "PTH120": 5,
+      "PTH123": 9,
+      "PTH208": 5,
+      "RUF005": 2,
+      "RUF046": 2,
+      "S310": 5,
+      "S404": 2,
+      "S603": 4,
+      "SIM115": 2,
+      "TRY003": 70,
+      "UP015": 2,
+      "UP037": 1
+    },
+    "errors": 380,
+    "fixable": 33
+  },
+  "source_files": [
+    "rejector.py"
+  ],
+  "symbols": {
+    "classes": 11,
+    "expressions": 3331,
+    "expressions_top_level": 250,
+    "functions": 65,
+    "globals": 53,
+    "imports": 36,
+    "max_imports": 13,
+    "methods": 14,
+    "statements": 556,
+    "total": 143,
+    "type_aliases": 0,
+    "variables": 53
+  },
+  "waste": {
+    "single_use_functions": 35,
+    "trivial_wrappers": 0,
+    "unused_variables": 57
+  }
+}

@@ -1,0 +1,135 @@
+{
+  "classes": {
+    "attribute_counts_mean": 3.888888888888889,
+    "attribute_counts_sum": 105,
+    "count": 27,
+    "method_counts_mean": 0.9259259259259259,
+    "method_counts_sum": 25
+  },
+  "complexity": {
+    "cc_max": 19,
+    "cc_ratings": {
+      "A": 320,
+      "B": 35,
+      "C": 4,
+      "D": 0,
+      "E": 0,
+      "F": 0
+    },
+    "cc_sum": 924,
+    "mi_min": 19.245140434871683,
+    "mi_ratings": {
+      "A": 26,
+      "B": 0,
+      "C": 0
+    },
+    "mi_sum": 1277.9689678025616,
+    "num_complex": 4
+  },
+  "file_count": 26,
+  "functions": {
+    "cc_concentration": 0.3462409253106927,
+    "cc_extreme_count": 0,
+    "cc_high_count": 4,
+    "cc_max": 19,
+    "cc_mean": 3.3444444444444446,
+    "cc_normalized": 0.0018574435751609784,
+    "cc_std": 2.3684470675470024,
+    "cc_sum": 903,
+    "cc_top20": 0.42414174972314506,
+    "count": 270,
+    "depth_max": 3,
+    "extreme_cc_mean": 0.0,
+    "high_cc_mean": 13.75,
+    "lines_mean": 9.574074074074074,
+    "lines_sum": 2585
+  },
+  "graph": {
+    "cyclic_dependency_mass": 0.0,
+    "dependency_entropy": 0.30027146346267813,
+    "edge_count": 131,
+    "node_count": 119,
+    "propagation_cost": 0.029055690072639227
+  },
+  "lines": {
+    "comments": 36,
+    "loc": 2967,
+    "multi_comment": 153,
+    "single_comment": 155,
+    "total_lines": 4129
+  },
+  "lint": {
+    "counts": {
+      "ANN401": 11,
+      "ARG001": 6,
+      "ARG005": 56,
+      "B905": 1,
+      "C420": 1,
+      "DOC201": 94,
+      "DOC402": 3,
+      "DOC501": 19,
+      "EM101": 5,
+      "EM102": 41,
+      "FBT001": 2,
+      "FBT003": 15,
+      "FURB113": 1,
+      "INP001": 26,
+      "PLR0913": 1,
+      "PLR0917": 1,
+      "PLR2004": 49,
+      "PLR6301": 7,
+      "PLW1514": 4,
+      "PT006": 1,
+      "PT018": 14,
+      "RUF005": 2,
+      "RUF029": 2,
+      "RUF043": 8,
+      "RUF059": 2,
+      "S101": 259,
+      "S311": 1,
+      "TC002": 17,
+      "TC003": 3,
+      "TRY003": 46,
+      "UP035": 8
+    },
+    "errors": 706,
+    "fixable": 9
+  },
+  "source_files": [
+    "rejector.py",
+    "errors.py",
+    "prompts.py",
+    "jobs.py",
+    "agentic.py",
+    "jsonl.py",
+    "records.py",
+    "templates.py",
+    "client.py",
+    "evaluation.py",
+    "runner.py",
+    "config.py",
+    "icl.py",
+    "tools.py",
+    "shell.py",
+    "schemes.py"
+  ],
+  "symbols": {
+    "classes": 27,
+    "expressions": 3615,
+    "expressions_top_level": 73,
+    "functions": 245,
+    "globals": 62,
+    "imports": 151,
+    "max_imports": 13,
+    "methods": 25,
+    "statements": 818,
+    "total": 359,
+    "type_aliases": 0,
+    "variables": 62
+  },
+  "waste": {
+    "single_use_functions": 207,
+    "trivial_wrappers": 0,
+    "unused_variables": 74
+  }
+}

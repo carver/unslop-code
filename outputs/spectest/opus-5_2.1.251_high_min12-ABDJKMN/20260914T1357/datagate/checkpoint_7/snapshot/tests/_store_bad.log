@@ -1,0 +1,2 @@
+STORAGE_DIR: cannot create '/tmp/pytest-of-agent/pytest-2/test_storage_dir_that_is_a_fil0/not-a-dir': [Errno 17] File exists: '/tmp/pytest-of-agent/pytest-2/test_storage_dir_that_is_a_fil0/not-a-dir'
+STORAGE_DIR: cannot create '/tmp/pytest-of-agent/pytest-2/test_storage_dir_that_is_a_fil0/not-a-dir': [Errno 17] File exists: '/tmp/pytest-of-agent/pytest-2/test_storage_dir_that_is_a_fil0/not-a-dir'

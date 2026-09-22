@@ -1,0 +1,4 @@
+note,id,is_active,ts
+beta,10,true,2024-06-30T23:59:59Z
+alpha,2,0,2024-07-01T06:30:00
+gamma,,1,

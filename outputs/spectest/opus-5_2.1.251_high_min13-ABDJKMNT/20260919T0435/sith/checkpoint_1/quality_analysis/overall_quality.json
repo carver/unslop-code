@@ -1,0 +1,127 @@
+{
+  "classes": {
+    "attribute_counts_mean": 2.9047619047619047,
+    "attribute_counts_sum": 61,
+    "count": 21,
+    "method_counts_mean": 3.5714285714285716,
+    "method_counts_sum": 75
+  },
+  "complexity": {
+    "cc_max": 59,
+    "cc_ratings": {
+      "A": 266,
+      "B": 16,
+      "C": 0,
+      "D": 1,
+      "E": 0,
+      "F": 1
+    },
+    "cc_sum": 748,
+    "mi_min": 21.268444559111316,
+    "mi_ratings": {
+      "A": 19,
+      "B": 0,
+      "C": 0
+    },
+    "mi_sum": 1135.8199789922762,
+    "num_complex": 2
+  },
+  "file_count": 19,
+  "functions": {
+    "cc_concentration": 0.283074683167334,
+    "cc_extreme_count": 0,
+    "cc_high_count": 0,
+    "cc_max": 9,
+    "cc_mean": 2.7361702127659573,
+    "cc_normalized": 0.0013059414122181241,
+    "cc_std": 1.5157894803308203,
+    "cc_sum": 643,
+    "cc_top20": 0.37947122861586313,
+    "count": 235,
+    "depth_max": 4,
+    "extreme_cc_mean": 0.0,
+    "high_cc_mean": 0.0,
+    "lines_mean": 5.608510638297872,
+    "lines_sum": 1318
+  },
+  "graph": {
+    "cyclic_dependency_mass": 0.11206896551724138,
+    "dependency_entropy": 0.23934210328551095,
+    "edge_count": 112,
+    "node_count": 112,
+    "propagation_cost": 0.029601029601029602
+  },
+  "lines": {
+    "comments": 128,
+    "loc": 1414,
+    "multi_comment": 47,
+    "single_comment": 198,
+    "total_lines": 2171
+  },
+  "lint": {
+    "counts": {
+      "ARG002": 1,
+      "BLE001": 1,
+      "DOC201": 36,
+      "DOC402": 3,
+      "DOC501": 1,
+      "EM101": 1,
+      "EM102": 6,
+      "ERA001": 45,
+      "EXE001": 1,
+      "FBT001": 3,
+      "FBT002": 3,
+      "INP001": 9,
+      "PLC1901": 3,
+      "PLR0911": 1,
+      "PLR0913": 1,
+      "PLR0917": 1,
+      "PLR6301": 6,
+      "PLW1510": 1,
+      "PTH100": 1,
+      "PTH113": 2,
+      "PTH118": 1,
+      "PTH120": 1,
+      "PTH123": 2,
+      "RUF015": 1,
+      "S101": 167,
+      "S404": 1,
+      "S603": 1,
+      "SIM115": 2,
+      "TC003": 1,
+      "TRY003": 7,
+      "UP037": 11
+    },
+    "errors": 321,
+    "fixable": 16
+  },
+  "source_files": [
+    "sithlib/resolve.py",
+    "sithlib/source.py",
+    "sithlib/symbols.py",
+    "sithlib/modules.py",
+    "sithlib/engine.py",
+    "sithlib/scopes.py",
+    "sithlib/cursor.py",
+    "sithlib/matching.py"
+  ],
+  "symbols": {
+    "classes": 21,
+    "expressions": 2549,
+    "expressions_top_level": 26,
+    "functions": 160,
+    "globals": 28,
+    "imports": 42,
+    "max_imports": 8,
+    "methods": 75,
+    "statements": 621,
+    "total": 284,
+    "type_aliases": 0,
+    "variables": 28
+  },
+  "waste": {
+    "single_use_functions": 151,
+    "trivial_wrappers": 3,
+    "unused_variables": 34
+  }
+}

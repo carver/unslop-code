@@ -1,0 +1,20 @@
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:45217
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:04:25] "GET /convert?source=http://127.0.0.1:36919/tls-off-convert-6.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:04:25] "POST /upload HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:04:25] "GET /convert?source=http://127.0.0.1:36919/tls-off-usable-8.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:04:25] "GET /datasets/4737c51ac22d719f HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:04:26] "GET /convert?source=http://127.0.0.1:36919/tls-same-id-10.csv HTTP/1.1" 200 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:58001
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:05:05] "GET /convert?source=http://127.0.0.1:32983/tls-off-convert-6.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:05:05] "POST /upload HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:05:06] "GET /convert?source=http://127.0.0.1:32983/tls-off-usable-8.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:05:06] "GET /datasets/ce468cc7d329daa3 HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:05:07] "GET /convert?source=http://127.0.0.1:32983/tls-same-id-10.csv HTTP/1.1" 200 -

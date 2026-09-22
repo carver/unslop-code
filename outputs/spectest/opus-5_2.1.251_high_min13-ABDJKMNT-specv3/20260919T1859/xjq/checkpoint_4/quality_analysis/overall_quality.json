@@ -1,0 +1,118 @@
+{
+  "classes": {
+    "attribute_counts_mean": 1.75,
+    "attribute_counts_sum": 7,
+    "count": 4,
+    "method_counts_mean": 0.0,
+    "method_counts_sum": 0
+  },
+  "complexity": {
+    "cc_max": 7,
+    "cc_ratings": {
+      "A": 217,
+      "B": 4,
+      "C": 0,
+      "D": 0,
+      "E": 0,
+      "F": 0
+    },
+    "cc_sum": 573,
+    "mi_min": 41.396937987872626,
+    "mi_ratings": {
+      "A": 23,
+      "B": 0,
+      "C": 0
+    },
+    "mi_sum": 1687.0556236743912,
+    "num_complex": 0
+  },
+  "file_count": 23,
+  "functions": {
+    "cc_concentration": 0.18290575916230367,
+    "cc_extreme_count": 0,
+    "cc_high_count": 0,
+    "cc_max": 7,
+    "cc_mean": 2.865,
+    "cc_normalized": 0.0006347200062273601,
+    "cc_std": 1.0207766281724497,
+    "cc_sum": 573,
+    "cc_top20": 0.3089005235602094,
+    "count": 200,
+    "depth_max": 2,
+    "extreme_cc_mean": 0.0,
+    "high_cc_mean": 0.0,
+    "lines_mean": 5.22,
+    "lines_sum": 1044
+  },
+  "graph": {
+    "cyclic_dependency_mass": 0.0,
+    "dependency_entropy": 0.1982131543452395,
+    "edge_count": 31,
+    "node_count": 30,
+    "propagation_cost": 0.08850574712643679
+  },
+  "lines": {
+    "comments": 311,
+    "loc": 1063,
+    "multi_comment": 84,
+    "single_comment": 352,
+    "total_lines": 1984
+  },
+  "lint": {
+    "counts": {
+      "B008": 1,
+      "DOC201": 29,
+      "DOC501": 6,
+      "EM102": 8,
+      "ERA001": 45,
+      "EXE001": 1,
+      "FBT001": 4,
+      "INP001": 12,
+      "PLC0415": 3,
+      "PLC1901": 40,
+      "PLW1510": 1,
+      "PT018": 1,
+      "PTH116": 1,
+      "S101": 298,
+      "S404": 1,
+      "S603": 1,
+      "SLF001": 2,
+      "TRY003": 8,
+      "UP012": 1,
+      "UP022": 1
+    },
+    "errors": 464,
+    "fixable": 2
+  },
+  "source_files": [
+    "xjqlib/formatting.py",
+    "xjq.py",
+    "xjqlib/text.py",
+    "xjqlib/query.py",
+    "xjqlib/css.py",
+    "xjqlib/errors.py",
+    "xjqlib/names.py",
+    "xjqlib/parsing.py",
+    "xjqlib/source.py",
+    "xjqlib/jsondoc.py"
+  ],
+  "symbols": {
+    "classes": 4,
+    "expressions": 1345,
+    "expressions_top_level": 28,
+    "functions": 200,
+    "globals": 17,
+    "imports": 57,
+    "max_imports": 9,
+    "methods": 0,
+    "statements": 425,
+    "total": 221,
+    "type_aliases": 0,
+    "variables": 17
+  },
+  "waste": {
+    "single_use_functions": 198,
+    "trivial_wrappers": 0,
+    "unused_variables": 16
+  }
+}

@@ -1,0 +1,42 @@
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:54513
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:04:20] "[31m[1mPOST /upload HTTP/1.1[0m" 400 -
+127.0.0.1 - - [14/Sep/2026 22:04:20] "[31m[1mGET /convert?source=http://127.0.0.1:36919/size-exact-1.csv HTTP/1.1[0m" 400 -
+127.0.0.1 - - [14/Sep/2026 22:04:20] "[31m[1mPOST /upload HTTP/1.1[0m" 400 -
+127.0.0.1 - - [14/Sep/2026 22:04:20] "[31m[1mPOST /upload HTTP/1.1[0m" 400 -
+127.0.0.1 - - [14/Sep/2026 22:04:20] "[31m[1mPOST /upload HTTP/1.1[0m" 400 -
+127.0.0.1 - - [14/Sep/2026 22:04:20] "[31m[1mPOST /upload HTTP/1.1[0m" 400 -
+127.0.0.1 - - [14/Sep/2026 22:04:20] "[31m[1mPOST /upload HTTP/1.1[0m" 400 -
+127.0.0.1 - - [14/Sep/2026 22:04:20] "[31m[1mGET /convert?source=http://127.0.0.1:36919/size-over-2.csv HTTP/1.1[0m" 400 -
+127.0.0.1 - - [14/Sep/2026 22:04:20] "[31m[1mPOST /upload HTTP/1.1[0m" 400 -
+127.0.0.1 - - [14/Sep/2026 22:04:20] "[31m[1mPOST /upload HTTP/1.1[0m" 400 -
+127.0.0.1 - - [14/Sep/2026 22:04:20] "[31m[1mPOST /upload HTTP/1.1[0m" 400 -
+127.0.0.1 - - [14/Sep/2026 22:04:20] "[31m[1mPOST /upload HTTP/1.1[0m" 400 -
+127.0.0.1 - - [14/Sep/2026 22:04:20] "[31m[1mGET /convert?source=http://127.0.0.1:36919/size-nostore-3.csv HTTP/1.1[0m" 400 -
+127.0.0.1 - - [14/Sep/2026 22:04:20] "[31m[1mGET /convert?source=http://127.0.0.1:36919/size-nostore-3.csv HTTP/1.1[0m" 400 -
+127.0.0.1 - - [14/Sep/2026 22:04:24] "[31m[1mGET /convert?source=http://127.0.0.1:36919/size-query-5.csv HTTP/1.1[0m" 400 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:42939
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:05:01] "POST /upload HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:05:01] "GET /convert?source=http://127.0.0.1:32983/size-exact-1.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:05:01] "POST /upload HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:05:01] "POST /upload HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:05:01] "POST /upload HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:05:01] "POST /upload HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:05:01] "[31m[1mPOST /upload HTTP/1.1[0m" 400 -
+127.0.0.1 - - [14/Sep/2026 22:05:01] "[31m[1mGET /convert?source=http://127.0.0.1:32983/size-over-2.csv HTTP/1.1[0m" 400 -
+127.0.0.1 - - [14/Sep/2026 22:05:01] "[31m[1mPOST /upload HTTP/1.1[0m" 400 -
+127.0.0.1 - - [14/Sep/2026 22:05:01] "[31m[1mPOST /upload HTTP/1.1[0m" 400 -
+127.0.0.1 - - [14/Sep/2026 22:05:01] "[31m[1mPOST /upload HTTP/1.1[0m" 400 -
+127.0.0.1 - - [14/Sep/2026 22:05:01] "[31m[1mPOST /upload HTTP/1.1[0m" 400 -
+127.0.0.1 - - [14/Sep/2026 22:05:01] "[31m[1mGET /convert?source=http://127.0.0.1:32983/size-nostore-3.csv HTTP/1.1[0m" 400 -
+127.0.0.1 - - [14/Sep/2026 22:05:01] "[31m[1mGET /convert?source=http://127.0.0.1:32983/size-nostore-3.csv HTTP/1.1[0m" 400 -
+127.0.0.1 - - [14/Sep/2026 22:05:04] "GET /convert?source=http://127.0.0.1:32983/size-query-5.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:05:04] "GET /datasets/c166734892ea575c HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:05:04] "GET /datasets/c166734892ea575c/export HTTP/1.1" 200 -

@@ -1,0 +1,122 @@
+{
+  "classes": {
+    "attribute_counts_mean": 0.4,
+    "attribute_counts_sum": 2,
+    "count": 5,
+    "method_counts_mean": 1.4,
+    "method_counts_sum": 7
+  },
+  "complexity": {
+    "cc_max": 28,
+    "cc_ratings": {
+      "A": 81,
+      "B": 9,
+      "C": 3,
+      "D": 1,
+      "E": 0,
+      "F": 0
+    },
+    "cc_sum": 229,
+    "mi_min": 19.224358387845136,
+    "mi_ratings": {
+      "A": 3,
+      "B": 0,
+      "C": 0
+    },
+    "mi_sum": 99.54476849483055,
+    "num_complex": 4
+  },
+  "file_count": 3,
+  "functions": {
+    "cc_concentration": 0.48544527943335924,
+    "cc_extreme_count": 0,
+    "cc_high_count": 4,
+    "cc_max": 28,
+    "cc_mean": 4.450980392156863,
+    "cc_normalized": 0.022736711366415027,
+    "cc_std": 4.792968706303833,
+    "cc_sum": 227,
+    "cc_top20": 0.5550660792951542,
+    "count": 51,
+    "depth_max": 4,
+    "extreme_cc_mean": 0.0,
+    "high_cc_mean": 16.75,
+    "lines_mean": 13.647058823529411,
+    "lines_sum": 696
+  },
+  "graph": {
+    "cyclic_dependency_mass": 0.0,
+    "dependency_entropy": 0.1324196057743061,
+    "edge_count": 36,
+    "node_count": 30,
+    "propagation_cost": 0.0839080459770115
+  },
+  "lines": {
+    "comments": 57,
+    "loc": 746,
+    "multi_comment": 3,
+    "single_comment": 60,
+    "total_lines": 992
+  },
+  "lint": {
+    "counts": {
+      "B018": 1,
+      "B904": 9,
+      "B905": 1,
+      "BLE001": 5,
+      "C901": 2,
+      "DOC201": 7,
+      "DOC501": 3,
+      "EM101": 13,
+      "EM102": 16,
+      "F401": 1,
+      "FURB188": 1,
+      "INP001": 3,
+      "N818": 2,
+      "PERF203": 1,
+      "PERF403": 1,
+      "PLC0415": 1,
+      "PLC1901": 1,
+      "PLR0911": 1,
+      "PLR0914": 1,
+      "PLR0915": 1,
+      "PLR2004": 49,
+      "PLR6201": 2,
+      "RUF005": 1,
+      "S110": 1,
+      "S310": 5,
+      "S404": 2,
+      "S603": 2,
+      "SIM401": 1,
+      "TRY003": 29,
+      "TRY300": 1,
+      "TRY301": 2,
+      "UP012": 5,
+      "UP031": 2
+    },
+    "errors": 173,
+    "fixable": 7
+  },
+  "source_files": [
+    "datagate.py"
+  ],
+  "symbols": {
+    "classes": 5,
+    "expressions": 815,
+    "expressions_top_level": 22,
+    "functions": 44,
+    "globals": 38,
+    "imports": 18,
+    "max_imports": 16,
+    "methods": 7,
+    "statements": 316,
+    "total": 94,
+    "type_aliases": 0,
+    "variables": 38
+  },
+  "waste": {
+    "single_use_functions": 26,
+    "trivial_wrappers": 2,
+    "unused_variables": 30
+  }
+}

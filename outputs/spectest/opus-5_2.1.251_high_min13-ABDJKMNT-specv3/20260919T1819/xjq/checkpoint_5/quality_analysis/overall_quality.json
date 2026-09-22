@@ -1,0 +1,117 @@
+{
+  "classes": {
+    "attribute_counts_mean": 0.6666666666666666,
+    "attribute_counts_sum": 4,
+    "count": 6,
+    "method_counts_mean": 0.0,
+    "method_counts_sum": 0
+  },
+  "complexity": {
+    "cc_max": 10,
+    "cc_ratings": {
+      "A": 413,
+      "B": 4,
+      "C": 0,
+      "D": 0,
+      "E": 0,
+      "F": 0
+    },
+    "cc_sum": 824,
+    "mi_min": 31.12728937309867,
+    "mi_ratings": {
+      "A": 16,
+      "B": 0,
+      "C": 0
+    },
+    "mi_sum": 982.2274683450022,
+    "num_complex": 0
+  },
+  "file_count": 16,
+  "functions": {
+    "cc_concentration": 0.1292122566394411,
+    "cc_extreme_count": 0,
+    "cc_high_count": 0,
+    "cc_max": 10,
+    "cc_mean": 2.17989417989418,
+    "cc_normalized": 0.00038655495696687136,
+    "cc_std": 0.8332722810358535,
+    "cc_sum": 824,
+    "cc_top20": 0.2973300970873786,
+    "count": 378,
+    "depth_max": 2,
+    "extreme_cc_mean": 0.0,
+    "high_cc_mean": 0.0,
+    "lines_mean": 3.7883597883597884,
+    "lines_sum": 1432
+  },
+  "graph": {
+    "cyclic_dependency_mass": 0.0,
+    "dependency_entropy": 0.30303030303030304,
+    "edge_count": 38,
+    "node_count": 33,
+    "propagation_cost": 0.10227272727272728
+  },
+  "lines": {
+    "comments": 180,
+    "loc": 1386,
+    "multi_comment": 103,
+    "single_comment": 219,
+    "total_lines": 2709
+  },
+  "lint": {
+    "counts": {
+      "ARG001": 1,
+      "DOC201": 38,
+      "DOC501": 7,
+      "EM101": 1,
+      "EM102": 3,
+      "ERA001": 1,
+      "EXE001": 1,
+      "FBT001": 7,
+      "FBT002": 6,
+      "INP001": 5,
+      "PLC1901": 35,
+      "PLR2004": 1,
+      "PLW1510": 5,
+      "PT018": 1,
+      "S101": 366,
+      "S404": 5,
+      "S603": 5,
+      "TRY003": 4,
+      "UP022": 5
+    },
+    "errors": 497,
+    "fixable": 5
+  },
+  "source_files": [
+    "xjqlib/query.py",
+    "xjqlib/scan.py",
+    "xjqlib/source.py",
+    "xjqlib/text.py",
+    "xjqlib/css.py",
+    "xjqlib/render.py",
+    "xjqlib/document.py",
+    "xjqlib/json_export.py",
+    "xjqlib/json_input.py",
+    "xjq.py"
+  ],
+  "symbols": {
+    "classes": 6,
+    "expressions": 1650,
+    "expressions_top_level": 15,
+    "functions": 378,
+    "globals": 33,
+    "imports": 47,
+    "max_imports": 9,
+    "methods": 0,
+    "statements": 515,
+    "total": 417,
+    "type_aliases": 0,
+    "variables": 33
+  },
+  "waste": {
+    "single_use_functions": 358,
+    "trivial_wrappers": 10,
+    "unused_variables": 32
+  }
+}

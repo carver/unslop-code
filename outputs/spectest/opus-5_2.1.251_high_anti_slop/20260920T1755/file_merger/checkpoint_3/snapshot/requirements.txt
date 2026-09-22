@@ -1,0 +1,4 @@
+# merge_files.py needs pyarrow to read Parquet; everything else it uses is the
+# standard library (Python >= 3.11).
+pyarrow>=15.0
+pytest>=8.0  # test suite only

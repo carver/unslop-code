@@ -1,0 +1,21 @@
+defaults:
+  api_url: "http://127.0.0.1:8121"
+  model: "gpt-4"
+  rpm: 300
+tasks:
+  review:
+    prompt:
+      system: "You are a writing assistant. Write a response to the given prompt."
+      user: "{prompt_text}"
+    generation:
+      scheme: "rejection"
+      temperature: 0.9
+      n: 3
+    evaluation:
+      type: "llm_judge"
+      judge_prompt:
+        system: "You are a quality evaluator. Respond with only a single integer from 1 to 10."
+        user: "Rate:\n{__response__}\nCriteria: {criteria}"
+      threshold: 7
+      extract: "first_number"
+    output_field: "response"

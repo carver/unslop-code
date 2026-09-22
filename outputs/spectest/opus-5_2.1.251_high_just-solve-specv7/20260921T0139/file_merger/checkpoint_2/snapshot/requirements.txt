@@ -1,0 +1,3 @@
+# Parquet input support. Imported lazily: CSV, TSV and JSON Lines inputs work
+# with the standard library alone.
+pyarrow>=14.0

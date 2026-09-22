@@ -1,0 +1,36 @@
+task:
+  name: "structured_code_gen"
+  api_url: "http://localhost:8000"
+  model: "gpt-4"
+
+  rate_limits:
+    rpm: 100
+    tpm: 50000
+    max_concurrent: 10
+
+  cost:
+    prompt_cost_per_1k: 0.01
+    completion_cost_per_1k: 0.03
+    budget: 50.0
+
+  prompt:
+    system: "Write a Python function for the problem. Reply with JSON holding 'code' and 'explanation'."
+    user: "{problem}"
+
+  generation:
+    scheme: "rejection"
+    temperature: 0.7
+    max_tokens: 512
+    n: 3
+
+  output_schema:
+    type: "object"
+    required: ["code", "explanation"]
+    properties:
+      code:
+        type: "string"
+      explanation:
+        type: "string"
+        minLength: 10
+
+  output_field: "code"

@@ -1,0 +1,130 @@
+{
+  "classes": {
+    "attribute_counts_mean": 0.041666666666666664,
+    "attribute_counts_sum": 3,
+    "count": 72,
+    "method_counts_mean": 8.430555555555555,
+    "method_counts_sum": 607
+  },
+  "complexity": {
+    "cc_max": 30,
+    "cc_ratings": {
+      "A": 672,
+      "B": 42,
+      "C": 22,
+      "D": 6,
+      "E": 0,
+      "F": 0
+    },
+    "cc_sum": 2290,
+    "mi_min": 0.0,
+    "mi_ratings": {
+      "A": 1,
+      "B": 0,
+      "C": 1
+    },
+    "mi_sum": 21.991061876188425,
+    "num_complex": 28
+  },
+  "file_count": 2,
+  "functions": {
+    "cc_concentration": 0.14438021031818637,
+    "cc_extreme_count": 0,
+    "cc_high_count": 1,
+    "cc_max": 21,
+    "cc_mean": 2.3632148377125195,
+    "cc_normalized": 0.0003725619971906997,
+    "cc_std": 1.1602581336691615,
+    "cc_sum": 1529,
+    "cc_top20": 0.3211249182472204,
+    "count": 647,
+    "depth_max": 3,
+    "extreme_cc_mean": 0.0,
+    "high_cc_mean": 21.0,
+    "lines_mean": 3.9149922720247297,
+    "lines_sum": 2533
+  },
+  "graph": {
+    "cyclic_dependency_mass": 0.06779661016949153,
+    "dependency_entropy": 0.33879308586235707,
+    "edge_count": 45,
+    "node_count": 34,
+    "propagation_cost": 0.09358288770053476
+  },
+  "lines": {
+    "comments": 438,
+    "loc": 2594,
+    "multi_comment": 73,
+    "single_comment": 459,
+    "total_lines": 4129
+  },
+  "lint": {
+    "counts": {
+      "ARG002": 1,
+      "B905": 1,
+      "BLE001": 1,
+      "C901": 1,
+      "DOC201": 32,
+      "DOC501": 1,
+      "ERA001": 37,
+      "EXE001": 1,
+      "FBT002": 7,
+      "FURB101": 1,
+      "INP001": 1,
+      "PLC0415": 2,
+      "PLC1901": 15,
+      "PLR0124": 1,
+      "PLR0904": 2,
+      "PLR0911": 2,
+      "PLR0913": 1,
+      "PLR0917": 1,
+      "PLR2004": 5,
+      "PLR6201": 2,
+      "PLR6301": 603,
+      "PLW1510": 5,
+      "PT006": 2,
+      "PT011": 2,
+      "PT018": 12,
+      "PTH100": 1,
+      "PTH113": 1,
+      "PTH118": 1,
+      "PTH120": 1,
+      "PTH123": 2,
+      "Q003": 1,
+      "RUF012": 2,
+      "RUF015": 1,
+      "S101": 728,
+      "S404": 1,
+      "S603": 5,
+      "SIM102": 1,
+      "SLF001": 3,
+      "UP022": 5,
+      "UP031": 2,
+      "UP032": 15
+    },
+    "errors": 1509,
+    "fixable": 25
+  },
+  "source_files": [
+    "xjq.py"
+  ],
+  "symbols": {
+    "classes": 72,
+    "expressions": 5426,
+    "expressions_top_level": 23,
+    "functions": 40,
+    "globals": 23,
+    "imports": 18,
+    "max_imports": 11,
+    "methods": 607,
+    "statements": 1645,
+    "total": 742,
+    "type_aliases": 0,
+    "variables": 23
+  },
+  "waste": {
+    "single_use_functions": 26,
+    "trivial_wrappers": 2,
+    "unused_variables": 22
+  }
+}

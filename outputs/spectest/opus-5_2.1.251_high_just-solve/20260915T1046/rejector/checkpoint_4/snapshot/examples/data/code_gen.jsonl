@@ -1,0 +1,2 @@
+{"problem": "Write add(a, b) returning the sum.", "test_code": "print('ok')"}
+{"problem": "Write a function that mentions good code.", "test_code": "import sys; sys.exit(0 if 'good code' in '''{__response__}''' else 1)"}

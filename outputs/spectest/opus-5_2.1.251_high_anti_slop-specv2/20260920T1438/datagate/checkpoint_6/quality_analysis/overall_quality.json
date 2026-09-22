@@ -1,0 +1,118 @@
+{
+  "classes": {
+    "attribute_counts_mean": 2.3,
+    "attribute_counts_sum": 23,
+    "count": 10,
+    "method_counts_mean": 1.4,
+    "method_counts_sum": 14
+  },
+  "complexity": {
+    "cc_max": 9,
+    "cc_ratings": {
+      "A": 313,
+      "B": 8,
+      "C": 0,
+      "D": 0,
+      "E": 0,
+      "F": 0
+    },
+    "cc_sum": 608,
+    "mi_min": 33.49696068603239,
+    "mi_ratings": {
+      "A": 32,
+      "B": 0,
+      "C": 0
+    },
+    "mi_sum": 1879.8797850589335,
+    "num_complex": 0
+  },
+  "file_count": 32,
+  "functions": {
+    "cc_concentration": 0.2517389950166113,
+    "cc_extreme_count": 0,
+    "cc_high_count": 0,
+    "cc_max": 9,
+    "cc_mean": 2.3515625,
+    "cc_normalized": 0.0009927172599705106,
+    "cc_std": 1.1854665251929053,
+    "cc_sum": 602,
+    "cc_top20": 0.34717607973421927,
+    "count": 256,
+    "depth_max": 3,
+    "extreme_cc_mean": 0.0,
+    "high_cc_mean": 0.0,
+    "lines_mean": 6.171875,
+    "lines_sum": 1580
+  },
+  "graph": {
+    "cyclic_dependency_mass": 0.0,
+    "dependency_entropy": 0.12249947468007732,
+    "edge_count": 55,
+    "node_count": 64,
+    "propagation_cost": 0.03571428571428571
+  },
+  "lines": {
+    "comments": 20,
+    "loc": 1439,
+    "multi_comment": 135,
+    "single_comment": 126,
+    "total_lines": 2379
+  },
+  "lint": {
+    "counts": {
+      "ARG001": 1,
+      "B905": 1,
+      "C901": 1,
+      "DOC201": 88,
+      "DOC402": 1,
+      "DOC501": 25,
+      "EM101": 6,
+      "EM102": 30,
+      "INP001": 16,
+      "PLR0915": 1,
+      "PLR2004": 66,
+      "S101": 195,
+      "TRY003": 36,
+      "UP012": 1
+    },
+    "errors": 468,
+    "fixable": 1
+  },
+  "source_files": [
+    "gateway/parsing.py",
+    "gateway/spreadsheets.py",
+    "datagate.py",
+    "gateway/caching.py",
+    "gateway/values.py",
+    "gateway/access.py",
+    "gateway/ingestion.py",
+    "gateway/app.py",
+    "gateway/fetching.py",
+    "gateway/filters.py",
+    "gateway/errors.py",
+    "gateway/query.py",
+    "gateway/config.py",
+    "gateway/store.py",
+    "gateway/export.py",
+    "gateway/results.py"
+  ],
+  "symbols": {
+    "classes": 10,
+    "expressions": 1949,
+    "expressions_top_level": 33,
+    "functions": 242,
+    "globals": 55,
+    "imports": 115,
+    "max_imports": 15,
+    "methods": 14,
+    "statements": 542,
+    "total": 321,
+    "type_aliases": 0,
+    "variables": 55
+  },
+  "waste": {
+    "single_use_functions": 219,
+    "trivial_wrappers": 0,
+    "unused_variables": 65
+  }
+}

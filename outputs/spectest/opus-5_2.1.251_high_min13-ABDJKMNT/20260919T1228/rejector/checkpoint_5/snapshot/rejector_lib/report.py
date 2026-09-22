@@ -1,0 +1,125 @@
+"""Shapes outcomes into the JSONL result rows and the stdout summary."""
+
+from __future__ import annotations
+
+import json
+from pathlib import Path
+
+from .api import ChatClient
+from .config import TaskConfig
+from .runner import RowOutcome, TaskResult
+from .solutions import MultiOutcome
+
+
+def result_row(row: dict, outcome, task: TaskConfig) -> dict:
+    """Build the JSON object written for one input row."""
+    if task.list_format:
+        return _solutions_row(row, outcome, task)
+    return _single_row(row, outcome, task)
+
+
+def _solutions_row(row: dict, outcome: MultiOutcome, task: TaskConfig) -> dict:
+    """The multi-solution shape: a list of solutions and one meta per attempt."""
+    return {
+        "input": row,
+        "output": [
+            {task.output_field: solution.output, "icl_setup": solution.setup_name}
+            for solution in outcome.solutions
+        ],
+        "result": {
+            "passed": outcome.passed,
+            "failed": outcome.failed,
+            "attempts": outcome.attempts,
+        },
+        "meta": outcome.metas,
+    }
+
+
+def _single_row(row: dict, outcome: RowOutcome, task: TaskConfig) -> dict:
+    """The Part 1 shape, kept for one-solution tasks without ICL."""
+    verdict = outcome.verdict
+    result = {
+        "passed": verdict.passed,
+        "extracted_answer": verdict.extracted_answer,
+        "attempts": outcome.attempts,
+    }
+    if task.is_agentic:
+        result["iterations"] = outcome.iterations
+        result["tool_calls"] = outcome.tool_calls
+    if task.judge is not None:
+        result["judge_score"] = verdict.judge_score
+    if task.output_schema is not None:
+        result["schema_valid"] = bool(verdict.schema_valid)
+        if verdict.schema_error is not None:
+            result["schema_error"] = verdict.schema_error
+    return {
+        "input": row,
+        "output": (
+            None if outcome.output is None else {task.output_field: outcome.output}
+        ),
+        "result": result,
+        "meta": _meta(outcome.metas),
+    }
+
+
+def _meta(metas: list[dict]) -> dict | list[dict] | None:
+    """One object for a single attempt, a list for several, null for none."""
+    if not metas:
+        return None
+    return metas[0] if len(metas) == 1 else metas
+
+
+def write_results(path: Path, result: TaskResult, append: bool = False) -> None:
+    """Write one JSON object per finished row, in input order.
+
+    A resumed run appends, so the rows it generated follow the ones an earlier
+    run had already written.
+    """
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("a" if append else "w") as handle:
+        for row, outcome in zip(result.rows, result.outcomes):
+            handle.write(json.dumps(result_row(row, outcome, result.task)) + "\n")
+
+
+def build_summary(
+    results: list[TaskResult], client: ChatClient, resumed_from: int | None = None
+) -> dict:
+    """Aggregate the run into the summary object printed to stdout."""
+    counts = [_counts(result) for result in results]
+    elapsed = round(client.elapsed_seconds, 1)
+    # Divide by the reported (rounded) elapsed so the summary is self-consistent,
+    # falling back to the raw value for runs too short to round above zero.
+    divisor = elapsed or client.elapsed_seconds
+    throughput = round(client.usage.calls / divisor * 60, 1) if divisor > 0 else 0.0
+    resumed = {} if resumed_from is None else {"resumed_from": resumed_from}
+    cost = {"cost": client.cost.summary()} if client.cost.enabled else {}
+    return {
+        "total": sum(count["total"] for count in counts),
+        **resumed,
+        "passed": sum(count["passed"] for count in counts),
+        "failed": sum(count["failed"] for count in counts),
+        **cost,
+        "total_prompt_tokens": client.usage.prompt_tokens,
+        "total_completion_tokens": client.usage.completion_tokens,
+        "total_api_calls": client.usage.calls,
+        "elapsed_seconds": elapsed,
+        "throughput_rpm": throughput,
+        "tasks": {
+            result.task.name: count for result, count in zip(results, counts)
+        },
+    }
+
+
+def _counts(result: TaskResult) -> dict:
+    """One task's row counts and solution counts, with its API calls."""
+    total = len(result.outcomes)
+    passed = sum(1 for outcome in result.outcomes if outcome.row_passed)
+    solutions = sum(outcome.solution_count for outcome in result.outcomes)
+    return {
+        "total": total,
+        "passed": passed,
+        "failed": total - passed,
+        "total_api_calls": result.usage.calls,
+        "total_solutions": solutions,
+        "avg_solutions_per_input": round(solutions / total, 2) if total else 0.0,
+    }

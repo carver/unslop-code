@@ -1,0 +1,9 @@
+{
+  "columns": [
+    { "name": "id", "type": "int" },
+    { "name": "ts", "type": "timestamp" },
+    { "name": "amount", "type": "float" },
+    { "name": "note", "type": "string" },
+    { "name": "is_active", "type": "bool" }
+  ]
+}

@@ -1,0 +1,1 @@
+{"columns": ["name", "age", "city"], "rows": [["ada", 36, "London"]], "metadata": {"dataset_summary": {"filetype": "csv", "row_count": 1, "column_count": 3}, "column_details": {"name": {"type": "text", "distinct_count": 1, "missing_count": 0}, "age": {"type": "integer", "distinct_count": 1, "missing_count": 0}, "city": {"type": "text", "distinct_count": 1, "missing_count": 0}}}}

@@ -1,0 +1,7 @@
+defaults:
+  api_url: "http://x"
+  prompt:
+    user: "{a}"
+tasks:
+  t:
+    output_field: "o"

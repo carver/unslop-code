@@ -1,0 +1,37 @@
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:34665
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:04:26] "GET /convert?source=http://127.0.0.1:36919/tls-on-convert-9.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:04:26] "POST /upload HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:04:26] "[31m[1mPOST /upload HTTP/1.1[0m" 400 -
+127.0.0.1 - - [14/Sep/2026 22:04:26] "[31m[1mPOST /upload HTTP/1.1[0m" 400 -
+127.0.0.1 - - [14/Sep/2026 22:04:26] "[31m[1mPOST /upload HTTP/1.1[0m" 400 -
+127.0.0.1 - - [14/Sep/2026 22:04:26] "GET /convert?source=http://127.0.0.1:36919/tls-same-id-10.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:04:26] "GET /convert?source=http://127.0.0.1:36919/tls-on-usable-11.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:04:26] "GET /datasets/97c7e268deaafa47 HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:04:26] "GET /convert?source=http://127.0.0.1:36919/tls-plain-http-12.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:04:26] "[33mGET /datasets/unknown HTTP/1.1[0m" 404 -
+127.0.0.1 - - [14/Sep/2026 22:04:26] "GET /convert?source=http://127.0.0.1:36919/tls-other-endpoints-13.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:04:26] "GET /datasets/faafb74201d33235 HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:04:26] "GET /datasets/faafb74201d33235/export HTTP/1.1" 200 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:59685
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:05:07] "GET /convert?source=http://127.0.0.1:32983/tls-on-convert-9.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:05:07] "POST /upload HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:05:07] "POST /upload HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:05:07] "POST /upload HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:05:07] "POST /upload HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:05:07] "POST /upload HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:05:07] "GET /convert?source=http://127.0.0.1:32983/tls-same-id-10.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:05:07] "GET /convert?source=http://127.0.0.1:32983/tls-on-usable-11.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:05:07] "GET /datasets/497766f197fd1db4 HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:05:07] "GET /convert?source=http://127.0.0.1:32983/tls-plain-http-12.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:05:07] "[33mGET /datasets/unknown HTTP/1.1[0m" 404 -
+127.0.0.1 - - [14/Sep/2026 22:05:07] "GET /convert?source=http://127.0.0.1:32983/tls-other-endpoints-13.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:05:07] "GET /datasets/1e20fbe55b143043 HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:05:07] "GET /datasets/1e20fbe55b143043/export HTTP/1.1" 200 -

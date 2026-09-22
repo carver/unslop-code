@@ -1,0 +1,1 @@
+{"file_path": "sith.py", "loc": 3747, "total_lines": 4455, "comments": 115, "multi_comment": 43, "single_comment": 185, "lint_errors": 554, "lint_fixable": 47, "mi": 0.0, "depth": 1, "is_entry_language": true, "import_count": 13, "global_count": 22, "symbol_count": 249, "single_use_count": 58, "trivial_wrapper_count": 5, "unused_variable_count": 72}

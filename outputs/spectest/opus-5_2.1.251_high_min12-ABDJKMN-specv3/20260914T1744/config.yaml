@@ -1,0 +1,164 @@
+agent:
+  binary: claude
+  cost_limits:
+    cost_limit: 20
+    max_retries: 10
+    net_cost_limit: 100
+    step_limit: 0
+  disallowed_tools:
+  - Monitor
+  env:
+    CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS: '0'
+  permission_mode: bypassPermissions
+  timeout: 86400
+  type: claude_code
+  version: 2.1.251
+agent_config_path: /home/carver/code/claudedev/unslop-code-bench/configs/agents/claude_code-2.1.251.yaml
+environment:
+  commands:
+    agent_command: python
+    command: uv run
+    entry_file: '{entry_file}.py'
+  docker:
+    image: ghcr.io/astral-sh/uv:python3.12-trixie-slim
+    mount_workspace: true
+    workdir: /workspace
+  environment:
+    env:
+      PIP_CACHE_DIR: /tmp/pip-cache-dir
+      PIP_CONFIG_FILE: /tmp/pip-conf
+      UV_CACHE_DIR: /tmp/uv-cache
+  name: python3.12
+  setup:
+    eval_commands:
+    - uv init
+    - uv add -r requirements.txt
+    resume_commands:
+    - python -m venv .venv || true
+    - .venv/bin/pip install -r requirements.txt 2>/dev/null || true
+  type: docker
+environment_config_path: /home/carver/code/claudedev/unslop-code-bench/harness/configs/environments/docker-python3.12-uv.yaml
+model:
+  name: opus-5
+  provider: claude_code_oauth
+one_shot:
+  enabled: false
+  include_first_prefix: false
+  prefix: ''
+output_path: /home/carver/code/claudedev/unslop-code-bench/outputs/spectest/opus-5_2.1.251_high_min12-ABDJKMN-specv3/20260914T1744
+pass_policy: any
+problems:
+- xjq
+prompt_content: '# Task Directions
+
+
+  Fully implement the following spec. Use the approach:
+
+  - Environment setup
+
+  - Write tests from the spec
+
+  - Implement
+
+  - Declare complete
+
+
+  Specifically:
+
+
+  # Environment
+
+
+  {% if not is_continuation -%}
+
+  Use a virtual environment and ensure that a `requirements.txt` is present with any
+  dependencies you need to solve the problem.
+
+  {% else -%}
+
+  Keep using the same virtual environment you started with, update `requirements.txt`
+  with any new dependencies you need.
+
+  {% endif -%}
+
+
+  Touch an IN_PROGRESS file. Delete any COMPLETED file.
+
+
+  When killing a process never run a pkill. Instead, pgrep.
+
+  Make sure only one process is found, then kill that one by PID.
+
+  Why? It''s too easy to pkill your own Bash argv.
+
+
+  For long-lived processes, log to a file or /dev/null instead of an undrained pipe.
+
+
+  # Testing
+
+
+  Split the spec file into minimal possible logical phrases and minimal context, and
+  iterate through each phrase.
+
+  For each phrase, add a test section with a comment of the phrase & context.
+
+
+  If the spec is non-trivially under-specified, such that alternative interpretations
+  would change the behavior of a conforming implementation on some input, then never
+  ask for clarification.
+
+  Instead, make your best choice at how to interpret the intention of the spec.
+
+  Then, add a numbered entry to an AMBIGUITIES.md file, starting with T1.
+
+  The entry must have sections for Spec Text, Alternatives, Choice, and Risk.
+
+  The entry will quote the relevant spec source verbatim, explain the reasonable alternative
+  interpretations, and your choice & why it seems to best fit the spec.
+
+  The "### Risk: N" section
+
+  Risk is a number from 0 to 100: the chance that the spec''s author, who has an implementation
+  of their own and writes the hidden tests against it, prefers a different reading
+  from your choice on some tested input.
+
+  Reason about what the author''s implementation most likely does and what fixture
+  they would naturally write, not only about which reading the prose supports best.
+
+  If Risk is above 0, name the reading the author most likely prefers in one line.
+
+  Use the whole range: a flat number on every entry is useless.
+
+
+  If a previous ambiguity is resolved by the current spec, annotate the entry instead
+  of removing it.
+
+
+  You run tests only to validate the tests themselves: collection succeeds, helpers
+  and generators work{% if is_continuation -%}, and each failure is because behavior
+  is missing, not because the test is broken{% endif -%}. Quick, targeted runs.
+
+
+  Never run the full suite to completion or long hypothesis runs; a green suite is
+  the implementer''s job, not yours.
+
+
+  # Implement
+
+  # Declare complete
+
+
+  touch a COMPLETED file. rm the IN_PROGRESS file.
+
+
+  # Spec
+
+  {{ spec.strip() }}
+
+  '
+prompt_path: /home/carver/code/claudedev/unslop-code-bench/configs/prompts/min12-ABDJKMN.jinja
+save_dir: /home/carver/code/claudedev/unslop-code-bench/outputs
+save_template: spectest/opus-5_2.1.251_high_min12-ABDJKMN-specv3/20260914T1744
+thinking: high
+thinking_max_tokens: null

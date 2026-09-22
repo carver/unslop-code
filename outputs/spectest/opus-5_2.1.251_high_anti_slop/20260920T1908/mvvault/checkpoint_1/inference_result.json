@@ -1,0 +1,28 @@
+{
+  "artifacts_dir": "agent",
+  "checkpoint_path": "outputs/spectest/opus-5_2.1.251_high_anti_slop/20260920T1908/mvvault/checkpoint_1",
+  "completed": "2026-09-20T19:12:30.396426",
+  "elapsed": 261.549965,
+  "error_message": null,
+  "had_error": false,
+  "snapshot_dir": "snapshot",
+  "started": "2026-09-20T19:08:08.846461",
+  "usage": {
+    "cost": 1.2280455000000001,
+    "current_tokens": {
+      "cache_read": 723539,
+      "cache_write": 29822,
+      "input": 3480,
+      "output": 21912,
+      "reasoning": 0
+    },
+    "net_tokens": {
+      "cache_read": 723539,
+      "cache_write": 29822,
+      "input": 3480,
+      "output": 21912,
+      "reasoning": 0
+    },
+    "steps": 16
+  }
+}

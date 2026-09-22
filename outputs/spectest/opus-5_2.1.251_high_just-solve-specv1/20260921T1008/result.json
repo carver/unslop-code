@@ -1,0 +1,172 @@
+{
+  "model": "opus-5",
+  "thinking": "high",
+  "prompt": "just-solve",
+  "agent_type": "claude_code",
+  "agent_version": "2.1.251",
+  "num_problems": 1,
+  "num_checkpoints": 6,
+  "expected_checkpoints": 6,
+  "costs": {
+    "checkpoint": {
+      "mean": 2.3763494166666668,
+      "stddev": 0.9709611447616437,
+      "min": 0.8413819999999999,
+      "max": 3.2969299999999997,
+      "median": 2.6269040000000006,
+      "count": 6
+    },
+    "problem": {
+      "mean": 14.2580965,
+      "stddev": null,
+      "min": 14.2580965,
+      "max": 14.2580965,
+      "median": 14.2580965,
+      "count": 1
+    },
+    "total": 14.2580965
+  },
+  "time": {
+    "checkpoint": {
+      "mean": 436.74087783333334,
+      "stddev": 161.86426543852912,
+      "min": 201.878277,
+      "max": 648.442142,
+      "median": 458.1449905,
+      "count": 6
+    },
+    "problem": {
+      "mean": 2620.445267,
+      "stddev": null,
+      "min": 2620.445267,
+      "max": 2620.445267,
+      "median": 2620.445267,
+      "count": 1
+    }
+  },
+  "tokens": {
+    "input": 24944,
+    "output": 231738,
+    "cache_read": 9241755,
+    "cache_write": 370255,
+    "reasoning": 0,
+    "problem": {
+      "input": 24944.0,
+      "output": 231738.0,
+      "cache_read": 9241755.0,
+      "cache_write": 370255.0,
+      "reasoning": 0.0
+    },
+    "checkpoint": {
+      "input": 4157.333333333333,
+      "output": 38623.0,
+      "cache_read": 1540292.5,
+      "cache_write": 61709.166666666664,
+      "reasoning": 0.0
+    }
+  },
+  "steps": {
+    "checkpoint": {
+      "mean": 23.166666666666668,
+      "stddev": 8.95358401237553,
+      "min": 9.0,
+      "max": 32.0,
+      "median": 26.0,
+      "count": 6
+    },
+    "problem": {
+      "mean": 139.0,
+      "stddev": null,
+      "min": 139.0,
+      "max": 139.0,
+      "median": 139.0,
+      "count": 1
+    }
+  },
+  "checkpoints_solved": 2,
+  "checkpoints_iso_solved": 4,
+  "checkpoints_core_solved": 5,
+  "problem_solved": 0.0,
+  "problem_partial": 1.0,
+  "pct_checkpoints_solved": 33.33333333333333,
+  "pct_checkpoints_iso_solved": 66.66666666666666,
+  "pct_problems_solved": 0.0,
+  "pct_problems_partial": 100.0,
+  "pct_checkpoints_core_solved": 83.33333333333334,
+  "pass_rates": {
+    "problem": {
+      "core": 0.9523809523809523,
+      "total": 0.9884104504749419,
+      "error": 0.9666666666666667,
+      "functionality": 1.0,
+      "regression": 0.9896167696448201
+    },
+    "checkpoint": {
+      "core": 0.9523809523809523,
+      "total": 0.9884104504749419,
+      "error": 0.9666666666666667,
+      "functionality": 1.0,
+      "regression": 0.9896167696448201
+    }
+  },
+  "cc": {
+    "high_count": {
+      "mean": 7.166666666666667,
+      "stddev": 4.167333280008531,
+      "min": 2.0,
+      "max": 12.0,
+      "median": 7.5,
+      "count": 6
+    },
+    "high_mean": {
+      "mean": 12.695707070707071,
+      "stddev": 0.9325805783134474,
+      "min": 11.0,
+      "max": 13.666666666666666,
+      "median": 13.041666666666668,
+      "count": 6
+    },
+    "max": {
+      "mean": 17.666666666666668,
+      "stddev": 3.8297084310253524,
+      "min": 11.0,
+      "max": 20.0,
+      "median": 20.0,
+      "count": 6
+    }
+  },
+  "ratios": {
+    "rubric": {
+      "mean": null,
+      "stddev": null,
+      "min": null,
+      "max": null,
+      "median": null,
+      "count": 0
+    },
+    "lint": {
+      "mean": 0.18983144575645505,
+      "stddev": 0.008324539701390701,
+      "min": 0.1791907514450867,
+      "max": 0.202476329206118,
+      "median": 0.19026983228553906,
+      "count": 6
+    }
+  },
+  "verbosity": {
+    "mean": 0.40150276364801063,
+    "stddev": 0.0654697026115803,
+    "min": 0.3314500941619586,
+    "max": 0.4982014388489209,
+    "median": 0.3923371688405952,
+    "count": 6
+  },
+  "erosion": {
+    "mean": 0.2887988953685737,
+    "stddev": 0.04581242480116391,
+    "min": 0.2047727042044961,
+    "max": 0.3255474999811145,
+    "median": 0.30300202016295197,
+    "count": 6
+  }
+}

@@ -1,0 +1,4 @@
+{"input": {"question": "What is 10 / 2?"}, "output": "10 divided by 2 is 5.\n#### 5"}
+
+{"input": {"question": "What is 3 * 3?"}, "output": "3 times 3 is 9.\n#### 9"}
+{"input": {"question": "What is 7 - 4?"}, "output": "7 - 4 = 3\n#### 3"}

@@ -1,0 +1,28 @@
+{
+  "artifacts_dir": "agent",
+  "checkpoint_path": "/home/carver/code/claudedev/unslop-code-bench/outputs/spectest/opus-5_2.1.251_high_just-solve-specv3/20260909T1314/xjq/checkpoint_3",
+  "completed": "2026-09-09T13:26:52.502334",
+  "elapsed": 157.309182,
+  "error_message": null,
+  "had_error": false,
+  "snapshot_dir": "snapshot",
+  "started": "2026-09-09T13:24:15.193152",
+  "usage": {
+    "cost": 0.8200890000000001,
+    "current_tokens": {
+      "cache_read": 443974,
+      "cache_write": 26284,
+      "input": 6781,
+      "output": 12000,
+      "reasoning": 0
+    },
+    "net_tokens": {
+      "cache_read": 443974,
+      "cache_write": 26284,
+      "input": 6781,
+      "output": 12000,
+      "reasoning": 0
+    },
+    "steps": 11
+  }
+}

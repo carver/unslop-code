@@ -1,0 +1,118 @@
+{
+  "classes": {
+    "attribute_counts_mean": 0.7272727272727273,
+    "attribute_counts_sum": 8,
+    "count": 11,
+    "method_counts_mean": 0.8181818181818182,
+    "method_counts_sum": 9
+  },
+  "complexity": {
+    "cc_max": 6,
+    "cc_ratings": {
+      "A": 129,
+      "B": 4,
+      "C": 0,
+      "D": 0,
+      "E": 0,
+      "F": 0
+    },
+    "cc_sum": 294,
+    "mi_min": 48.436723608614685,
+    "mi_ratings": {
+      "A": 17,
+      "B": 0,
+      "C": 0
+    },
+    "mi_sum": 1240.7746215535353,
+    "num_complex": 0
+  },
+  "file_count": 17,
+  "functions": {
+    "cc_concentration": 0.24644966695990952,
+    "cc_extreme_count": 0,
+    "cc_high_count": 0,
+    "cc_max": 6,
+    "cc_mean": 2.6788990825688073,
+    "cc_normalized": 0.0019857714253942445,
+    "cc_std": 1.246333392357983,
+    "cc_sum": 292,
+    "cc_top20": 0.3527397260273973,
+    "count": 109,
+    "depth_max": 3,
+    "extreme_cc_mean": 0.0,
+    "high_cc_mean": 0.0,
+    "lines_mean": 5.247706422018348,
+    "lines_sum": 572
+  },
+  "graph": {
+    "cyclic_dependency_mass": 0.0,
+    "dependency_entropy": 0.25,
+    "edge_count": 18,
+    "node_count": 20,
+    "propagation_cost": 0.11842105263157894
+  },
+  "lines": {
+    "comments": 79,
+    "loc": 568,
+    "multi_comment": 4,
+    "single_comment": 125,
+    "total_lines": 976
+  },
+  "lint": {
+    "counts": {
+      "B904": 5,
+      "DOC201": 19,
+      "DOC501": 6,
+      "EM101": 5,
+      "EM102": 9,
+      "ERA001": 29,
+      "FURB118": 1,
+      "INP001": 9,
+      "LOG004": 1,
+      "PERF203": 1,
+      "PLC0415": 1,
+      "PLC1901": 1,
+      "PLR2004": 28,
+      "PLR6201": 2,
+      "PT006": 1,
+      "PT018": 7,
+      "S101": 105,
+      "S104": 2,
+      "S310": 1,
+      "S404": 1,
+      "S603": 1,
+      "TRY003": 14,
+      "UP012": 1
+    },
+    "errors": 250,
+    "fixable": 1
+  },
+  "source_files": [
+    "datagate_core/tables.py",
+    "datagate_core/decoding.py",
+    "datagate_core/values.py",
+    "datagate_core/fetching.py",
+    "datagate_core/errors.py",
+    "datagate_core/store.py",
+    "datagate_core/server.py"
+  ],
+  "symbols": {
+    "classes": 11,
+    "expressions": 967,
+    "expressions_top_level": 15,
+    "functions": 100,
+    "globals": 13,
+    "imports": 45,
+    "max_imports": 9,
+    "methods": 9,
+    "statements": 226,
+    "total": 133,
+    "type_aliases": 0,
+    "variables": 13
+  },
+  "waste": {
+    "single_use_functions": 99,
+    "trivial_wrappers": 0,
+    "unused_variables": 18
+  }
+}

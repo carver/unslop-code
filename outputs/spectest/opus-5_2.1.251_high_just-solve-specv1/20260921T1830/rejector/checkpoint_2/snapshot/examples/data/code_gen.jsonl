@@ -1,0 +1,2 @@
+{"problem": "Write add(a, b) returning a + b.", "test_code": "{__response__}\nassert add(1, 2) == 3"}
+{"problem": "Write double(x) returning 2 * x.", "test_code": "{__response__}\nassert double(4) == 8"}

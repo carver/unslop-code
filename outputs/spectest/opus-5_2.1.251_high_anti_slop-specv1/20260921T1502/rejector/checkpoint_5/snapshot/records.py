@@ -1,0 +1,186 @@
+"""Shaping what a run produced into output records and the run summary.
+
+A task keeping the Part 1 result shape writes one output object per row; a task
+with ICL or several solutions writes a list of them, with one metadata entry per
+attempt rather than per kept response.
+"""
+
+from __future__ import annotations
+
+from config import TaskConfig
+from cost import summarize_cost
+from evaluation import Verdict
+from schemes import AttemptOutcome, RowOutcome
+
+
+def record(config: TaskConfig, row: dict, outcome: RowOutcome) -> dict:
+    """One output line for one input row."""
+    if config.legacy:
+        return _single_record(config, row, outcome)
+    return _list_record(config, row, outcome)
+
+
+def _single_record(config: TaskConfig, row: dict, outcome: RowOutcome) -> dict:
+    """The Part 1 shape: metadata stays a bare object unless several attempts were made."""
+    # A row that kept nothing has no verdict of its own: the attempts it made all failed.
+    verdict = outcome.solutions[0].verdict if outcome.solutions else Verdict(False, None)
+    result = {
+        "passed": _passed(config, outcome, verdict),
+        "extracted_answer": verdict.extracted,
+        "attempts": len(outcome.attempts),
+    }
+    if config.generation.scheme == "agentic":
+        # The row is one loop, whose requests and tool calls the result reports.
+        loop = outcome.attempts[0]
+        result["iterations"] = loop.iterations
+        result["tool_calls"] = loop.tool_calls
+    if config.evaluation is not None and config.evaluation.type == "llm_judge":
+        result["judge_score"] = verdict.judge_score
+    result.update(_schema_result(config, outcome))
+
+    metas = [attempt.meta for attempt in outcome.attempts]
+    return {
+        "input": row,
+        "output": {config.output_field: outcome.solutions[0].output} if outcome.solutions else None,
+        "result": result,
+        "meta": metas[0] if len(metas) == 1 else metas,
+    }
+
+
+def _passed(config: TaskConfig, outcome: RowOutcome, verdict: Verdict) -> bool | None:
+    """Whether the row passed; without an evaluation its schema decides, if it has one."""
+    if config.evaluation is None and config.output_schema is not None:
+        return bool(outcome.solutions)
+    return verdict.passed
+
+
+def _schema_result(config: TaskConfig, outcome: RowOutcome) -> dict:
+    """How a row fared against the task's `output_schema`, for a task that has one.
+
+    A row that kept nothing reports why the last attempt's response was rejected,
+    unless the API never answered it at all.
+    """
+    if config.output_schema is None:
+        return {}
+    if outcome.solutions:
+        return {"schema_valid": True}
+    errors = [attempt.schema_error for attempt in outcome.attempts if attempt.schema_error]
+    if not errors:
+        return {"schema_valid": False}
+    return {"schema_valid": False, "schema_error": errors[-1]}
+
+
+def _list_record(config: TaskConfig, row: dict, outcome: RowOutcome) -> dict:
+    """The multiple solution shape: every kept response and every attempt it took."""
+    attempts = len(outcome.attempts)
+    return {
+        "input": row,
+        "output": [
+            {config.output_field: solution.output, "icl_setup": solution.setup}
+            for solution in outcome.solutions
+        ],
+        "result": {
+            "passed": outcome.passed,
+            "failed": attempts - outcome.passed,
+            "attempts": attempts,
+        },
+        "meta": [_meta_entry(attempt) for attempt in outcome.attempts],
+    }
+
+
+def _meta_entry(attempt: AttemptOutcome) -> dict | None:
+    """One attempt's metadata, tagged with its setup and verdict."""
+    if attempt.meta is None:
+        return None
+    return {
+        **attempt.meta,
+        "icl_setup": attempt.setup,
+        "evaluation_passed": attempt.verdict.passed,
+    }
+
+
+def summarize(results: dict, elapsed: float, per_task: bool, resumed: bool = False) -> dict:
+    """Build the JSON summary printed once a run finishes.
+
+    `results` maps task names to their `runner.TaskResult`. A resumed run
+    summarizes the rows it processed itself and reports how many it skipped.
+    """
+    records = [record for result in results.values() for record in result.records]
+    metas = _metas(records)
+    api_calls = sum(result.api_calls for result in results.values())
+
+    summary = {**_counts(records)}
+    if resumed:
+        summary["resumed_from"] = sum(result.resumed_from for result in results.values())
+    summary.update(
+        {
+            "total_prompt_tokens": sum(meta["prompt_tokens"] for meta in metas),
+            "total_completion_tokens": sum(meta["completion_tokens"] for meta in metas),
+            "total_api_calls": api_calls,
+            "elapsed_seconds": round(elapsed, 1),
+            "throughput_rpm": round(api_calls / elapsed * 60, 1) if elapsed else 0.0,
+        }
+    )
+    cost = summarize_cost(result.ledger for result in results.values())
+    if cost is not None:
+        summary["cost"] = cost
+    if per_task:
+        summary["tasks"] = {
+            name: _task_summary(result, resumed) for name, result in results.items()
+        }
+    return summary
+
+
+def _task_summary(result, resumed: bool) -> dict:
+    """One task's own totals inside the summary of a multi task run."""
+    summary = {
+        **_counts(result.records),
+        **_solution_counts(result.records),
+        "total_api_calls": result.api_calls,
+    }
+    if resumed:
+        summary["resumed_from"] = result.resumed_from
+    return summary
+
+
+def _counts(records: list[dict]) -> dict:
+    """Row totals across the rows a run wrote."""
+    passed = sum(1 for record in records if row_passed(record))
+    return {"total": len(records), "passed": passed, "failed": len(records) - passed}
+
+
+def row_passed(record: dict) -> bool:
+    """Whether a row counts as passing. Without an evaluation, answering is enough."""
+    passed = record["result"]["passed"]
+    return bool(passed) or (passed is None and record["output"] is not None)
+
+
+def _solution_counts(records: list[dict]) -> dict:
+    """How many responses a task wrote out, in total and per input row."""
+    total = sum(_solutions(record) for record in records)
+    return {
+        "total_solutions": total,
+        "avg_solutions_per_input": round(total / len(records), 2) if records else 0.0,
+    }
+
+
+def _solutions(record: dict) -> int:
+    output = record["output"]
+    if isinstance(output, list):
+        return len(output)
+    return 0 if output is None else 1
+
+
+def _metas(records: list[dict]) -> list[dict]:
+    """Every API call's metadata, judge calls and the requests of an agentic loop included."""
+    metas = []
+    for record in records:
+        entries = record["meta"] if isinstance(record["meta"], list) else [record["meta"]]
+        for meta in entries:
+            if meta is None:
+                continue
+            # An agentic entry aggregates its loop, whose per request tokens it carries.
+            metas.extend(meta.get("iterations_detail", [meta]))
+            if meta.get("judge_meta") is not None:
+                metas.append(meta["judge_meta"])
+    return metas

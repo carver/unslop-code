@@ -1,0 +1,1 @@
+{"columns": ["i", "f"], "rows": [[1, ""], ["", 2.5]], "metadata": {"dataset_summary": {"filetype": "csv", "row_count": 2, "column_count": 2}, "column_details": {"i": {"type": "integer", "distinct_count": 1, "missing_count": 1}, "f": {"type": "float", "distinct_count": 1, "missing_count": 1}}}}

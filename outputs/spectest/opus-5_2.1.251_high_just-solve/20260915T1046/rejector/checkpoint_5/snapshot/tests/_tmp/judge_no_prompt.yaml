@@ -1,0 +1,10 @@
+defaults:
+  api_url: "http://x"
+  model: m
+  prompt:
+    user: "{a}"
+tasks:
+  t:
+    evaluation:
+      type: "llm_judge"
+      threshold: 5

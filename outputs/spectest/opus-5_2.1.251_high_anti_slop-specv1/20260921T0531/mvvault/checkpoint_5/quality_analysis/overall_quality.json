@@ -1,0 +1,141 @@
+{
+  "classes": {
+    "attribute_counts_mean": 0.28,
+    "attribute_counts_sum": 14,
+    "count": 50,
+    "method_counts_mean": 4.62,
+    "method_counts_sum": 231
+  },
+  "complexity": {
+    "cc_max": 11,
+    "cc_ratings": {
+      "A": 514,
+      "B": 9,
+      "C": 1,
+      "D": 0,
+      "E": 0,
+      "F": 0
+    },
+    "cc_sum": 652,
+    "mi_min": 24.824903764379194,
+    "mi_ratings": {
+      "A": 31,
+      "B": 0,
+      "C": 0
+    },
+    "mi_sum": 1768.692474477064,
+    "num_complex": 1
+  },
+  "file_count": 31,
+  "functions": {
+    "cc_concentration": 0.327379559810679,
+    "cc_extreme_count": 0,
+    "cc_high_count": 1,
+    "cc_max": 11,
+    "cc_mean": 1.6961325966850829,
+    "cc_normalized": 0.0018847345757564637,
+    "cc_std": 1.4010033856220836,
+    "cc_sum": 614,
+    "cc_top20": 0.46416938110749184,
+    "count": 362,
+    "depth_max": 3,
+    "extreme_cc_mean": 0.0,
+    "high_cc_mean": 11.0,
+    "lines_mean": 7.461325966850829,
+    "lines_sum": 2701
+  },
+  "graph": {
+    "cyclic_dependency_mass": 0.0,
+    "dependency_entropy": 0.282316457521281,
+    "edge_count": 168,
+    "node_count": 130,
+    "propagation_cost": 0.03130590339892665
+  },
+  "lines": {
+    "comments": 34,
+    "loc": 2560,
+    "multi_comment": 282,
+    "single_comment": 173,
+    "total_lines": 3918
+  },
+  "lint": {
+    "counts": {
+      "B905": 1,
+      "BLE001": 1,
+      "DOC201": 121,
+      "DOC501": 18,
+      "DTZ005": 4,
+      "EM101": 1,
+      "EM102": 31,
+      "EXE001": 1,
+      "FBT002": 1,
+      "FBT003": 6,
+      "FURB113": 1,
+      "INP001": 7,
+      "N802": 1,
+      "PERF203": 1,
+      "PLR2004": 8,
+      "PLR6201": 1,
+      "PLR6301": 1,
+      "PLW1510": 1,
+      "PT009": 301,
+      "PT027": 2,
+      "PYI024": 14,
+      "RUF001": 1,
+      "RUF005": 1,
+      "S310": 2,
+      "S404": 2,
+      "S603": 2,
+      "TRY003": 32,
+      "TRY300": 1,
+      "UP031": 1,
+      "UP032": 1
+    },
+    "errors": 566,
+    "fixable": 2
+  },
+  "source_files": [
+    "mvault.py",
+    "vault/report.py",
+    "vault/media.py",
+    "vault/sync.py",
+    "vault/viewer/server.py",
+    "vault/cli.py",
+    "vault/entries.py",
+    "vault/viewer/recent.py",
+    "vault/download.py",
+    "vault/viewer/routes.py",
+    "vault/viewer/vaults.py",
+    "vault/links.py",
+    "vault/history.py",
+    "vault/source.py",
+    "vault/timestamps.py",
+    "vault/viewer/pages.py",
+    "vault/viewer/charts.py",
+    "vault/errors.py",
+    "vault/viewer/assets.py",
+    "vault/catalog.py",
+    "vault/versions.py",
+    "vault/viewer/__init__.py",
+    "vault/digest.py"
+  ],
+  "symbols": {
+    "classes": 50,
+    "expressions": 7053,
+    "expressions_top_level": 727,
+    "functions": 131,
+    "globals": 112,
+    "imports": 121,
+    "max_imports": 11,
+    "methods": 231,
+    "statements": 503,
+    "total": 524,
+    "type_aliases": 0,
+    "variables": 112
+  },
+  "waste": {
+    "single_use_functions": 109,
+    "trivial_wrappers": 3,
+    "unused_variables": 111
+  }
+}

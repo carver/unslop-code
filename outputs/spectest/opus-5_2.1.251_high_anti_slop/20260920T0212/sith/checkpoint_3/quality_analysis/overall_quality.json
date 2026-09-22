@@ -1,0 +1,142 @@
+{
+  "classes": {
+    "attribute_counts_mean": 3.0,
+    "attribute_counts_sum": 69,
+    "count": 23,
+    "method_counts_mean": 7.6521739130434785,
+    "method_counts_sum": 176
+  },
+  "complexity": {
+    "cc_max": 64,
+    "cc_ratings": {
+      "A": 312,
+      "B": 14,
+      "C": 3,
+      "D": 0,
+      "E": 0,
+      "F": 1
+    },
+    "cc_sum": 740,
+    "mi_min": 25.385072436769022,
+    "mi_ratings": {
+      "A": 22,
+      "B": 0,
+      "C": 0
+    },
+    "mi_sum": 1131.6043070065825,
+    "num_complex": 4
+  },
+  "file_count": 22,
+  "functions": {
+    "cc_concentration": 0.34460925732084047,
+    "cc_extreme_count": 0,
+    "cc_high_count": 0,
+    "cc_max": 7,
+    "cc_mean": 2.282442748091603,
+    "cc_normalized": 0.0016929619402630389,
+    "cc_std": 1.5201069188061676,
+    "cc_sum": 598,
+    "cc_top20": 0.42474916387959866,
+    "count": 262,
+    "depth_max": 3,
+    "extreme_cc_mean": 0.0,
+    "high_cc_mean": 0.0,
+    "lines_mean": 6.988549618320611,
+    "lines_sum": 1831
+  },
+  "graph": {
+    "cyclic_dependency_mass": 0.0,
+    "dependency_entropy": 0.27414573576574913,
+    "edge_count": 183,
+    "node_count": 175,
+    "propagation_cost": 0.014022988505747127
+  },
+  "lines": {
+    "comments": 16,
+    "loc": 1995,
+    "multi_comment": 98,
+    "single_comment": 158,
+    "total_lines": 2817
+  },
+  "lint": {
+    "counts": {
+      "B905": 2,
+      "BLE001": 1,
+      "DOC201": 114,
+      "DOC402": 1,
+      "DOC501": 4,
+      "EM102": 6,
+      "EXE001": 1,
+      "FBT002": 3,
+      "FBT003": 1,
+      "FURB101": 1,
+      "FURB188": 2,
+      "INP001": 3,
+      "PERF203": 2,
+      "PLR0904": 2,
+      "PLR0913": 2,
+      "PLR0917": 2,
+      "PLR2004": 1,
+      "PLR6104": 1,
+      "PLR6201": 1,
+      "PLR6301": 4,
+      "PLW1510": 3,
+      "PT009": 96,
+      "PTH100": 5,
+      "PTH112": 4,
+      "PTH113": 2,
+      "PTH118": 8,
+      "PTH119": 1,
+      "PTH120": 4,
+      "PTH122": 1,
+      "PTH123": 1,
+      "PTH208": 1,
+      "Q001": 1,
+      "RUF005": 1,
+      "S404": 3,
+      "S603": 3,
+      "TRY003": 6
+    },
+    "errors": 294,
+    "fixable": 14
+  },
+  "source_files": [
+    "sithlib/errors.py",
+    "sithlib/matching.py",
+    "sithlib/scopes.py",
+    "sithlib/classes.py",
+    "sithlib/imports.py",
+    "sithlib/evaluator.py",
+    "sithlib/engine.py",
+    "sithlib/navigation.py",
+    "sithlib/values.py",
+    "sithlib/source.py",
+    "sithlib/narrowing.py",
+    "sithlib/bindings.py",
+    "sithlib/parsing.py",
+    "sithlib/runtime.py",
+    "sithlib/symbols.py",
+    "sithlib/definitions.py",
+    "sith.py",
+    "sithlib/modules.py"
+  ],
+  "symbols": {
+    "classes": 23,
+    "expressions": 4128,
+    "expressions_top_level": 137,
+    "functions": 86,
+    "globals": 45,
+    "imports": 87,
+    "max_imports": 8,
+    "methods": 176,
+    "statements": 671,
+    "total": 330,
+    "type_aliases": 0,
+    "variables": 45
+  },
+  "waste": {
+    "single_use_functions": 72,
+    "trivial_wrappers": 3,
+    "unused_variables": 70
+  }
+}

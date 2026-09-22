@@ -1,0 +1,119 @@
+{
+  "classes": {
+    "attribute_counts_mean": 3.0,
+    "attribute_counts_sum": 12,
+    "count": 4,
+    "method_counts_mean": 3.25,
+    "method_counts_sum": 13
+  },
+  "complexity": {
+    "cc_max": 8,
+    "cc_ratings": {
+      "A": 184,
+      "B": 6,
+      "C": 0,
+      "D": 0,
+      "E": 0,
+      "F": 0
+    },
+    "cc_sum": 446,
+    "mi_min": 40.04160847366001,
+    "mi_ratings": {
+      "A": 20,
+      "B": 0,
+      "C": 0
+    },
+    "mi_sum": 1364.5997194239571,
+    "num_complex": 0
+  },
+  "file_count": 20,
+  "functions": {
+    "cc_concentration": 0.2492574188712767,
+    "cc_extreme_count": 0,
+    "cc_high_count": 0,
+    "cc_max": 8,
+    "cc_mean": 2.7116564417177913,
+    "cc_normalized": 0.0013980234679374075,
+    "cc_std": 1.2944512464311897,
+    "cc_sum": 442,
+    "cc_top20": 0.34841628959276016,
+    "count": 163,
+    "depth_max": 4,
+    "extreme_cc_mean": 0.0,
+    "high_cc_mean": 0.0,
+    "lines_mean": 6.957055214723926,
+    "lines_sum": 1134
+  },
+  "graph": {
+    "cyclic_dependency_mass": 0.0,
+    "dependency_entropy": 0.1756534226448032,
+    "edge_count": 26,
+    "node_count": 28,
+    "propagation_cost": 0.08465608465608465
+  },
+  "lines": {
+    "comments": 124,
+    "loc": 1131,
+    "multi_comment": 55,
+    "single_comment": 169,
+    "total_lines": 1801
+  },
+  "lint": {
+    "counts": {
+      "ARG001": 16,
+      "DOC201": 25,
+      "DOC501": 5,
+      "DTZ005": 4,
+      "EM101": 2,
+      "EM102": 12,
+      "EXE001": 1,
+      "FBT003": 2,
+      "FURB118": 3,
+      "INP001": 10,
+      "N805": 1,
+      "PLC0415": 3,
+      "PLC1901": 6,
+      "PLR2004": 17,
+      "PLW1510": 1,
+      "PT006": 4,
+      "PT018": 2,
+      "RUF005": 1,
+      "S101": 194,
+      "S404": 1,
+      "S603": 1,
+      "TRY003": 14,
+      "TRY004": 3
+    },
+    "errors": 328,
+    "fixable": 1
+  },
+  "source_files": [
+    "mvaultlib/timestamps.py",
+    "mvaultlib/cli.py",
+    "mvaultlib/history.py",
+    "mvaultlib/catalog.py",
+    "mvaultlib/source.py",
+    "mvaultlib/errors.py",
+    "mvaultlib/commands.py",
+    "mvaultlib/entries.py"
+  ],
+  "symbols": {
+    "classes": 4,
+    "expressions": 1866,
+    "expressions_top_level": 234,
+    "functions": 150,
+    "globals": 23,
+    "imports": 53,
+    "max_imports": 8,
+    "methods": 13,
+    "statements": 332,
+    "total": 190,
+    "type_aliases": 0,
+    "variables": 23
+  },
+  "waste": {
+    "single_use_functions": 145,
+    "trivial_wrappers": 2,
+    "unused_variables": 34
+  }
+}

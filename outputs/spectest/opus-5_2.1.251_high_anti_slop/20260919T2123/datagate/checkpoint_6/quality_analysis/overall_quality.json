@@ -1,0 +1,120 @@
+{
+  "classes": {
+    "attribute_counts_mean": 3.5714285714285716,
+    "attribute_counts_sum": 25,
+    "count": 7,
+    "method_counts_mean": 1.1428571428571428,
+    "method_counts_sum": 8
+  },
+  "complexity": {
+    "cc_max": 7,
+    "cc_ratings": {
+      "A": 263,
+      "B": 10,
+      "C": 0,
+      "D": 0,
+      "E": 0,
+      "F": 0
+    },
+    "cc_sum": 546,
+    "mi_min": 18.272356511826533,
+    "mi_ratings": {
+      "A": 26,
+      "B": 1,
+      "C": 0
+    },
+    "mi_sum": 1557.1483137221883,
+    "num_complex": 0
+  },
+  "file_count": 27,
+  "functions": {
+    "cc_concentration": 0.2554787519706183,
+    "cc_extreme_count": 0,
+    "cc_high_count": 0,
+    "cc_max": 7,
+    "cc_mean": 2.544600938967136,
+    "cc_normalized": 0.001145156181075144,
+    "cc_std": 1.2567296039905658,
+    "cc_sum": 542,
+    "cc_top20": 0.34501845018450183,
+    "count": 213,
+    "depth_max": 3,
+    "extreme_cc_mean": 0.0,
+    "high_cc_mean": 0.0,
+    "lines_mean": 6.065727699530516,
+    "lines_sum": 1292
+  },
+  "graph": {
+    "cyclic_dependency_mass": 0.0,
+    "dependency_entropy": 0.13748750553839806,
+    "edge_count": 53,
+    "node_count": 57,
+    "propagation_cost": 0.045739348370927316
+  },
+  "lines": {
+    "comments": 11,
+    "loc": 1408,
+    "multi_comment": 103,
+    "single_comment": 89,
+    "total_lines": 2157
+  },
+  "lint": {
+    "counts": {
+      "B905": 2,
+      "C901": 1,
+      "DOC201": 60,
+      "DOC402": 1,
+      "DOC501": 26,
+      "EM102": 6,
+      "FBT001": 2,
+      "INP001": 27,
+      "PERF203": 1,
+      "PIE804": 1,
+      "PLR2004": 56,
+      "PLW1510": 1,
+      "PT011": 3,
+      "S101": 186,
+      "S404": 1,
+      "S603": 1,
+      "TRY003": 6
+    },
+    "errors": 381,
+    "fixable": 2
+  },
+  "source_files": [
+    "spreadsheets.py",
+    "caching.py",
+    "querying.py",
+    "csv_parsing.py",
+    "fetching.py",
+    "filtering.py",
+    "origins.py",
+    "limits.py",
+    "datagate.py",
+    "errors.py",
+    "app.py",
+    "store.py",
+    "ingestion.py",
+    "exporting.py",
+    "config.py"
+  ],
+  "symbols": {
+    "classes": 7,
+    "expressions": 1780,
+    "expressions_top_level": 34,
+    "functions": 205,
+    "globals": 53,
+    "imports": 116,
+    "max_imports": 14,
+    "methods": 8,
+    "statements": 488,
+    "total": 273,
+    "type_aliases": 0,
+    "variables": 53
+  },
+  "waste": {
+    "single_use_functions": 188,
+    "trivial_wrappers": 6,
+    "unused_variables": 56
+  }
+}

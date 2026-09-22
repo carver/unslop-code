@@ -1,0 +1,28 @@
+{
+  "artifacts_dir": "agent",
+  "checkpoint_path": "/home/carver/code/claudedev/unslop-code-bench/outputs/spectest/opus-5_2.1.251_high_min12-ABDJKMN/20260915T0053/sith/checkpoint_4",
+  "completed": "2026-09-15T02:23:19.415555",
+  "elapsed": 1413.049574,
+  "error_message": null,
+  "had_error": false,
+  "snapshot_dir": "snapshot",
+  "started": "2026-09-15T01:59:46.365981",
+  "usage": {
+    "cost": 7.3351005,
+    "current_tokens": {
+      "cache_read": 6384223,
+      "cache_write": 154674,
+      "input": 8334,
+      "output": 102062,
+      "reasoning": 0
+    },
+    "net_tokens": {
+      "cache_read": 6384223,
+      "cache_write": 154674,
+      "input": 8334,
+      "output": 102062,
+      "reasoning": 0
+    },
+    "steps": 52
+  }
+}

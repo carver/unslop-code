@@ -1,0 +1,1 @@
+{"source": "upload:enr.csv", "columns": ["name", "age", "score", "city"], "rows": [["Alice", 30, 91.5, "Berlin"], ["Bob", 25, 78, "Berlin"], ["Carol", 41, "", ""]], "enriched": false}

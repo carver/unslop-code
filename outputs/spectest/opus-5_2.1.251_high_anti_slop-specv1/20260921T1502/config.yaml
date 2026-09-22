@@ -1,0 +1,74 @@
+agent:
+  binary: claude
+  cost_limits:
+    cost_limit: 20
+    max_retries: 10
+    net_cost_limit: 100
+    step_limit: 0
+  disallowed_tools:
+  - Monitor
+  env:
+    CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS: '0'
+  permission_mode: bypassPermissions
+  timeout: 86400
+  type: claude_code
+  version: 2.1.251
+agent_config_path: configs/agents/claude_code-2.1.251.yaml
+environment:
+  commands:
+    agent_command: python
+    command: uv run
+    entry_file: '{entry_file}.py'
+  docker:
+    image: ghcr.io/astral-sh/uv:python3.12-trixie-slim
+    mount_workspace: true
+    workdir: /workspace
+  environment:
+    env:
+      PIP_CACHE_DIR: /tmp/pip-cache-dir
+      PIP_CONFIG_FILE: /tmp/pip-conf
+      UV_CACHE_DIR: /tmp/uv-cache
+  name: python3.12
+  setup:
+    eval_commands:
+    - uv init
+    - uv add -r requirements.txt
+    resume_commands:
+    - python -m venv .venv || true
+    - .venv/bin/pip install -r requirements.txt 2>/dev/null || true
+  type: docker
+environment_config_path: /home/carver/code/claudedev/unslop-code-bench/harness/configs/environments/docker-python3.12-uv.yaml
+model:
+  name: opus-5
+  provider: claude_code_oauth
+one_shot:
+  enabled: false
+  include_first_prefix: false
+  prefix: ''
+output_path: outputs/spectest/opus-5_2.1.251_high_anti_slop-specv1/20260921T1502
+pass_policy: any
+problems:
+- rejector
+prompt_content: "{%- if not is_continuation -%}\nYou are an exceptional python software\
+  \ engineer and you to need to implement a spec. Your instructions are:\n- Write\
+  \ the python script that satisfies the spec completely.\n- Use a virtual environment\
+  \ and ensure that a `requirements.txt` is present with any dependencies you need\
+  \ to solve the problem.\n{%- else -%}\nYou are an exceptional python software engineer\
+  \ and you to need to implement a spec. You are updating your code to match an extension\
+  \ of the spec. Here are your instructions: \n- Keep using the same virtual environment\
+  \ you started with, update `requirements.txt` with any new dependencies you need.\n\
+  - Focus only on adding in the new features/changes below.\n- Make sure you test\
+  \ any examples provided in the task description\n{%- endif %}\n- You ONLY work in\
+  \ this directory.\n- Follow best coding practices:\n  - Group functions into files\
+  \ based on related functionality\n  - Keep your code clean\n- No god functions/classes.\n\
+  - Make sure the code is documented appropriately so that it is easy to pick up.\
+  \ \n- Minimize the following gotchas:\n  - Extra defensive checks or try/catch blocks\
+  \ that are abnormal.\n  - Casts to get around type checking\n  - Variables that\
+  \ are only used a single time after declaration.\n  - Extra comments that a human\
+  \ wouldn't add.\n  - Trivial wrappers\n  - Heavy nesting\n  - If/Else ladders\n\
+  \  - A ton of helper methods\n\nYour task is:\n{{ spec.strip() }}\n"
+prompt_path: /home/carver/code/claudedev/unslop-code-bench/harness/configs/prompts/anti_slop.jinja
+save_dir: outputs
+save_template: spectest/opus-5_2.1.251_high_anti_slop-specv1/20260921T1502
+thinking: high
+thinking_max_tokens: null

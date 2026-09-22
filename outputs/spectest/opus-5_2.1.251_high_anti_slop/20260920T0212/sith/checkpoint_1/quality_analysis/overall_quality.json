@@ -1,0 +1,120 @@
+{
+  "classes": {
+    "attribute_counts_mean": 2.888888888888889,
+    "attribute_counts_sum": 26,
+    "count": 9,
+    "method_counts_mean": 5.666666666666667,
+    "method_counts_sum": 51
+  },
+  "complexity": {
+    "cc_max": 27,
+    "cc_ratings": {
+      "A": 109,
+      "B": 7,
+      "C": 2,
+      "D": 1,
+      "E": 0,
+      "F": 0
+    },
+    "cc_sum": 310,
+    "mi_min": 26.06265304751374,
+    "mi_ratings": {
+      "A": 14,
+      "B": 0,
+      "C": 0
+    },
+    "mi_sum": 820.1697503940437,
+    "num_complex": 3
+  },
+  "file_count": 14,
+  "functions": {
+    "cc_concentration": 0.3501006917082567,
+    "cc_extreme_count": 0,
+    "cc_high_count": 1,
+    "cc_max": 11,
+    "cc_mean": 2.5851063829787235,
+    "cc_normalized": 0.005183411553408259,
+    "cc_std": 1.8044721890442337,
+    "cc_sum": 243,
+    "cc_top20": 0.40329218106995884,
+    "count": 94,
+    "depth_max": 3,
+    "extreme_cc_mean": 0.0,
+    "high_cc_mean": 11.0,
+    "lines_mean": 6.414893617021277,
+    "lines_sum": 603
+  },
+  "graph": {
+    "cyclic_dependency_mass": 0.0,
+    "dependency_entropy": 0.2489249451849275,
+    "edge_count": 86,
+    "node_count": 76,
+    "propagation_cost": 0.047017543859649125
+  },
+  "lines": {
+    "comments": 1,
+    "loc": 654,
+    "multi_comment": 39,
+    "single_comment": 55,
+    "total_lines": 961
+  },
+  "lint": {
+    "counts": {
+      "BLE001": 1,
+      "DOC201": 40,
+      "DOC501": 2,
+      "EM102": 4,
+      "EXE001": 1,
+      "FBT002": 1,
+      "FURB101": 1,
+      "INP001": 1,
+      "PERF203": 2,
+      "PLR0913": 1,
+      "PLR0917": 1,
+      "PLW1510": 1,
+      "PT009": 22,
+      "PTH100": 1,
+      "PTH113": 1,
+      "PTH120": 1,
+      "PTH123": 1,
+      "Q001": 1,
+      "S404": 1,
+      "S603": 1,
+      "TRY003": 4
+    },
+    "errors": 89,
+    "fixable": 5
+  },
+  "source_files": [
+    "sithlib/symbols.py",
+    "sithlib/engine.py",
+    "sithlib/scopes.py",
+    "sithlib/inference.py",
+    "sithlib/matching.py",
+    "sithlib/source.py",
+    "sithlib/errors.py",
+    "sithlib/index.py",
+    "sithlib/parsing.py",
+    "sithlib/attributes.py",
+    "sithlib/runtime.py"
+  ],
+  "symbols": {
+    "classes": 9,
+    "expressions": 1454,
+    "expressions_top_level": 45,
+    "functions": 43,
+    "globals": 16,
+    "imports": 49,
+    "max_imports": 9,
+    "methods": 51,
+    "statements": 251,
+    "total": 119,
+    "type_aliases": 0,
+    "variables": 16
+  },
+  "waste": {
+    "single_use_functions": 39,
+    "trivial_wrappers": 8,
+    "unused_variables": 29
+  }
+}

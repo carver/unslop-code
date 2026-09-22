@@ -1,0 +1,86 @@
+{
+  "schema_version": 1,
+  "problem_name": "rejector",
+  "problem_version": 1,
+  "checkpoint_name": "checkpoint_2",
+  "checkpoint_version": 1,
+  "duration": 54.904557943344116,
+  "entrypoint": "uv run rejector.py",
+  "tests": {
+    "checkpoint_1-Regression": {
+      "passed": [
+        "test_api_failure_after_max_retries",
+        "test_api_retry_on_5xx",
+        "test_cli_override_flags",
+        "test_concurrency_throughput",
+        "test_contains_evaluation",
+        "test_extract_full",
+        "test_extract_last_line",
+        "test_greedy_exact_match_last_number",
+        "test_invalid_config_exits_1[rejection_no_eval]",
+        "test_invalid_config_exits_1[rejection_zero_temp]",
+        "test_invalid_config_exits_1[sample_zero_temp]",
+        "test_missing_template_field_exits_1",
+        "test_no_evaluation_passed_is_null",
+        "test_output_order_matches_input",
+        "test_prompt_template_rendering",
+        "test_regex_evaluation",
+        "test_regex_without_pattern_exits_1_before_requests",
+        "test_rejection_all_attempts_fail",
+        "test_rejection_succeeds_after_failures",
+        "test_sample_generation",
+        "test_stdout_summary"
+      ],
+      "failed": [],
+      "skipped": []
+    },
+    "checkpoint_2-Core": {
+      "passed": [
+        "test_backward_compat_single_task",
+        "test_input_dir_mode",
+        "test_letter_extract",
+        "test_llm_judge_fail",
+        "test_llm_judge_pass",
+        "test_multi_task_execution",
+        "test_script_evaluation_pass_and_fail",
+        "test_script_evaluation_timeout",
+        "test_task_filter"
+      ],
+      "failed": [
+        "test_first_number_extract"
+      ],
+      "skipped": []
+    },
+    "checkpoint_2-Functionality": {
+      "passed": [
+        "test_eval_model_override",
+        "test_script_eval_with_rejection"
+      ],
+      "failed": [],
+      "skipped": []
+    },
+    "checkpoint_2-Error": {
+      "passed": [
+        "test_missing_task_input_exits_1"
+      ],
+      "failed": [],
+      "skipped": []
+    }
+  },
+  "pass_counts": {
+    "Core": 9,
+    "Functionality": 2,
+    "Regression": 21,
+    "Error": 1
+  },
+  "total_counts": {
+    "Core": 10,
+    "Functionality": 2,
+    "Regression": 21,
+    "Error": 1
+  },
+  "pytest_exit_code": 1,
+  "pytest_collected": 34,
+  "test_collection_hash": "f1e39cccee75dda551d75b43788629a40fbf289dc47ca38eff974b7a53bcdc33",
+  "infrastructure_failure": false
+}

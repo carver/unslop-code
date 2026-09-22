@@ -1,0 +1,19 @@
+task:
+  name: "t"
+  api_url: "http://127.0.0.1:8112"
+  model: "gpt-4"
+  rpm: 600
+  prompt:
+    system: "Solve it. Final answer after ####."
+    user: "{question}"
+  generation:
+    scheme: "sample"
+    temperature: 0.0
+    max_tokens: 256
+    n: 1
+  evaluation:
+    type: "exact_match"
+    answer_field: "answer"
+    extract: "last_number"
+
+  output_field: "solution"

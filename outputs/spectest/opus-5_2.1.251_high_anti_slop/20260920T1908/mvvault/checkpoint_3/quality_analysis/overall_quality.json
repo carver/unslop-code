@@ -1,0 +1,116 @@
+{
+  "classes": {
+    "attribute_counts_mean": 2.2,
+    "attribute_counts_sum": 11,
+    "count": 5,
+    "method_counts_mean": 0.8,
+    "method_counts_sum": 4
+  },
+  "complexity": {
+    "cc_max": 9,
+    "cc_ratings": {
+      "A": 103,
+      "B": 4,
+      "C": 0,
+      "D": 0,
+      "E": 0,
+      "F": 0
+    },
+    "cc_sum": 198,
+    "mi_min": 38.01467689079614,
+    "mi_ratings": {
+      "A": 15,
+      "B": 0,
+      "C": 0
+    },
+    "mi_sum": 942.3350886442033,
+    "num_complex": 0
+  },
+  "file_count": 15,
+  "functions": {
+    "cc_concentration": 0.3062477428674612,
+    "cc_extreme_count": 0,
+    "cc_high_count": 0,
+    "cc_max": 9,
+    "cc_mean": 2.7464788732394365,
+    "cc_normalized": 0.004946369869446793,
+    "cc_std": 1.6276039344399567,
+    "cc_sum": 195,
+    "cc_top20": 0.40512820512820513,
+    "count": 71,
+    "depth_max": 3,
+    "extreme_cc_mean": 0.0,
+    "high_cc_mean": 0.0,
+    "lines_mean": 9.169014084507042,
+    "lines_sum": 651
+  },
+  "graph": {
+    "cyclic_dependency_mass": 0.0,
+    "dependency_entropy": 0.2927181168798051,
+    "edge_count": 74,
+    "node_count": 71,
+    "propagation_cost": 0.043058350100603625
+  },
+  "lines": {
+    "comments": 1,
+    "loc": 599,
+    "multi_comment": 138,
+    "single_comment": 56,
+    "total_lines": 1022
+  },
+  "lint": {
+    "counts": {
+      "DOC201": 50,
+      "DOC501": 19,
+      "DTZ005": 3,
+      "DTZ007": 1,
+      "EM101": 3,
+      "EM102": 31,
+      "EXE001": 1,
+      "FBT003": 3,
+      "FURB118": 2,
+      "FURB140": 1,
+      "PLR2004": 3,
+      "RUF005": 2,
+      "TRY003": 34,
+      "TRY300": 1
+    },
+    "errors": 154,
+    "fixable": 1
+  },
+  "source_files": [
+    "mvault.py",
+    "vault/views.py",
+    "vault/history.py",
+    "vault/timestamps.py",
+    "vault/source.py",
+    "vault/download.py",
+    "vault/report.py",
+    "vault/cli.py",
+    "vault/digest.py",
+    "vault/errors.py",
+    "vault/migration.py",
+    "vault/catalog.py",
+    "vault/sync.py",
+    "vault/schema.py"
+  ],
+  "symbols": {
+    "classes": 5,
+    "expressions": 587,
+    "expressions_top_level": 29,
+    "functions": 67,
+    "globals": 31,
+    "imports": 56,
+    "max_imports": 13,
+    "methods": 4,
+    "statements": 216,
+    "total": 107,
+    "type_aliases": 0,
+    "variables": 31
+  },
+  "waste": {
+    "single_use_functions": 60,
+    "trivial_wrappers": 0,
+    "unused_variables": 31
+  }
+}

@@ -1,0 +1,87 @@
+{
+  "schema_version": 1,
+  "problem_name": "mvvault",
+  "problem_version": 2,
+  "checkpoint_name": "checkpoint_6",
+  "checkpoint_version": 2,
+  "duration": 18.2102313041687,
+  "entrypoint": "uv run mvault.py",
+  "tests": {
+    "checkpoint_6-Error": {
+      "passed": [
+        "test_bad_json",
+        "test_bad_timecode[-1]",
+        "test_bad_timecode[1.5]",
+        "test_bad_timecode[1:2:3:4]",
+        "test_bad_timecode[1:ab]",
+        "test_bad_timecode[]",
+        "test_migration_atomic[catalog0-entries-bad-v1]",
+        "test_migration_atomic[catalog1-episodes-bad-v2]",
+        "test_missing_id[DELETE-payload1]",
+        "test_missing_id[PATCH-payload0]",
+        "test_post_missing[timecode]",
+        "test_post_missing[title]",
+        "test_unknown_id[DELETE-payload1]",
+        "test_unknown_id[PATCH-payload0]"
+      ],
+      "failed": [],
+      "skipped": []
+    },
+    "checkpoint_6-Functionality": {
+      "passed": [
+        "test_delete_keeps_order",
+        "test_mixed_vaults",
+        "test_patch_after_v1_post_route_switch",
+        "test_patch_delete_after_v2",
+        "test_patch_variants[payload0-expected0]",
+        "test_patch_variants[payload1-expected1]",
+        "test_post_body",
+        "test_post_order_ids",
+        "test_timecodes[0-0]",
+        "test_timecodes[00:00:00-0]",
+        "test_timecodes[01:30-90]",
+        "test_timecodes[1:01:30-3690]",
+        "test_timecodes[1:30-90]",
+        "test_timecodes[90-90]",
+        "test_timecodes[90:00-5400]",
+        "test_timecodes[99:59:59-359999]",
+        "test_v1_converts_keys_and_source",
+        "test_v1_route_switch",
+        "test_v1_shared_removed_ts",
+        "test_v2_backup_is_original",
+        "test_v2_migrates_others",
+        "test_v2_uses_v3_routes",
+        "test_v3_backup_before_post"
+      ],
+      "failed": [],
+      "skipped": []
+    },
+    "checkpoint_6-Core": {
+      "passed": [
+        "test_delete_one",
+        "test_patch_title",
+        "test_post_create",
+        "test_post_migrates_v1",
+        "test_post_migrates_v2"
+      ],
+      "failed": [],
+      "skipped": []
+    }
+  },
+  "pass_counts": {
+    "Core": 5,
+    "Functionality": 23,
+    "Regression": 0,
+    "Error": 14
+  },
+  "total_counts": {
+    "Core": 5,
+    "Functionality": 23,
+    "Regression": 0,
+    "Error": 14
+  },
+  "pytest_exit_code": 0,
+  "pytest_collected": 42,
+  "test_collection_hash": "b8abbdfc1a25770263260433d2eb063bc3eb0f36d27c8fbfe54a599708799941",
+  "infrastructure_failure": false
+}

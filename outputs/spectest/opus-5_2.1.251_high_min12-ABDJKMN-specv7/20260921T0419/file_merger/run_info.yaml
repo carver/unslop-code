@@ -1,0 +1,159 @@
+agent_dir: agent
+agent_tar: agent.tar.gz
+agent_type: claude_code
+agent_version: 2.1.251
+checkpoint_file: checkpoint.yaml
+compress_artifacts: false
+concurrent_evaluation: false
+debug: false
+environment_file: environment.yaml
+image: slop-code:claude_code-2.1.251-python3.12
+inference_result_file: inference_result.json
+model_name: opus-5
+pass_policy: any
+problem_file: problem.yaml
+prompt_file: prompt.txt
+run_info_file: run_info.yaml
+seed: 42
+skip_evaluation: false
+snapshot_dir: snapshot
+summary:
+  checkpoints:
+    checkpoint_1: ran
+    checkpoint_2: ran
+    checkpoint_3: ran
+    checkpoint_4: ran
+  duration_seconds: 1242.472357
+  ended: '2026-09-21T05:31:34.057774'
+  error_message: null
+  error_traceback: null
+  error_type: null
+  passed_policy: true
+  started: '2026-09-21T05:10:51.585417'
+  state: completed
+  total_cost: 19.190918500000002
+  total_steps: 149
+  total_usage:
+    cost: 19.190918500000002
+    current_tokens:
+      cache_read: 4307914
+      cache_write: 129815
+      input: 4040
+      output: 90251
+      reasoning: 0
+    net_tokens:
+      cache_read: 13691103
+      cache_write: 429826
+      input: 21331
+      output: 317134
+      reasoning: 0
+    steps: 149
+template: '# Task Directions
+
+
+  Fully implement the following spec. Use the approach:
+
+  - Environment setup
+
+  - Write tests from the spec
+
+  - Implement
+
+  - Declare complete
+
+
+  Specifically:
+
+
+  # Environment
+
+
+  {% if not is_continuation -%}
+
+  Use a virtual environment and ensure that a `requirements.txt` is present with any
+  dependencies you need to solve the problem.
+
+  {% else -%}
+
+  Keep using the same virtual environment you started with, update `requirements.txt`
+  with any new dependencies you need.
+
+  {% endif -%}
+
+
+  Touch an IN_PROGRESS file. Delete any COMPLETED file.
+
+
+  When killing a process never run a pkill. Instead, pgrep.
+
+  Make sure only one process is found, then kill that one by PID.
+
+  Why? It''s too easy to pkill your own Bash argv.
+
+
+  For long-lived processes, log to a file or /dev/null instead of an undrained pipe.
+
+
+  # Testing
+
+
+  Split the spec file into minimal possible logical phrases and minimal context, and
+  iterate through each phrase.
+
+  For each phrase, add a test section with a comment of the phrase & context.
+
+
+  If the spec is non-trivially under-specified, such that alternative interpretations
+  would change the behavior of a conforming implementation on some input, then never
+  ask for clarification.
+
+  Instead, make your best choice at how to interpret the intention of the spec.
+
+  Then, add a numbered entry to an AMBIGUITIES.md file, starting with T1.
+
+  The entry must have sections for Spec Text, Alternatives, Choice, and Risk.
+
+  The entry will quote the relevant spec source verbatim, explain the reasonable alternative
+  interpretations, and your choice & why it seems to best fit the spec.
+
+  The "### Risk: N" section
+
+  Risk is a number from 0 to 100: the chance that the spec''s author, who has an implementation
+  of their own and writes the hidden tests against it, prefers a different reading
+  from your choice on some tested input.
+
+  Reason about what the author''s implementation most likely does and what fixture
+  they would naturally write, not only about which reading the prose supports best.
+
+  If Risk is above 0, name the reading the author most likely prefers in one line.
+
+  Use the whole range: a flat number on every entry is useless.
+
+
+  If a previous ambiguity is resolved by the current spec, annotate the entry instead
+  of removing it.
+
+
+  You run tests only to validate the tests themselves: collection succeeds, helpers
+  and generators work{% if is_continuation -%}, and each failure is because behavior
+  is missing, not because the test is broken{% endif -%}. Quick, targeted runs.
+
+
+  Never run the full suite to completion or long hypothesis runs; a green suite is
+  the implementer''s job, not yours.
+
+
+  # Implement
+
+  # Declare complete
+
+
+  touch a COMPLETED file. rm the IN_PROGRESS file.
+
+
+  # Spec
+
+  {{ spec.strip() }}
+
+  '
+verbose: false

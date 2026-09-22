@@ -1,0 +1,10 @@
+task:
+  name: t
+  api_url: "http://127.0.0.1:8112"
+  model: m
+  rpm: 60
+  prompt:
+    user: "{question}"
+  output_field: "solution"
+  generation:
+    scheme: "beam"

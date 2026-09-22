@@ -1,0 +1,6 @@
+{
+  "columns": [
+    { "name": "id", "type": "int" },
+    { "name": "payload", "type": "json" }
+  ]
+}

@@ -1,0 +1,126 @@
+{
+  "classes": {
+    "attribute_counts_mean": 3.625,
+    "attribute_counts_sum": 58,
+    "count": 16,
+    "method_counts_mean": 1.75,
+    "method_counts_sum": 28
+  },
+  "complexity": {
+    "cc_max": 14,
+    "cc_ratings": {
+      "A": 204,
+      "B": 22,
+      "C": 2,
+      "D": 0,
+      "E": 0,
+      "F": 0
+    },
+    "cc_sum": 608,
+    "mi_min": 28.406302846458892,
+    "mi_ratings": {
+      "A": 23,
+      "B": 0,
+      "C": 0
+    },
+    "mi_sum": 1415.69934956212,
+    "num_complex": 2
+  },
+  "file_count": 23,
+  "functions": {
+    "cc_concentration": 0.3511355443403028,
+    "cc_extreme_count": 0,
+    "cc_high_count": 2,
+    "cc_max": 14,
+    "cc_mean": 3.0736842105263156,
+    "cc_normalized": 0.002549566562514584,
+    "cc_std": 2.1392878470046908,
+    "cc_sum": 584,
+    "cc_top20": 0.4195205479452055,
+    "count": 190,
+    "depth_max": 3,
+    "extreme_cc_mean": 0.0,
+    "high_cc_mean": 13.5,
+    "lines_mean": 7.257894736842105,
+    "lines_sum": 1379
+  },
+  "graph": {
+    "cyclic_dependency_mass": 0.0,
+    "dependency_entropy": 0.17764864172178219,
+    "edge_count": 38,
+    "node_count": 44,
+    "propagation_cost": 0.05021141649048626
+  },
+  "lines": {
+    "comments": 176,
+    "loc": 1474,
+    "multi_comment": 22,
+    "single_comment": 228,
+    "total_lines": 2196
+  },
+  "lint": {
+    "counts": {
+      "ARG001": 14,
+      "ARG005": 23,
+      "DOC201": 26,
+      "DOC402": 1,
+      "DOC501": 5,
+      "EM101": 3,
+      "EM102": 17,
+      "ERA001": 24,
+      "FURB122": 1,
+      "INP001": 1,
+      "PLC0415": 6,
+      "PLC1901": 1,
+      "PLC2801": 1,
+      "PLR0913": 1,
+      "PLR0917": 1,
+      "PLR2004": 50,
+      "PLW1510": 3,
+      "PLW1514": 2,
+      "PT006": 6,
+      "PT018": 7,
+      "Q003": 2,
+      "RUF100": 1,
+      "S101": 241,
+      "S404": 3,
+      "S603": 3,
+      "SLF001": 2,
+      "TC001": 7,
+      "TRY003": 20,
+      "UP037": 1
+    },
+    "errors": 473,
+    "fixable": 8
+  },
+  "source_files": [
+    "rejlib/errors.py",
+    "rejlib/prompts.py",
+    "rejlib/config.py",
+    "rejlib/evaluation.py",
+    "rejlib/api.py",
+    "rejlib/jsonl.py",
+    "rejlib/ratelimit.py",
+    "rejlib/schemes.py",
+    "rejlib/runner.py"
+  ],
+  "symbols": {
+    "classes": 16,
+    "expressions": 2566,
+    "expressions_top_level": 34,
+    "functions": 162,
+    "globals": 22,
+    "imports": 83,
+    "max_imports": 9,
+    "methods": 28,
+    "statements": 540,
+    "total": 228,
+    "type_aliases": 0,
+    "variables": 22
+  },
+  "waste": {
+    "single_use_functions": 152,
+    "trivial_wrappers": 1,
+    "unused_variables": 42
+  }
+}

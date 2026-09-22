@@ -1,0 +1,138 @@
+{
+  "classes": {
+    "attribute_counts_mean": 1.7,
+    "attribute_counts_sum": 102,
+    "count": 60,
+    "method_counts_mean": 3.683333333333333,
+    "method_counts_sum": 221
+  },
+  "complexity": {
+    "cc_max": 10,
+    "cc_ratings": {
+      "A": 375,
+      "B": 25,
+      "C": 0,
+      "D": 0,
+      "E": 0,
+      "F": 0
+    },
+    "cc_sum": 787,
+    "mi_min": 0.0,
+    "mi_ratings": {
+      "A": 19,
+      "B": 0,
+      "C": 1
+    },
+    "mi_sum": 1087.3689564740441,
+    "num_complex": 0
+  },
+  "file_count": 20,
+  "functions": {
+    "cc_concentration": 0.3426516387364674,
+    "cc_extreme_count": 0,
+    "cc_high_count": 0,
+    "cc_max": 10,
+    "cc_mean": 2.1433566433566433,
+    "cc_normalized": 0.001738852905758218,
+    "cc_std": 1.5115025377028075,
+    "cc_sum": 613,
+    "cc_top20": 0.43230016313213704,
+    "count": 286,
+    "depth_max": 4,
+    "extreme_cc_mean": 0.0,
+    "high_cc_mean": 0.0,
+    "lines_mean": 7.989510489510489,
+    "lines_sum": 2285
+  },
+  "graph": {
+    "cyclic_dependency_mass": 0.037383177570093455,
+    "dependency_entropy": 0.17655856204245396,
+    "edge_count": 100,
+    "node_count": 146,
+    "propagation_cost": 0.010108644307982995
+  },
+  "lines": {
+    "comments": 57,
+    "loc": 2579,
+    "multi_comment": 327,
+    "single_comment": 165,
+    "total_lines": 3733
+  },
+  "lint": {
+    "counts": {
+      "COM819": 1,
+      "DOC201": 68,
+      "DOC402": 9,
+      "DOC501": 20,
+      "DTZ001": 5,
+      "EM101": 3,
+      "EM102": 37,
+      "EXE001": 1,
+      "FBT001": 6,
+      "FBT003": 3,
+      "FURB189": 1,
+      "INP001": 19,
+      "PLC1901": 1,
+      "PLR0913": 1,
+      "PLR0917": 1,
+      "PLR1714": 1,
+      "PLR2004": 2,
+      "PLR6301": 7,
+      "PT009": 211,
+      "PTH105": 1,
+      "RUF023": 1,
+      "S404": 1,
+      "S603": 2,
+      "SIM115": 1,
+      "SIM212": 1,
+      "SLOT000": 1,
+      "TC002": 19,
+      "TC003": 5,
+      "TRY003": 40,
+      "UP035": 13,
+      "UP037": 5
+    },
+    "errors": 487,
+    "fixable": 21
+  },
+  "source_files": [
+    "streams.py",
+    "nested_types.py",
+    "partitions.py",
+    "column_types.py",
+    "merge_files.py",
+    "errors.py",
+    "casting.py",
+    "records.py",
+    "parquet_io.py",
+    "sources.py",
+    "external_sort.py",
+    "output.py",
+    "inference.py",
+    "field_paths.py",
+    "csv_io.py",
+    "jsonl_io.py",
+    "rows.py",
+    "schema.py",
+    "type_specs.py"
+  ],
+  "symbols": {
+    "classes": 60,
+    "expressions": 5721,
+    "expressions_top_level": 256,
+    "functions": 65,
+    "globals": 54,
+    "imports": 155,
+    "max_imports": 17,
+    "methods": 221,
+    "statements": 572,
+    "total": 400,
+    "type_aliases": 0,
+    "variables": 54
+  },
+  "waste": {
+    "single_use_functions": 57,
+    "trivial_wrappers": 2,
+    "unused_variables": 195
+  }
+}

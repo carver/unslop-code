@@ -1,0 +1,122 @@
+{
+  "classes": {
+    "attribute_counts_mean": 0.8888888888888888,
+    "attribute_counts_sum": 8,
+    "count": 9,
+    "method_counts_mean": 0.7777777777777778,
+    "method_counts_sum": 7
+  },
+  "complexity": {
+    "cc_max": 9,
+    "cc_ratings": {
+      "A": 307,
+      "B": 7,
+      "C": 0,
+      "D": 0,
+      "E": 0,
+      "F": 0
+    },
+    "cc_sum": 756,
+    "mi_min": 36.07546360929796,
+    "mi_ratings": {
+      "A": 25,
+      "B": 0,
+      "C": 0
+    },
+    "mi_sum": 1722.1736895106724,
+    "num_complex": 0
+  },
+  "file_count": 25,
+  "functions": {
+    "cc_concentration": 0.188534886376613,
+    "cc_extreme_count": 0,
+    "cc_high_count": 0,
+    "cc_max": 9,
+    "cc_mean": 2.7194244604316546,
+    "cc_normalized": 0.0005937259246525197,
+    "cc_std": 1.1048222293804109,
+    "cc_sum": 756,
+    "cc_top20": 0.31216931216931215,
+    "count": 278,
+    "depth_max": 2,
+    "extreme_cc_mean": 0.0,
+    "high_cc_mean": 0.0,
+    "lines_mean": 5.118705035971223,
+    "lines_sum": 1423
+  },
+  "graph": {
+    "cyclic_dependency_mass": 0.08571428571428572,
+    "dependency_entropy": 0.19776852541037984,
+    "edge_count": 33,
+    "node_count": 35,
+    "propagation_cost": 0.06134453781512605
+  },
+  "lines": {
+    "comments": 536,
+    "loc": 1472,
+    "multi_comment": 188,
+    "single_comment": 566,
+    "total_lines": 2934
+  },
+  "lint": {
+    "counts": {
+      "ARG001": 1,
+      "DOC201": 30,
+      "DOC501": 6,
+      "EM101": 1,
+      "ERA001": 149,
+      "EXE001": 1,
+      "FBT002": 3,
+      "INP001": 12,
+      "PLC1901": 45,
+      "PLR2004": 1,
+      "PLW1510": 2,
+      "PT018": 1,
+      "PTH101": 1,
+      "RSE102": 1,
+      "RUF022": 1,
+      "S101": 391,
+      "S404": 2,
+      "S603": 2,
+      "TRY003": 1,
+      "UP022": 2,
+      "UP031": 3
+    },
+    "errors": 656,
+    "fixable": 4
+  },
+  "source_files": [
+    "xjq_core/extraction.py",
+    "xjq_core/output.py",
+    "xjq_core/json_input.py",
+    "xjq_core/errors.py",
+    "xjq_core/__init__.py",
+    "xjq_core/query.py",
+    "xjq_core/css.py",
+    "xjq_core/rendering.py",
+    "xjq_core/union.py",
+    "xjq_core/json_export.py",
+    "xjq_core/parsing.py",
+    "xjq.py",
+    "xjq_core/source.py"
+  ],
+  "symbols": {
+    "classes": 9,
+    "expressions": 1686,
+    "expressions_top_level": 24,
+    "functions": 271,
+    "globals": 27,
+    "imports": 62,
+    "max_imports": 11,
+    "methods": 7,
+    "statements": 513,
+    "total": 314,
+    "type_aliases": 0,
+    "variables": 27
+  },
+  "waste": {
+    "single_use_functions": 265,
+    "trivial_wrappers": 0,
+    "unused_variables": 24
+  }
+}

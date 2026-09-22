@@ -1,0 +1,137 @@
+{
+  "classes": {
+    "attribute_counts_mean": 2.5675675675675675,
+    "attribute_counts_sum": 95,
+    "count": 37,
+    "method_counts_mean": 0.5405405405405406,
+    "method_counts_sum": 20
+  },
+  "complexity": {
+    "cc_max": 11,
+    "cc_ratings": {
+      "A": 268,
+      "B": 15,
+      "C": 1,
+      "D": 0,
+      "E": 0,
+      "F": 0
+    },
+    "cc_sum": 651,
+    "mi_min": 26.28074247997308,
+    "mi_ratings": {
+      "A": 22,
+      "B": 0,
+      "C": 0
+    },
+    "mi_sum": 1137.6546978102936,
+    "num_complex": 1
+  },
+  "file_count": 22,
+  "functions": {
+    "cc_concentration": 0.28371461718696683,
+    "cc_extreme_count": 0,
+    "cc_high_count": 1,
+    "cc_max": 11,
+    "cc_mean": 3.0191387559808613,
+    "cc_normalized": 0.0015543576979779915,
+    "cc_std": 1.720805162863835,
+    "cc_sum": 631,
+    "cc_top20": 0.375594294770206,
+    "count": 209,
+    "depth_max": 4,
+    "extreme_cc_mean": 0.0,
+    "high_cc_mean": 11.0,
+    "lines_mean": 9.038277511961722,
+    "lines_sum": 1889
+  },
+  "graph": {
+    "cyclic_dependency_mass": 0.0,
+    "dependency_entropy": 0.24466476552365857,
+    "edge_count": 110,
+    "node_count": 121,
+    "propagation_cost": 0.022796143250688704
+  },
+  "lines": {
+    "comments": 38,
+    "loc": 2228,
+    "multi_comment": 195,
+    "single_comment": 166,
+    "total_lines": 3237
+  },
+  "lint": {
+    "counts": {
+      "ANN401": 42,
+      "ARG001": 6,
+      "B905": 3,
+      "DOC201": 78,
+      "DOC402": 7,
+      "DOC501": 22,
+      "DTZ001": 1,
+      "EM101": 2,
+      "EM102": 44,
+      "EXE001": 1,
+      "FBT001": 1,
+      "FBT003": 2,
+      "FURB188": 1,
+      "INP001": 4,
+      "PERF203": 1,
+      "PLC0415": 1,
+      "PLR2004": 23,
+      "PLR6201": 1,
+      "PT006": 4,
+      "PTH105": 2,
+      "PTH123": 7,
+      "RUF005": 1,
+      "S101": 118,
+      "S301": 1,
+      "S403": 1,
+      "TC001": 8,
+      "TC003": 1,
+      "TRY003": 46,
+      "UP007": 1,
+      "UP015": 1,
+      "UP035": 15,
+      "UP037": 4
+    },
+    "errors": 450,
+    "fixable": 30
+  },
+  "source_files": [
+    "csvmerge/csvio.py",
+    "csvmerge/schema.py",
+    "csvmerge/readers.py",
+    "csvmerge/casting.py",
+    "csvmerge/partitioning.py",
+    "csvmerge/jsonlio.py",
+    "csvmerge/merge.py",
+    "csvmerge/formats.py",
+    "merge_files.py",
+    "csvmerge/parquetio.py",
+    "csvmerge/paths.py",
+    "csvmerge/datatypes.py",
+    "csvmerge/errors.py",
+    "csvmerge/sorting.py",
+    "csvmerge/aliases.py",
+    "csvmerge/coltypes.py",
+    "csvmerge/sharding.py"
+  ],
+  "symbols": {
+    "classes": 37,
+    "expressions": 2251,
+    "expressions_top_level": 51,
+    "functions": 189,
+    "globals": 38,
+    "imports": 148,
+    "max_imports": 15,
+    "methods": 20,
+    "statements": 555,
+    "total": 284,
+    "type_aliases": 0,
+    "variables": 38
+  },
+  "waste": {
+    "single_use_functions": 157,
+    "trivial_wrappers": 1,
+    "unused_variables": 56
+  }
+}

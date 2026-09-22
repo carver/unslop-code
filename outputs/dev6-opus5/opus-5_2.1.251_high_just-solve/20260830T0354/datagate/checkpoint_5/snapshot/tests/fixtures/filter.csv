@@ -1,0 +1,7 @@
+name,city,score,tag
+Alice,Berlin,30,alpha
+bob,Bern,7.5,beta
+Carol,Bern,,gamma
+Dave,berlin,n/a,Alpha
+Erin,Zurich,120,delta
+Frank,Berlin,-4,alpha beta

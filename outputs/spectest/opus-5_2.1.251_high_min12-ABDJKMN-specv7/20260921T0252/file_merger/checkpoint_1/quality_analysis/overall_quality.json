@@ -1,0 +1,129 @@
+{
+  "classes": {
+    "attribute_counts_mean": 2.3333333333333335,
+    "attribute_counts_sum": 7,
+    "count": 3,
+    "method_counts_mean": 1.6666666666666667,
+    "method_counts_sum": 5
+  },
+  "complexity": {
+    "cc_max": 31,
+    "cc_ratings": {
+      "A": 197,
+      "B": 7,
+      "C": 4,
+      "D": 0,
+      "E": 1,
+      "F": 0
+    },
+    "cc_sum": 544,
+    "mi_min": 13.467124396413682,
+    "mi_ratings": {
+      "A": 9,
+      "B": 1,
+      "C": 0
+    },
+    "mi_sum": 541.19904350412,
+    "num_complex": 5
+  },
+  "file_count": 10,
+  "functions": {
+    "cc_concentration": 0.3042816142447139,
+    "cc_extreme_count": 1,
+    "cc_high_count": 5,
+    "cc_max": 31,
+    "cc_mean": 2.867724867724868,
+    "cc_normalized": 0.005269137738876799,
+    "cc_std": 2.8617926253106742,
+    "cc_sum": 542,
+    "cc_top20": 0.4095940959409594,
+    "count": 189,
+    "depth_max": 5,
+    "extreme_cc_mean": 31.0,
+    "high_cc_mean": 16.8,
+    "lines_mean": 7.126984126984127,
+    "lines_sum": 1347
+  },
+  "graph": {
+    "cyclic_dependency_mass": 0.0,
+    "dependency_entropy": 0.15019345025885186,
+    "edge_count": 25,
+    "node_count": 33,
+    "propagation_cost": 0.05303030303030303
+  },
+  "lines": {
+    "comments": 328,
+    "loc": 1387,
+    "multi_comment": 13,
+    "single_comment": 344,
+    "total_lines": 2157
+  },
+  "lint": {
+    "counts": {
+      "ARG001": 1,
+      "B904": 8,
+      "C901": 2,
+      "DOC201": 13,
+      "DOC402": 1,
+      "DOC501": 3,
+      "EM101": 7,
+      "ERA001": 117,
+      "EXE001": 1,
+      "F401": 2,
+      "FURB101": 1,
+      "FURB103": 1,
+      "FURB118": 1,
+      "FURB188": 1,
+      "INP001": 9,
+      "PLC1901": 12,
+      "PLR0124": 1,
+      "PLR0912": 2,
+      "PLR0914": 1,
+      "PLR0915": 1,
+      "PLR1714": 2,
+      "PLR2004": 2,
+      "PLR6201": 2,
+      "PLW0603": 1,
+      "PLW1510": 1,
+      "PTH103": 1,
+      "PTH113": 1,
+      "PTH123": 6,
+      "PTH208": 2,
+      "RUF005": 1,
+      "RUF023": 1,
+      "S101": 184,
+      "S404": 1,
+      "S603": 1,
+      "SIM108": 2,
+      "SIM115": 2,
+      "TRY003": 7,
+      "UP004": 2,
+      "UP015": 3,
+      "UP021": 1,
+      "UP022": 1,
+      "UP031": 14
+    },
+    "errors": 423,
+    "fixable": 20
+  },
+  "source_files": [],
+  "symbols": {
+    "classes": 3,
+    "expressions": 1846,
+    "expressions_top_level": 26,
+    "functions": 184,
+    "globals": 17,
+    "imports": 27,
+    "max_imports": 11,
+    "methods": 5,
+    "statements": 422,
+    "total": 209,
+    "type_aliases": 0,
+    "variables": 17
+  },
+  "waste": {
+    "single_use_functions": 173,
+    "trivial_wrappers": 3,
+    "unused_variables": 16
+  }
+}

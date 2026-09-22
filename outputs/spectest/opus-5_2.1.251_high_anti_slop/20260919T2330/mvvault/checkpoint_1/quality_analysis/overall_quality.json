@@ -1,0 +1,104 @@
+{
+  "classes": {
+    "attribute_counts_mean": 0.0,
+    "attribute_counts_sum": 0,
+    "count": 3,
+    "method_counts_mean": 0.0,
+    "method_counts_sum": 0
+  },
+  "complexity": {
+    "cc_max": 9,
+    "cc_ratings": {
+      "A": 34,
+      "B": 4,
+      "C": 0,
+      "D": 0,
+      "E": 0,
+      "F": 0
+    },
+    "cc_sum": 72,
+    "mi_min": 46.74947782938695,
+    "mi_ratings": {
+      "A": 7,
+      "B": 0,
+      "C": 0
+    },
+    "mi_sum": 489.021277953354,
+    "num_complex": 0
+  },
+  "file_count": 7,
+  "functions": {
+    "cc_concentration": 0.4122222222222222,
+    "cc_extreme_count": 0,
+    "cc_high_count": 0,
+    "cc_max": 9,
+    "cc_mean": 2.88,
+    "cc_normalized": 0.02705439814814815,
+    "cc_std": 2.3685438564654024,
+    "cc_sum": 72,
+    "cc_top20": 0.4861111111111111,
+    "count": 25,
+    "depth_max": 3,
+    "extreme_cc_mean": 0.0,
+    "high_cc_mean": 0.0,
+    "lines_mean": 8.16,
+    "lines_sum": 204
+  },
+  "graph": {
+    "cyclic_dependency_mass": 0.0,
+    "dependency_entropy": 0.28,
+    "edge_count": 26,
+    "node_count": 25,
+    "propagation_cost": 0.07666666666666666
+  },
+  "lines": {
+    "comments": 5,
+    "loc": 219,
+    "multi_comment": 8,
+    "single_comment": 38,
+    "total_lines": 342
+  },
+  "lint": {
+    "counts": {
+      "DOC201": 17,
+      "DOC501": 7,
+      "DTZ005": 1,
+      "EM101": 1,
+      "EM102": 16,
+      "EXE001": 1,
+      "FBT003": 2,
+      "FURB118": 2,
+      "RUF005": 1,
+      "TRY003": 17
+    },
+    "errors": 65,
+    "fixable": 0
+  },
+  "source_files": [
+    "vault/errors.py",
+    "vault/__init__.py",
+    "vault/syncing.py",
+    "vault/history.py",
+    "vault/source.py",
+    "vault/catalog.py"
+  ],
+  "symbols": {
+    "classes": 3,
+    "expressions": 228,
+    "expressions_top_level": 11,
+    "functions": 25,
+    "globals": 10,
+    "imports": 18,
+    "max_imports": 6,
+    "methods": 0,
+    "statements": 83,
+    "total": 38,
+    "type_aliases": 0,
+    "variables": 10
+  },
+  "waste": {
+    "single_use_functions": 21,
+    "trivial_wrappers": 0,
+    "unused_variables": 10
+  }
+}

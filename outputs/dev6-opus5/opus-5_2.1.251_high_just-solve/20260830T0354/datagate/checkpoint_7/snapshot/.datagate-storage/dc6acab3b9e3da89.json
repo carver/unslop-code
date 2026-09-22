@@ -1,0 +1,1 @@
+{"source": "http://127.0.0.1:41891/semi.csv", "columns": ["city", "pop", "ratio"], "rows": [["Berlin", 3600000, 1.5], ["Paris", 2100000, 2.25]], "enriched": false}

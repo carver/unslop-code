@@ -1,0 +1,1 @@
+{"source": "http://127.0.0.1:45917/bom.csv", "columns": ["name", "age"], "rows": [["Zoe", 7]], "enriched": false}

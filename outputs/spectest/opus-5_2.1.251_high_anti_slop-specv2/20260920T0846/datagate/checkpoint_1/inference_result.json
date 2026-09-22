@@ -1,0 +1,28 @@
+{
+  "artifacts_dir": "agent",
+  "checkpoint_path": "outputs/spectest/opus-5_2.1.251_high_anti_slop-specv2/20260920T0846/datagate/checkpoint_1",
+  "completed": "2026-09-20T08:50:56.598866",
+  "elapsed": 261.072161,
+  "error_message": null,
+  "had_error": false,
+  "snapshot_dir": "snapshot",
+  "started": "2026-09-20T08:46:35.526705",
+  "usage": {
+    "cost": 1.2049715,
+    "current_tokens": {
+      "cache_read": 754949,
+      "cache_write": 29006,
+      "input": 3442,
+      "output": 20734,
+      "reasoning": 0
+    },
+    "net_tokens": {
+      "cache_read": 754949,
+      "cache_write": 29006,
+      "input": 3442,
+      "output": 20734,
+      "reasoning": 0
+    },
+    "steps": 17
+  }
+}

@@ -1,0 +1,85 @@
+#!/usr/bin/env python3
+"""Evaluate an XPath 1.0 or CSS query against an XML document read from stdin."""
+
+import argparse
+import sys
+
+from xjq_core.css import compile_query
+from xjq_core.document import parse_document
+from xjq_core.errors import XjqError
+from xjq_core.query import evaluate
+from xjq_core.render import render
+from xjq_core.text import TextMode, extract_text
+
+
+def parse_args(argv: list[str] | None) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        prog="xjq.py",
+        description=__doc__,
+    )
+    parser.add_argument(
+        "query",
+        metavar="QUERY",
+        help="XPath expression, or CSS selector when --css is given",
+    )
+    parser.add_argument(
+        "infile",
+        metavar="INFILE",
+        nargs="?",
+        help="accepted for compatibility; the document is always read from stdin",
+    )
+    parser.add_argument(
+        "--css",
+        action="store_true",
+        help="interpret QUERY as a CSS selector",
+    )
+    parser.add_argument(
+        "-t",
+        "--text",
+        action="store_true",
+        help="print the direct text of each matched element",
+    )
+    parser.add_argument(
+        "--text-all",
+        action="store_true",
+        help="print the descendant text of each matched element; beats --text",
+    )
+    return parser.parse_args(argv)
+
+
+def resolve_query(args: argparse.Namespace) -> tuple[str, TextMode | None]:
+    """Turn the arguments into an XPath expression and the text mode to apply.
+
+    A `::text` pseudo-element states its own mode, which is why the text flags
+    are no-op modifiers for a query that uses one.
+    """
+    if not args.css:
+        return args.query, flag_text_mode(args)
+    expression, mode = compile_query(args.query)
+    return expression, mode or flag_text_mode(args)
+
+
+def flag_text_mode(args: argparse.Namespace) -> TextMode | None:
+    """Read the text mode the flags ask for, `--text-all` outranking `--text`."""
+    if args.text_all:
+        return TextMode.DESCENDANT
+    if args.text:
+        return TextMode.DIRECT
+    return None
+
+
+def main(argv: list[str] | None = None) -> int:
+    args = parse_args(argv)
+    try:
+        document = parse_document(sys.stdin.buffer.read())
+        expression, mode = resolve_query(args)
+        output = render(extract_text(evaluate(document, expression), mode))
+    except XjqError as exc:
+        print(f"xjq: {exc}", file=sys.stderr)
+        return 1
+    sys.stdout.write(output)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

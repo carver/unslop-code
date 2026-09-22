@@ -1,0 +1,133 @@
+{
+  "classes": {
+    "attribute_counts_mean": 3.8636363636363638,
+    "attribute_counts_sum": 85,
+    "count": 22,
+    "method_counts_mean": 1.0,
+    "method_counts_sum": 22
+  },
+  "complexity": {
+    "cc_max": 12,
+    "cc_ratings": {
+      "A": 349,
+      "B": 28,
+      "C": 1,
+      "D": 0,
+      "E": 0,
+      "F": 0
+    },
+    "cc_sum": 930,
+    "mi_min": 31.07046471701395,
+    "mi_ratings": {
+      "A": 31,
+      "B": 0,
+      "C": 0
+    },
+    "mi_sum": 1855.0232785272974,
+    "num_complex": 1
+  },
+  "file_count": 31,
+  "functions": {
+    "cc_concentration": 0.3260030982414926,
+    "cc_extreme_count": 0,
+    "cc_high_count": 1,
+    "cc_max": 12,
+    "cc_mean": 2.850467289719626,
+    "cc_normalized": 0.0012662366747290157,
+    "cc_std": 1.817297469721989,
+    "cc_sum": 915,
+    "cc_top20": 0.4021857923497268,
+    "count": 321,
+    "depth_max": 3,
+    "extreme_cc_mean": 0.0,
+    "high_cc_mean": 12.0,
+    "lines_mean": 8.685358255451714,
+    "lines_sum": 2788
+  },
+  "graph": {
+    "cyclic_dependency_mass": 0.0,
+    "dependency_entropy": 0.2126290426864213,
+    "edge_count": 63,
+    "node_count": 69,
+    "propagation_cost": 0.03410059676044331
+  },
+  "lines": {
+    "comments": 434,
+    "loc": 2939,
+    "multi_comment": 47,
+    "single_comment": 523,
+    "total_lines": 4329
+  },
+  "lint": {
+    "counts": {
+      "ANN401": 9,
+      "ARG001": 13,
+      "ARG005": 3,
+      "B905": 3,
+      "DOC201": 53,
+      "DOC402": 1,
+      "DOC501": 9,
+      "EM101": 5,
+      "EM102": 24,
+      "ERA001": 72,
+      "EXE001": 1,
+      "FBT001": 1,
+      "FURB122": 1,
+      "INP001": 17,
+      "PLC0415": 4,
+      "PLC1901": 3,
+      "PLR0913": 3,
+      "PLR0917": 3,
+      "PLR2004": 82,
+      "PLW1510": 3,
+      "PLW1514": 3,
+      "PT006": 4,
+      "PT018": 1,
+      "RUF015": 1,
+      "RUF029": 1,
+      "RUF100": 1,
+      "S101": 370,
+      "S404": 2,
+      "S603": 3,
+      "TC001": 13,
+      "TRY003": 29,
+      "UP035": 13,
+      "UP037": 1
+    },
+    "errors": 752,
+    "fixable": 19
+  },
+  "source_files": [
+    "taskrunner/inputs.py",
+    "taskrunner/script_eval.py",
+    "taskrunner/cli.py",
+    "taskrunner/prompts.py",
+    "taskrunner/judge.py",
+    "taskrunner/runner.py",
+    "taskrunner/jsonl.py",
+    "taskrunner/config.py",
+    "taskrunner/generation.py",
+    "taskrunner/records.py",
+    "taskrunner/api.py",
+    "taskrunner/evaluation.py"
+  ],
+  "symbols": {
+    "classes": 22,
+    "expressions": 3850,
+    "expressions_top_level": 46,
+    "functions": 299,
+    "globals": 35,
+    "imports": 132,
+    "max_imports": 11,
+    "methods": 22,
+    "statements": 844,
+    "total": 378,
+    "type_aliases": 0,
+    "variables": 35
+  },
+  "waste": {
+    "single_use_functions": 275,
+    "trivial_wrappers": 5,
+    "unused_variables": 49
+  }
+}

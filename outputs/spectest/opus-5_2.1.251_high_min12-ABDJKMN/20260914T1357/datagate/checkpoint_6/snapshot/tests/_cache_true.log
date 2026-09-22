@@ -1,0 +1,244 @@
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:57601
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 21:45:07] "GET /convert?source=http://127.0.0.1:34685/true-1-1.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:45:07] "GET /convert?source=http://127.0.0.1:34685/true-1-1.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:45:07] "GET /datasets/9a57c8de732b259a HTTP/1.1" 200 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:59521
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 21:45:08] "GET /convert?source=http://127.0.0.1:34685/true-true-2.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:45:08] "GET /convert?source=http://127.0.0.1:34685/true-true-2.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:45:08] "GET /datasets/87b881a9da86f0e4 HTTP/1.1" 200 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:50643
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 21:45:08] "GET /convert?source=http://127.0.0.1:34685/true-yes-3.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:45:08] "GET /convert?source=http://127.0.0.1:34685/true-yes-3.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:45:08] "GET /datasets/a78edb6f1d74f8f4 HTTP/1.1" 200 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:59929
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 21:45:09] "GET /convert?source=http://127.0.0.1:34685/true-on-4.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:45:09] "GET /convert?source=http://127.0.0.1:34685/true-on-4.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:45:09] "GET /datasets/6e09d5c84edec01f HTTP/1.1" 200 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:45261
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 21:45:09] "GET /convert?source=http://127.0.0.1:34685/true-true-5.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:45:09] "GET /convert?source=http://127.0.0.1:34685/true-true-5.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:45:09] "GET /datasets/4a18c6599a614775 HTTP/1.1" 200 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:56013
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 21:45:10] "GET /convert?source=http://127.0.0.1:34685/true-yes-6.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:45:10] "GET /convert?source=http://127.0.0.1:34685/true-yes-6.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:45:10] "GET /datasets/6728349ea253b89c HTTP/1.1" 200 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:52239
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 21:45:10] "GET /convert?source=http://127.0.0.1:34685/true-on-7.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:45:10] "GET /convert?source=http://127.0.0.1:34685/true-on-7.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:45:10] "GET /datasets/e59b4f234cd5e1c6 HTTP/1.1" 200 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:39639
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 21:45:11] "GET /convert?source=http://127.0.0.1:34685/true-true-8.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:45:11] "GET /convert?source=http://127.0.0.1:34685/true-true-8.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:45:11] "GET /datasets/72fa5532c98af634 HTTP/1.1" 200 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:34651
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 21:45:11] "GET /convert?source=http://127.0.0.1:34685/true-on-9.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:45:11] "GET /convert?source=http://127.0.0.1:34685/true-on-9.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:45:11] "GET /datasets/86a3691f61315231 HTTP/1.1" 200 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:56169
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:05:39] "GET /convert?source=http://127.0.0.1:38475/true-1-11.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:05:39] "GET /convert?source=http://127.0.0.1:38475/true-1-11.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:05:39] "GET /datasets/395da07a83436622 HTTP/1.1" 200 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:58335
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:05:40] "GET /convert?source=http://127.0.0.1:38475/true-true-12.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:05:40] "GET /convert?source=http://127.0.0.1:38475/true-true-12.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:05:40] "GET /datasets/cfba2a49c9fb6943 HTTP/1.1" 200 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:38693
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:05:40] "GET /convert?source=http://127.0.0.1:38475/true-yes-13.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:05:40] "GET /convert?source=http://127.0.0.1:38475/true-yes-13.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:05:40] "GET /datasets/cd74b4ba7d370bc5 HTTP/1.1" 200 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:43967
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:05:41] "GET /convert?source=http://127.0.0.1:38475/true-on-14.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:05:41] "GET /convert?source=http://127.0.0.1:38475/true-on-14.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:05:41] "GET /datasets/15465ec44323ed2a HTTP/1.1" 200 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:42485
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:05:41] "GET /convert?source=http://127.0.0.1:38475/true-true-15.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:05:41] "GET /convert?source=http://127.0.0.1:38475/true-true-15.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:05:41] "GET /datasets/9b5483d358fa8979 HTTP/1.1" 200 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:54635
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:05:42] "GET /convert?source=http://127.0.0.1:38475/true-yes-16.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:05:42] "GET /convert?source=http://127.0.0.1:38475/true-yes-16.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:05:42] "GET /datasets/2155ede3e489feae HTTP/1.1" 200 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:38687
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:05:42] "GET /convert?source=http://127.0.0.1:38475/true-on-17.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:05:42] "GET /convert?source=http://127.0.0.1:38475/true-on-17.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:05:42] "GET /datasets/9cf6b463cd250c2f HTTP/1.1" 200 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:56181
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:05:43] "GET /convert?source=http://127.0.0.1:38475/true-true-18.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:05:43] "GET /convert?source=http://127.0.0.1:38475/true-true-18.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:05:43] "GET /datasets/e789b8f53a03f7a5 HTTP/1.1" 200 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:52539
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:05:43] "GET /convert?source=http://127.0.0.1:38475/true-on-19.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:05:43] "GET /convert?source=http://127.0.0.1:38475/true-on-19.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:05:43] "GET /datasets/fdc3d6dcd01376c3 HTTP/1.1" 200 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:54355
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:05:44] "[33mGET /convert?source=http://127.0.0.1:38475/true-%20true%20-20.csv HTTP/1.1[0m" 404 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:60553
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:05:44] "[33mGET /convert?source=http://127.0.0.1:38475/true-on%09-21.csv HTTP/1.1[0m" 404 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:44417
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:06:31] "GET /convert?source=http://127.0.0.1:43897/true-1-11.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:06:31] "GET /convert?source=http://127.0.0.1:43897/true-1-11.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:06:31] "GET /datasets/ab6e9d9b05cdaff9 HTTP/1.1" 200 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:36663
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:06:32] "GET /convert?source=http://127.0.0.1:43897/true-true-12.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:06:32] "GET /convert?source=http://127.0.0.1:43897/true-true-12.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:06:32] "GET /datasets/53299ae297c82e98 HTTP/1.1" 200 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:55249
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:06:32] "GET /convert?source=http://127.0.0.1:43897/true-yes-13.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:06:32] "GET /convert?source=http://127.0.0.1:43897/true-yes-13.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:06:32] "GET /datasets/1fc5341730dc0c36 HTTP/1.1" 200 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:48791
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:06:33] "GET /convert?source=http://127.0.0.1:43897/true-on-14.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:06:33] "GET /convert?source=http://127.0.0.1:43897/true-on-14.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:06:33] "GET /datasets/bb812f394de46cac HTTP/1.1" 200 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:50769
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:06:33] "GET /convert?source=http://127.0.0.1:43897/true-true-15.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:06:33] "GET /convert?source=http://127.0.0.1:43897/true-true-15.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:06:33] "GET /datasets/a14801e2cf67f40c HTTP/1.1" 200 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:59553
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:06:34] "GET /convert?source=http://127.0.0.1:43897/true-yes-16.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:06:34] "GET /convert?source=http://127.0.0.1:43897/true-yes-16.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:06:34] "GET /datasets/2d15e8dd101f7bd8 HTTP/1.1" 200 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:59949
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:06:34] "GET /convert?source=http://127.0.0.1:43897/true-on-17.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:06:34] "GET /convert?source=http://127.0.0.1:43897/true-on-17.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:06:34] "GET /datasets/54d55d9bcd507741 HTTP/1.1" 200 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:53319
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:06:35] "GET /convert?source=http://127.0.0.1:43897/true-true-18.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:06:35] "GET /convert?source=http://127.0.0.1:43897/true-true-18.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:06:35] "GET /datasets/20b05bffb8e6af2b HTTP/1.1" 200 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:44133
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:06:35] "GET /convert?source=http://127.0.0.1:43897/true-on-19.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:06:35] "GET /convert?source=http://127.0.0.1:43897/true-on-19.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:06:35] "GET /datasets/27443bc9fcf4bdd7 HTTP/1.1" 200 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:60579
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:06:36] "GET /convert?source=http://127.0.0.1:43897/true--true--20.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:06:36] "GET /convert?source=http://127.0.0.1:43897/true--true--20.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:06:36] "GET /datasets/319aba729a2fde19 HTTP/1.1" 200 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:48011
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:06:37] "GET /convert?source=http://127.0.0.1:43897/true-on--21.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:06:37] "GET /convert?source=http://127.0.0.1:43897/true-on--21.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:06:37] "GET /datasets/d82ef438fc03901b HTTP/1.1" 200 -

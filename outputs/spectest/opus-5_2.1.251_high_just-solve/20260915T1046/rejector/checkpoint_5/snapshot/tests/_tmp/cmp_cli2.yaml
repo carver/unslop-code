@@ -1,0 +1,9 @@
+task:
+  name: "t"
+  api_url: "http://127.0.0.1:53853"
+  model: "m"
+  rpm: 600
+  api_type: "completions"
+  prompt:
+    user: "{question}"
+  output_field: "solution"

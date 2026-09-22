@@ -1,0 +1,10 @@
+task:
+  name: "t"
+  api_url: "http://127.0.0.1:1"
+  model: "m"
+  prompt:
+    user: "{question}"
+  generation:
+    scheme: "agentic"
+    max_iterations: 0
+  output_field: "answer"

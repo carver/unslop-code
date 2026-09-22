@@ -1,0 +1,13 @@
+task:
+  name: "t"
+  api_url: "http://127.0.0.1:1"
+  model: "m"
+  prompt:
+    user: "{question}"
+  generation:
+    scheme: "agentic"
+  output_field: "answer"
+  tools:
+    - name: t
+      handler:
+        type: script

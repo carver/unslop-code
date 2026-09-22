@@ -1,0 +1,125 @@
+{
+  "classes": {
+    "attribute_counts_mean": 3.3043478260869565,
+    "attribute_counts_sum": 76,
+    "count": 23,
+    "method_counts_mean": 1.0434782608695652,
+    "method_counts_sum": 24
+  },
+  "complexity": {
+    "cc_max": 20,
+    "cc_ratings": {
+      "A": 171,
+      "B": 16,
+      "C": 2,
+      "D": 0,
+      "E": 0,
+      "F": 0
+    },
+    "cc_sum": 446,
+    "mi_min": 26.65633719185267,
+    "mi_ratings": {
+      "A": 20,
+      "B": 0,
+      "C": 0
+    },
+    "mi_sum": 1072.7740987688867,
+    "num_complex": 2
+  },
+  "file_count": 20,
+  "functions": {
+    "cc_concentration": 0.3596606698844522,
+    "cc_extreme_count": 0,
+    "cc_high_count": 2,
+    "cc_max": 20,
+    "cc_mean": 3.2868217054263567,
+    "cc_normalized": 0.004935395297481309,
+    "cc_std": 2.6225994930174132,
+    "cc_sum": 424,
+    "cc_top20": 0.4386792452830189,
+    "count": 129,
+    "depth_max": 3,
+    "extreme_cc_mean": 0.0,
+    "high_cc_mean": 17.5,
+    "lines_mean": 9.736434108527131,
+    "lines_sum": 1256
+  },
+  "graph": {
+    "cyclic_dependency_mass": 0.0,
+    "dependency_entropy": 0.22639335285552137,
+    "edge_count": 69,
+    "node_count": 74,
+    "propagation_cost": 0.029618659755646058
+  },
+  "lines": {
+    "comments": 14,
+    "loc": 1385,
+    "multi_comment": 39,
+    "single_comment": 107,
+    "total_lines": 1973
+  },
+  "lint": {
+    "counts": {
+      "ANN401": 5,
+      "ARG001": 7,
+      "B905": 1,
+      "DOC201": 48,
+      "DOC402": 1,
+      "DOC501": 13,
+      "EM101": 3,
+      "EM102": 32,
+      "FBT001": 4,
+      "FURB122": 1,
+      "INP001": 20,
+      "PLR0913": 1,
+      "PLR2004": 11,
+      "PLW1510": 2,
+      "PT018": 9,
+      "PTH123": 3,
+      "RUF029": 3,
+      "S101": 100,
+      "S404": 1,
+      "S603": 3,
+      "TRY003": 35,
+      "UP035": 4
+    },
+    "errors": 307,
+    "fixable": 10
+  },
+  "source_files": [
+    "ratelimit.py",
+    "api.py",
+    "pipeline.py",
+    "cli.py",
+    "errors.py",
+    "judge.py",
+    "rejector.py",
+    "extraction.py",
+    "schemes.py",
+    "script_eval.py",
+    "results.py",
+    "evaluation.py",
+    "config.py",
+    "jobs.py",
+    "dataset.py"
+  ],
+  "symbols": {
+    "classes": 23,
+    "expressions": 1944,
+    "expressions_top_level": 44,
+    "functions": 105,
+    "globals": 37,
+    "imports": 91,
+    "max_imports": 9,
+    "methods": 24,
+    "statements": 420,
+    "total": 189,
+    "type_aliases": 0,
+    "variables": 37
+  },
+  "waste": {
+    "single_use_functions": 91,
+    "trivial_wrappers": 0,
+    "unused_variables": 49
+  }
+}

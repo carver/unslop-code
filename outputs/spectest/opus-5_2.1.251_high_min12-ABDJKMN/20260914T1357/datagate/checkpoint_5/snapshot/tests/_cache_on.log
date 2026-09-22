@@ -1,0 +1,61 @@
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:38905
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 21:44:54] "GET /convert?source=http://127.0.0.1:44849/default-on-1.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:44:54] "GET /convert?source=http://127.0.0.1:44849/default-on-1.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:44:55] "GET /convert?source=http://127.0.0.1:44849/identical-3.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:44:55] "GET /convert?source=http://127.0.0.1:44849/identical-3.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:44:56] "GET /convert?source=http://127.0.0.1:44849/presence-4.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:44:56] "GET /convert?source=http://127.0.0.1:44849/presence-4.csv&force HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:44:56] "GET /convert?source=http://127.0.0.1:44849/presence-5.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:44:56] "GET /convert?source=http://127.0.0.1:44849/presence-5.csv&force= HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:44:56] "GET /convert?source=http://127.0.0.1:44849/presence-6.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:44:56] "GET /convert?source=http://127.0.0.1:44849/presence-6.csv&force=1 HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:44:56] "GET /convert?source=http://127.0.0.1:44849/presence-7.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:44:56] "GET /convert?source=http://127.0.0.1:44849/presence-7.csv&force=0 HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:44:56] "GET /convert?source=http://127.0.0.1:44849/presence-8.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:44:56] "GET /convert?source=http://127.0.0.1:44849/presence-8.csv&force=true HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:44:56] "GET /convert?source=http://127.0.0.1:44849/presence-9.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:44:56] "GET /convert?source=http://127.0.0.1:44849/presence-9.csv&force=false HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:44:56] "GET /convert?source=http://127.0.0.1:44849/presence-10.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:44:56] "GET /convert?source=http://127.0.0.1:44849/presence-10.csv&force=x HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:44:56] "[31m[1mGET /convert?source=http://127.0.0.1:44849/dup-force-11.csv&force&force HTTP/1.1[0m" 400 -
+127.0.0.1 - - [14/Sep/2026 21:44:56] "[31m[1mGET /convert?source=http://127.0.0.1:44849/dup-force-12.csv&force=1&force=1 HTTP/1.1[0m" 400 -
+127.0.0.1 - - [14/Sep/2026 21:44:56] "[31m[1mGET /convert?source=http://127.0.0.1:44849/dup-force-13.csv&force=1&force=2 HTTP/1.1[0m" 400 -
+127.0.0.1 - - [14/Sep/2026 21:44:56] "[31m[1mGET /convert?source=http://127.0.0.1:44849/dup-force-14.csv&force=&force= HTTP/1.1[0m" 400 -
+127.0.0.1 - - [14/Sep/2026 21:44:56] "[31m[1mGET /convert?source=http://127.0.0.1:44849/dup-force-15.csv&force&force=1 HTTP/1.1[0m" 400 -
+127.0.0.1 - - [14/Sep/2026 21:44:56] "[31m[1mGET /convert?source=http://127.0.0.1:44849/dup-force-16.csv&force&force&force HTTP/1.1[0m" 400 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:36359
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 21:45:01] "GET /convert?source=http://127.0.0.1:38563/no-redownload-1.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:45:01] "GET /convert?source=http://127.0.0.1:38563/no-redownload-1.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:45:01] "GET /convert?source=http://127.0.0.1:38563/no-redownload-1.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:45:01] "GET /convert?source=http://127.0.0.1:38563/no-redownload-1.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:45:01] "GET /convert?source=http://127.0.0.1:38563/no-redownload-1.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:45:01] "GET /convert?source=http://127.0.0.1:38563/broken-remote-2.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:45:01] "GET /convert?source=http://127.0.0.1:38563/broken-remote-2.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:45:03] "GET /convert?source=http://127.0.0.1:38563/force-replace-8.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:45:03] "GET /convert?source=http://127.0.0.1:38563/force-replace-8.csv&force HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:45:03] "GET /datasets/09fb2a712ffb730c HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:45:03] "GET /convert?source=http://127.0.0.1:38563/reingest-charset-13.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:45:03] "[31m[1mGET /convert?source=http://127.0.0.1:38563/reingest-charset-13.csv&charset=utf-99&force HTTP/1.1[0m" 400 -
+127.0.0.1 - - [14/Sep/2026 21:45:03] "GET /convert?source=http://127.0.0.1:38563/hit-charset-14.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:45:03] "[31m[1mGET /convert?source=http://127.0.0.1:38563/hit-charset-14.csv&charset=not-a-charset HTTP/1.1[0m" 400 -
+127.0.0.1 - - [14/Sep/2026 21:45:03] "GET /convert?source=http://127.0.0.1:38563/keep-prior-15.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:45:03] "[33mGET /convert?source=http://127.0.0.1:38563/keep-prior-15.csv&force HTTP/1.1[0m" 404 -
+127.0.0.1 - - [14/Sep/2026 21:45:03] "GET /datasets/708e2212c22c3cbd HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:45:03] "GET /convert?source=http://127.0.0.1:38563/keep-prior-parse-16.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:45:03] "[31m[1mGET /convert?source=http://127.0.0.1:38563/keep-prior-parse-16.csv&force HTTP/1.1[0m" 400 -
+127.0.0.1 - - [14/Sep/2026 21:45:03] "GET /datasets/ce1e34f1d628e4f9 HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:45:03] "GET /convert?source=http://127.0.0.1:38563/keep-prior-usable-17.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:45:03] "[31m[1mGET /convert?source=http://127.0.0.1:38563/keep-prior-usable-17.csv&force HTTP/1.1[0m" 400 -
+127.0.0.1 - - [14/Sep/2026 21:45:03] "GET /datasets/c4da33932c1089c5?name__exact=ada HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:45:03] "GET /datasets/c4da33932c1089c5/export HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:45:03] "GET /convert?source=http://127.0.0.1:38563/entry-survives-18.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:45:03] "[33mGET /convert?source=http://127.0.0.1:38563/entry-survives-18.csv&force HTTP/1.1[0m" 404 -
+127.0.0.1 - - [14/Sep/2026 21:45:03] "GET /convert?source=http://127.0.0.1:38563/entry-survives-18.csv HTTP/1.1" 200 -

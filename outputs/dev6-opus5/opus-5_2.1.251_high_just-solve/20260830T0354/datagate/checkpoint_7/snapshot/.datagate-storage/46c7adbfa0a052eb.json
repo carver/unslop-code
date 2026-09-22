@@ -1,0 +1,1 @@
+{"source": "http://127.0.0.1:50635/dyn.csv", "columns": ["name", "age"], "rows": [["Carol", 41], ["Dave", 52], ["Erin", 19]], "enriched": false}

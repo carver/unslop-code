@@ -1,0 +1,1 @@
+Cannot read DATAGATE_CONFIG /tmp/pytest-of-agent/pytest-0/test_unreadable_config_file_ex0/absent.conf: [Errno 2] No such file or directory: '/tmp/pytest-of-agent/pytest-0/test_unreadable_config_file_ex0/absent.conf'

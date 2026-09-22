@@ -1,0 +1,118 @@
+{
+  "classes": {
+    "attribute_counts_mean": 3.0,
+    "attribute_counts_sum": 54,
+    "count": 18,
+    "method_counts_mean": 1.1111111111111112,
+    "method_counts_sum": 20
+  },
+  "complexity": {
+    "cc_max": 19,
+    "cc_ratings": {
+      "A": 109,
+      "B": 10,
+      "C": 1,
+      "D": 0,
+      "E": 0,
+      "F": 0
+    },
+    "cc_sum": 263,
+    "mi_min": 26.93736632405732,
+    "mi_ratings": {
+      "A": 15,
+      "B": 0,
+      "C": 0
+    },
+    "mi_sum": 916.7547271436766,
+    "num_complex": 1
+  },
+  "file_count": 15,
+  "functions": {
+    "cc_concentration": 0.3761594834213089,
+    "cc_extreme_count": 0,
+    "cc_high_count": 1,
+    "cc_max": 19,
+    "cc_mean": 3.1265822784810124,
+    "cc_normalized": 0.009010019959224177,
+    "cc_std": 2.637826847448069,
+    "cc_sum": 247,
+    "cc_top20": 0.4493927125506073,
+    "count": 79,
+    "depth_max": 3,
+    "extreme_cc_mean": 0.0,
+    "high_cc_mean": 19.0,
+    "lines_mean": 9.265822784810126,
+    "lines_sum": 732
+  },
+  "graph": {
+    "cyclic_dependency_mass": 0.0,
+    "dependency_entropy": 0.12240655555975705,
+    "edge_count": 33,
+    "node_count": 47,
+    "propagation_cost": 0.03330249768732655
+  },
+  "lines": {
+    "comments": 7,
+    "loc": 801,
+    "multi_comment": 19,
+    "single_comment": 64,
+    "total_lines": 1152
+  },
+  "lint": {
+    "counts": {
+      "ANN401": 6,
+      "ARG001": 4,
+      "DOC201": 20,
+      "DOC402": 1,
+      "DOC501": 4,
+      "EM101": 4,
+      "EM102": 17,
+      "FURB122": 1,
+      "INP001": 15,
+      "PLR0913": 2,
+      "PLR0917": 1,
+      "PLR2004": 7,
+      "PLW1510": 1,
+      "PT018": 7,
+      "PTH123": 3,
+      "S101": 52,
+      "S404": 1,
+      "S603": 2,
+      "TRY003": 21,
+      "UP035": 2
+    },
+    "errors": 171,
+    "fixable": 7
+  },
+  "source_files": [
+    "results.py",
+    "cli.py",
+    "config.py",
+    "evaluation.py",
+    "errors.py",
+    "pipeline.py",
+    "schemes.py",
+    "dataset.py",
+    "ratelimit.py",
+    "api.py"
+  ],
+  "symbols": {
+    "classes": 18,
+    "expressions": 1214,
+    "expressions_top_level": 32,
+    "functions": 59,
+    "globals": 23,
+    "imports": 62,
+    "max_imports": 9,
+    "methods": 20,
+    "statements": 254,
+    "total": 120,
+    "type_aliases": 0,
+    "variables": 23
+  },
+  "waste": {
+    "single_use_functions": 54,
+    "trivial_wrappers": 3,
+    "unused_variables": 36
+  }
+}

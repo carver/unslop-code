@@ -1,0 +1,99 @@
+{
+  "classes": {
+    "attribute_counts_mean": 0.0,
+    "attribute_counts_sum": 0,
+    "count": 0,
+    "method_counts_mean": 0.0,
+    "method_counts_sum": 0
+  },
+  "complexity": {
+    "cc_max": 10,
+    "cc_ratings": {
+      "A": 8,
+      "B": 4,
+      "C": 0,
+      "D": 0,
+      "E": 0,
+      "F": 0
+    },
+    "cc_sum": 48,
+    "mi_min": 43.78582636182644,
+    "mi_ratings": {
+      "A": 1,
+      "B": 0,
+      "C": 0
+    },
+    "mi_sum": 43.78582636182644,
+    "num_complex": 0
+  },
+  "file_count": 1,
+  "functions": {
+    "cc_concentration": 0.4166666666666667,
+    "cc_extreme_count": 0,
+    "cc_high_count": 0,
+    "cc_max": 10,
+    "cc_mean": 4.8,
+    "cc_normalized": 0.057983785689108225,
+    "cc_std": 3.8239014399199966,
+    "cc_sum": 48,
+    "cc_top20": 0.4166666666666667,
+    "count": 10,
+    "depth_max": 3,
+    "extreme_cc_mean": 0.0,
+    "high_cc_mean": 0.0,
+    "lines_mean": 13.2,
+    "lines_sum": 132
+  },
+  "graph": {
+    "cyclic_dependency_mass": 0.0,
+    "dependency_entropy": 0.1920619835714305,
+    "edge_count": 10,
+    "node_count": 10,
+    "propagation_cost": 0.15555555555555556
+  },
+  "lines": {
+    "comments": 5,
+    "loc": 126,
+    "multi_comment": 3,
+    "single_comment": 6,
+    "total_lines": 173
+  },
+  "lint": {
+    "counts": {
+      "BLE001": 1,
+      "DOC201": 4,
+      "EXE001": 1,
+      "PLR0124": 1,
+      "PLR0911": 1,
+      "PLR6201": 1,
+      "RET503": 1,
+      "RUF021": 1,
+      "SLF001": 3,
+      "UP031": 3
+    },
+    "errors": 17,
+    "fixable": 1
+  },
+  "source_files": [
+    "xjq.py"
+  ],
+  "symbols": {
+    "classes": 0,
+    "expressions": 142,
+    "expressions_top_level": 6,
+    "functions": 10,
+    "globals": 2,
+    "imports": 4,
+    "max_imports": 4,
+    "methods": 0,
+    "statements": 54,
+    "total": 12,
+    "type_aliases": 0,
+    "variables": 2
+  },
+  "waste": {
+    "single_use_functions": 7,
+    "trivial_wrappers": 0,
+    "unused_variables": 2
+  }
+}

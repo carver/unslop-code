@@ -1,0 +1,132 @@
+{
+  "schema_version": 1,
+  "problem_name": "rejector",
+  "problem_version": 1,
+  "checkpoint_name": "checkpoint_4",
+  "checkpoint_version": 1,
+  "duration": 115.1546540260315,
+  "entrypoint": "uv run rejector.py",
+  "tests": {
+    "checkpoint_1-Regression": {
+      "passed": [
+        "test_api_retry_on_5xx",
+        "test_cli_override_flags",
+        "test_concurrency_throughput",
+        "test_contains_evaluation",
+        "test_extract_full",
+        "test_extract_last_line",
+        "test_greedy_exact_match_last_number",
+        "test_invalid_config_exits_1[rejection_no_eval]",
+        "test_invalid_config_exits_1[rejection_zero_temp]",
+        "test_invalid_config_exits_1[sample_zero_temp]",
+        "test_missing_template_field_exits_1",
+        "test_no_evaluation_passed_is_null",
+        "test_output_order_matches_input",
+        "test_prompt_template_rendering",
+        "test_regex_evaluation",
+        "test_regex_without_pattern_exits_1_before_requests",
+        "test_rejection_all_attempts_fail",
+        "test_rejection_succeeds_after_failures",
+        "test_sample_generation",
+        "test_stdout_summary"
+      ],
+      "failed": [
+        "test_api_failure_after_max_retries"
+      ],
+      "skipped": []
+    },
+    "checkpoint_2-Regression": {
+      "passed": [
+        "test_backward_compat_single_task",
+        "test_eval_model_override",
+        "test_first_number_extract",
+        "test_input_dir_mode",
+        "test_letter_extract",
+        "test_llm_judge_fail",
+        "test_llm_judge_pass",
+        "test_missing_task_input_exits_1",
+        "test_multi_task_execution",
+        "test_script_eval_with_rejection",
+        "test_script_evaluation_pass_and_fail",
+        "test_script_evaluation_timeout",
+        "test_task_filter"
+      ],
+      "failed": [],
+      "skipped": []
+    },
+    "checkpoint_3-Regression": {
+      "passed": [
+        "test_backward_compat_no_icl_single_solution",
+        "test_cli_icl_overrides",
+        "test_cli_num_solutions_override",
+        "test_greedy_icl_capped_by_setups",
+        "test_greedy_icl_num_solutions",
+        "test_icl_file_based_examples",
+        "test_icl_inline_prompt_construction",
+        "test_icl_k_truncation",
+        "test_icl_round_robin_strategy",
+        "test_invalid_icl_file_fails_before_any_api_requests",
+        "test_list_mode_without_evaluation_uses_null_eval_meta_and_count_result",
+        "test_rejection_exhausts_max_attempts",
+        "test_rejection_icl_collects_passing",
+        "test_rejection_single_solution_without_icl_keeps_legacy_n_semantics",
+        "test_sample_num_solutions_no_icl",
+        "test_summary_multi_solution_stats"
+      ],
+      "failed": [],
+      "skipped": []
+    },
+    "checkpoint_4-Core": {
+      "passed": [
+        "test_agentic_concurrent_loops",
+        "test_agentic_echo_handler_basic_loop",
+        "test_agentic_evaluation_on_final_output",
+        "test_agentic_meta_token_aggregation",
+        "test_agentic_multiple_tool_calls_per_iteration",
+        "test_agentic_script_handler",
+        "test_agentic_static_map_handler",
+        "test_completions_agentic_tool_call_parsing",
+        "test_completions_api_sends_to_correct_endpoint"
+      ],
+      "failed": [
+        "test_agentic_max_iterations"
+      ],
+      "skipped": []
+    },
+    "checkpoint_4-Error": {
+      "passed": [
+        "test_agentic_script_handler_nonzero_exit",
+        "test_agentic_script_handler_timeout"
+      ],
+      "failed": [],
+      "skipped": []
+    },
+    "checkpoint_4-Functionality": {
+      "passed": [
+        "test_agentic_with_num_solutions",
+        "test_cli_api_type_and_template_flags",
+        "test_completions_template_formats[llama3-expected_fragments0]",
+        "test_completions_template_formats[mistral-expected_fragments1]",
+        "test_completions_template_formats[zephyr-expected_fragments2]"
+      ],
+      "failed": [],
+      "skipped": []
+    }
+  },
+  "pass_counts": {
+    "Core": 9,
+    "Functionality": 5,
+    "Regression": 49,
+    "Error": 2
+  },
+  "total_counts": {
+    "Core": 10,
+    "Functionality": 5,
+    "Regression": 50,
+    "Error": 2
+  },
+  "pytest_exit_code": 1,
+  "pytest_collected": 67,
+  "test_collection_hash": "0065781e317939badbbbe33450bec30ef9eaf37796658531d5113eba98c5f497",
+  "infrastructure_failure": false
+}

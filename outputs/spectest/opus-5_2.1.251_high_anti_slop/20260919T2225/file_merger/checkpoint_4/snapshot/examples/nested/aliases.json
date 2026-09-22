@@ -1,0 +1,8 @@
+{
+  "aliases": {
+    "smallint": "int",
+    "decimal": "float",
+    "uuid": "string",
+    "myts": "timestamp"
+  }
+}

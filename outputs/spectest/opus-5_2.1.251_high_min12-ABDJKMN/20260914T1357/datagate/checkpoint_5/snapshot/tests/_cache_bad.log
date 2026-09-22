@@ -1,0 +1,24 @@
+CACHE_ENABLED: invalid value 'maybe' (expected one of 1, true, yes, on, 0, false, no, off).
+CACHE_ENABLED: invalid value 'disabled' (expected one of 1, true, yes, on, 0, false, no, off).
+CACHE_ENABLED: invalid value 'maybe' (expected one of 1, true, yes, on, 0, false, no, off).
+CACHE_ENABLED: invalid value '2' (expected one of 1, true, yes, on, 0, false, no, off).
+CACHE_ENABLED: invalid value '-1' (expected one of 1, true, yes, on, 0, false, no, off).
+CACHE_ENABLED: invalid value 'truthy' (expected one of 1, true, yes, on, 0, false, no, off).
+CACHE_ENABLED: invalid value 'enabled' (expected one of 1, true, yes, on, 0, false, no, off).
+CACHE_ENABLED: invalid value 'disabled' (expected one of 1, true, yes, on, 0, false, no, off).
+CACHE_ENABLED: invalid value 'tru' (expected one of 1, true, yes, on, 0, false, no, off).
+CACHE_ENABLED: invalid value 'yess' (expected one of 1, true, yes, on, 0, false, no, off).
+CACHE_ENABLED: invalid value 'y' (expected one of 1, true, yes, on, 0, false, no, off).
+CACHE_ENABLED: invalid value 'n' (expected one of 1, true, yes, on, 0, false, no, off).
+CACHE_ENABLED: invalid value 't' (expected one of 1, true, yes, on, 0, false, no, off).
+CACHE_ENABLED: invalid value 'f' (expected one of 1, true, yes, on, 0, false, no, off).
+CACHE_ENABLED: invalid value 'null' (expected one of 1, true, yes, on, 0, false, no, off).
+CACHE_ENABLED: invalid value 'none' (expected one of 1, true, yes, on, 0, false, no, off).
+CACHE_ENABLED: invalid value '' (expected one of 1, true, yes, on, 0, false, no, off).
+CACHE_ENABLED: invalid value ' true ' (expected one of 1, true, yes, on, 0, false, no, off).
+CACHE_ENABLED: invalid value 'true ' (expected one of 1, true, yes, on, 0, false, no, off).
+CACHE_ENABLED: invalid value ' ' (expected one of 1, true, yes, on, 0, false, no, off).
+CACHE_ENABLED: invalid value '1 ' (expected one of 1, true, yes, on, 0, false, no, off).
+CACHE_ENABLED: invalid value 'on\n' (expected one of 1, true, yes, on, 0, false, no, off).
+CACHE_ENABLED: invalid value 'yes,no' (expected one of 1, true, yes, on, 0, false, no, off).
+CACHE_ENABLED: invalid value 'TRUE!' (expected one of 1, true, yes, on, 0, false, no, off).

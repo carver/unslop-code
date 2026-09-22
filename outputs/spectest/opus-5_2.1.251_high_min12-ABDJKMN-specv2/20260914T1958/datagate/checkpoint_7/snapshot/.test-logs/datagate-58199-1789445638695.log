@@ -1,0 +1,10 @@
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:58199
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [15/Sep/2026 04:13:59] "[33mGET /datasets/readiness-probe HTTP/1.1[0m" 404 -
+127.0.0.1 - - [15/Sep/2026 04:13:59] "GET /convert?source=http://127.0.0.1:39759/cache-off-replace.csv HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 04:13:59] "GET /datasets/977b4f9ec56260d2 HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 04:13:59] "GET /convert?source=http://127.0.0.1:39759/cache-off-replace.csv HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 04:13:59] "GET /datasets/977b4f9ec56260d2 HTTP/1.1" 200 -

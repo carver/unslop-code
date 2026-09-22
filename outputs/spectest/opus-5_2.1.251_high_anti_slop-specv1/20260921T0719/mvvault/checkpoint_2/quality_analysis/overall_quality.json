@@ -1,0 +1,116 @@
+{
+  "classes": {
+    "attribute_counts_mean": 0.8461538461538461,
+    "attribute_counts_sum": 11,
+    "count": 13,
+    "method_counts_mean": 3.6153846153846154,
+    "method_counts_sum": 47
+  },
+  "complexity": {
+    "cc_max": 7,
+    "cc_ratings": {
+      "A": 118,
+      "B": 5,
+      "C": 0,
+      "D": 0,
+      "E": 0,
+      "F": 0
+    },
+    "cc_sum": 173,
+    "mi_min": 20.46962723866152,
+    "mi_ratings": {
+      "A": 9,
+      "B": 0,
+      "C": 0
+    },
+    "mi_sum": 510.96797073420805,
+    "num_complex": 0
+  },
+  "file_count": 9,
+  "functions": {
+    "cc_concentration": 0.3386045221251214,
+    "cc_extreme_count": 0,
+    "cc_high_count": 0,
+    "cc_max": 7,
+    "cc_mean": 1.8202247191011236,
+    "cc_normalized": 0.0067487287137492896,
+    "cc_std": 1.4106880796329095,
+    "cc_sum": 162,
+    "cc_top20": 0.46296296296296297,
+    "count": 89,
+    "depth_max": 2,
+    "extreme_cc_mean": 0.0,
+    "high_cc_mean": 0.0,
+    "lines_mean": 8.44943820224719,
+    "lines_sum": 752
+  },
+  "graph": {
+    "cyclic_dependency_mass": 0.0,
+    "dependency_entropy": 0.3221161036230943,
+    "edge_count": 45,
+    "node_count": 37,
+    "propagation_cost": 0.10585585585585586
+  },
+  "lines": {
+    "comments": 10,
+    "loc": 741,
+    "multi_comment": 73,
+    "single_comment": 50,
+    "total_lines": 1070
+  },
+  "lint": {
+    "counts": {
+      "ANN401": 11,
+      "DOC201": 38,
+      "DOC501": 14,
+      "DTZ005": 3,
+      "DTZ007": 1,
+      "EM102": 22,
+      "FBT003": 4,
+      "FURB118": 2,
+      "INP001": 9,
+      "PLW1510": 1,
+      "PT009": 95,
+      "RUF005": 2,
+      "RUF015": 2,
+      "S310": 1,
+      "S404": 1,
+      "S603": 1,
+      "TRY003": 22,
+      "UP031": 1,
+      "UP035": 2,
+      "UP045": 2
+    },
+    "errors": 234,
+    "fixable": 5
+  },
+  "source_files": [
+    "history.py",
+    "mvault.py",
+    "errors.py",
+    "timestamps.py",
+    "source.py",
+    "catalogs.py",
+    "vault.py",
+    "migrations.py"
+  ],
+  "symbols": {
+    "classes": 13,
+    "expressions": 2250,
+    "expressions_top_level": 177,
+    "functions": 42,
+    "globals": 21,
+    "imports": 43,
+    "max_imports": 10,
+    "methods": 47,
+    "statements": 159,
+    "total": 123,
+    "type_aliases": 0,
+    "variables": 21
+  },
+  "waste": {
+    "single_use_functions": 34,
+    "trivial_wrappers": 0,
+    "unused_variables": 47
+  }
+}

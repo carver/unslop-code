@@ -1,0 +1,119 @@
+{
+  "classes": {
+    "attribute_counts_mean": 4.066666666666666,
+    "attribute_counts_sum": 61,
+    "count": 15,
+    "method_counts_mean": 1.2666666666666666,
+    "method_counts_sum": 19
+  },
+  "complexity": {
+    "cc_max": 11,
+    "cc_ratings": {
+      "A": 178,
+      "B": 10,
+      "C": 1,
+      "D": 0,
+      "E": 0,
+      "F": 0
+    },
+    "cc_sum": 494,
+    "mi_min": 26.326307721328682,
+    "mi_ratings": {
+      "A": 20,
+      "B": 0,
+      "C": 0
+    },
+    "mi_sum": 1258.4409492812222,
+    "num_complex": 1
+  },
+  "file_count": 20,
+  "functions": {
+    "cc_concentration": 0.2584694913689652,
+    "cc_extreme_count": 0,
+    "cc_high_count": 0,
+    "cc_max": 10,
+    "cc_mean": 2.9254658385093166,
+    "cc_normalized": 0.0016197975126329219,
+    "cc_std": 1.4939578099425026,
+    "cc_sum": 471,
+    "cc_top20": 0.3630573248407643,
+    "count": 161,
+    "depth_max": 4,
+    "extreme_cc_mean": 0.0,
+    "high_cc_mean": 0.0,
+    "lines_mean": 8.192546583850932,
+    "lines_sum": 1319
+  },
+  "graph": {
+    "cyclic_dependency_mass": 0.0,
+    "dependency_entropy": 0.13430034103483587,
+    "edge_count": 31,
+    "node_count": 36,
+    "propagation_cost": 0.05793650793650794
+  },
+  "lines": {
+    "comments": 165,
+    "loc": 1383,
+    "multi_comment": 25,
+    "single_comment": 221,
+    "total_lines": 2049
+  },
+  "lint": {
+    "counts": {
+      "B905": 1,
+      "DOC201": 27,
+      "DOC402": 1,
+      "DOC501": 8,
+      "EM101": 7,
+      "EM102": 16,
+      "ERA001": 5,
+      "EXE001": 1,
+      "FBT003": 3,
+      "INP001": 11,
+      "PERF203": 1,
+      "PLC1901": 1,
+      "PLR2004": 38,
+      "PLW1510": 4,
+      "PLW1514": 3,
+      "PT018": 1,
+      "RUF100": 1,
+      "S101": 191,
+      "S404": 3,
+      "S603": 4,
+      "TC001": 7,
+      "TC003": 3,
+      "TRY003": 23,
+      "UP037": 1
+    },
+    "errors": 361,
+    "fixable": 6
+  },
+  "source_files": [
+    "rejector_lib/inputs.py",
+    "rejector_lib/report.py",
+    "rejector_lib/runner.py",
+    "rejector_lib/api.py",
+    "rejector_lib/evaluation.py",
+    "rejector_lib/cli.py",
+    "rejector_lib/config.py"
+  ],
+  "symbols": {
+    "classes": 15,
+    "expressions": 1940,
+    "expressions_top_level": 39,
+    "functions": 142,
+    "globals": 13,
+    "imports": 69,
+    "max_imports": 11,
+    "methods": 19,
+    "statements": 408,
+    "total": 189,
+    "type_aliases": 0,
+    "variables": 13
+  },
+  "waste": {
+    "single_use_functions": 137,
+    "trivial_wrappers": 1,
+    "unused_variables": 33
+  }
+}

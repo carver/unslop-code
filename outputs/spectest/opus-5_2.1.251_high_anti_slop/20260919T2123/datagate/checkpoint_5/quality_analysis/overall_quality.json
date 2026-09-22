@@ -1,0 +1,120 @@
+{
+  "classes": {
+    "attribute_counts_mean": 3.1666666666666665,
+    "attribute_counts_sum": 19,
+    "count": 6,
+    "method_counts_mean": 1.0,
+    "method_counts_sum": 6
+  },
+  "complexity": {
+    "cc_max": 7,
+    "cc_ratings": {
+      "A": 204,
+      "B": 6,
+      "C": 0,
+      "D": 0,
+      "E": 0,
+      "F": 0
+    },
+    "cc_sum": 415,
+    "mi_min": 18.272356511826533,
+    "mi_ratings": {
+      "A": 18,
+      "B": 1,
+      "C": 0
+    },
+    "mi_sum": 1107.4079628706463,
+    "num_complex": 0
+  },
+  "file_count": 19,
+  "functions": {
+    "cc_concentration": 0.2474801693803304,
+    "cc_extreme_count": 0,
+    "cc_high_count": 0,
+    "cc_max": 7,
+    "cc_mean": 2.5555555555555554,
+    "cc_normalized": 0.001385480632624548,
+    "cc_std": 1.210718179146894,
+    "cc_sum": 414,
+    "cc_top20": 0.33816425120772947,
+    "count": 162,
+    "depth_max": 3,
+    "extreme_cc_mean": 0.0,
+    "high_cc_mean": 0.0,
+    "lines_mean": 6.185185185185185,
+    "lines_sum": 1002
+  },
+  "graph": {
+    "cyclic_dependency_mass": 0.0,
+    "dependency_entropy": 0.14238771102789566,
+    "edge_count": 45,
+    "node_count": 48,
+    "propagation_cost": 0.05673758865248227
+  },
+  "lines": {
+    "comments": 8,
+    "loc": 1087,
+    "multi_comment": 65,
+    "single_comment": 72,
+    "total_lines": 1645
+  },
+  "lint": {
+    "counts": {
+      "ARG001": 1,
+      "B905": 2,
+      "C408": 1,
+      "C901": 1,
+      "DOC201": 49,
+      "DOC402": 1,
+      "DOC501": 21,
+      "EM102": 2,
+      "FBT001": 2,
+      "FBT002": 1,
+      "INP001": 19,
+      "PERF203": 1,
+      "PIE804": 1,
+      "PLR2004": 36,
+      "PLW1510": 1,
+      "PT011": 1,
+      "S101": 135,
+      "S404": 1,
+      "S603": 1,
+      "TRY003": 2
+    },
+    "errors": 279,
+    "fixable": 2
+  },
+  "source_files": [
+    "store.py",
+    "filtering.py",
+    "app.py",
+    "csv_parsing.py",
+    "ingestion.py",
+    "fetching.py",
+    "datagate.py",
+    "caching.py",
+    "exporting.py",
+    "spreadsheets.py",
+    "errors.py",
+    "querying.py"
+  ],
+  "symbols": {
+    "classes": 6,
+    "expressions": 1328,
+    "expressions_top_level": 28,
+    "functions": 156,
+    "globals": 42,
+    "imports": 87,
+    "max_imports": 11,
+    "methods": 6,
+    "statements": 381,
+    "total": 210,
+    "type_aliases": 0,
+    "variables": 42
+  },
+  "waste": {
+    "single_use_functions": 143,
+    "trivial_wrappers": 5,
+    "unused_variables": 43
+  }
+}

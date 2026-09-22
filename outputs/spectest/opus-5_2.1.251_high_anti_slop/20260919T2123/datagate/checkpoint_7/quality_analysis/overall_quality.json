@@ -1,0 +1,121 @@
+{
+  "classes": {
+    "attribute_counts_mean": 3.7142857142857144,
+    "attribute_counts_sum": 26,
+    "count": 7,
+    "method_counts_mean": 1.2857142857142858,
+    "method_counts_sum": 9
+  },
+  "complexity": {
+    "cc_max": 8,
+    "cc_ratings": {
+      "A": 307,
+      "B": 11,
+      "C": 0,
+      "D": 0,
+      "E": 0,
+      "F": 0
+    },
+    "cc_sum": 636,
+    "mi_min": 18.272356511826533,
+    "mi_ratings": {
+      "A": 28,
+      "B": 1,
+      "C": 0
+    },
+    "mi_sum": 1653.2373368608926,
+    "num_complex": 0
+  },
+  "file_count": 29,
+  "functions": {
+    "cc_concentration": 0.25219531838611625,
+    "cc_extreme_count": 0,
+    "cc_high_count": 0,
+    "cc_max": 8,
+    "cc_mean": 2.5860655737704916,
+    "cc_normalized": 0.0010016730932809275,
+    "cc_std": 1.278490337471304,
+    "cc_sum": 631,
+    "cc_top20": 0.3438985736925515,
+    "count": 244,
+    "depth_max": 3,
+    "extreme_cc_mean": 0.0,
+    "high_cc_mean": 0.0,
+    "lines_mean": 6.204918032786885,
+    "lines_sum": 1514
+  },
+  "graph": {
+    "cyclic_dependency_mass": 0.0,
+    "dependency_entropy": 0.15614065237260735,
+    "edge_count": 59,
+    "node_count": 63,
+    "propagation_cost": 0.04505888376856119
+  },
+  "lines": {
+    "comments": 17,
+    "loc": 1617,
+    "multi_comment": 141,
+    "single_comment": 94,
+    "total_lines": 2498
+  },
+  "lint": {
+    "counts": {
+      "B905": 4,
+      "C901": 1,
+      "DOC201": 67,
+      "DOC402": 1,
+      "DOC501": 26,
+      "EM102": 6,
+      "FBT001": 5,
+      "INP001": 29,
+      "PERF203": 1,
+      "PIE804": 1,
+      "PLR2004": 64,
+      "PLW1510": 1,
+      "PT011": 3,
+      "S101": 223,
+      "S404": 1,
+      "S603": 1,
+      "TRY003": 6
+    },
+    "errors": 440,
+    "fixable": 2
+  },
+  "source_files": [
+    "enrichment.py",
+    "spreadsheets.py",
+    "limits.py",
+    "app.py",
+    "errors.py",
+    "fetching.py",
+    "datagate.py",
+    "origins.py",
+    "caching.py",
+    "csv_parsing.py",
+    "store.py",
+    "config.py",
+    "exporting.py",
+    "querying.py",
+    "ingestion.py",
+    "filtering.py"
+  ],
+  "symbols": {
+    "classes": 7,
+    "expressions": 2028,
+    "expressions_top_level": 43,
+    "functions": 235,
+    "globals": 67,
+    "imports": 123,
+    "max_imports": 15,
+    "methods": 9,
+    "statements": 549,
+    "total": 318,
+    "type_aliases": 0,
+    "variables": 67
+  },
+  "waste": {
+    "single_use_functions": 217,
+    "trivial_wrappers": 6,
+    "unused_variables": 69
+  }
+}

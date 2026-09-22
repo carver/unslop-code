@@ -1,0 +1,1 @@
+{"source": "http://127.0.0.1:41891/typed.xlsx", "columns": ["when", "at", "flag", "n"], "rows": [["2024-03-05", "08:30", true, 42], ["2024-03-05 14:02:03", "09:15:07", false, 1.25]], "enriched": false}

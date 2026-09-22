@@ -1,0 +1,2 @@
+{"problem": "Write a function add(a, b) that returns the sum of its arguments.", "test_code": "exec('''{__response__}'''); assert add(2, 3) == 5"}
+{"problem": "Write a function double(x) that returns twice its argument.", "test_code": "exec('''{__response__}'''); assert double(4) == 8"}

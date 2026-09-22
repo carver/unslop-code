@@ -1,0 +1,28 @@
+{
+  "artifacts_dir": "agent",
+  "checkpoint_path": "outputs/spectest/opus-5_2.1.251_high_anti_slop/20260920T1755/file_merger/checkpoint_1",
+  "completed": "2026-09-20T18:11:13.720630",
+  "elapsed": 940.550163,
+  "error_message": null,
+  "had_error": false,
+  "snapshot_dir": "snapshot",
+  "started": "2026-09-20T17:55:33.170467",
+  "usage": {
+    "cost": 2.777586000000001,
+    "current_tokens": {
+      "cache_read": 1875736,
+      "cache_write": 59880,
+      "input": 3780,
+      "output": 48782,
+      "reasoning": 0
+    },
+    "net_tokens": {
+      "cache_read": 1875736,
+      "cache_write": 59880,
+      "input": 3780,
+      "output": 48782,
+      "reasoning": 0
+    },
+    "steps": 30
+  }
+}

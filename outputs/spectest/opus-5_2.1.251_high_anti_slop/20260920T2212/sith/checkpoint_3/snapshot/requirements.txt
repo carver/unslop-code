@@ -1,0 +1,3 @@
+# sith itself runs on the Python 3.10+ standard library and needs no runtime
+# dependencies.  The test suite needs pytest.
+pytest>=8.0

@@ -1,0 +1,31 @@
+# Token-aware scheduling, cost accounting and structured output (part 5).
+task:
+  name: "scheduled"
+  api_url: "http://localhost:8000"
+  model: "gpt-4"
+  prompt:
+    system: "Return a JSON object with the keys 'code' and 'explanation'."
+    user: "{question}"
+  generation:
+    scheme: "rejection"
+    temperature: 0.7
+    n: 3
+    max_tokens: 512
+  rate_limits:
+    rpm: 100
+    tpm: 50000
+    max_concurrent: 10
+  cost:
+    prompt_cost_per_1k: 0.01
+    completion_cost_per_1k: 0.03
+    budget: 50.0
+  output_schema:
+    type: "object"
+    required: ["code", "explanation"]
+    properties:
+      code:
+        type: "string"
+        minLength: 1
+      explanation:
+        type: "string"
+  output_field: "solution"

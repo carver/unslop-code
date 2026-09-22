@@ -1,0 +1,1 @@
+datagate: cannot read DATAGATE_CONFIG file '/tmp/pytest-of-agent/pytest-2/test_missing_config_file_is_a_0/absent.conf': No such file or directory

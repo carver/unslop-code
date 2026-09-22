@@ -1,0 +1,11 @@
+# merge_files.py runs on the Python standard library alone -- CSV, TSV, JSON
+# Lines, gzip and Parquet (including snappy, thrift metadata, dictionary/RLE/
+# delta/byte-stream-split page decoding) are all handled in-process.
+#
+# Optional accelerators.  None are required; each is used only if it happens to
+# be importable, to widen Parquet codec support:
+#
+#   pyarrow      # fallback reader for LZO/BROTLI/LZ4/ZSTD compressed Parquet
+#   zstandard    # ZSTD compressed Parquet without pyarrow
+#   lz4          # LZ4 compressed Parquet without pyarrow
+#   brotli       # BROTLI compressed Parquet without pyarrow

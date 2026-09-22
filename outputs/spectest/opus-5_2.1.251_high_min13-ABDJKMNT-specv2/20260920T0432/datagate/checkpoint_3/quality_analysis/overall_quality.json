@@ -1,0 +1,114 @@
+{
+  "classes": {
+    "attribute_counts_mean": 2.4444444444444446,
+    "attribute_counts_sum": 22,
+    "count": 9,
+    "method_counts_mean": 1.4444444444444444,
+    "method_counts_sum": 13
+  },
+  "complexity": {
+    "cc_max": 8,
+    "cc_ratings": {
+      "A": 229,
+      "B": 6,
+      "C": 0,
+      "D": 0,
+      "E": 0,
+      "F": 0
+    },
+    "cc_sum": 490,
+    "mi_min": 42.05368535860403,
+    "mi_ratings": {
+      "A": 24,
+      "B": 0,
+      "C": 0
+    },
+    "mi_sum": 1716.3282827338132,
+    "num_complex": 0
+  },
+  "file_count": 24,
+  "functions": {
+    "cc_concentration": 0.24508703593670914,
+    "cc_extreme_count": 0,
+    "cc_high_count": 0,
+    "cc_max": 8,
+    "cc_mean": 2.5989304812834226,
+    "cc_normalized": 0.0012212838726794598,
+    "cc_std": 1.2420062379638699,
+    "cc_sum": 486,
+    "cc_top20": 0.3477366255144033,
+    "count": 187,
+    "depth_max": 2,
+    "extreme_cc_mean": 0.0,
+    "high_cc_mean": 0.0,
+    "lines_mean": 5.620320855614973,
+    "lines_sum": 1051
+  },
+  "graph": {
+    "cyclic_dependency_mass": 0.0,
+    "dependency_entropy": 0.14197526344748845,
+    "edge_count": 36,
+    "node_count": 42,
+    "propagation_cost": 0.06097560975609756
+  },
+  "lines": {
+    "comments": 287,
+    "loc": 1002,
+    "multi_comment": 77,
+    "single_comment": 336,
+    "total_lines": 1869
+  },
+  "lint": {
+    "counts": {
+      "ARG001": 2,
+      "B905": 1,
+      "DOC201": 33,
+      "DOC501": 13,
+      "ERA001": 106,
+      "FBT001": 1,
+      "FURB152": 1,
+      "INP001": 13,
+      "PLC0415": 2,
+      "PLR2004": 46,
+      "PT018": 5,
+      "S101": 180,
+      "S104": 4,
+      "UP012": 1,
+      "UP035": 1
+    },
+    "errors": 409,
+    "fixable": 3
+  },
+  "source_files": [
+    "gateway/sourcing.py",
+    "gateway/budget.py",
+    "datagate.py",
+    "gateway/filtering.py",
+    "gateway/errors.py",
+    "gateway/store.py",
+    "gateway/controls.py",
+    "gateway/tabular.py",
+    "gateway/app.py",
+    "gateway/ingestion.py",
+    "gateway/decoding.py"
+  ],
+  "symbols": {
+    "classes": 9,
+    "expressions": 1516,
+    "expressions_top_level": 39,
+    "functions": 174,
+    "globals": 39,
+    "imports": 49,
+    "max_imports": 9,
+    "methods": 13,
+    "statements": 414,
+    "total": 235,
+    "type_aliases": 0,
+    "variables": 39
+  },
+  "waste": {
+    "single_use_functions": 167,
+    "trivial_wrappers": 2,
+    "unused_variables": 42
+  }
+}

@@ -1,0 +1,114 @@
+{
+  "classes": {
+    "attribute_counts_mean": 2.6666666666666665,
+    "attribute_counts_sum": 16,
+    "count": 6,
+    "method_counts_mean": 1.1666666666666667,
+    "method_counts_sum": 7
+  },
+  "complexity": {
+    "cc_max": 6,
+    "cc_ratings": {
+      "A": 232,
+      "B": 2,
+      "C": 0,
+      "D": 0,
+      "E": 0,
+      "F": 0
+    },
+    "cc_sum": 431,
+    "mi_min": 33.49696068603239,
+    "mi_ratings": {
+      "A": 24,
+      "B": 0,
+      "C": 0
+    },
+    "mi_sum": 1522.165180204977,
+    "num_complex": 0
+  },
+  "file_count": 24,
+  "functions": {
+    "cc_concentration": 0.22596440644263274,
+    "cc_extreme_count": 0,
+    "cc_high_count": 0,
+    "cc_max": 6,
+    "cc_mean": 2.276595744680851,
+    "cc_normalized": 0.0009967477252059,
+    "cc_std": 0.9855019114755194,
+    "cc_sum": 428,
+    "cc_top20": 0.3247663551401869,
+    "count": 188,
+    "depth_max": 3,
+    "extreme_cc_mean": 0.0,
+    "high_cc_mean": 0.0,
+    "lines_mean": 5.531914893617022,
+    "lines_sum": 1040
+  },
+  "graph": {
+    "cyclic_dependency_mass": 0.0,
+    "dependency_entropy": 0.12897878665945153,
+    "edge_count": 44,
+    "node_count": 53,
+    "propagation_cost": 0.04354136429608128
+  },
+  "lines": {
+    "comments": 16,
+    "loc": 948,
+    "multi_comment": 85,
+    "single_comment": 100,
+    "total_lines": 1612
+  },
+  "lint": {
+    "counts": {
+      "ARG001": 1,
+      "B905": 1,
+      "C901": 1,
+      "DOC201": 69,
+      "DOC402": 1,
+      "DOC501": 17,
+      "EM101": 5,
+      "EM102": 18,
+      "INP001": 11,
+      "PLR2004": 45,
+      "S101": 137,
+      "TRY003": 23,
+      "UP012": 1
+    },
+    "errors": 330,
+    "fixable": 1
+  },
+  "source_files": [
+    "gateway/parsing.py",
+    "gateway/results.py",
+    "gateway/spreadsheets.py",
+    "gateway/app.py",
+    "gateway/errors.py",
+    "gateway/values.py",
+    "gateway/export.py",
+    "gateway/ingestion.py",
+    "gateway/store.py",
+    "gateway/filters.py",
+    "gateway/query.py",
+    "datagate.py",
+    "gateway/fetching.py"
+  ],
+  "symbols": {
+    "classes": 6,
+    "expressions": 1278,
+    "expressions_top_level": 17,
+    "functions": 181,
+    "globals": 40,
+    "imports": 81,
+    "max_imports": 12,
+    "methods": 7,
+    "statements": 370,
+    "total": 234,
+    "type_aliases": 0,
+    "variables": 40
+  },
+  "waste": {
+    "single_use_functions": 166,
+    "trivial_wrappers": 0,
+    "unused_variables": 45
+  }
+}

@@ -1,0 +1,2 @@
+{"question": "What is 6 * 7? Run `print(6 * 7)` to find out.", "answer": "42"}
+{"question": "How many digits does 2 ** 64 have? Run `print(len(str(2 ** 64)))`.", "answer": "20"}

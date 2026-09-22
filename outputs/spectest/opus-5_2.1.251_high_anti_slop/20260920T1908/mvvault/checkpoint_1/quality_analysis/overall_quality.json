@@ -1,0 +1,103 @@
+{
+  "classes": {
+    "attribute_counts_mean": 0.0,
+    "attribute_counts_sum": 0,
+    "count": 2,
+    "method_counts_mean": 0.0,
+    "method_counts_sum": 0
+  },
+  "complexity": {
+    "cc_max": 7,
+    "cc_ratings": {
+      "A": 33,
+      "B": 2,
+      "C": 0,
+      "D": 0,
+      "E": 0,
+      "F": 0
+    },
+    "cc_sum": 62,
+    "mi_min": 47.090932141386276,
+    "mi_ratings": {
+      "A": 8,
+      "B": 0,
+      "C": 0
+    },
+    "mi_sum": 611.9312705100365,
+    "num_complex": 0
+  },
+  "file_count": 8,
+  "functions": {
+    "cc_concentration": 0.3077956989247312,
+    "cc_extreme_count": 0,
+    "cc_high_count": 0,
+    "cc_max": 7,
+    "cc_mean": 2.5833333333333335,
+    "cc_normalized": 0.015699226349364333,
+    "cc_std": 1.5857152183236398,
+    "cc_sum": 62,
+    "cc_top20": 0.4032258064516129,
+    "count": 24,
+    "depth_max": 2,
+    "extreme_cc_mean": 0.0,
+    "high_cc_mean": 0.0,
+    "lines_mean": 8.416666666666666,
+    "lines_sum": 202
+  },
+  "graph": {
+    "cyclic_dependency_mass": 0.0,
+    "dependency_entropy": 0.3299289930856037,
+    "edge_count": 26,
+    "node_count": 24,
+    "propagation_cost": 0.125
+  },
+  "lines": {
+    "comments": 1,
+    "loc": 191,
+    "multi_comment": 37,
+    "single_comment": 25,
+    "total_lines": 334
+  },
+  "lint": {
+    "counts": {
+      "DOC201": 15,
+      "DOC501": 6,
+      "DTZ005": 1,
+      "DTZ007": 1,
+      "EM102": 14,
+      "EXE001": 1,
+      "FBT003": 1,
+      "FURB118": 2,
+      "TRY003": 14
+    },
+    "errors": 55,
+    "fixable": 0
+  },
+  "source_files": [
+    "vault/cli.py",
+    "vault/timestamps.py",
+    "vault/source.py",
+    "vault/sync.py",
+    "vault/history.py",
+    "vault/catalog.py"
+  ],
+  "symbols": {
+    "classes": 2,
+    "expressions": 192,
+    "expressions_top_level": 13,
+    "functions": 24,
+    "globals": 9,
+    "imports": 20,
+    "max_imports": 7,
+    "methods": 0,
+    "statements": 72,
+    "total": 35,
+    "type_aliases": 0,
+    "variables": 9
+  },
+  "waste": {
+    "single_use_functions": 23,
+    "trivial_wrappers": 0,
+    "unused_variables": 10
+  }
+}

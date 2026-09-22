@@ -1,0 +1,28 @@
+{
+  "artifacts_dir": "agent",
+  "checkpoint_path": "outputs/dev6-opus5/opus-5_2.1.251_high_just-solve/20260830T0354/rejector/checkpoint_1",
+  "completed": "2026-08-30T07:51:35.046687",
+  "elapsed": 1357.25176,
+  "error_message": null,
+  "had_error": false,
+  "snapshot_dir": "snapshot",
+  "started": "2026-08-30T07:28:57.794927",
+  "usage": {
+    "cost": 4.1781345,
+    "current_tokens": {
+      "cache_read": 3202469,
+      "cache_write": 82092,
+      "input": 4612,
+      "output": 69173,
+      "reasoning": 0
+    },
+    "net_tokens": {
+      "cache_read": 3202469,
+      "cache_write": 82092,
+      "input": 4612,
+      "output": 69173,
+      "reasoning": 0
+    },
+    "steps": 41
+  }
+}

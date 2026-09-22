@@ -1,0 +1,1335 @@
+#!/usr/bin/env python3
+"""End-to-end test-suite for rejector.py against the mock server."""
+import json
+import os
+import shutil
+import socket
+import subprocess
+import sys
+import tempfile
+import time
+import urllib.request
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+PY = os.path.join(ROOT, ".venv", "bin", "python")
+CLI = os.path.join(ROOT, "rejector.py")
+MOCK = os.path.join(ROOT, "tests", "mock_server.py")
+
+FAILURES = []
+PASSES = []
+
+
+def check(name, cond, detail=""):
+    if cond:
+        PASSES.append(name)
+        print("  PASS  %s" % name)
+    else:
+        FAILURES.append((name, detail))
+        print("  FAIL  %s %s" % (name, detail))
+
+
+def free_port():
+    s = socket.socket()
+    s.bind(("127.0.0.1", 0))
+    port = s.getsockname()[1]
+    s.close()
+    return port
+
+
+class Server:
+    def __init__(self, **kwargs):
+        self.port = free_port()
+        args = [PY, MOCK, "--port", str(self.port)]
+        for key, value in kwargs.items():
+            flag = "--" + key.replace("_", "-")
+            if value is True:
+                args.append(flag)
+            elif value is not False and value is not None:
+                args += [flag, str(value)]
+        self.proc = subprocess.Popen(args, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        self.url = "http://127.0.0.1:%d" % self.port
+        deadline = time.time() + 20
+        while time.time() < deadline:
+            try:
+                urllib.request.urlopen(self.url + "/stats", timeout=1).read()
+                return
+            except Exception:
+                time.sleep(0.1)
+        raise RuntimeError("mock server did not start")
+
+    def stats(self):
+        return json.loads(urllib.request.urlopen(self.url + "/stats", timeout=5).read())
+
+    def close(self):
+        self.proc.terminate()
+        try:
+            self.proc.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            self.proc.kill()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        self.close()
+
+
+TMP = tempfile.mkdtemp(prefix="rejector-tests-")
+
+
+def write(name, text):
+    path = os.path.join(TMP, name)
+    with open(path, "w", encoding="utf-8") as fh:
+        fh.write(text)
+    return path
+
+
+def write_jsonl(name, rows):
+    return write(name, "".join(json.dumps(r) + "\n" for r in rows))
+
+
+def run_cli(config, inp, out=None, extra=()):
+    out = out or os.path.join(TMP, "out-%d.jsonl" % time.time_ns())
+    cmd = [PY, CLI, "run", "--config", config, "--input", inp, "--output", out] + list(extra)
+    proc = subprocess.run(cmd, capture_output=True, text=True)
+    rows = []
+    if os.path.exists(out):
+        with open(out, encoding="utf-8") as fh:
+            rows = [json.loads(line) for line in fh if line.strip()]
+    summary = None
+    if proc.stdout.strip():
+        try:
+            summary = json.loads(proc.stdout.strip().splitlines()[-1])
+        except ValueError:
+            summary = None
+    return proc, rows, summary, out
+
+
+def cfg_yaml(url, **kw):
+    scheme = kw.get("scheme", "greedy")
+    lines = [
+        "task:",
+        '  name: "t"',
+        '  api_url: "%s"' % url,
+        '  model: "%s"' % kw.get("model", "gpt-4"),
+        "  rpm: %s" % kw.get("rpm", 60),
+        "  prompt:",
+        '    system: "Solve it."',
+        '    user: "%s"' % kw.get("user_prompt", "{question}"),
+        "  generation:",
+        '    scheme: "%s"' % scheme,
+        "    temperature: %s" % kw.get("temperature", 0.0),
+        "    max_tokens: %s" % kw.get("max_tokens", 256),
+        "    n: %s" % kw.get("n", 1),
+    ]
+    if kw.get("evaluation", True):
+        lines += [
+            "  evaluation:",
+            '    type: "%s"' % kw.get("eval_type", "exact_match"),
+        ]
+        if kw.get("answer_field", "answer") is not None:
+            lines.append('    answer_field: "%s"' % kw.get("answer_field", "answer"))
+        if kw.get("pattern"):
+            lines.append('    pattern: "%s"' % kw["pattern"])
+        if kw.get("extract", "last_number"):
+            lines.append('    extract: "%s"' % kw.get("extract", "last_number"))
+    lines.append('  output_field: "%s"' % kw.get("output_field", "solution"))
+    return "\n".join(lines) + "\n"
+
+
+ROWS10 = [{"question": "What is %d?" % i, "answer": "42" if i % 2 == 0 else "7"}
+          for i in range(10)]
+
+
+def test_greedy_basic():
+    print("\n[greedy basic]")
+    with Server(workers=4, delay=0.2) as srv:
+        cfg = write("greedy.yaml", cfg_yaml(srv.url))
+        inp = write_jsonl("d10.jsonl", ROWS10)
+        proc, rows, summary, _ = run_cli(cfg, inp)
+        check("exit code 0", proc.returncode == 0, proc.stderr)
+        check("row count", len(rows) == 10, str(len(rows)))
+        check("order preserved", [r["input"] for r in rows] == ROWS10)
+        r0 = rows[0]
+        check("output field name", r0["output"] == {"solution": "Let me solve it.\nThe result is 42\n#### 42"}, json.dumps(r0["output"]))
+        check("passed true", r0["result"]["passed"] is True)
+        check("extracted", r0["result"]["extracted_answer"] == "42")
+        check("attempts 1", r0["result"]["attempts"] == 1)
+        check("meta is dict", isinstance(r0["meta"], dict))
+        check("meta keys", set(r0["meta"]) == {"model", "prompt_tokens", "completion_tokens",
+                                              "total_tokens", "latency_ms", "finish_reason"},
+              str(sorted(r0["meta"])))
+        check("meta model", r0["meta"]["model"] == "gpt-4")
+        check("meta latency int", isinstance(r0["meta"]["latency_ms"], int))
+        check("meta finish_reason", r0["meta"]["finish_reason"] == "stop")
+        check("row keys", list(r0) == ["input", "output", "result", "meta"], str(list(r0)))
+        check("result keys", list(r0["result"]) == ["passed", "extracted_answer", "attempts"])
+        check("failing row passed=false", rows[1]["result"]["passed"] is False)
+        check("failing row keeps output", rows[1]["output"] is not None)
+        check("summary keys", list(summary) == ["total", "passed", "failed",
+                                                "total_prompt_tokens", "total_completion_tokens",
+                                                "total_api_calls", "elapsed_seconds",
+                                                "throughput_rpm"], str(list(summary)))
+        check("summary total", summary["total"] == 10)
+        check("summary passed", summary["passed"] == 5, str(summary))
+        check("summary failed", summary["failed"] == 5, str(summary))
+        check("summary tokens", summary["total_prompt_tokens"] == 100 and
+              summary["total_completion_tokens"] == 50, str(summary))
+        check("summary api calls", summary["total_api_calls"] == 10, str(summary))
+        payload = srv.stats()["payloads"][0]
+        check("payload keys", set(payload) == {"model", "messages", "temperature", "max_tokens"},
+              str(sorted(payload)))
+        check("payload temperature 0", payload["temperature"] == 0.0)
+        check("payload max_tokens", payload["max_tokens"] == 256)
+        check("payload messages", payload["messages"][0] == {"role": "system", "content": "Solve it."}
+              and payload["messages"][1]["role"] == "user")
+        check("user prompt rendered", payload["messages"][1]["content"].startswith("What is "))
+
+
+def test_greedy_forces_temperature():
+    print("\n[greedy forces temperature 0]")
+    with Server(workers=4, delay=0.05) as srv:
+        cfg = write("greedy_t.yaml", cfg_yaml(srv.url, temperature=0.9))
+        inp = write_jsonl("d1.jsonl", ROWS10[:1])
+        proc, rows, summary, _ = run_cli(cfg, inp)
+        check("exit 0", proc.returncode == 0, proc.stderr)
+        check("temperature forced to 0.0", srv.stats()["payloads"][0]["temperature"] == 0.0)
+
+
+def test_no_evaluation():
+    print("\n[no evaluation configured]")
+    with Server(workers=4, delay=0.05) as srv:
+        cfg = write("noeval.yaml", cfg_yaml(srv.url, evaluation=False))
+        inp = write_jsonl("d10b.jsonl", ROWS10)
+        proc, rows, summary, _ = run_cli(cfg, inp)
+        check("exit 0", proc.returncode == 0, proc.stderr)
+        check("passed is null", all(r["result"]["passed"] is None for r in rows))
+        check("extracted is null", all(r["result"]["extracted_answer"] is None for r in rows))
+        check("summary counts all passed", summary["passed"] == 10 and summary["failed"] == 0,
+              str(summary))
+
+
+def test_eval_variants():
+    print("\n[evaluation variants]")
+    with Server(workers=4, delay=0.05) as srv:
+        rows_in = [{"question": "q", "answer": "The result is 42"}]
+        inp = write_jsonl("dv.jsonl", rows_in)
+        cfg = write("contains.yaml", cfg_yaml(srv.url, eval_type="contains", extract="last_line"))
+        proc, rows, summary, _ = run_cli(cfg, inp)
+        check("contains passes", rows[0]["result"]["passed"] is True, json.dumps(rows[0]["result"]))
+        check("contains extracted uses extract method",
+              rows[0]["result"]["extracted_answer"] == "#### 42", str(rows[0]["result"]))
+
+        cfg = write("contains_fail.yaml", cfg_yaml(srv.url, eval_type="contains", extract="full"))
+        proc, rows, _, _ = run_cli(cfg, write_jsonl("dv2.jsonl", [{"question": "q", "answer": "nope"}]))
+        check("contains fails", rows[0]["result"]["passed"] is False)
+        check("full extract", rows[0]["result"]["extracted_answer"] ==
+              "Let me solve it.\nThe result is 42\n#### 42")
+
+        cfg = write("regex.yaml", cfg_yaml(srv.url, eval_type="regex", answer_field=None,
+                                           pattern="####\\\\s*42", extract="last_number"))
+        proc, rows, _, _ = run_cli(cfg, write_jsonl("dv3.jsonl", [{"question": "q"}]))
+        check("regex passes without answer_field", rows[0]["result"]["passed"] is True,
+              proc.stderr + json.dumps(rows[0]["result"]) if rows else proc.stderr)
+
+        cfg = write("regex_fail.yaml", cfg_yaml(srv.url, eval_type="regex", answer_field=None,
+                                                pattern="#### 999", extract="full"))
+        proc, rows, _, _ = run_cli(cfg, write_jsonl("dv4.jsonl", [{"question": "q"}]))
+        check("regex fails", rows[0]["result"]["passed"] is False)
+
+
+def test_extract_last_number_forms():
+    print("\n[extract last_number]")
+    sys.path.insert(0, ROOT)
+    import rejector
+    cases = [
+        ("2 + 3 = 5\n#### 5", "5"),
+        ("The answer is 8.", "8"),
+        ("value: -12.5 done", "-12.5"),
+        ("total 1,234 items", "1234"),
+        ("no digits here", None),
+        ("first 1 then 2 then 3", "3"),
+    ]
+    for text, expected in cases:
+        got = rejector.extract_answer(text, "last_number")
+        check("last_number %r" % text[:22], got == expected, "got %r want %r" % (got, expected))
+    check("last_line", rejector.extract_answer("a\nb\n\n  \n", "last_line") == "b")
+    check("full", rejector.extract_answer("  hi  ", "full") == "hi")
+    check("numeric match 8 vs 8.0", rejector.values_match("8", "8.0"))
+    check("string match", rejector.values_match("abc", "abc"))
+    check("mismatch", not rejector.values_match("8", "9"))
+    check("none mismatch", not rejector.values_match(None, "9"))
+
+
+def test_rejection_success_on_third():
+    print("\n[rejection: passes on 3rd attempt]")
+    with Server(workers=8, delay=0.05, wrong_attempts=2) as srv:
+        cfg = write("rej.yaml", cfg_yaml(srv.url, scheme="rejection", temperature=0.8, n=5))
+        inp = write_jsonl("rej.jsonl", [{"question": "q1", "answer": "42"}])
+        proc, rows, summary, _ = run_cli(cfg, inp)
+        check("exit 0", proc.returncode == 0, proc.stderr)
+        r = rows[0]
+        check("attempts 3", r["result"]["attempts"] == 3, json.dumps(r["result"]))
+        check("passed true", r["result"]["passed"] is True)
+        check("meta is list of 3", isinstance(r["meta"], list) and len(r["meta"]) == 3,
+              str(r["meta"]))
+        check("kept passing response", "#### 42" in r["output"]["solution"])
+        check("api calls 3", summary["total_api_calls"] == 3, str(summary))
+        check("summary passed 1", summary["passed"] == 1 and summary["failed"] == 0)
+
+
+def test_rejection_first_try():
+    print("\n[rejection: passes first attempt -> single meta dict]")
+    with Server(workers=8, delay=0.05) as srv:
+        cfg = write("rej1.yaml", cfg_yaml(srv.url, scheme="rejection", temperature=0.8, n=5))
+        inp = write_jsonl("rej1.jsonl", [{"question": "q1", "answer": "42"}])
+        proc, rows, summary, _ = run_cli(cfg, inp)
+        check("attempts 1", rows[0]["result"]["attempts"] == 1)
+        check("meta is dict", isinstance(rows[0]["meta"], dict), str(type(rows[0]["meta"])))
+        check("api calls 1", summary["total_api_calls"] == 1)
+
+
+def test_rejection_exhausted():
+    print("\n[rejection: all attempts fail]")
+    with Server(workers=8, delay=0.05, wrong_attempts=99) as srv:
+        cfg = write("rej2.yaml", cfg_yaml(srv.url, scheme="rejection", temperature=0.8, n=5))
+        inp = write_jsonl("rej2.jsonl", [{"question": "q1", "answer": "42"}])
+        proc, rows, summary, _ = run_cli(cfg, inp)
+        r = rows[0]
+        check("output null", r["output"] is None, json.dumps(r["output"]))
+        check("passed false", r["result"]["passed"] is False)
+        check("extracted null", r["result"]["extracted_answer"] is None)
+        check("attempts n", r["result"]["attempts"] == 5, str(r["result"]))
+        check("meta list of 5", isinstance(r["meta"], list) and len(r["meta"]) == 5)
+        check("api calls 5", summary["total_api_calls"] == 5)
+        check("summary failed", summary["failed"] == 1 and summary["passed"] == 0)
+
+
+def test_rejection_temperature_sent():
+    print("\n[rejection sends configured temperature]")
+    with Server(workers=8, delay=0.05) as srv:
+        cfg = write("rej3.yaml", cfg_yaml(srv.url, scheme="rejection", temperature=0.7, n=3))
+        inp = write_jsonl("rej3.jsonl", [{"question": "q1", "answer": "42"}])
+        proc, rows, summary, _ = run_cli(cfg, inp)
+        payload = srv.stats()["payloads"][0]
+        check("temperature 0.7", payload["temperature"] == 0.7, str(payload))
+        check("no n in payload", "n" not in payload, str(payload))
+
+
+def test_retries_5xx_permanent():
+    print("\n[5xx: exhausted retries]")
+    with Server(workers=8, delay=0.0, always_500=True) as srv:
+        cfg = write("r500.yaml", cfg_yaml(srv.url))
+        inp = write_jsonl("r500.jsonl", [{"question": "q1", "answer": "42"}])
+        proc, rows, summary, _ = run_cli(cfg, inp)
+        check("exit 0", proc.returncode == 0, proc.stderr)
+        r = rows[0]
+        check("output null", r["output"] is None)
+        check("attempts stays 1", r["result"]["attempts"] == 1, str(r["result"]))
+        check("api calls = 4 (1 + 3 retries)", summary["total_api_calls"] == 4, str(summary))
+        check("counted failed", summary["failed"] == 1 and summary["passed"] == 0, str(summary))
+        check("meta is dict", isinstance(r["meta"], dict))
+
+
+def test_retries_5xx_transient():
+    print("\n[5xx: transient then success]")
+    with Server(workers=8, delay=0.0, fail_prompt_calls=2) as srv:
+        cfg = write("r500b.yaml", cfg_yaml(srv.url))
+        inp = write_jsonl("r500b.jsonl", [{"question": "q1", "answer": "42"}])
+        proc, rows, summary, _ = run_cli(cfg, inp)
+        r = rows[0]
+        check("succeeded after retries", r["output"] is not None, json.dumps(r))
+        check("attempts still 1", r["result"]["attempts"] == 1)
+        check("api calls 3", summary["total_api_calls"] == 3, str(summary))
+        check("passed", summary["passed"] == 1)
+
+
+def test_4xx_no_retry():
+    print("\n[4xx is not retried]")
+    with Server(workers=8, delay=0.0, always_400=True) as srv:
+        cfg = write("r400.yaml", cfg_yaml(srv.url))
+        inp = write_jsonl("r400.jsonl", [{"question": "q1", "answer": "42"}])
+        proc, rows, summary, _ = run_cli(cfg, inp)
+        check("exit 0", proc.returncode == 0, proc.stderr)
+        check("output null", rows[0]["output"] is None)
+        check("api calls 1", summary["total_api_calls"] == 1, str(summary))
+        check("failed 1", summary["failed"] == 1)
+
+
+def test_rejection_api_failure():
+    print("\n[rejection with hard API failure]")
+    with Server(workers=8, delay=0.0, always_500=True) as srv:
+        cfg = write("rej4.yaml", cfg_yaml(srv.url, scheme="rejection", temperature=0.8, n=3))
+        inp = write_jsonl("rej4.jsonl", [{"question": "q1", "answer": "42"}])
+        proc, rows, summary, _ = run_cli(cfg, inp)
+        check("exit 0", proc.returncode == 0, proc.stderr)
+        check("output null", rows[0]["output"] is None)
+        check("passed false", rows[0]["result"]["passed"] is False)
+        check("api calls 4", summary["total_api_calls"] == 4, str(summary))
+        check("failed", summary["failed"] == 1)
+
+
+def test_missing_prompt_field():
+    print("\n[missing template field]")
+    with Server(workers=8, delay=0.0) as srv:
+        cfg = write("mf.yaml", cfg_yaml(srv.url))
+        inp = write_jsonl("mf.jsonl", [{"text": "hello"}])
+        out = os.path.join(TMP, "mf-out.jsonl")
+        proc, rows, summary, _ = run_cli(cfg, inp, out)
+        check("exit 1", proc.returncode == 1, str(proc.returncode))
+        check("stderr names row 0", "0" in proc.stderr and "question" in proc.stderr, proc.stderr)
+        check("nothing on stdout", proc.stdout.strip() == "", proc.stdout)
+        check("no api calls", srv.stats()["calls"] == 0)
+
+
+def test_missing_answer_field():
+    print("\n[missing answer field]")
+    with Server(workers=8, delay=0.0) as srv:
+        cfg = write("ma.yaml", cfg_yaml(srv.url))
+        inp = write_jsonl("ma.jsonl", [{"question": "q"}])
+        proc, rows, summary, _ = run_cli(cfg, inp)
+        check("exit 1", proc.returncode == 1, str(proc.returncode))
+        check("stderr names answer", "answer" in proc.stderr, proc.stderr)
+
+
+def test_invalid_configs():
+    print("\n[invalid configuration]")
+    url = "http://127.0.0.1:9"
+    inp = write_jsonl("ic.jsonl", [{"question": "q", "answer": "42"}])
+    cases = {
+        "sample requires temperature > 0":
+            cfg_yaml(url, scheme="sample", temperature=0.0),
+        "rejection requires temperature > 0":
+            cfg_yaml(url, scheme="rejection", temperature=0.0, n=3),
+        "rejection requires evaluation":
+            cfg_yaml(url, scheme="rejection", temperature=0.7, n=3, evaluation=False),
+        "unknown scheme":
+            cfg_yaml(url, scheme="beam").replace('"beam"', '"beam"'),
+        "unknown evaluation type":
+            cfg_yaml(url, eval_type="fuzzy"),
+        "exact_match needs answer_field":
+            cfg_yaml(url, answer_field=None),
+        "regex needs pattern":
+            cfg_yaml(url, eval_type="regex", answer_field=None),
+        "unknown extract":
+            cfg_yaml(url, extract="bogus_extract"),
+        "missing api_url":
+            "task:\n  model: \"m\"\n  prompt:\n    user: \"{question}\"\n",
+        "missing model":
+            "task:\n  api_url: \"%s\"\n  prompt:\n    user: \"{question}\"\n" % url,
+        "missing prompt":
+            "task:\n  api_url: \"%s\"\n  model: \"m\"\n" % url,
+        "bad rpm":
+            cfg_yaml(url).replace("rpm: 60", "rpm: 0"),
+        "empty config": "",
+    }
+    for name, text in cases.items():
+        cfg = write("bad-%s.yaml" % abs(hash(name)), text)
+        proc, rows, summary, _ = run_cli(cfg, inp)
+        check("exit 1: %s" % name, proc.returncode == 1, "rc=%s out=%s err=%s"
+              % (proc.returncode, proc.stdout[:120], proc.stderr[:160]))
+        check("stderr message: %s" % name, proc.stderr.strip() != "", proc.stderr)
+
+
+def test_missing_files():
+    print("\n[missing files]")
+    inp = write_jsonl("mfiles.jsonl", [{"question": "q", "answer": "42"}])
+    cfg = write("mfiles.yaml", cfg_yaml("http://127.0.0.1:9"))
+    proc, _, _, _ = run_cli(os.path.join(TMP, "nope.yaml"), inp)
+    check("missing config exit 1", proc.returncode == 1, proc.stderr)
+    proc, _, _, _ = run_cli(cfg, os.path.join(TMP, "nope.jsonl"))
+    check("missing input exit 1", proc.returncode == 1, proc.stderr)
+    bad = write("bad.jsonl", '{"question": "q"}\nnot json\n')
+    proc, _, _, _ = run_cli(cfg, bad)
+    check("bad jsonl exit 1", proc.returncode == 1, proc.stderr)
+    proc = subprocess.run([PY, CLI, "run", "--config", cfg, "--input", inp],
+                          capture_output=True, text=True)
+    check("missing --output exit 1", proc.returncode == 1, str(proc.returncode))
+    proc = subprocess.run([PY, CLI], capture_output=True, text=True)
+    check("no subcommand exit 1", proc.returncode == 1, str(proc.returncode))
+
+
+def test_cli_overrides():
+    print("\n[cli overrides]")
+    with Server(workers=8, delay=0.05, wrong_attempts=1) as srv:
+        cfg = write("ov.yaml", cfg_yaml("http://127.0.0.1:9", model="cfg-model", max_tokens=11))
+        inp = write_jsonl("ov.jsonl", [{"question": "q", "answer": "42"}])
+        proc, rows, summary, _ = run_cli(cfg, inp, extra=[
+            "--api-url", srv.url, "--model", "override-model", "--rpm", "120",
+            "--max-tokens", "77", "--scheme", "rejection", "--temperature", "0.5", "--n", "4"])
+        check("exit 0", proc.returncode == 0, proc.stderr)
+        payload = srv.stats()["payloads"][0]
+        check("model override", payload["model"] == "override-model", str(payload))
+        check("max_tokens override", payload["max_tokens"] == 77)
+        check("temperature override", payload["temperature"] == 0.5)
+        check("scheme override -> 2 attempts", rows[0]["result"]["attempts"] == 2,
+              json.dumps(rows[0]["result"]))
+        check("meta model uses override", rows[0]["meta"][0]["model"] == "override-model")
+
+
+def test_empty_input_and_overwrite():
+    print("\n[empty input / output overwrite]")
+    with Server(workers=8, delay=0.0) as srv:
+        cfg = write("e.yaml", cfg_yaml(srv.url))
+        inp = write("empty.jsonl", "")
+        out = os.path.join(TMP, "pre-existing.jsonl")
+        with open(out, "w") as fh:
+            fh.write("STALE\nSTALE\n")
+        proc, rows, summary, _ = run_cli(cfg, inp, out)
+        check("exit 0", proc.returncode == 0, proc.stderr)
+        check("no rows", rows == [])
+        check("summary zeros", summary["total"] == 0 and summary["total_api_calls"] == 0
+              and summary["elapsed_seconds"] == 0.0 and summary["throughput_rpm"] == 0.0,
+              str(summary))
+        with open(out) as fh:
+            check("output overwritten", fh.read() == "")
+
+        inp2 = write_jsonl("one.jsonl", [{"question": "q", "answer": "42"}])
+        proc, rows, summary, _ = run_cli(cfg, inp2, out)
+        check("overwrite writes fresh rows", len(rows) == 1)
+
+
+def test_throughput():
+    print("\n[throughput >= 80% of rpm]")
+    # capacity: 5 workers * (1/0.5s) = 10 rps = 600 rpm; configured rpm 300
+    with Server(workers=25, delay=0.5) as srv:
+        rows = [{"question": "q%d" % i, "answer": "42"} for i in range(150)]
+        cfg = write("tp.yaml", cfg_yaml(srv.url, rpm=300))
+        inp = write_jsonl("tp.jsonl", rows)
+        proc, out_rows, summary, _ = run_cli(cfg, inp)
+        check("exit 0", proc.returncode == 0, proc.stderr)
+        check("all rows", len(out_rows) == 150)
+        ratio = summary["throughput_rpm"] / 300.0
+        check("throughput >= 80%% of rpm (got %.1f, ratio %.2f)"
+              % (summary["throughput_rpm"], ratio), ratio >= 0.8, str(summary))
+        check("does not blow past the rpm budget (ratio %.2f)" % ratio, ratio <= 1.5,
+              str(summary))
+        check("concurrent requests in flight (max %d)" % srv.stats()["max_in_flight"],
+              srv.stats()["max_in_flight"] > 1)
+        check("elapsed rounded 1dp",
+              round(summary["elapsed_seconds"], 1) == summary["elapsed_seconds"])
+
+
+def test_throughput_slow_server():
+    print("\n[throughput with slow per-request latency]")
+    # 60 rpm capacity via 6 workers with 6s latency each
+    with Server(workers=6, delay=6.0) as srv:
+        rows = [{"question": "q%d" % i, "answer": "42"} for i in range(60)]
+        cfg = write("tp2.yaml", cfg_yaml(srv.url, rpm=60))
+        inp = write_jsonl("tp2.jsonl", rows)
+        proc, out_rows, summary, _ = run_cli(cfg, inp)
+        ratio = summary["throughput_rpm"] / 60.0
+        check("throughput >= 80%% of rpm (got %.1f)" % summary["throughput_rpm"],
+              ratio >= 0.8, str(summary))
+        check("stays near the rpm budget (ratio %.2f)" % ratio, ratio <= 1.5, str(summary))
+
+
+def test_sample_scheme():
+    print("\n[sample scheme]")
+    with Server(workers=8, delay=0.05, wrong_attempts=99) as srv:
+        cfg = write("s.yaml", cfg_yaml(srv.url, scheme="sample", temperature=0.9, n=5))
+        inp = write_jsonl("s.jsonl", [{"question": "q", "answer": "42"}])
+        proc, rows, summary, _ = run_cli(cfg, inp)
+        check("exit 0", proc.returncode == 0, proc.stderr)
+        check("n ignored -> 1 call", summary["total_api_calls"] == 1, str(summary))
+        check("attempts 1", rows[0]["result"]["attempts"] == 1)
+        check("meta dict", isinstance(rows[0]["meta"], dict))
+        check("temperature sent", srv.stats()["payloads"][0]["temperature"] == 0.9)
+        check("failing eval keeps output", rows[0]["output"] is not None)
+        check("passed false", rows[0]["result"]["passed"] is False)
+
+
+def test_no_system_prompt():
+    print("\n[prompt without system message]")
+    with Server(workers=8, delay=0.05) as srv:
+        text = cfg_yaml(srv.url).replace('    system: "Solve it."\n', "")
+        cfg = write("nosys.yaml", text)
+        inp = write_jsonl("nosys.jsonl", [{"question": "q", "answer": "42"}])
+        proc, rows, summary, _ = run_cli(cfg, inp)
+        check("exit 0", proc.returncode == 0, proc.stderr)
+        msgs = srv.stats()["payloads"][0]["messages"]
+        check("only user message", len(msgs) == 1 and msgs[0]["role"] == "user", str(msgs))
+
+
+def test_placeholders_multiple_fields():
+    print("\n[multiple placeholders / non-string fields]")
+    with Server(workers=8, delay=0.05) as srv:
+        text = cfg_yaml(srv.url, user_prompt="{question} [{hint}] #{idx}")
+        cfg = write("ph.yaml", text)
+        inp = write_jsonl("ph.jsonl", [{"question": "q", "hint": "h", "idx": 3, "answer": "42"}])
+        proc, rows, summary, _ = run_cli(cfg, inp)
+        check("exit 0", proc.returncode == 0, proc.stderr)
+        content = srv.stats()["payloads"][0]["messages"][1]["content"]
+        check("rendered", content == "q [h] #3", content)
+        check("input preserved verbatim",
+              rows[0]["input"] == {"question": "q", "hint": "h", "idx": 3, "answer": "42"})
+
+
+def test_stdout_is_only_summary():
+    print("\n[stdout contains only the summary]")
+    with Server(workers=8, delay=0.05) as srv:
+        cfg = write("so.yaml", cfg_yaml(srv.url))
+        inp = write_jsonl("so.jsonl", ROWS10[:3])
+        proc, rows, summary, _ = run_cli(cfg, inp)
+        lines = [l for l in proc.stdout.strip().splitlines() if l.strip()]
+        check("one stdout line", len(lines) == 1, proc.stdout)
+        check("valid json", isinstance(json.loads(lines[0]), dict))
+
+
+def test_yaml_fallback_parser():
+    print("\n[built-in YAML fallback parser]")
+    sys.path.insert(0, ROOT)
+    import rejector
+    text = cfg_yaml("http://x", scheme="rejection", temperature=0.7, n=3)
+    parsed = rejector._MiniYAML(text).parse()
+    ref = None
+    try:
+        import yaml
+        ref = yaml.safe_load(text)
+    except ImportError:
+        pass
+    check("fallback matches pyyaml", ref is None or parsed == ref,
+          json.dumps(parsed) + " != " + json.dumps(ref))
+    block = 'task:\n  name: t  # comment\n  prompt:\n    system: |\n      line one\n      line two\n    user: "{q}"\n  items: [1, 2, 3]\n'
+    parsed = rejector._MiniYAML(block).parse()
+    ok = (parsed["task"]["name"] == "t"
+          and parsed["task"]["prompt"]["system"] == "line one\nline two\n"
+          and parsed["task"]["items"] == [1, 2, 3])
+    check("fallback handles block scalars, comments, flow seqs", ok, json.dumps(parsed))
+
+
+# ==========================================================================
+# Part 2: multi-task configs, llm_judge and script evaluation
+# ==========================================================================
+
+def run_multi(config, mapping=None, input_dir=None, outdir=None, extra=()):
+    outdir = outdir or os.path.join(TMP, "outdir-%d" % time.time_ns())
+    cmd = [PY, CLI, "run", "--config", config, "--output", outdir]
+    for name, path in (mapping or {}).items():
+        cmd += ["--input", "%s=%s" % (name, path)]
+    if input_dir:
+        cmd += ["--input-dir", input_dir]
+    cmd += list(extra)
+    proc = subprocess.run(cmd, capture_output=True, text=True)
+    files = {}
+    if os.path.isdir(outdir):
+        for fn in sorted(os.listdir(outdir)):
+            if fn.endswith(".jsonl"):
+                with open(os.path.join(outdir, fn), encoding="utf-8") as fh:
+                    files[fn[:-len(".jsonl")]] = [json.loads(l) for l in fh if l.strip()]
+    summary = None
+    if proc.stdout.strip():
+        try:
+            summary = json.loads(proc.stdout.strip().splitlines()[-1])
+        except ValueError:
+            summary = None
+    return proc, files, summary, outdir
+
+
+def multi_yaml(url, tasks_block, rpm=600, extra_defaults=""):
+    return (
+        "defaults:\n"
+        '  api_url: "%s"\n'
+        '  model: "gpt-4"\n'
+        "  rpm: %s\n"
+        "  generation:\n"
+        "    max_tokens: 128\n" % (url, rpm)
+    ) + extra_defaults + "tasks:\n" + tasks_block
+
+
+GSM_TASK = '''  gsm8k:
+    prompt:
+      system: "Solve it."
+      user: "{question}"
+    generation:
+      scheme: "greedy"
+    evaluation:
+      type: "exact_match"
+      answer_field: "answer"
+      extract: "last_number"
+    output_field: "solution"
+'''
+
+MMLU_TASK = '''  mmlu:
+    prompt:
+      system: "Answer with a letter."
+      user: "{question}\\n\\nA) {a}\\nB) {b}\\nC) {c}\\nD) {d}"
+    generation:
+      scheme: "greedy"
+    evaluation:
+      type: "exact_match"
+      answer_field: "answer"
+      extract: "letter"
+    output_field: "choice"
+'''
+
+REVIEW_TASK = '''  review:
+    prompt:
+      system: "Write a response."
+      user: "{prompt_text}"
+    generation:
+      scheme: "greedy"
+    evaluation:
+      type: "llm_judge"
+      judge_prompt:
+        system: "JUDGE quality evaluator."
+        user: "Rate:\\n{__response__}\\n\\nCriteria: {criteria}\\n\\nScore:"
+      threshold: 7
+      extract: "first_number"
+    output_field: "response"
+'''
+
+MMLU_ROWS = [{"question": "capital of France?", "a": "London", "b": "Paris",
+              "c": "Berlin", "d": "Madrid", "answer": "B"}]
+REVIEW_ROWS = [{"prompt_text": "Describe a sunset.", "criteria": "vividness"}]
+
+
+def test_multi_explicit_mapping():
+    print("\n[multi-task: explicit --input task=path]")
+    with Server(workers=8, delay=0.02, answer="42") as srv:
+        cfg = write("m-basic.yaml", multi_yaml(srv.url, GSM_TASK + MMLU_TASK))
+        gsm = write_jsonl("m-gsm.jsonl", ROWS10)
+        mmlu = write_jsonl("m-mmlu.jsonl", MMLU_ROWS)
+        proc, files, summary, _ = run_multi(cfg, {"gsm8k": gsm, "mmlu": mmlu})
+    check("exit 0", proc.returncode == 0, proc.stderr[:300])
+    check("one file per task", sorted(files) == ["gsm8k", "mmlu"], sorted(files))
+    check("gsm8k row count", len(files.get("gsm8k", [])) == 10)
+    check("mmlu row count", len(files.get("mmlu", [])) == 1)
+    check("row order preserved",
+          [r["input"]["question"] for r in files["gsm8k"]] ==
+          [r["question"] for r in ROWS10])
+    check("per-task output_field",
+          "solution" in (files["gsm8k"][0]["output"] or {}) and
+          "choice" in (files["mmlu"][0]["output"] or {}),
+          json.dumps(files["mmlu"][0]["output"]))
+    check("summary total is the sum", summary["total"] == 11, json.dumps(summary))
+    check("summary has tasks object", set(summary.get("tasks", {})) == {"gsm8k", "mmlu"},
+          json.dumps(summary))
+    check("per-task totals",
+          summary["tasks"]["gsm8k"]["total"] == 10 and summary["tasks"]["mmlu"]["total"] == 1,
+          json.dumps(summary["tasks"]))
+    check("per-task api calls sum to total",
+          sum(t["total_api_calls"] for t in summary["tasks"].values()) == summary["total_api_calls"],
+          json.dumps(summary))
+    check("per-task keys",
+          set(summary["tasks"]["gsm8k"]) == {"total", "passed", "failed", "total_api_calls"},
+          json.dumps(summary["tasks"]["gsm8k"]))
+    check("passed/failed add up",
+          summary["passed"] + summary["failed"] == summary["total"] and
+          summary["passed"] == sum(t["passed"] for t in summary["tasks"].values()),
+          json.dumps(summary))
+
+
+def test_multi_input_dir():
+    print("\n[multi-task: --input-dir]")
+    data = os.path.join(TMP, "indir")
+    os.makedirs(data, exist_ok=True)
+    with open(os.path.join(data, "gsm8k.jsonl"), "w") as fh:
+        for r in ROWS10:
+            fh.write(json.dumps(r) + "\n")
+    with open(os.path.join(data, "mmlu.jsonl"), "w") as fh:
+        fh.write(json.dumps(MMLU_ROWS[0]) + "\n")
+    with Server(workers=8, delay=0.02, answer="42") as srv:
+        cfg = write("m-dir.yaml", multi_yaml(srv.url, GSM_TASK + MMLU_TASK))
+        proc, files, summary, _ = run_multi(cfg, input_dir=data)
+    check("exit 0", proc.returncode == 0, proc.stderr[:300])
+    check("both tasks ran", sorted(files) == ["gsm8k", "mmlu"], sorted(files))
+    check("counts", len(files["gsm8k"]) == 10 and len(files["mmlu"]) == 1)
+    check("summary tasks", set(summary["tasks"]) == {"gsm8k", "mmlu"})
+
+
+def test_multi_task_selection():
+    print("\n[multi-task: --task selection]")
+    with Server(workers=8, delay=0.02, answer="42") as srv:
+        cfg = write("m-sel.yaml", multi_yaml(srv.url, GSM_TASK + MMLU_TASK))
+        gsm = write_jsonl("s-gsm.jsonl", ROWS10)
+        proc, files, summary, outdir = run_multi(
+            cfg, {"gsm8k": gsm}, extra=["--task", "gsm8k"])
+    check("exit 0 without mmlu input", proc.returncode == 0, proc.stderr[:300])
+    check("only gsm8k written", sorted(files) == ["gsm8k"], sorted(os.listdir(outdir)))
+    check("no mmlu.jsonl on disk", not os.path.exists(os.path.join(outdir, "mmlu.jsonl")))
+    check("summary lists only gsm8k", list(summary["tasks"]) == ["gsm8k"], json.dumps(summary))
+    check("summary total", summary["total"] == 10, json.dumps(summary))
+
+    # An unselected task is not validated at all, even if it is malformed.
+    broken = GSM_TASK + "  broken:\n    generation:\n      scheme: \"nope\"\n"
+    with Server(workers=8, delay=0.02, answer="42") as srv:
+        cfg = write("m-sel2.yaml", multi_yaml(srv.url, broken))
+        gsm = write_jsonl("s2-gsm.jsonl", ROWS10[:2])
+        proc, files, summary, _ = run_multi(cfg, {"gsm8k": gsm}, extra=["--task", "gsm8k"])
+    check("unselected invalid task ignored", proc.returncode == 0, proc.stderr[:300])
+    check("only selected task output", sorted(files) == ["gsm8k"], sorted(files))
+
+    # Two --task flags select two of three tasks.
+    with Server(workers=8, delay=0.02, answer="42") as srv:
+        cfg = write("m-sel3.yaml", multi_yaml(srv.url, GSM_TASK + MMLU_TASK + REVIEW_TASK))
+        gsm = write_jsonl("s3-gsm.jsonl", ROWS10[:2])
+        mmlu = write_jsonl("s3-mmlu.jsonl", MMLU_ROWS)
+        proc, files, summary, _ = run_multi(
+            cfg, {"gsm8k": gsm, "mmlu": mmlu},
+            extra=["--task", "gsm8k", "--task", "mmlu"])
+    check("repeatable --task", proc.returncode == 0, proc.stderr[:300])
+    check("two tasks ran", set(summary["tasks"]) == {"gsm8k", "mmlu"}, json.dumps(summary))
+
+    # An --input for an unselected task is ignored rather than rejected.
+    with Server(workers=8, delay=0.02, answer="42") as srv:
+        cfg = write("m-sel4.yaml", multi_yaml(srv.url, GSM_TASK + MMLU_TASK))
+        gsm = write_jsonl("s4-gsm.jsonl", ROWS10[:2])
+        mmlu = write_jsonl("s4-mmlu.jsonl", MMLU_ROWS)
+        proc, files, summary, _ = run_multi(
+            cfg, {"gsm8k": gsm, "mmlu": mmlu}, extra=["--task", "gsm8k"])
+    check("extra --input ignored for unselected task", proc.returncode == 0, proc.stderr[:300])
+    check("only gsm8k ran", list(summary["tasks"]) == ["gsm8k"], json.dumps(summary))
+
+
+def test_multi_defaults_merge():
+    print("\n[multi-task: defaults merging]")
+    tasks = (
+        '  a:\n'
+        '    generation:\n'
+        '      scheme: "sample"\n'
+        '      temperature: 0.5\n'
+        '    output_field: "a_out"\n'
+        '  b:\n'
+        '    model: "task-b-model"\n'
+        '    prompt:\n'
+        '      user: "B {question}"\n'
+        '    output_field: "b_out"\n'
+    )
+    extra_defaults = (
+        "  prompt:\n"
+        '    system: "Shared system."\n'
+        '    user: "A {question}"\n'
+        "  evaluation:\n"
+        '    type: "exact_match"\n'
+        '    answer_field: "answer"\n'
+        '    extract: "last_number"\n'
+    )
+    with Server(workers=8, delay=0.02, answer="42") as srv:
+        cfg = write("m-merge.yaml", multi_yaml(srv.url, tasks, extra_defaults=extra_defaults))
+        rows = [{"question": "q1", "answer": "42"}]
+        a = write_jsonl("mm-a.jsonl", rows)
+        b = write_jsonl("mm-b.jsonl", rows)
+        proc, files, summary, _ = run_multi(cfg, {"a": a, "b": b})
+        payloads = srv.stats()["payloads"]
+    check("exit 0", proc.returncode == 0, proc.stderr[:300])
+    check("defaults supply prompt/evaluation",
+          files["a"][0]["result"]["passed"] is True and files["b"][0]["result"]["passed"] is True,
+          json.dumps(files))
+    check("per-task output_field",
+          "a_out" in files["a"][0]["output"] and "b_out" in files["b"][0]["output"])
+    check("task overrides model", files["b"][0]["meta"]["model"] == "task-b-model",
+          files["b"][0]["meta"]["model"])
+    check("defaults model kept for other task", files["a"][0]["meta"]["model"] == "gpt-4")
+    users = sorted(m["content"] for p in payloads for m in p["messages"] if m["role"] == "user")
+    check("prompt.user overridden per task, system merged from defaults",
+          users == ["A q1", "B q1"], json.dumps(users))
+    systems = set(m["content"] for p in payloads for m in p["messages"] if m["role"] == "system")
+    check("shared system prompt", systems == {"Shared system."}, json.dumps(sorted(systems)))
+    temps = sorted(set(p["temperature"] for p in payloads))
+    check("generation merged per task", temps == [0.0, 0.5], json.dumps(temps))
+    check("max_tokens from defaults",
+          all(p["max_tokens"] == 128 for p in payloads),
+          json.dumps([p["max_tokens"] for p in payloads]))
+
+
+def test_extract_letter():
+    print("\n[extract: letter]")
+    with Server(workers=4, delay=0.02, answer="B",
+                template="The answer is {answer}) Paris") as srv:
+        cfg = write("m-letter.yaml", multi_yaml(srv.url, MMLU_TASK))
+        inp = write_jsonl("letter.jsonl", MMLU_ROWS)
+        proc, files, summary, _ = run_multi(cfg, {"mmlu": inp})
+    check("exit 0", proc.returncode == 0, proc.stderr[:300])
+    row = files["mmlu"][0]
+    check("letter extracted", row["result"]["extracted_answer"] == "B",
+          json.dumps(row["result"]))
+    check("row passes", row["result"]["passed"] is True)
+
+    forms = {
+        "A": "A",
+        "(C)": "C",
+        "D)": "D",
+        "Answer: B": "B",
+        "The answer is B) Paris": "B",
+        "no letter here": None,
+    }
+    for text, want in forms.items():
+        with Server(workers=2, delay=0.01, answer="x", template=text.replace("{", "{{").replace("}", "}}")) as srv:
+            cfg = write("m-letter-%d.yaml" % abs(hash(text)), multi_yaml(srv.url, MMLU_TASK))
+            inp = write_jsonl("letter-%d.jsonl" % abs(hash(text)), MMLU_ROWS)
+            proc, files, summary, _ = run_multi(cfg, {"mmlu": inp})
+        got = files["mmlu"][0]["result"]["extracted_answer"] if files.get("mmlu") else "<none>"
+        check("letter form %r -> %r" % (text, want), got == want, "got %r" % (got,))
+
+
+def test_extract_first_number():
+    print("\n[extract: first_number]")
+    task = '''  fn:
+    prompt:
+      system: "Solve."
+      user: "{question}"
+    generation:
+      scheme: "greedy"
+    evaluation:
+      type: "exact_match"
+      answer_field: "answer"
+      extract: "first_number"
+    output_field: "out"
+'''
+    cases = {"Score: 8 out of 10": "8",
+             "3.5 then 9": "3.5",
+             "value -12 and 4": "-12",
+             "no digits": None}
+    for text, want in cases.items():
+        with Server(workers=2, delay=0.01, answer="x",
+                    template=text.replace("{", "{{").replace("}", "}}")) as srv:
+            cfg = write("m-fn-%d.yaml" % abs(hash(text)), multi_yaml(srv.url, task))
+            inp = write_jsonl("fn-%d.jsonl" % abs(hash(text)), [{"question": "q", "answer": "8"}])
+            proc, files, summary, _ = run_multi(cfg, {"fn": inp})
+        got = files["fn"][0]["result"]["extracted_answer"] if files.get("fn") else "<none>"
+        check("first_number %r -> %r" % (text, want), got == want, "got %r" % (got,))
+    check("first_number differs from last_number", True)
+
+
+def test_llm_judge_pass_and_fail():
+    print("\n[llm_judge]")
+    with Server(workers=8, delay=0.02, answer="42", judge_answer="8") as srv:
+        cfg = write("m-judge.yaml", multi_yaml(srv.url, REVIEW_TASK))
+        inp = write_jsonl("judge.jsonl", REVIEW_ROWS)
+        proc, files, summary, _ = run_multi(cfg, {"review": inp})
+        stats = srv.stats()
+        payloads = stats["payloads"]
+    check("exit 0", proc.returncode == 0, proc.stderr[:300])
+    row = files["review"][0]
+    check("judge_score in result", row["result"].get("judge_score") == 8,
+          json.dumps(row["result"]))
+    check("passes at threshold 7", row["result"]["passed"] is True, json.dumps(row["result"]))
+    check("output kept", row["output"]["response"].startswith("Let me solve it."),
+          json.dumps(row["output"]))
+    jm = row["meta"].get("judge_meta")
+    check("judge_meta present", isinstance(jm, dict), json.dumps(row["meta"]))
+    check("judge_meta fields",
+          jm and set(["model", "prompt_tokens", "completion_tokens", "total_tokens",
+                      "latency_ms", "finish_reason"]).issubset(jm),
+          json.dumps(jm))
+    check("judge_meta model", jm and jm["model"] == "gpt-4", json.dumps(jm))
+    check("judge_meta finish_reason", jm and jm["finish_reason"] == "stop")
+    check("judge_meta latency is a number", jm and isinstance(jm["latency_ms"], int))
+    check("judge call counted", summary["total_api_calls"] == 2, json.dumps(summary))
+    check("per-task api calls include judge",
+          summary["tasks"]["review"]["total_api_calls"] == 2, json.dumps(summary))
+    check("server saw 2 calls", stats["calls"] == 2, json.dumps(stats["calls"]))
+    check("server saw 1 judge call", stats["judge_calls"] == 1, json.dumps(stats["judge_calls"]))
+    judge_payload = [p for p in payloads
+                     if any("JUDGE" in (m.get("content") or "") for m in p["messages"])]
+    check("one judge request", len(judge_payload) == 1, len(judge_payload))
+    judge_user = [m["content"] for m in judge_payload[0]["messages"] if m["role"] == "user"][0]
+    check("__response__ substituted into judge prompt",
+          "Let me solve it." in judge_user and "{__response__}" not in judge_user, judge_user)
+    check("row fields available in judge prompt", "vividness" in judge_user, judge_user)
+
+    # Same score, higher threshold -> fails but keeps the generated output.
+    with Server(workers=8, delay=0.02, answer="42", judge_answer="8") as srv:
+        cfg = write("m-judge-hi.yaml",
+                    multi_yaml(srv.url, REVIEW_TASK.replace("threshold: 7", "threshold: 9")))
+        inp = write_jsonl("judge2.jsonl", REVIEW_ROWS)
+        proc, files, summary, _ = run_multi(cfg, {"review": inp})
+    row = files["review"][0]
+    check("fails below threshold", row["result"]["passed"] is False, json.dumps(row["result"]))
+    check("judge_score still recorded", row["result"]["judge_score"] == 8)
+    check("greedy keeps output on failure", row["output"] is not None)
+    check("summary counts it failed", summary["failed"] == 1, json.dumps(summary))
+
+    # A non-numeric judge reply cannot clear the threshold.
+    with Server(workers=8, delay=0.02, answer="42", judge_answer="not a score") as srv:
+        cfg = write("m-judge-nan.yaml", multi_yaml(srv.url, REVIEW_TASK))
+        inp = write_jsonl("judge3.jsonl", REVIEW_ROWS)
+        proc, files, summary, _ = run_multi(cfg, {"review": inp})
+    row = files["review"][0]
+    check("unparseable score fails", row["result"]["passed"] is False, json.dumps(row["result"]))
+    check("judge_score null", row["result"]["judge_score"] is None, json.dumps(row["result"]))
+
+
+def test_llm_judge_model_override():
+    print("\n[llm_judge: model selection]")
+    with Server(workers=8, delay=0.02, judge_answer="9") as srv:
+        cfg = write("m-judge-m.yaml", multi_yaml(srv.url, REVIEW_TASK))
+        inp = write_jsonl("judgem.jsonl", REVIEW_ROWS)
+        proc, files, _, _ = run_multi(cfg, {"review": inp})
+        payloads = srv.stats()["payloads"]
+    jm = files["review"][0]["meta"]["judge_meta"]
+    check("defaults to task model", jm["model"] == "gpt-4", json.dumps(jm))
+
+    cfg_model = REVIEW_TASK.replace('      threshold: 7',
+                                    '      model: "judge-from-config"\n      threshold: 7')
+    with Server(workers=8, delay=0.02, judge_answer="9") as srv:
+        cfg = write("m-judge-m2.yaml", multi_yaml(srv.url, cfg_model))
+        inp = write_jsonl("judgem2.jsonl", REVIEW_ROWS)
+        proc, files, _, _ = run_multi(cfg, {"review": inp})
+        payloads = srv.stats()["payloads"]
+    jm = files["review"][0]["meta"]["judge_meta"]
+    check("evaluation.model used", jm["model"] == "judge-from-config", json.dumps(jm))
+    check("generation model untouched", files["review"][0]["meta"]["model"] == "gpt-4")
+    judge_payload = [p for p in payloads
+                     if any("JUDGE" in (m.get("content") or "") for m in p["messages"])][0]
+    check("judge request sent with judge model",
+          judge_payload["model"] == "judge-from-config", judge_payload["model"])
+
+    with Server(workers=8, delay=0.02, judge_answer="9") as srv:
+        cfg = write("m-judge-m3.yaml", multi_yaml(srv.url, cfg_model))
+        inp = write_jsonl("judgem3.jsonl", REVIEW_ROWS)
+        proc, files, _, _ = run_multi(cfg, {"review": inp},
+                                      extra=["--eval-model", "cli-judge"])
+        payloads = srv.stats()["payloads"]
+    jm = files["review"][0]["meta"]["judge_meta"]
+    check("--eval-model wins over evaluation.model", jm["model"] == "cli-judge", json.dumps(jm))
+    check("--eval-model leaves generation model alone",
+          files["review"][0]["meta"]["model"] == "gpt-4")
+
+
+def test_llm_judge_rejection():
+    print("\n[llm_judge with rejection sampling]")
+    task = REVIEW_TASK.replace('      scheme: "greedy"',
+                               '      scheme: "rejection"\n      temperature: 0.7\n      n: 3')
+    with Server(workers=8, delay=0.02, judge_answer="8", judge_wrong_answer="2",
+                judge_wrong_attempts=2) as srv:
+        cfg = write("m-judge-rej.yaml", multi_yaml(srv.url, task))
+        inp = write_jsonl("judgerej.jsonl", REVIEW_ROWS)
+        proc, files, summary, _ = run_multi(cfg, {"review": inp})
+    row = files["review"][0]
+    check("exit 0", proc.returncode == 0, proc.stderr[:300])
+    check("retried until the judge passed", row["result"]["attempts"] == 3,
+          json.dumps(row["result"]))
+    check("passed", row["result"]["passed"] is True, json.dumps(row["result"]))
+    check("final judge_score", row["result"]["judge_score"] == 8, json.dumps(row["result"]))
+    check("meta is a list of attempts", isinstance(row["meta"], list) and len(row["meta"]) == 3,
+          json.dumps(row["meta"])[:200])
+    check("each attempt has judge_meta",
+          all(isinstance(m.get("judge_meta"), dict) for m in row["meta"]))
+    check("api calls counted: 3 gen + 3 judge", summary["total_api_calls"] == 6,
+          json.dumps(summary))
+
+
+def test_script_evaluation():
+    print("\n[script evaluation]")
+    base = '''  code_gen:
+    prompt:
+      system: "Code."
+      user: "{problem}"
+    generation:
+      scheme: "greedy"
+    evaluation:
+      type: "script"
+      command_template: %s
+      success_exit_code: %s
+    output_field: "code"
+'''
+    rows = [{"problem": "write good code",
+             "test_code": "echo '{__response__}' | grep -q 'result is 42'"}]
+
+    # Row field expands to text that itself contains {__response__}.
+    with Server(workers=4, delay=0.02, answer="42") as srv:
+        cfg = write("m-script.yaml", multi_yaml(srv.url, base % ('"{test_code}"', 0)))
+        inp = write_jsonl("script.jsonl", rows)
+        proc, files, summary, _ = run_multi(cfg, {"code_gen": inp})
+    check("exit 0", proc.returncode == 0, proc.stderr[:300])
+    row = files["code_gen"][0]
+    check("nested {__response__} substituted -> pass", row["result"]["passed"] is True,
+          json.dumps(row["result"]))
+    check("output kept", row["output"]["code"].startswith("Let me solve it."))
+    check("no extracted_answer for script", row["result"]["extracted_answer"] is None)
+    check("script adds no api calls", summary["total_api_calls"] == 1, json.dumps(summary))
+
+    # Same command, but the response no longer matches -> non-zero exit -> fail.
+    with Server(workers=4, delay=0.02, answer="7") as srv:
+        cfg = write("m-script2.yaml", multi_yaml(srv.url, base % ('"{test_code}"', 0)))
+        inp = write_jsonl("script2.jsonl", rows)
+        proc, files, summary, _ = run_multi(cfg, {"code_gen": inp})
+    row = files["code_gen"][0]
+    check("non-zero exit fails", row["result"]["passed"] is False, json.dumps(row["result"]))
+    check("summary counts failure", summary["failed"] == 1, json.dumps(summary))
+
+    # {__response__} directly in the command template.
+    with Server(workers=4, delay=0.02, answer="42") as srv:
+        cfg = write("m-script3.yaml",
+                    multi_yaml(srv.url, base % ('"echo \'{__response__}\' | grep -q 42"', 0)))
+        inp = write_jsonl("script3.jsonl", rows)
+        proc, files, summary, _ = run_multi(cfg, {"code_gen": inp})
+    check("direct {__response__} works", files["code_gen"][0]["result"]["passed"] is True,
+          json.dumps(files["code_gen"][0]["result"]))
+
+    # A non-zero success_exit_code is honoured.
+    with Server(workers=4, delay=0.02, answer="42") as srv:
+        cfg = write("m-script4.yaml", multi_yaml(srv.url, base % ('"exit 3"', 3)))
+        inp = write_jsonl("script4.jsonl", rows)
+        proc, files, summary, _ = run_multi(cfg, {"code_gen": inp})
+    check("success_exit_code 3 passes on exit 3",
+          files["code_gen"][0]["result"]["passed"] is True,
+          json.dumps(files["code_gen"][0]["result"]))
+
+    with Server(workers=4, delay=0.02, answer="42") as srv:
+        cfg = write("m-script5.yaml", multi_yaml(srv.url, base % ('"exit 0"', 3)))
+        inp = write_jsonl("script5.jsonl", rows)
+        proc, files, summary, _ = run_multi(cfg, {"code_gen": inp})
+    check("success_exit_code 3 fails on exit 0",
+          files["code_gen"][0]["result"]["passed"] is False,
+          json.dumps(files["code_gen"][0]["result"]))
+
+    # Command output is captured, never echoed into the JSONL.
+    with Server(workers=4, delay=0.02, answer="42") as srv:
+        cfg = write("m-script6.yaml",
+                    multi_yaml(srv.url, base % ('"echo NOISE_STDOUT; echo NOISE_STDERR 1>&2"', 0)))
+        inp = write_jsonl("script6.jsonl", rows)
+        proc, files, summary, _ = run_multi(cfg, {"code_gen": inp})
+    blob = json.dumps(files["code_gen"][0])
+    check("stdout/stderr not in output", "NOISE_STDOUT" not in blob and "NOISE_STDERR" not in blob,
+          blob[:200])
+    check("stdout/stderr not on stdout", "NOISE_STDOUT" not in proc.stdout, proc.stdout[:200])
+    check("result keys unchanged",
+          set(files["code_gen"][0]["result"]) == {"passed", "extracted_answer", "attempts"},
+          json.dumps(files["code_gen"][0]["result"]))
+
+    # A hanging command is killed at 10s and counts as a failure.
+    with Server(workers=4, delay=0.02, answer="42") as srv:
+        cfg = write("m-script7.yaml", multi_yaml(srv.url, base % ('"sleep 60"', 0)))
+        inp = write_jsonl("script7.jsonl", rows)
+        started = time.time()
+        proc, files, summary, _ = run_multi(cfg, {"code_gen": inp})
+        elapsed = time.time() - started
+    check("timeout fails the row", files["code_gen"][0]["result"]["passed"] is False,
+          json.dumps(files["code_gen"][0]["result"]))
+    check("timeout is ~10s, not unbounded", 8.0 <= elapsed < 30.0, "elapsed %.1fs" % elapsed)
+
+    # rejection + script: retries until the script passes.
+    rej = base.replace('      scheme: "greedy"',
+                       '      scheme: "rejection"\n      temperature: 0.8\n      n: 3')
+    with Server(workers=4, delay=0.02, answer="42", wrong_answer="7", wrong_attempts=2) as srv:
+        cfg = write("m-script8.yaml", multi_yaml(srv.url, rej % ('"{test_code}"', 0)))
+        inp = write_jsonl("script8.jsonl", rows)
+        proc, files, summary, _ = run_multi(cfg, {"code_gen": inp})
+    row = files["code_gen"][0]
+    check("rejection retries on script failure", row["result"]["attempts"] == 3,
+          json.dumps(row["result"]))
+    check("rejection passes on third try", row["result"]["passed"] is True)
+
+
+def test_multi_cli_errors():
+    print("\n[multi-task: CLI validation]")
+    cfg = write("m-err.yaml", multi_yaml("http://127.0.0.1:9", GSM_TASK + MMLU_TASK))
+    gsm = write_jsonl("e-gsm.jsonl", ROWS10[:1])
+    mmlu = write_jsonl("e-mmlu.jsonl", MMLU_ROWS)
+    data = os.path.join(TMP, "errdir")
+    os.makedirs(data, exist_ok=True)
+    with open(os.path.join(data, "gsm8k.jsonl"), "w") as fh:
+        fh.write(json.dumps(ROWS10[0]) + "\n")
+
+    def fails(name, argv):
+        out = os.path.join(TMP, "eout-%d" % time.time_ns())
+        proc = subprocess.run([PY, CLI, "run", "--config", cfg, "--output", out] + argv,
+                              capture_output=True, text=True)
+        check("exit 1: %s" % name, proc.returncode == 1,
+              "rc=%s out=%s err=%s" % (proc.returncode, proc.stdout[:120], proc.stderr[:200]))
+        check("stderr message: %s" % name, proc.stderr.strip() != "", proc.stderr[:200])
+
+    fails("--input and --input-dir combined",
+          ["--input", "gsm8k=%s" % gsm, "--input-dir", data])
+    fails("neither --input nor --input-dir", [])
+    fails("--input without task= prefix", ["--input", gsm])
+    fails("--input for an unknown task", ["--input", "nope=%s" % gsm])
+    fails("missing input for a task", ["--input", "gsm8k=%s" % gsm])
+    fails("--input-dir missing a task file", ["--input-dir", data])
+    fails("--task names an unknown task",
+          ["--input", "gsm8k=%s" % gsm, "--task", "nope"])
+    fails("--input-dir does not exist",
+          ["--input-dir", os.path.join(TMP, "no-such-dir")])
+    fails("input file does not exist",
+          ["--input", "gsm8k=%s" % os.path.join(TMP, "nope.jsonl"),
+           "--input", "mmlu=%s" % mmlu])
+
+    existing_file = write("not-a-dir.txt", "x\n")
+    proc = subprocess.run([PY, CLI, "run", "--config", cfg, "--output", existing_file,
+                           "--input", "gsm8k=%s" % gsm, "--input", "mmlu=%s" % mmlu],
+                          capture_output=True, text=True)
+    check("exit 1: --output must be a directory", proc.returncode == 1,
+          "rc=%s err=%s" % (proc.returncode, proc.stderr[:200]))
+
+    bad = write("m-bad-judge.yaml", multi_yaml(
+        "http://127.0.0.1:9",
+        REVIEW_TASK.replace("      threshold: 7\n", "")))
+    out = os.path.join(TMP, "eout-judge")
+    proc = subprocess.run([PY, CLI, "run", "--config", bad, "--output", out,
+                           "--input", "review=%s" % gsm], capture_output=True, text=True)
+    check("exit 1: llm_judge without threshold", proc.returncode == 1, proc.stderr[:200])
+
+    bad2 = write("m-bad-script.yaml", multi_yaml(
+        "http://127.0.0.1:9",
+        '  s:\n    prompt:\n      user: "{question}"\n'
+        '    evaluation:\n      type: "script"\n'))
+    proc = subprocess.run([PY, CLI, "run", "--config", bad2, "--output", out,
+                           "--input", "s=%s" % gsm], capture_output=True, text=True)
+    check("exit 1: script without command_template", proc.returncode == 1, proc.stderr[:200])
+
+    bad3 = write("m-defaults-only.yaml", "defaults:\n  model: \"m\"\n")
+    proc = subprocess.run([PY, CLI, "run", "--config", bad3, "--output", out,
+                           "--input", "s=%s" % gsm], capture_output=True, text=True)
+    check("exit 1: defaults without tasks", proc.returncode == 1, proc.stderr[:200])
+
+    bad4 = write("m-empty-tasks.yaml", "defaults:\n  model: \"m\"\ntasks:\n")
+    proc = subprocess.run([PY, CLI, "run", "--config", bad4, "--output", out,
+                           "--input", "s=%s" % gsm], capture_output=True, text=True)
+    check("exit 1: empty tasks mapping", proc.returncode == 1, proc.stderr[:200])
+
+    # A row missing a judge-prompt field is rejected before any request goes out.
+    bad5 = write("m-judge-field.yaml", multi_yaml("http://127.0.0.1:9", REVIEW_TASK))
+    noc = write_jsonl("no-criteria.jsonl", [{"prompt_text": "hi"}])
+    proc = subprocess.run([PY, CLI, "run", "--config", bad5, "--output", out,
+                           "--input", "review=%s" % noc], capture_output=True, text=True)
+    check("exit 1: row missing judge template field", proc.returncode == 1, proc.stderr[:200])
+    check("error names the task", "review" in proc.stderr, proc.stderr[:200])
+
+    # A row missing a command_template field is rejected too.
+    bad6 = write("m-script-field.yaml", multi_yaml(
+        "http://127.0.0.1:9",
+        '  s:\n    prompt:\n      user: "{question}"\n'
+        '    evaluation:\n      type: "script"\n'
+        '      command_template: "echo {test_code}"\n'))
+    proc = subprocess.run([PY, CLI, "run", "--config", bad6, "--output", out,
+                           "--input", "s=%s" % gsm], capture_output=True, text=True)
+    check("exit 1: row missing command_template field", proc.returncode == 1, proc.stderr[:200])
+
+
+def test_single_task_config_still_works():
+    print("\n[single-task config: Part 1 behaviour preserved]")
+    with Server(workers=8, delay=0.02, answer="42") as srv:
+        cfg = write("s1.yaml", cfg_yaml(srv.url))
+        inp = write_jsonl("s1.jsonl", ROWS10)
+        proc, rows, summary, out = run_cli(cfg, inp)
+    check("exit 0", proc.returncode == 0, proc.stderr[:300])
+    check("single output file", os.path.isfile(out))
+    check("10 rows", len(rows) == 10)
+    check("no tasks key in summary", "tasks" not in summary, json.dumps(summary))
+
+    # --input-dir works for a single-task config using task.name.
+    data = os.path.join(TMP, "singledir")
+    os.makedirs(data, exist_ok=True)
+    with open(os.path.join(data, "t.jsonl"), "w") as fh:
+        for r in ROWS10:
+            fh.write(json.dumps(r) + "\n")
+    with Server(workers=8, delay=0.02, answer="42") as srv:
+        cfg = write("s2.yaml", cfg_yaml(srv.url))
+        out = os.path.join(TMP, "s2-out.jsonl")
+        proc = subprocess.run([PY, CLI, "run", "--config", cfg, "--input-dir", data,
+                               "--output", out], capture_output=True, text=True)
+    check("single-task --input-dir exit 0", proc.returncode == 0, proc.stderr[:300])
+    check("single-task --input-dir wrote a file", os.path.isfile(out))
+
+    # `name=path` is accepted for a single-task config too.
+    with Server(workers=8, delay=0.02, answer="42") as srv:
+        cfg = write("s3.yaml", cfg_yaml(srv.url))
+        inp = write_jsonl("s3.jsonl", ROWS10[:2])
+        proc, rows, summary, _ = run_cli(cfg, "t=%s" % inp)
+    check("single-task name=path accepted", proc.returncode == 0, proc.stderr[:300])
+    check("single-task name=path rows", len(rows) == 2)
+
+    # --task naming the single task selects it; an unknown name is an error.
+    with Server(workers=8, delay=0.02, answer="42") as srv:
+        cfg = write("s4.yaml", cfg_yaml(srv.url))
+        inp = write_jsonl("s4.jsonl", ROWS10[:2])
+        proc, rows, summary, _ = run_cli(cfg, inp, extra=["--task", "t"])
+        check("single-task --task t", proc.returncode == 0, proc.stderr[:300])
+        proc, rows, summary, _ = run_cli(cfg, inp, extra=["--task", "other"])
+        check("single-task --task unknown -> exit 1", proc.returncode == 1, proc.stderr[:200])
+
+
+def test_multi_interleaving_and_throughput():
+    print("\n[multi-task: interleaving and shared rpm budget]")
+    rows = [{"question": "q%d" % i, "answer": "42"} for i in range(12)]
+    task_a = GSM_TASK.replace("gsm8k:", "alpha:").replace('user: "{question}"',
+                                                          'user: "AAA {question}"')
+    task_b = GSM_TASK.replace("gsm8k:", "beta:").replace('user: "{question}"',
+                                                         'user: "BBB {question}"')
+    with Server(workers=8, delay=0.2, answer="42") as srv:
+        cfg = write("m-inter.yaml", multi_yaml(srv.url, task_a + task_b, rpm=600))
+        a = write_jsonl("i-a.jsonl", rows)
+        b = write_jsonl("i-b.jsonl", rows)
+        proc, files, summary, _ = run_multi(cfg, {"alpha": a, "beta": b})
+        stats = srv.stats()
+    check("exit 0", proc.returncode == 0, proc.stderr[:300])
+    check("both tasks complete", len(files["alpha"]) == 12 and len(files["beta"]) == 12)
+    order = []
+    for p in stats["payloads"]:
+        text = "".join(m.get("content", "") for m in p["messages"])
+        order.append("A" if "AAA" in text else "B")
+    switches = sum(1 for i in range(1, len(order)) if order[i] != order[i - 1])
+    check("tasks interleave rather than run back to back", switches > 1,
+          "".join(order))
+    check("concurrent in flight", stats["max_in_flight"] > 1, stats["max_in_flight"])
+    check("row order preserved per task despite interleaving",
+          [r["input"]["question"] for r in files["alpha"]] == [r["question"] for r in rows] and
+          [r["input"]["question"] for r in files["beta"]] == [r["question"] for r in rows])
+    ratio = summary["throughput_rpm"] / 600.0
+    check("throughput stays near the shared rpm budget (ratio %.2f)" % ratio,
+          0.5 <= ratio <= 1.6, json.dumps(summary))
+
+
+def test_multi_empty_input_and_rerun():
+    print("\n[multi-task: empty input and rerun]")
+    with Server(workers=4, delay=0.02, answer="42") as srv:
+        cfg = write("m-empty.yaml", multi_yaml(srv.url, GSM_TASK + MMLU_TASK))
+        gsm = write_jsonl("z-gsm.jsonl", [])
+        mmlu = write_jsonl("z-mmlu.jsonl", MMLU_ROWS)
+        outdir = os.path.join(TMP, "z-out")
+        proc, files, summary, _ = run_multi(cfg, {"gsm8k": gsm, "mmlu": mmlu}, outdir=outdir)
+    check("exit 0", proc.returncode == 0, proc.stderr[:300])
+    check("empty task file written", os.path.exists(os.path.join(outdir, "gsm8k.jsonl")))
+    check("empty task has no rows", files.get("gsm8k", []) == [])
+    check("empty task still summarised", summary["tasks"]["gsm8k"]["total"] == 0,
+          json.dumps(summary))
+    check("output dir created when absent", os.path.isdir(outdir))
+
+    with Server(workers=4, delay=0.02, answer="42") as srv:
+        cfg = write("m-empty2.yaml", multi_yaml(srv.url, GSM_TASK + MMLU_TASK))
+        gsm = write_jsonl("z2-gsm.jsonl", ROWS10[:3])
+        mmlu = write_jsonl("z2-mmlu.jsonl", MMLU_ROWS)
+        proc, files, summary, _ = run_multi(cfg, {"gsm8k": gsm, "mmlu": mmlu}, outdir=outdir)
+    check("rerun overwrites", len(files["gsm8k"]) == 3, len(files.get("gsm8k", [])))
+
+
+def main():
+    tests = [v for k, v in sorted(globals().items()) if k.startswith("test_")]
+    order = [
+        test_greedy_basic, test_greedy_forces_temperature, test_no_evaluation,
+        test_eval_variants, test_extract_last_number_forms, test_sample_scheme,
+        test_rejection_success_on_third, test_rejection_first_try, test_rejection_exhausted,
+        test_rejection_temperature_sent, test_retries_5xx_permanent, test_retries_5xx_transient,
+        test_4xx_no_retry, test_rejection_api_failure, test_missing_prompt_field,
+        test_missing_answer_field, test_invalid_configs, test_missing_files,
+        test_cli_overrides, test_empty_input_and_overwrite, test_no_system_prompt,
+        test_placeholders_multiple_fields, test_stdout_is_only_summary,
+        test_yaml_fallback_parser, test_throughput, test_throughput_slow_server,
+        test_multi_explicit_mapping, test_multi_input_dir, test_multi_task_selection,
+        test_multi_defaults_merge, test_extract_letter, test_extract_first_number,
+        test_llm_judge_pass_and_fail, test_llm_judge_model_override,
+        test_llm_judge_rejection, test_script_evaluation, test_multi_cli_errors,
+        test_single_task_config_still_works, test_multi_interleaving_and_throughput,
+        test_multi_empty_input_and_rerun,
+    ]
+    assert len(order) == len(tests), (len(order), len(tests))
+    for fn in order:
+        try:
+            fn()
+        except Exception as exc:
+            import traceback
+            traceback.print_exc()
+            FAILURES.append((fn.__name__, "exception: %s" % exc))
+    print("\n==================================")
+    print("passed: %d   failed: %d" % (len(PASSES), len(FAILURES)))
+    for name, detail in FAILURES:
+        print("  FAILED: %s  %s" % (name, detail))
+    shutil.rmtree(TMP, ignore_errors=True)
+    return 1 if FAILURES else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

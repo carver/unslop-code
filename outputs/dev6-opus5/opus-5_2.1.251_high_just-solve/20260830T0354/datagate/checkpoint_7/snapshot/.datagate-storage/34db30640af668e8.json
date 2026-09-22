@@ -1,0 +1,1 @@
+{"source": "http://127.0.0.1:50635/basic.xlsx", "columns": ["name", "age", "score", "start"], "rows": [["Alice", 30, 91.5, "08:30"], ["Bob", 25, 78.25, "9:15"], ["Carol", 41, 88, "12:00"]], "enriched": true, "dataset_summary": {"filetype": "excel", "row_count": 3, "column_count": 4}}

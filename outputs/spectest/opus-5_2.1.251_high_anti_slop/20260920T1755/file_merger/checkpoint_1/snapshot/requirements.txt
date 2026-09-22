@@ -1,0 +1,2 @@
+# merge_files.py runs on the standard library alone (Python >= 3.11).
+pytest>=8.0  # test suite only

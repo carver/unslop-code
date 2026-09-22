@@ -1,0 +1,70 @@
+agent_dir: agent
+agent_tar: agent.tar.gz
+agent_type: claude_code
+agent_version: 2.1.251
+checkpoint_file: checkpoint.yaml
+compress_artifacts: false
+concurrent_evaluation: false
+debug: false
+environment_file: environment.yaml
+image: slop-code:claude_code-2.1.251-python3.12
+inference_result_file: inference_result.json
+model_name: opus-5
+pass_policy: any
+problem_file: problem.yaml
+prompt_file: prompt.txt
+run_info_file: run_info.yaml
+seed: 42
+skip_evaluation: false
+snapshot_dir: snapshot
+summary:
+  checkpoints:
+    checkpoint_1: ran
+    checkpoint_2: ran
+    checkpoint_3: ran
+    checkpoint_4: ran
+    checkpoint_5: ran
+  duration_seconds: 2459.734685
+  ended: '2026-09-21T18:29:56.524896'
+  error_message: null
+  error_traceback: null
+  error_type: null
+  passed_policy: true
+  started: '2026-09-21T17:48:56.790211'
+  state: completed
+  total_cost: 33.213817999999996
+  total_steps: 268
+  total_usage:
+    cost: 33.213817999999996
+    current_tokens:
+      cache_read: 16782442
+      cache_write: 227162
+      input: 37886
+      output: 116946
+      reasoning: 0
+    net_tokens:
+      cache_read: 33376726
+      cache_write: 666334
+      input: 78380
+      output: 378082
+      reasoning: 0
+    steps: 268
+template: "{%- if not is_continuation -%}\nYou are an exceptional python software\
+  \ engineer and you to need to implement a spec. Your instructions are:\n- Write\
+  \ the python script that satisfies the spec completely.\n- Use a virtual environment\
+  \ and ensure that a `requirements.txt` is present with any dependencies you need\
+  \ to solve the problem.\n{%- else -%}\nYou are an exceptional python software engineer\
+  \ and you to need to implement a spec. You are updating your code to match an extension\
+  \ of the spec. Here are your instructions: \n- Keep using the same virtual environment\
+  \ you started with, update `requirements.txt` with any new dependencies you need.\n\
+  - Focus only on adding in the new features/changes below.\n- Make sure you test\
+  \ any examples provided in the task description\n{%- endif %}\n- You ONLY work in\
+  \ this directory.\n- Follow best coding practices:\n  - Group functions into files\
+  \ based on related functionality\n  - Keep your code clean\n- No god functions/classes.\n\
+  - Make sure the code is documented appropriately so that it is easy to pick up.\
+  \ \n- Minimize the following gotchas:\n  - Extra defensive checks or try/catch blocks\
+  \ that are abnormal.\n  - Casts to get around type checking\n  - Variables that\
+  \ are only used a single time after declaration.\n  - Extra comments that a human\
+  \ wouldn't add.\n  - Trivial wrappers\n  - Heavy nesting\n  - If/Else ladders\n\
+  \  - A ton of helper methods\n\nYour task is:\n{{ spec.strip() }}\n"
+verbose: false

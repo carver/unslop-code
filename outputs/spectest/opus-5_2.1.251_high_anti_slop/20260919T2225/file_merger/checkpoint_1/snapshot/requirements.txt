@@ -1,0 +1,1 @@
+# No third-party dependencies: merge_files.py runs on the Python 3.11+ standard library.

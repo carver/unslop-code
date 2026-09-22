@@ -1,0 +1,135 @@
+{
+  "classes": {
+    "attribute_counts_mean": 2.08,
+    "attribute_counts_sum": 52,
+    "count": 25,
+    "method_counts_mean": 1.92,
+    "method_counts_sum": 48
+  },
+  "complexity": {
+    "cc_max": 11,
+    "cc_ratings": {
+      "A": 336,
+      "B": 9,
+      "C": 1,
+      "D": 0,
+      "E": 0,
+      "F": 0
+    },
+    "cc_sum": 743,
+    "mi_min": 40.22347790550586,
+    "mi_ratings": {
+      "A": 27,
+      "B": 0,
+      "C": 0
+    },
+    "mi_sum": 1610.023715455172,
+    "num_complex": 1
+  },
+  "file_count": 27,
+  "functions": {
+    "cc_concentration": 0.23320971347287137,
+    "cc_extreme_count": 0,
+    "cc_high_count": 1,
+    "cc_max": 11,
+    "cc_mean": 2.5107142857142857,
+    "cc_normalized": 0.0008528236399571233,
+    "cc_std": 1.2268908414006316,
+    "cc_sum": 703,
+    "cc_top20": 0.32716927453769556,
+    "count": 280,
+    "depth_max": 3,
+    "extreme_cc_mean": 0.0,
+    "high_cc_mean": 11.0,
+    "lines_mean": 6.303571428571429,
+    "lines_sum": 1765
+  },
+  "graph": {
+    "cyclic_dependency_mass": 0.0,
+    "dependency_entropy": 0.15789473684210525,
+    "edge_count": 72,
+    "node_count": 95,
+    "propagation_cost": 0.01601343784994401
+  },
+  "lines": {
+    "comments": 196,
+    "loc": 1753,
+    "multi_comment": 98,
+    "single_comment": 283,
+    "total_lines": 2836
+  },
+  "lint": {
+    "counts": {
+      "ARG001": 1,
+      "ARG005": 2,
+      "B905": 2,
+      "DOC201": 41,
+      "DOC402": 6,
+      "DOC501": 8,
+      "DTZ001": 4,
+      "EM101": 1,
+      "EM102": 25,
+      "ERA001": 105,
+      "EXE001": 1,
+      "FURB188": 1,
+      "INP001": 11,
+      "N818": 1,
+      "PLC0415": 2,
+      "PLC1901": 4,
+      "PLR2004": 21,
+      "PLR6201": 1,
+      "PLR6301": 4,
+      "PLW1510": 1,
+      "PT018": 1,
+      "PTH105": 1,
+      "PTH108": 1,
+      "RUF003": 1,
+      "RUF023": 1,
+      "S101": 237,
+      "S311": 3,
+      "S404": 1,
+      "S603": 1,
+      "SIM115": 1,
+      "TC001": 1,
+      "TRY003": 26
+    },
+    "errors": 517,
+    "fixable": 5
+  },
+  "source_files": [
+    "csvmerge/formats/__init__.py",
+    "csvmerge/sorting.py",
+    "csvmerge/formats/parquet.py",
+    "csvmerge/formats/delimited.py",
+    "csvmerge/inference.py",
+    "csvmerge/dialect.py",
+    "csvmerge/coltypes.py",
+    "csvmerge/formats/detect.py",
+    "csvmerge/values.py",
+    "csvmerge/errors.py",
+    "csvmerge/writer.py",
+    "csvmerge/rows.py",
+    "csvmerge/formats/jsonl.py",
+    "csvmerge/schema.py",
+    "merge_files.py"
+  ],
+  "symbols": {
+    "classes": 25,
+    "expressions": 2371,
+    "expressions_top_level": 47,
+    "functions": 232,
+    "globals": 41,
+    "imports": 98,
+    "max_imports": 13,
+    "methods": 48,
+    "statements": 606,
+    "total": 346,
+    "type_aliases": 0,
+    "variables": 41
+  },
+  "waste": {
+    "single_use_functions": 223,
+    "trivial_wrappers": 3,
+    "unused_variables": 50
+  }
+}

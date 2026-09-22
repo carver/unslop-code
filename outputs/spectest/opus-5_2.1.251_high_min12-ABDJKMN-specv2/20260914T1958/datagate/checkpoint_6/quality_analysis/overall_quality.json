@@ -1,0 +1,141 @@
+{
+  "classes": {
+    "attribute_counts_mean": 1.875,
+    "attribute_counts_sum": 15,
+    "count": 8,
+    "method_counts_mean": 2.125,
+    "method_counts_sum": 17
+  },
+  "complexity": {
+    "cc_max": 17,
+    "cc_ratings": {
+      "A": 570,
+      "B": 28,
+      "C": 4,
+      "D": 0,
+      "E": 0,
+      "F": 0
+    },
+    "cc_sum": 1528,
+    "mi_min": 0.0,
+    "mi_ratings": {
+      "A": 18,
+      "B": 0,
+      "C": 1
+    },
+    "mi_sum": 1034.922916937128,
+    "num_complex": 4
+  },
+  "file_count": 19,
+  "functions": {
+    "cc_concentration": 0.28776154856969577,
+    "cc_extreme_count": 0,
+    "cc_high_count": 4,
+    "cc_max": 17,
+    "cc_mean": 2.9269230769230767,
+    "cc_normalized": 0.0007375439116006117,
+    "cc_std": 1.8126206434757084,
+    "cc_sum": 1522,
+    "cc_top20": 0.38173455978975035,
+    "count": 520,
+    "depth_max": 4,
+    "extreme_cc_mean": 0.0,
+    "high_cc_mean": 14.0,
+    "lines_mean": 6.573076923076923,
+    "lines_sum": 3418
+  },
+  "graph": {
+    "cyclic_dependency_mass": 0.0,
+    "dependency_entropy": 0.22552591536218494,
+    "edge_count": 75,
+    "node_count": 73,
+    "propagation_cost": 0.03291476407914764
+  },
+  "lines": {
+    "comments": 1413,
+    "loc": 3555,
+    "multi_comment": 45,
+    "single_comment": 1448,
+    "total_lines": 6234
+  },
+  "lint": {
+    "counts": {
+      "ARG001": 1,
+      "B904": 14,
+      "B905": 1,
+      "BLE001": 5,
+      "C901": 2,
+      "DOC201": 65,
+      "DOC402": 2,
+      "DOC501": 20,
+      "EM102": 8,
+      "ERA001": 248,
+      "EXE001": 1,
+      "F401": 8,
+      "F541": 1,
+      "F841": 1,
+      "FBT001": 1,
+      "FBT003": 3,
+      "FURB101": 1,
+      "INP001": 18,
+      "PIE804": 1,
+      "PLC0415": 8,
+      "PLC1901": 3,
+      "PLR0124": 2,
+      "PLR0911": 2,
+      "PLR2004": 187,
+      "PLR6104": 1,
+      "PLR6201": 6,
+      "PLW0603": 5,
+      "PLW2901": 2,
+      "PT006": 2,
+      "PT018": 15,
+      "PTH100": 1,
+      "PTH103": 2,
+      "PTH105": 1,
+      "PTH111": 1,
+      "PTH112": 1,
+      "PTH118": 2,
+      "PTH123": 5,
+      "RET501": 2,
+      "RUF001": 1,
+      "RUF059": 3,
+      "S101": 652,
+      "S110": 1,
+      "S113": 2,
+      "S404": 1,
+      "S603": 2,
+      "SIM105": 1,
+      "SIM115": 2,
+      "TRY003": 8,
+      "TRY300": 1,
+      "TRY301": 2,
+      "UP012": 3,
+      "UP015": 2
+    },
+    "errors": 1330,
+    "fixable": 27
+  },
+  "source_files": [
+    "datagate.py"
+  ],
+  "symbols": {
+    "classes": 8,
+    "expressions": 4839,
+    "expressions_top_level": 136,
+    "functions": 503,
+    "globals": 74,
+    "imports": 74,
+    "max_imports": 21,
+    "methods": 17,
+    "statements": 1253,
+    "total": 602,
+    "type_aliases": 0,
+    "variables": 74
+  },
+  "waste": {
+    "single_use_functions": 458,
+    "trivial_wrappers": 3,
+    "unused_variables": 87
+  }
+}

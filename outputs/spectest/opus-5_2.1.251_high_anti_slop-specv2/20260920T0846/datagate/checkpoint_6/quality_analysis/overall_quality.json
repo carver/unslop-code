@@ -1,0 +1,119 @@
+{
+  "classes": {
+    "attribute_counts_mean": 2.875,
+    "attribute_counts_sum": 23,
+    "count": 8,
+    "method_counts_mean": 0.625,
+    "method_counts_sum": 5
+  },
+  "complexity": {
+    "cc_max": 9,
+    "cc_ratings": {
+      "A": 204,
+      "B": 12,
+      "C": 0,
+      "D": 0,
+      "E": 0,
+      "F": 0
+    },
+    "cc_sum": 474,
+    "mi_min": 0.0,
+    "mi_ratings": {
+      "A": 13,
+      "B": 0,
+      "C": 1
+    },
+    "mi_sum": 759.1632205091697,
+    "num_complex": 0
+  },
+  "file_count": 14,
+  "functions": {
+    "cc_concentration": 0.28932598409342597,
+    "cc_extreme_count": 0,
+    "cc_high_count": 0,
+    "cc_max": 9,
+    "cc_mean": 2.8154761904761907,
+    "cc_normalized": 0.0018223233770604038,
+    "cc_std": 1.5578269870513224,
+    "cc_sum": 473,
+    "cc_top20": 0.3699788583509514,
+    "count": 168,
+    "depth_max": 3,
+    "extreme_cc_mean": 0.0,
+    "high_cc_mean": 0.0,
+    "lines_mean": 8.017857142857142,
+    "lines_sum": 1347
+  },
+  "graph": {
+    "cyclic_dependency_mass": 0.0,
+    "dependency_entropy": 0.11154540239311954,
+    "edge_count": 46,
+    "node_count": 53,
+    "propagation_cost": 0.04027576197387518
+  },
+  "lines": {
+    "comments": 6,
+    "loc": 1212,
+    "multi_comment": 130,
+    "single_comment": 55,
+    "total_lines": 1957
+  },
+  "lint": {
+    "counts": {
+      "ARG001": 4,
+      "B905": 2,
+      "C901": 1,
+      "DOC201": 49,
+      "DOC501": 21,
+      "EM101": 7,
+      "EM102": 25,
+      "FBT001": 1,
+      "FURB140": 1,
+      "INP001": 14,
+      "PLR0915": 1,
+      "PLR2004": 49,
+      "PLR6201": 1,
+      "PT011": 1,
+      "PT018": 1,
+      "S101": 154,
+      "TRY003": 32,
+      "UP012": 1
+    },
+    "errors": 365,
+    "fixable": 2
+  },
+  "source_files": [
+    "app.py",
+    "access.py",
+    "datagate.py",
+    "uploads.py",
+    "fetcher.py",
+    "sheets.py",
+    "errors.py",
+    "filters.py",
+    "query.py",
+    "store.py",
+    "config.py",
+    "cache.py",
+    "tabular.py"
+  ],
+  "symbols": {
+    "classes": 8,
+    "expressions": 1685,
+    "expressions_top_level": 27,
+    "functions": 163,
+    "globals": 40,
+    "imports": 74,
+    "max_imports": 13,
+    "methods": 5,
+    "statements": 434,
+    "total": 216,
+    "type_aliases": 0,
+    "variables": 40
+  },
+  "waste": {
+    "single_use_functions": 142,
+    "trivial_wrappers": 8,
+    "unused_variables": 52
+  }
+}

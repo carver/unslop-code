@@ -1,0 +1,104 @@
+{
+  "schema_version": 1,
+  "problem_name": "xjq",
+  "problem_version": 2,
+  "checkpoint_name": "checkpoint_2",
+  "checkpoint_version": 2,
+  "duration": 17.668683767318726,
+  "entrypoint": "uv run xjq.py",
+  "tests": {
+    "checkpoint_1-Regression": {
+      "passed": [
+        "test_attribute_output_is_whitespace_normalized",
+        "test_checkpoint_1_infile_argument_behavior_by_checkpoint",
+        "test_deeply_nested_xml_pretty_printing",
+        "test_empty_stdin_returns_error",
+        "test_html_element_matching_is_case_sensitive",
+        "test_html_input",
+        "test_invalid_xpath_returns_error",
+        "test_malformed_xml_returns_error",
+        "test_multiple_attribute_results",
+        "test_multiple_text_results",
+        "test_no_match_returns_empty_stdout_with_success",
+        "test_per_result_whitespace_normalization",
+        "test_text_output_is_whitespace_normalized",
+        "test_whitespace_only_stdin_returns_xml_parse_error",
+        "test_xml_element_matching_is_case_sensitive",
+        "test_xml_with_cdata_section",
+        "test_xpath_absolute_path",
+        "test_xpath_multiple_xml_nodes_default_to_first_only",
+        "test_xpath_positional_predicate",
+        "test_xpath_predicate_syntax",
+        "test_xpath_text_and_attribute_queries[//image/@src-expected1]",
+        "test_xpath_text_and_attribute_queries[//image/vOffset/text()-expected0]",
+        "test_xpath_xml_nodes_are_pretty_printed"
+      ],
+      "failed": [],
+      "skipped": []
+    },
+    "checkpoint_2-Functionality": {
+      "passed": [
+        "test_css_comma_separated_descendant_text_selectors",
+        "test_css_comma_separated_selectors",
+        "test_css_direct_text_on_empty_element",
+        "test_css_text_pseudo_element_on_element_with_no_direct_text",
+        "test_css_without_text_returns_only_first_matching_xml_node",
+        "test_redundant_flags_do_not_change_descendant_css_text_query",
+        "test_text_all_on_whitespace_only_element_is_empty_output",
+        "test_text_all_takes_precedence_over_text",
+        "test_text_modes_collapse_whitespace_runs",
+        "test_grouped_css_text_queries_ignore_redundant_text_flags[h1::text, h2::text-redundant_flags0]",
+        "test_grouped_css_text_queries_ignore_redundant_text_flags[h1 ::text, h2 ::text-redundant_flags1]"
+      ],
+      "failed": [
+        "test_css_text_all_with_multiple_elements_joins_with_newlines",
+        "test_text_all_deeply_nested_with_whitespace"
+      ],
+      "skipped": []
+    },
+    "checkpoint_2-Error": {
+      "passed": [
+        "test_css_mixed_text_modes_in_comma_query_returns_error",
+        "test_invalid_css_selector_returns_error"
+      ],
+      "failed": [],
+      "skipped": []
+    },
+    "checkpoint_2-Core": {
+      "passed": [
+        "test_css_selectors_support_id_class_descendant_and_attribute",
+        "test_css_text_all_flag_extracts_concatenated_descendant_text",
+        "test_css_text_all_precedence_over_text_in_css_mode",
+        "test_css_text_pseudo_element_modes",
+        "test_css_without_text_returns_pretty_printed_xml",
+        "test_redundant_css_text_extraction_flags_do_not_change_result",
+        "test_redundant_xpath_text_extraction_flags_do_not_change_result",
+        "test_text_all_concatenates_descendant_text",
+        "test_text_and_css_text_modes_also_normalize_whitespace",
+        "test_text_flag_uses_direct_text_not_descendants",
+        "test_text_flag_with_multiple_elements_joins_with_newlines",
+        "test_text_flag_works_for_xpath_and_css"
+      ],
+      "failed": [
+        "test_text_all_with_multiple_elements_joins_with_newlines"
+      ],
+      "skipped": []
+    }
+  },
+  "pass_counts": {
+    "Core": 12,
+    "Functionality": 11,
+    "Regression": 23,
+    "Error": 2
+  },
+  "total_counts": {
+    "Core": 13,
+    "Functionality": 13,
+    "Regression": 23,
+    "Error": 2
+  },
+  "pytest_exit_code": 1,
+  "pytest_collected": 49,
+  "test_collection_hash": "370a0b2c4bb87be92ce9c96d551babb0ba1c1e8bc6c7705c4c34783cc1a54aa1",
+  "infrastructure_failure": false
+}

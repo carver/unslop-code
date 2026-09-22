@@ -1,0 +1,130 @@
+{
+  "classes": {
+    "attribute_counts_mean": 3.3448275862068964,
+    "attribute_counts_sum": 97,
+    "count": 29,
+    "method_counts_mean": 1.0344827586206897,
+    "method_counts_sum": 30
+  },
+  "complexity": {
+    "cc_max": 20,
+    "cc_ratings": {
+      "A": 221,
+      "B": 24,
+      "C": 3,
+      "D": 0,
+      "E": 0,
+      "F": 0
+    },
+    "cc_sum": 617,
+    "mi_min": 24.099360030049855,
+    "mi_ratings": {
+      "A": 23,
+      "B": 0,
+      "C": 0
+    },
+    "mi_sum": 1201.9041002463116,
+    "num_complex": 3
+  },
+  "file_count": 23,
+  "functions": {
+    "cc_concentration": 0.3457493956486704,
+    "cc_extreme_count": 0,
+    "cc_high_count": 3,
+    "cc_max": 20,
+    "cc_mean": 3.4352941176470586,
+    "cc_normalized": 0.0032319390051754335,
+    "cc_std": 2.5463609435810115,
+    "cc_sum": 584,
+    "cc_top20": 0.4229452054794521,
+    "count": 170,
+    "depth_max": 3,
+    "extreme_cc_mean": 0.0,
+    "high_cc_mean": 15.333333333333334,
+    "lines_mean": 10.205882352941176,
+    "lines_sum": 1735
+  },
+  "graph": {
+    "cyclic_dependency_mass": 0.0,
+    "dependency_entropy": 0.21522429523758194,
+    "edge_count": 86,
+    "node_count": 92,
+    "propagation_cost": 0.028308647873865264
+  },
+  "lines": {
+    "comments": 19,
+    "loc": 1868,
+    "multi_comment": 69,
+    "single_comment": 130,
+    "total_lines": 2669
+  },
+  "lint": {
+    "counts": {
+      "ANN401": 9,
+      "ARG001": 7,
+      "B905": 1,
+      "DOC201": 63,
+      "DOC402": 1,
+      "DOC501": 17,
+      "EM101": 3,
+      "EM102": 47,
+      "FBT001": 4,
+      "FURB113": 1,
+      "FURB122": 1,
+      "INP001": 23,
+      "PLR0913": 3,
+      "PLR0917": 2,
+      "PLR2004": 17,
+      "PLW1510": 2,
+      "PT018": 11,
+      "PTH123": 3,
+      "RUF029": 3,
+      "S101": 151,
+      "S311": 1,
+      "S404": 1,
+      "S603": 3,
+      "TRY003": 50,
+      "UP035": 6
+    },
+    "errors": 430,
+    "fixable": 12
+  },
+  "source_files": [
+    "templates.py",
+    "extraction.py",
+    "script_eval.py",
+    "config.py",
+    "pipeline.py",
+    "errors.py",
+    "rejector.py",
+    "schemes.py",
+    "results.py",
+    "jobs.py",
+    "api.py",
+    "cli.py",
+    "evaluation.py",
+    "icl.py",
+    "dataset.py",
+    "ratelimit.py",
+    "judge.py"
+  ],
+  "symbols": {
+    "classes": 29,
+    "expressions": 2606,
+    "expressions_top_level": 55,
+    "functions": 140,
+    "globals": 49,
+    "imports": 108,
+    "max_imports": 9,
+    "methods": 30,
+    "statements": 577,
+    "total": 248,
+    "type_aliases": 0,
+    "variables": 49
+  },
+  "waste": {
+    "single_use_functions": 123,
+    "trivial_wrappers": 0,
+    "unused_variables": 61
+  }
+}

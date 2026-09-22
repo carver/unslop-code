@@ -1,0 +1,28 @@
+{
+  "artifacts_dir": "agent",
+  "checkpoint_path": "outputs/spectest/opus-5_2.1.251_high_min13-ABDJKMNT/20260918T2129/rejector/checkpoint_1",
+  "completed": "2026-09-18T21:42:57.177982",
+  "elapsed": 809.725673,
+  "error_message": null,
+  "had_error": false,
+  "snapshot_dir": "snapshot",
+  "started": "2026-09-18T21:29:27.452309",
+  "usage": {
+    "cost": 3.201752,
+    "current_tokens": {
+      "cache_read": 1825836,
+      "cache_write": 70714,
+      "input": 3702,
+      "output": 62359,
+      "reasoning": 0
+    },
+    "net_tokens": {
+      "cache_read": 1825836,
+      "cache_write": 70714,
+      "input": 3702,
+      "output": 62359,
+      "reasoning": 0
+    },
+    "steps": 27
+  }
+}

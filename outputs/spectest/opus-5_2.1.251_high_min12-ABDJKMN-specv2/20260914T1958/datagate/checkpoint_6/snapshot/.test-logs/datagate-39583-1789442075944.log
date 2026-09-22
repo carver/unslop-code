@@ -1,0 +1,65 @@
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:39583
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [15/Sep/2026 03:14:36] "[33mGET /datasets/readiness-probe HTTP/1.1[0m" 404 -
+127.0.0.1 - - [15/Sep/2026 03:14:36] "GET /convert?source=http://127.0.0.1:43073/ds-shape.csv HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:14:36] "GET /datasets/34b6802a70db4cc1 HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:14:36] "GET /convert?source=http://127.0.0.1:43073/ds-order.csv HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:14:36] "GET /datasets/c0944477904d1dd1 HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:14:36] "GET /convert?source=http://127.0.0.1:43073/ds-250.csv HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:14:36] "GET /datasets/7c2ef9d68b1a9e21 HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:14:36] "GET /convert?source=http://127.0.0.1:43073/ds-few.csv HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:14:36] "GET /datasets/5c3ef7311b35d70f HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:14:36] "GET /convert?source=http://127.0.0.1:43073/ds-100.csv HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:14:36] "GET /datasets/fa83e520325f41a2 HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:14:36] "GET /convert?source=http://127.0.0.1:43073/ds-strings.csv HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:14:36] "GET /datasets/ca680ef622a6807d HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:14:36] "GET /convert?source=http://127.0.0.1:43073/ds-numbers.csv HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:14:36] "GET /datasets/530743819f8ce03f HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:14:36] "GET /convert?source=http://127.0.0.1:43073/ds-rawjson.csv HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:14:36] "GET /datasets/7614dc933391e490 HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:14:36] "GET /convert?source=http://127.0.0.1:43073/ds-times.csv HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:14:36] "GET /datasets/e9f6fa5b4ea6df04 HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:14:36] "GET /convert?source=http://127.0.0.1:43073/ds-time-verbatim.csv HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:14:36] "GET /datasets/098b3608e6d6b521 HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:14:36] "GET /convert?source=http://127.0.0.1:43073/ds-numeric-header.csv HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:14:36] "GET /datasets/6c3e7322126bd490 HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:14:36] "[33mGET /datasets/0123456789abcdef HTTP/1.1[0m" 404 -
+127.0.0.1 - - [15/Sep/2026 03:14:36] "GET /convert?source=http://127.0.0.1:43073/ds-qms.csv HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:14:36] "GET /datasets/9c8b43f191fbf8b4 HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:14:36] "GET /convert?source=http://127.0.0.1:43073/ds-repeat.csv HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:14:36] "GET /datasets/4cc68393b557178e HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:14:36] "GET /datasets/4cc68393b557178e HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:14:36] "GET /convert?source=http://127.0.0.1:43073/ds-limit.csv HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:14:36] "GET /datasets/d278e05f42467841?_size=5 HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:14:36] "GET /datasets/d278e05f42467841 HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:14:36] "GET /convert?source=http://127.0.0.1:43073/parse-cp1251.csv&charset=cp1251 HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:14:36] "GET /datasets/0cfb2fa8ca8e54d5 HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:14:36] "GET /convert?source=http://127.0.0.1:43073/parse-bom.csv HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:14:36] "GET /datasets/c976d68210e8559f HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:14:36] "GET /convert?source=http://127.0.0.1:43073/parse-comma.csv HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:14:36] "GET /datasets/6c309d5741a2c300 HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:14:36] "GET /convert?source=http://127.0.0.1:43073/parse-semi.csv HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:14:36] "GET /datasets/401488f995b2c136 HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:14:36] "GET /convert?source=http://127.0.0.1:43073/parse-tab.csv HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:14:36] "GET /datasets/d6742daf21cf3d84 HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:14:36] "GET /convert?source=http://127.0.0.1:43073/parse-mixed.csv HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:14:36] "GET /datasets/ae4a47acc77461d8 HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:14:36] "GET /convert?source=http://127.0.0.1:43073/parse-quoted.csv HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:14:36] "GET /datasets/db1a2f490c2c4b4b HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:14:36] "GET /convert?source=http://127.0.0.1:43073/parse-onecol.csv HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:14:36] "GET /datasets/90c94a1c4cc52b36 HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:14:36] "[31m[1mGET /convert?source=http://127.0.0.1:43073/parse-headeronly.csv HTTP/1.1[0m" 400 -
+127.0.0.1 - - [15/Sep/2026 03:14:36] "GET /convert?source=http://127.0.0.1:43073/parse-minimal.csv HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:14:36] "GET /datasets/890baab4ffa8ba78 HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:14:37] "[31m[1mGET /convert?source=http://127.0.0.1:43073/parse-trailingblank.csv HTTP/1.1[0m" 400 -
+127.0.0.1 - - [15/Sep/2026 03:14:37] "GET /convert?source=http://127.0.0.1:43073/parse-crlf.csv HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:14:37] "GET /datasets/a9561a354a055081 HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:14:37] "GET /convert?source=http://127.0.0.1:43073/parse-padded.csv HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:14:37] "GET /datasets/f1a095f979c5ee9a HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:14:37] "GET /convert?source=http://127.0.0.1:43073/parse-ragged.csv HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:14:37] "GET /datasets/b26e6df6ea718ca5 HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:14:37] "GET /convert?source=http://127.0.0.1:43073/parse-empty-cell.csv HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:14:37] "GET /datasets/968d74c2779b1914 HTTP/1.1" 200 -

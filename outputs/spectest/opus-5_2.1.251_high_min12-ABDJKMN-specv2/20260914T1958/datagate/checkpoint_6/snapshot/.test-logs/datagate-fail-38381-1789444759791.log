@@ -1,0 +1,1 @@
+datagate: cannot read DATAGATE_CONFIG file '/tmp/pytest-of-agent/pytest-2/test_unreadable_config_file_is0/conf.d': Is a directory

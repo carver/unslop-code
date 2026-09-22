@@ -1,0 +1,143 @@
+{
+  "classes": {
+    "attribute_counts_mean": 4.147058823529412,
+    "attribute_counts_sum": 141,
+    "count": 34,
+    "method_counts_mean": 1.1470588235294117,
+    "method_counts_sum": 39
+  },
+  "complexity": {
+    "cc_max": 19,
+    "cc_ratings": {
+      "A": 461,
+      "B": 49,
+      "C": 8,
+      "D": 0,
+      "E": 0,
+      "F": 0
+    },
+    "cc_sum": 1381,
+    "mi_min": 15.882334308112368,
+    "mi_ratings": {
+      "A": 37,
+      "B": 1,
+      "C": 0
+    },
+    "mi_sum": 1790.6233511205728,
+    "num_complex": 8
+  },
+  "file_count": 38,
+  "functions": {
+    "cc_concentration": 0.3262854104959368,
+    "cc_extreme_count": 0,
+    "cc_high_count": 6,
+    "cc_max": 19,
+    "cc_mean": 3.3585858585858586,
+    "cc_normalized": 0.0011080504153693459,
+    "cc_std": 2.22476328314438,
+    "cc_sum": 1330,
+    "cc_top20": 0.4105263157894737,
+    "count": 396,
+    "depth_max": 3,
+    "extreme_cc_mean": 0.0,
+    "high_cc_mean": 13.166666666666666,
+    "lines_mean": 9.358585858585858,
+    "lines_sum": 3706
+  },
+  "graph": {
+    "cyclic_dependency_mass": 0.014925373134328358,
+    "dependency_entropy": 0.29718027072738223,
+    "edge_count": 183,
+    "node_count": 170,
+    "propagation_cost": 0.019735468151757744
+  },
+  "lines": {
+    "comments": 62,
+    "loc": 4093,
+    "multi_comment": 255,
+    "single_comment": 220,
+    "total_lines": 5803
+  },
+  "lint": {
+    "counts": {
+      "ANN401": 27,
+      "ARG001": 7,
+      "ARG005": 112,
+      "B905": 2,
+      "C420": 1,
+      "DOC201": 129,
+      "DOC402": 4,
+      "DOC501": 22,
+      "EM101": 5,
+      "EM102": 47,
+      "FBT001": 10,
+      "FBT002": 4,
+      "FBT003": 17,
+      "FURB113": 1,
+      "INP001": 38,
+      "PLR0913": 3,
+      "PLR0917": 3,
+      "PLR2004": 82,
+      "PLR6301": 7,
+      "PLW1514": 5,
+      "PT006": 1,
+      "PT018": 19,
+      "RUF005": 2,
+      "RUF029": 2,
+      "RUF043": 8,
+      "RUF059": 2,
+      "RUF100": 2,
+      "S101": 384,
+      "S311": 1,
+      "TC002": 25,
+      "TC003": 4,
+      "TRY003": 52,
+      "UP035": 10
+    },
+    "errors": 1038,
+    "fixable": 13
+  },
+  "source_files": [
+    "jobs.py",
+    "runner.py",
+    "icl.py",
+    "evaluation.py",
+    "agentic.py",
+    "rejector.py",
+    "cost.py",
+    "tools.py",
+    "prompts.py",
+    "shell.py",
+    "records.py",
+    "templates.py",
+    "errors.py",
+    "client.py",
+    "config.py",
+    "schema.py",
+    "schemes.py",
+    "resume.py",
+    "limits.py",
+    "estimate.py",
+    "jsonl.py",
+    "progress.py"
+  ],
+  "symbols": {
+    "classes": 34,
+    "expressions": 5292,
+    "expressions_top_level": 103,
+    "functions": 357,
+    "globals": 88,
+    "imports": 205,
+    "max_imports": 14,
+    "methods": 39,
+    "statements": 1175,
+    "total": 518,
+    "type_aliases": 0,
+    "variables": 88
+  },
+  "waste": {
+    "single_use_functions": 308,
+    "trivial_wrappers": 2,
+    "unused_variables": 112
+  }
+}

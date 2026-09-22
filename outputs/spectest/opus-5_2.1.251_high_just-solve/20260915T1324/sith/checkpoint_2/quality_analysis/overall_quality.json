@@ -1,0 +1,143 @@
+{
+  "classes": {
+    "attribute_counts_mean": 1.96875,
+    "attribute_counts_sum": 63,
+    "count": 32,
+    "method_counts_mean": 5.65625,
+    "method_counts_sum": 181
+  },
+  "complexity": {
+    "cc_max": 380,
+    "cc_ratings": {
+      "A": 213,
+      "B": 45,
+      "C": 20,
+      "D": 8,
+      "E": 0,
+      "F": 3
+    },
+    "cc_sum": 1676,
+    "mi_min": 0.0,
+    "mi_ratings": {
+      "A": 1,
+      "B": 0,
+      "C": 1
+    },
+    "mi_sum": 24.850172795782786,
+    "num_complex": 31
+  },
+  "file_count": 2,
+  "functions": {
+    "cc_concentration": 0.5372947822219936,
+    "cc_extreme_count": 1,
+    "cc_high_count": 26,
+    "cc_max": 43,
+    "cc_mean": 4.6846473029045645,
+    "cc_normalized": 0.006305605526052695,
+    "cc_std": 5.7749578624078675,
+    "cc_sum": 1129,
+    "cc_top20": 0.5801594331266607,
+    "count": 241,
+    "depth_max": 5,
+    "extreme_cc_mean": 43.0,
+    "high_cc_mean": 18.26923076923077,
+    "lines_mean": 12.427385892116183,
+    "lines_sum": 2995
+  },
+  "graph": {
+    "cyclic_dependency_mass": 0.11314984709480122,
+    "dependency_entropy": 0.30787850852108717,
+    "edge_count": 206,
+    "node_count": 146,
+    "propagation_cost": 0.050732168162494096
+  },
+  "lines": {
+    "comments": 106,
+    "loc": 3115,
+    "multi_comment": 8,
+    "single_comment": 100,
+    "total_lines": 3670
+  },
+  "lint": {
+    "counts": {
+      "ARG001": 1,
+      "ARG002": 3,
+      "B007": 2,
+      "BLE001": 33,
+      "C901": 14,
+      "DOC201": 35,
+      "EXE001": 1,
+      "FBT002": 3,
+      "FBT003": 4,
+      "FURB101": 2,
+      "FURB103": 2,
+      "FURB118": 1,
+      "FURB188": 2,
+      "INP001": 1,
+      "PERF203": 1,
+      "PERF401": 5,
+      "PLC0415": 1,
+      "PLR0904": 1,
+      "PLR0911": 15,
+      "PLR0912": 9,
+      "PLR0913": 6,
+      "PLR0915": 1,
+      "PLR0916": 1,
+      "PLR0917": 6,
+      "PLR1730": 2,
+      "PLR2004": 9,
+      "PLR6201": 8,
+      "PLR6301": 3,
+      "PLW1510": 1,
+      "PT009": 153,
+      "PTH100": 6,
+      "PTH102": 1,
+      "PTH110": 1,
+      "PTH112": 1,
+      "PTH113": 4,
+      "PTH118": 9,
+      "PTH119": 2,
+      "PTH120": 5,
+      "PTH123": 4,
+      "RET504": 2,
+      "RUF005": 1,
+      "RUF012": 1,
+      "RUF023": 2,
+      "RUF031": 1,
+      "S110": 2,
+      "S404": 1,
+      "S603": 1,
+      "SIM102": 3,
+      "SIM103": 1,
+      "SIM105": 1,
+      "SIM110": 1,
+      "SIM114": 1,
+      "SLF001": 5,
+      "UP031": 22
+    },
+    "errors": 404,
+    "fixable": 24
+  },
+  "source_files": [
+    "sith.py"
+  ],
+  "symbols": {
+    "classes": 32,
+    "expressions": 7226,
+    "expressions_top_level": 201,
+    "functions": 60,
+    "globals": 16,
+    "imports": 20,
+    "max_imports": 13,
+    "methods": 181,
+    "statements": 1709,
+    "total": 289,
+    "type_aliases": 0,
+    "variables": 16
+  },
+  "waste": {
+    "single_use_functions": 28,
+    "trivial_wrappers": 1,
+    "unused_variables": 34
+  }
+}

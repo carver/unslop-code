@@ -1,0 +1,125 @@
+{
+  "classes": {
+    "attribute_counts_mean": 2.375,
+    "attribute_counts_sum": 19,
+    "count": 8,
+    "method_counts_mean": 0.625,
+    "method_counts_sum": 5
+  },
+  "complexity": {
+    "cc_max": 9,
+    "cc_ratings": {
+      "A": 437,
+      "B": 8,
+      "C": 0,
+      "D": 0,
+      "E": 0,
+      "F": 0
+    },
+    "cc_sum": 1021,
+    "mi_min": 43.318454101280864,
+    "mi_ratings": {
+      "A": 29,
+      "B": 0,
+      "C": 0
+    },
+    "mi_sum": 1771.6644178276892,
+    "num_complex": 0
+  },
+  "file_count": 29,
+  "functions": {
+    "cc_concentration": 0.22133370170268502,
+    "cc_extreme_count": 0,
+    "cc_high_count": 0,
+    "cc_max": 9,
+    "cc_mean": 2.6510416666666665,
+    "cc_normalized": 0.0004888034502108347,
+    "cc_std": 1.148548389472161,
+    "cc_sum": 1018,
+    "cc_top20": 0.3290766208251473,
+    "count": 384,
+    "depth_max": 3,
+    "extreme_cc_mean": 0.0,
+    "high_cc_mean": 0.0,
+    "lines_mean": 5.71875,
+    "lines_sum": 2196
+  },
+  "graph": {
+    "cyclic_dependency_mass": 0.0,
+    "dependency_entropy": 0.2829723569705559,
+    "edge_count": 73,
+    "node_count": 67,
+    "propagation_cost": 0.034373586612392586
+  },
+  "lines": {
+    "comments": 343,
+    "loc": 2250,
+    "multi_comment": 96,
+    "single_comment": 442,
+    "total_lines": 3724
+  },
+  "lint": {
+    "counts": {
+      "ARG001": 25,
+      "C413": 1,
+      "C419": 1,
+      "DOC201": 76,
+      "DOC501": 13,
+      "DTZ005": 4,
+      "DTZ007": 3,
+      "EM102": 23,
+      "EXE001": 1,
+      "F401": 3,
+      "FBT003": 1,
+      "INP001": 16,
+      "PLC0415": 2,
+      "PLC1901": 6,
+      "PLR2004": 33,
+      "PLW1510": 2,
+      "PT006": 3,
+      "PT018": 14,
+      "RUF012": 1,
+      "S101": 422,
+      "S404": 2,
+      "S603": 2,
+      "SIM300": 2,
+      "TRY003": 23
+    },
+    "errors": 679,
+    "fixable": 8
+  },
+  "source_files": [
+    "mvaultlib/history.py",
+    "mvaultlib/digest_report.py",
+    "mvault.py",
+    "mvaultlib/digest.py",
+    "mvaultlib/errors.py",
+    "mvaultlib/download.py",
+    "mvaultlib/catalog.py",
+    "mvaultlib/source.py",
+    "mvaultlib/versions.py",
+    "mvaultlib/sync.py",
+    "mvaultlib/timestamps.py",
+    "mvaultlib/__init__.py",
+    "mvaultlib/schema.py"
+  ],
+  "symbols": {
+    "classes": 8,
+    "expressions": 3304,
+    "expressions_top_level": 240,
+    "functions": 379,
+    "globals": 53,
+    "imports": 98,
+    "max_imports": 7,
+    "methods": 5,
+    "statements": 711,
+    "total": 445,
+    "type_aliases": 0,
+    "variables": 53
+  },
+  "waste": {
+    "single_use_functions": 351,
+    "trivial_wrappers": 2,
+    "unused_variables": 124
+  }
+}

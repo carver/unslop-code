@@ -1,0 +1,61 @@
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:50033
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:00:46] "POST /upload HTTP/1.1" 200 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:39183
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:03:04] "POST /upload HTTP/1.1" 200 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:58375
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:03:05] "GET /convert?source=http://127.0.0.1:37527/file-beats-default-2.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:03:05] "GET /convert?source=http://127.0.0.1:37527/file-beats-default-2.csv HTTP/1.1" 200 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:33909
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:03:08] "[31m[1mPOST /upload HTTP/1.1[0m" 400 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:57881
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:03:08] "[33mGET /datasets/unknown HTTP/1.1[0m" 404 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:34727
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:03:09] "POST /upload HTTP/1.1" 200 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:51757
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:03:14] "POST /upload HTTP/1.1" 200 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:45629
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:03:16] "POST /upload HTTP/1.1" 200 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:55021
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:03:17] "POST /upload HTTP/1.1" 200 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:48021
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:03:17] "[33mGET /datasets/unknown HTTP/1.1[0m" 404 -

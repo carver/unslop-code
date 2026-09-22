@@ -1,0 +1,52 @@
+"""Aggregation of finished rows into the JSON summary printed to stdout."""
+
+from __future__ import annotations
+
+from collections.abc import Sequence
+from dataclasses import dataclass
+from typing import Any
+
+Result = dict[str, Any]
+
+
+@dataclass(frozen=True)
+class TaskResults:
+    """Everything one finished task contributes to the summary."""
+
+    name: str
+    results: list[Result]
+    api_calls: int
+
+
+def summarize(tasks: Sequence[TaskResults], elapsed_seconds: float) -> dict[str, Any]:
+    """Run totals over every task, plus a per-task breakdown keyed by task name."""
+    results = [result for task in tasks for result in task.results]
+    metas = [meta for result in results for meta in _metas(result)]
+    api_calls = sum(task.api_calls for task in tasks)
+    return {
+        **_counts(results),
+        "total_prompt_tokens": sum(meta["prompt_tokens"] for meta in metas),
+        "total_completion_tokens": sum(meta["completion_tokens"] for meta in metas),
+        "total_api_calls": api_calls,
+        "elapsed_seconds": round(elapsed_seconds, 1),
+        "throughput_rpm": round(api_calls / elapsed_seconds * 60, 1) if elapsed_seconds else 0.0,
+        "tasks": {task.name: {**_counts(task.results), "total_api_calls": task.api_calls} for task in tasks},
+    }
+
+
+def _counts(results: Sequence[Result]) -> dict[str, int]:
+    passed = sum(1 for result in results if _row_passed(result))
+    return {"total": len(results), "passed": passed, "failed": len(results) - passed}
+
+
+def _row_passed(result: Result) -> bool:
+    """Rows without a configured evaluation count as passed when the API answered."""
+    passed = result["result"]["passed"]
+    return passed is True or (passed is None and result["output"] is not None)
+
+
+def _metas(result: Result) -> list[dict[str, Any]]:
+    """The generation metadata of a row, with any judge call it made folded in."""
+    meta = result["meta"]
+    attempts = meta if isinstance(meta, list) else [meta] if meta else []
+    return attempts + [attempt["judge_meta"] for attempt in attempts if attempt.get("judge_meta")]

@@ -1,0 +1,1 @@
+datagate: cannot create STORAGE_DIR '/tmp/pytest-of-agent/pytest-0/test_uncreatable_storage_dir_i0/not-a-dir': File exists

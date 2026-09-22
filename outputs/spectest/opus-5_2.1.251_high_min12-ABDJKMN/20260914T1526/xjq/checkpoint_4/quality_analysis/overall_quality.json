@@ -1,0 +1,118 @@
+{
+  "classes": {
+    "attribute_counts_mean": 0.1568627450980392,
+    "attribute_counts_sum": 8,
+    "count": 51,
+    "method_counts_mean": 6.7254901960784315,
+    "method_counts_sum": 343
+  },
+  "complexity": {
+    "cc_max": 21,
+    "cc_ratings": {
+      "A": 404,
+      "B": 31,
+      "C": 13,
+      "D": 1,
+      "E": 0,
+      "F": 0
+    },
+    "cc_sum": 1360,
+    "mi_min": 0.0,
+    "mi_ratings": {
+      "A": 1,
+      "B": 0,
+      "C": 1
+    },
+    "mi_sum": 28.124969795209893,
+    "num_complex": 14
+  },
+  "file_count": 2,
+  "functions": {
+    "cc_concentration": 0.15007386371785494,
+    "cc_extreme_count": 0,
+    "cc_high_count": 0,
+    "cc_max": 10,
+    "cc_mean": 2.4015748031496065,
+    "cc_normalized": 0.00041382952139822776,
+    "cc_std": 0.9536068028917069,
+    "cc_sum": 915,
+    "cc_top20": 0.3180327868852459,
+    "count": 381,
+    "depth_max": 3,
+    "extreme_cc_mean": 0.0,
+    "high_cc_mean": 0.0,
+    "lines_mean": 3.8766404199475066,
+    "lines_sum": 1477
+  },
+  "graph": {
+    "cyclic_dependency_mass": 0.0,
+    "dependency_entropy": 0.3255894952698259,
+    "edge_count": 47,
+    "node_count": 33,
+    "propagation_cost": 0.08806818181818182
+  },
+  "lines": {
+    "comments": 303,
+    "loc": 1562,
+    "multi_comment": 25,
+    "single_comment": 328,
+    "total_lines": 2435
+  },
+  "lint": {
+    "counts": {
+      "BLE001": 1,
+      "DOC201": 29,
+      "ERA001": 31,
+      "EXE001": 1,
+      "FBT002": 3,
+      "FURB101": 1,
+      "FURB188": 2,
+      "INP001": 1,
+      "PLC1901": 66,
+      "PLR0911": 1,
+      "PLR2004": 1,
+      "PLR6301": 333,
+      "PLW1510": 4,
+      "PT006": 2,
+      "PT018": 12,
+      "PTH100": 1,
+      "PTH113": 1,
+      "PTH118": 1,
+      "PTH120": 1,
+      "PTH123": 2,
+      "RET503": 1,
+      "RUF012": 5,
+      "S101": 416,
+      "S404": 1,
+      "S603": 4,
+      "SLF001": 1,
+      "UP012": 1,
+      "UP022": 4,
+      "UP031": 15
+    },
+    "errors": 942,
+    "fixable": 11
+  },
+  "source_files": [
+    "xjq.py"
+  ],
+  "symbols": {
+    "classes": 51,
+    "expressions": 3443,
+    "expressions_top_level": 18,
+    "functions": 38,
+    "globals": 17,
+    "imports": 14,
+    "max_imports": 10,
+    "methods": 343,
+    "statements": 985,
+    "total": 449,
+    "type_aliases": 0,
+    "variables": 17
+  },
+  "waste": {
+    "single_use_functions": 24,
+    "trivial_wrappers": 2,
+    "unused_variables": 18
+  }
+}

@@ -1,0 +1,11 @@
+defaults:
+  api_url: "http://x"
+  model: m
+  prompt:
+    user: "{a}"
+tasks:
+  t:
+    evaluation:
+      type: "llm_judge"
+      judge_prompt:
+        user: "rate {__response__}"

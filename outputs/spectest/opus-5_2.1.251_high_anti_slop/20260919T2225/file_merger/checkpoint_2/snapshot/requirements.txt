@@ -1,0 +1,3 @@
+# Parquet inputs are read row group by row group through Arrow; the other
+# formats need nothing beyond the Python 3.11+ standard library.
+pyarrow>=14.0

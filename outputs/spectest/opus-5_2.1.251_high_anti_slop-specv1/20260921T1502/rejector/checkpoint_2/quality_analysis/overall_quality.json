@@ -1,0 +1,122 @@
+{
+  "classes": {
+    "attribute_counts_mean": 3.75,
+    "attribute_counts_sum": 60,
+    "count": 16,
+    "method_counts_mean": 0.5625,
+    "method_counts_sum": 9
+  },
+  "complexity": {
+    "cc_max": 13,
+    "cc_ratings": {
+      "A": 173,
+      "B": 17,
+      "C": 2,
+      "D": 0,
+      "E": 0,
+      "F": 0
+    },
+    "cc_sum": 479,
+    "mi_min": 24.80552342946689,
+    "mi_ratings": {
+      "A": 17,
+      "B": 0,
+      "C": 0
+    },
+    "mi_sum": 920.786528962493,
+    "num_complex": 2
+  },
+  "file_count": 17,
+  "functions": {
+    "cc_concentration": 0.3511596536269092,
+    "cc_extreme_count": 0,
+    "cc_high_count": 2,
+    "cc_max": 13,
+    "cc_mean": 3.1904761904761907,
+    "cc_normalized": 0.0032621598610911894,
+    "cc_std": 2.2093615681487684,
+    "cc_sum": 469,
+    "cc_top20": 0.42217484008528783,
+    "count": 147,
+    "depth_max": 3,
+    "extreme_cc_mean": 0.0,
+    "high_cc_mean": 13.0,
+    "lines_mean": 8.979591836734693,
+    "lines_sum": 1320
+  },
+  "graph": {
+    "cyclic_dependency_mass": 0.0,
+    "dependency_entropy": 0.27132162252121667,
+    "edge_count": 67,
+    "node_count": 62,
+    "propagation_cost": 0.04706504494976203
+  },
+  "lines": {
+    "comments": 19,
+    "loc": 1551,
+    "multi_comment": 43,
+    "single_comment": 85,
+    "total_lines": 2138
+  },
+  "lint": {
+    "counts": {
+      "ANN401": 4,
+      "ARG001": 2,
+      "ARG005": 18,
+      "B905": 1,
+      "DOC201": 42,
+      "DOC402": 1,
+      "DOC501": 12,
+      "EM101": 5,
+      "EM102": 31,
+      "FBT001": 1,
+      "FBT003": 14,
+      "INP001": 17,
+      "PLR2004": 18,
+      "PLW1514": 3,
+      "PT006": 1,
+      "PT018": 6,
+      "RUF005": 1,
+      "RUF043": 5,
+      "RUF059": 1,
+      "S101": 120,
+      "TC002": 7,
+      "TC003": 2,
+      "TRY003": 36,
+      "UP035": 4
+    },
+    "errors": 352,
+    "fixable": 4
+  },
+  "source_files": [
+    "jsonl.py",
+    "errors.py",
+    "prompts.py",
+    "client.py",
+    "evaluation.py",
+    "jobs.py",
+    "runner.py",
+    "rejector.py",
+    "config.py",
+    "shell.py"
+  ],
+  "symbols": {
+    "classes": 16,
+    "expressions": 1943,
+    "expressions_top_level": 49,
+    "functions": 138,
+    "globals": 29,
+    "imports": 88,
+    "max_imports": 10,
+    "methods": 9,
+    "statements": 438,
+    "total": 192,
+    "type_aliases": 0,
+    "variables": 29
+  },
+  "waste": {
+    "single_use_functions": 115,
+    "trivial_wrappers": 0,
+    "unused_variables": 42
+  }
+}

@@ -1,0 +1,101 @@
+{
+  "classes": {
+    "attribute_counts_mean": 0.5,
+    "attribute_counts_sum": 2,
+    "count": 4,
+    "method_counts_mean": 0.75,
+    "method_counts_sum": 3
+  },
+  "complexity": {
+    "cc_max": 16,
+    "cc_ratings": {
+      "A": 33,
+      "B": 7,
+      "C": 2,
+      "D": 0,
+      "E": 0,
+      "F": 0
+    },
+    "cc_sum": 139,
+    "mi_min": 23.162787610715217,
+    "mi_ratings": {
+      "A": 1,
+      "B": 0,
+      "C": 0
+    },
+    "mi_sum": 23.162787610715217,
+    "num_complex": 2
+  },
+  "file_count": 1,
+  "functions": {
+    "cc_concentration": 0.3960964408725603,
+    "cc_extreme_count": 0,
+    "cc_high_count": 2,
+    "cc_max": 16,
+    "cc_mean": 5.153846153846154,
+    "cc_normalized": 0.021510358654488748,
+    "cc_std": 3.854268363176676,
+    "cc_sum": 134,
+    "cc_top20": 0.48507462686567165,
+    "count": 26,
+    "depth_max": 3,
+    "extreme_cc_mean": 0.0,
+    "high_cc_mean": 14.0,
+    "lines_mean": 14.576923076923077,
+    "lines_sum": 379
+  },
+  "graph": {
+    "cyclic_dependency_mass": 0.0,
+    "dependency_entropy": 0.16681010287016093,
+    "edge_count": 30,
+    "node_count": 26,
+    "propagation_cost": 0.07692307692307693
+  },
+  "lines": {
+    "comments": 26,
+    "loc": 365,
+    "multi_comment": 19,
+    "single_comment": 31,
+    "total_lines": 520
+  },
+  "lint": {
+    "counts": {
+      "BLE001": 1,
+      "DOC201": 14,
+      "EXE001": 1,
+      "FBT002": 3,
+      "PLR0124": 1,
+      "PLR0911": 1,
+      "PLR6201": 2,
+      "PLR6301": 1,
+      "RET503": 1,
+      "RUF021": 1,
+      "SLF001": 6,
+      "UP031": 15
+    },
+    "errors": 47,
+    "fixable": 1
+  },
+  "source_files": [
+    "xjq.py"
+  ],
+  "symbols": {
+    "classes": 4,
+    "expressions": 374,
+    "expressions_top_level": 11,
+    "functions": 23,
+    "globals": 12,
+    "imports": 10,
+    "max_imports": 10,
+    "methods": 3,
+    "statements": 145,
+    "total": 42,
+    "type_aliases": 0,
+    "variables": 12
+  },
+  "waste": {
+    "single_use_functions": 17,
+    "trivial_wrappers": 1,
+    "unused_variables": 13
+  }
+}

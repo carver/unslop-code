@@ -1,0 +1,1836 @@
+"""datagate -- ingest remote or uploaded CSV/XLS/XLSX files and serve them as datasets."""
+
+from __future__ import annotations
+
+import argparse
+import atexit
+import codecs
+import csv
+import datetime
+import hashlib
+import io
+import json
+import math
+import os
+import re
+import shutil
+import sys
+import tempfile
+import threading
+import time
+import zipfile
+from collections import Counter
+from urllib.parse import urlsplit
+
+import requests
+from flask import Flask, Response, g, jsonify, request
+from werkzeug.exceptions import HTTPException
+
+# --------------------------------------------------------------------------- #
+# Configuration
+# --------------------------------------------------------------------------- #
+
+DEFAULT_PORT = 8001
+DEFAULT_ADDRESS = "127.0.0.1"
+
+DEFAULT_ROW_LIMIT = 100
+MAX_SAMPLE_LINES = 100
+FETCH_TIMEOUT = 30
+MAX_BYTES = 64 * 1024 * 1024
+
+# Wall-clock budget for evaluating a single /datasets/<id> query.
+QUERY_TIMEOUT_SECONDS = 15.0
+
+# How often the query budget is re-checked while scanning rows.
+TIMEOUT_CHECK_INTERVAL = 512
+
+# `,`, `;` and `\t` are the required minimum; the rest are best effort.
+DELIMITERS = [",", ";", "\t", "|", ":"]
+
+ALLOWED_SCHEMES = ("http", "https")
+
+# --------------------------------------------------------------------------- #
+# Environment configuration
+# --------------------------------------------------------------------------- #
+
+# Strict, case-insensitive spellings for boolean configuration values.
+TRUE_VALUES = ("1", "true", "yes", "on")
+FALSE_VALUES = ("0", "false", "no", "off")
+
+# Points at an optional `KEY=VALUE` file read before the direct environment.
+CONFIG_FILE_VAR = "DATAGATE_CONFIG"
+
+CACHE_ENABLED_VAR = "CACHE_ENABLED"
+MAX_SOURCE_SIZE_VAR = "MAX_SOURCE_SIZE"
+ORIGIN_ALLOWLIST_VAR = "ORIGIN_ALLOWLIST"
+REQUIRE_TLS_VAR = "REQUIRE_TLS"
+STORAGE_DIR_VAR = "STORAGE_DIR"
+
+# Every setting the service understands, in table order.
+SETTING_VARS = (
+    MAX_SOURCE_SIZE_VAR,
+    ORIGIN_ALLOWLIST_VAR,
+    REQUIRE_TLS_VAR,
+    STORAGE_DIR_VAR,
+    CACHE_ENABLED_VAR,
+)
+
+# Lines that carry no setting at all.
+COMMENT_PREFIXES = ("#", ";")
+
+LIST_SEPARATOR = ","
+
+
+class ConfigError(Exception):
+    """An unusable configuration value: the server refuses to start."""
+
+
+def parse_bool_env(name: str, raw, default: bool) -> bool:
+    """Read one strict boolean configuration value.
+
+    Anything outside the accepted spellings is a configuration error rather
+    than a silent fallback to the default.
+    """
+    if raw is None:
+        return default
+    value = str(raw).strip().lower()
+    if value in TRUE_VALUES:
+        return True
+    if value in FALSE_VALUES:
+        return False
+    raise ConfigError(
+        f"Invalid {name}: expected one of "
+        f"{', '.join(TRUE_VALUES + FALSE_VALUES)} (case-insensitive), "
+        f"got {raw!r}."
+    )
+
+
+def parse_size_env(name: str, raw, default):
+    """Read a byte count: a plain non-negative integer, or None when unset."""
+    if raw is None:
+        return default
+    text = str(raw).strip()
+    if not re.fullmatch(r"\+?\d+", text):
+        raise ConfigError(
+            f"Invalid {name}: expected a non-negative integer number of bytes, "
+            f"got {raw!r}."
+        )
+    try:
+        return int(text)
+    except ValueError:  # pragma: no cover - guarded by the regex above
+        raise ConfigError(f"Invalid {name}: expected a byte count, got {raw!r}.")
+
+
+def normalise_domain(value: str) -> str:
+    """Fold one allowlist entry (or hostname) into its comparable form."""
+    domain = (value or "").strip().lower()
+    # Accept entries written as URLs or with a port: only the host matters.
+    if "://" in domain:
+        try:
+            domain = urlsplit(domain).hostname or ""
+        except ValueError:
+            return ""
+    domain = domain.split("/")[0].strip()
+    if domain.startswith("[") and domain.endswith("]"):
+        domain = domain[1:-1]
+    elif re.fullmatch(r"[^:]+:\d+", domain):
+        domain = domain.rsplit(":", 1)[0]
+    # A leading dot (".example.com") and the FQDN root dot are both noise.
+    return domain.strip(".")
+
+
+def parse_list_env(name: str, raw, default):
+    """Read a comma separated list, or None when unset/empty."""
+    if raw is None:
+        return default
+    entries = [normalise_domain(part) for part in str(raw).split(LIST_SEPARATOR)]
+    entries = [entry for entry in entries if entry]
+    return tuple(entries) if entries else None
+
+
+def strip_quotes(value: str) -> str:
+    """Remove one layer of matching quotes from a config file value."""
+    if len(value) >= 2 and value[0] == value[-1] and value[0] in ("'", '"'):
+        return value[1:-1]
+    return value
+
+
+def read_config_file(path: str) -> dict:
+    """Parse a `KEY=VALUE` config file into raw string values.
+
+    Blank lines and `#`/`;` comments are ignored; anything else must be a
+    `KEY=VALUE` pair. A missing or unreadable file is a configuration error.
+    """
+    try:
+        with open(path, "r", encoding="utf-8-sig") as handle:
+            content = handle.read()
+    except OSError as exc:
+        raise ConfigError(f"Cannot read {CONFIG_FILE_VAR} file {path!r}: {exc}.")
+    except UnicodeDecodeError as exc:
+        raise ConfigError(f"Cannot read {CONFIG_FILE_VAR} file {path!r}: {exc}.")
+
+    values: dict[str, str] = {}
+    for number, raw_line in enumerate(content.splitlines(), start=1):
+        line = raw_line.strip()
+        if not line or line.startswith(COMMENT_PREFIXES):
+            continue
+        if "=" not in line:
+            raise ConfigError(
+                f"Invalid config file {path!r} line {number}: expected "
+                f"KEY=VALUE, got {raw_line!r}."
+            )
+        key, _, value = line.partition("=")
+        key = key.strip()
+        if key.lower().startswith("export "):
+            key = key[len("export "):].strip()
+        if not key:
+            raise ConfigError(
+                f"Invalid config file {path!r} line {number}: missing key in "
+                f"{raw_line!r}."
+            )
+        values[key.upper()] = strip_quotes(value.strip())
+    return values
+
+
+def collect_raw_settings(environ) -> dict:
+    """Merge the configuration sources, lowest precedence first.
+
+    1. built-in defaults (absent keys), 2. the `DATAGATE_CONFIG` file,
+    3. direct environment variables.
+    """
+    raw: dict[str, str] = {}
+    path = (environ.get(CONFIG_FILE_VAR) or "").strip()
+    if path:
+        raw.update(read_config_file(path))
+    for name in SETTING_VARS:
+        if name in environ:
+            raw[name] = environ[name]
+    return raw
+
+
+class Settings:
+    """The resolved service configuration."""
+
+    def __init__(self, raw: dict):
+        self.max_source_size = parse_size_env(
+            MAX_SOURCE_SIZE_VAR, raw.get(MAX_SOURCE_SIZE_VAR), None)
+        self.origin_allowlist = parse_list_env(
+            ORIGIN_ALLOWLIST_VAR, raw.get(ORIGIN_ALLOWLIST_VAR), None)
+        self.require_tls = parse_bool_env(
+            REQUIRE_TLS_VAR, raw.get(REQUIRE_TLS_VAR), False)
+        self.cache_enabled = parse_bool_env(
+            CACHE_ENABLED_VAR, raw.get(CACHE_ENABLED_VAR), True)
+        self.storage_dir = self._storage_dir(raw.get(STORAGE_DIR_VAR))
+
+    @staticmethod
+    def _storage_dir(raw) -> str:
+        """Resolve (and create) the dataset directory.
+
+        With no configured path each process gets its own scratch directory,
+        so datasets only outlive a restart when a directory is configured.
+        """
+        path = None if raw is None else str(raw).strip()
+        if not path:
+            directory = tempfile.mkdtemp(prefix="datagate-store-")
+            atexit.register(shutil.rmtree, directory, True)
+            return directory
+        directory = os.path.abspath(os.path.expanduser(path))
+        try:
+            os.makedirs(directory, exist_ok=True)
+        except OSError as exc:
+            raise ConfigError(
+                f"Invalid {STORAGE_DIR_VAR}: cannot create {path!r} ({exc})."
+            )
+        if not os.path.isdir(directory):
+            raise ConfigError(
+                f"Invalid {STORAGE_DIR_VAR}: {path!r} is not a directory."
+            )
+        return directory
+
+
+def load_settings(environ=None) -> Settings:
+    env = os.environ if environ is None else environ
+    return Settings(collect_raw_settings(env))
+
+
+try:
+    SETTINGS = load_settings()
+except ConfigError as _config_error:
+    print(f"datagate: {_config_error}", file=sys.stderr)
+    raise SystemExit(2)
+
+# Convenience aliases for the resolved settings.
+CACHE_ENABLED = SETTINGS.cache_enabled
+STORAGE_DIR = SETTINGS.storage_dir
+
+
+# --------------------------------------------------------------------------- #
+# Dataset store
+# --------------------------------------------------------------------------- #
+
+_STORE: dict[str, dict] = {}
+_STORE_LOCK = threading.Lock()
+
+
+def dataset_id_for(source: str) -> str:
+    """Stable id for a source URL string (identical across processes/restarts)."""
+    return hashlib.sha256(source.encode("utf-8")).hexdigest()[:16]
+
+
+def dataset_id_for_bytes(data: bytes) -> str:
+    """Stable id for uploaded content: identical bytes always map to one id."""
+    return hashlib.sha256(b"upload\x00" + data).hexdigest()[:16]
+
+
+def cache_key_for(source: str, charset: str | None):
+    """Identify the ingestion that produced a stored dataset.
+
+    A dataset id only depends on the source URL, but the same URL read with a
+    different `charset` is a different parse, so the charset takes part in the
+    cache key: only a request asking for the same thing is served from cache.
+    The key is a list so that it round-trips through the on-disk JSON form.
+    """
+    return [source, None if charset is None else validate_charset(charset)]
+
+
+# Ids are hex digests; anything else never reaches the filesystem.
+SAFE_ID_RE = re.compile(r"[A-Za-z0-9_-]{1,64}")
+
+
+def dataset_path(dataset_id: str):
+    """Where `dataset_id` lives inside STORAGE_DIR, or None when unusable."""
+    if not SAFE_ID_RE.fullmatch(dataset_id or ""):
+        return None
+    return os.path.join(SETTINGS.storage_dir, f"{dataset_id}.json")
+
+
+def persist_dataset(dataset_id: str, payload: dict) -> None:
+    """Write a dataset to STORAGE_DIR so it survives a restart."""
+    path = dataset_path(dataset_id)
+    if path is None:
+        return
+    temporary = f"{path}.{os.getpid()}.tmp"
+    try:
+        os.makedirs(SETTINGS.storage_dir, exist_ok=True)
+        with open(temporary, "w", encoding="utf-8") as handle:
+            json.dump(payload, handle, ensure_ascii=False)
+        # Replace atomically: a reader never sees a half-written dataset.
+        os.replace(temporary, path)
+    except (OSError, TypeError, ValueError):
+        try:
+            os.unlink(temporary)
+        except OSError:
+            pass
+
+
+def restore_dataset(dataset_id: str):
+    """Read a dataset back from STORAGE_DIR, or None when it is not there."""
+    path = dataset_path(dataset_id)
+    if path is None:
+        return None
+    try:
+        with open(path, "r", encoding="utf-8") as handle:
+            payload = json.load(handle)
+    except (OSError, ValueError):
+        return None
+    if not isinstance(payload, dict) or not isinstance(payload.get("columns"), list):
+        return None
+    if not isinstance(payload.get("rows"), list):
+        return None
+    return payload
+
+
+def store_dataset(dataset_id: str, payload: dict) -> None:
+    with _STORE_LOCK:
+        _STORE[dataset_id] = payload
+    persist_dataset(dataset_id, payload)
+
+
+def load_dataset(dataset_id: str):
+    with _STORE_LOCK:
+        record = _STORE.get(dataset_id)
+    if record is not None:
+        return record
+
+    # Not ingested by this process: it may still be in the storage directory
+    # from an earlier run using the same STORAGE_DIR.
+    record = restore_dataset(dataset_id)
+    if record is None:
+        return None
+    with _STORE_LOCK:
+        return _STORE.setdefault(dataset_id, record)
+
+
+# --------------------------------------------------------------------------- #
+# Errors
+# --------------------------------------------------------------------------- #
+
+
+class DataGateError(Exception):
+    def __init__(self, message: str, status: int):
+        super().__init__(message)
+        self.message = message
+        self.status = status
+
+
+class BadRequest(DataGateError):
+    def __init__(self, message: str):
+        super().__init__(message, 400)
+
+
+class NotFound(DataGateError):
+    def __init__(self, message: str):
+        super().__init__(message, 404)
+
+
+class QueryTimeout(BadRequest):
+    """Raised when evaluating a request exceeds the query budget."""
+
+    def __init__(self, message: str | None = None):
+        super().__init__(message or (
+            f"Query timeout: the request exceeded the "
+            f"{QUERY_TIMEOUT_SECONDS:g}s query budget."
+        ))
+
+
+# --------------------------------------------------------------------------- #
+# URL validation
+# --------------------------------------------------------------------------- #
+
+
+def validate_url(raw: str) -> str:
+    candidate = (raw or "").strip()
+    if not candidate:
+        raise BadRequest("Query parameter 'source' is required.")
+    try:
+        parts = urlsplit(candidate)
+    except ValueError:
+        raise BadRequest(f"Invalid URL: {raw!r}")
+
+    if parts.scheme.lower() not in ALLOWED_SCHEMES:
+        raise BadRequest(
+            "Invalid URL: 'source' must be an absolute http:// or https:// URL."
+        )
+    try:
+        hostname = parts.hostname
+    except ValueError:
+        raise BadRequest(f"Invalid URL: {raw!r}")
+    if not hostname:
+        raise BadRequest("Invalid URL: missing host in 'source'.")
+    if any(ch.isspace() for ch in candidate):
+        raise BadRequest("Invalid URL: whitespace is not allowed.")
+    try:
+        parts.port
+    except ValueError:
+        raise BadRequest("Invalid URL: invalid port in 'source'.")
+    return candidate
+
+
+# --------------------------------------------------------------------------- #
+# Fetching
+# --------------------------------------------------------------------------- #
+
+
+def size_limit_message(size, limit: int) -> str:
+    """The message used whenever a source exceeds MAX_SOURCE_SIZE."""
+    measured = "" if size is None else f" ({size} bytes)"
+    return (f"Source too large: the file{measured} exceeds the configured "
+            f"{MAX_SOURCE_SIZE_VAR} of {limit} bytes.")
+
+
+def enforce_size_limit(size: int, limit) -> None:
+    """A file exactly at the limit is accepted; anything larger is rejected."""
+    if limit is not None and size > limit:
+        raise BadRequest(size_limit_message(size, limit))
+
+
+def fetch_source(url: str, limit=None) -> bytes:
+    """Download `url`, refusing anything past `limit` bytes (when configured)."""
+    try:
+        response = requests.get(
+            url,
+            timeout=FETCH_TIMEOUT,
+            allow_redirects=True,
+            headers={"User-Agent": "datagate/1.0", "Accept": "*/*"},
+            stream=True,
+        )
+    except requests.exceptions.RequestException as exc:
+        raise NotFound(f"Source unreachable: {exc.__class__.__name__}")
+    except Exception as exc:  # pragma: no cover - defensive
+        raise NotFound(f"Source unreachable: {exc}")
+
+    try:
+        if response.status_code >= 400:
+            raise NotFound(
+                f"Remote server returned HTTP {response.status_code} for the source URL."
+            )
+        if limit is not None:
+            # An honest Content-Length lets an oversized source be refused
+            # before any of it is read.
+            declared = response.headers.get("Content-Length")
+            if declared is not None:
+                try:
+                    enforce_size_limit(int(declared.strip()), limit)
+                except ValueError:
+                    pass
+
+        # Reading one byte past the limit is enough to know it was exceeded.
+        cap = MAX_BYTES if limit is None else limit + 1
+        try:
+            chunks, total = [], 0
+            for chunk in response.iter_content(chunk_size=65536):
+                if not chunk:
+                    continue
+                chunks.append(chunk)
+                total += len(chunk)
+                if total > cap:
+                    break
+            data = b"".join(chunks)
+        except requests.exceptions.RequestException as exc:
+            raise NotFound(f"Source unreachable: {exc.__class__.__name__}")
+        enforce_size_limit(len(data), limit)
+        return data[:MAX_BYTES]
+    finally:
+        response.close()
+
+
+# --------------------------------------------------------------------------- #
+# Decoding
+# --------------------------------------------------------------------------- #
+
+BOMS = (
+    (codecs.BOM_UTF8, "utf-8-sig"),
+    (codecs.BOM_UTF32_LE, "utf-32"),
+    (codecs.BOM_UTF32_BE, "utf-32"),
+    (codecs.BOM_UTF16_LE, "utf-16"),
+    (codecs.BOM_UTF16_BE, "utf-16"),
+)
+
+
+def validate_charset(charset: str) -> str:
+    name = (charset or "").strip()
+    if not name:
+        raise BadRequest("Unsupported charset: charset must be a non-empty name.")
+    try:
+        return codecs.lookup(name).name
+    except (LookupError, TypeError, ValueError):
+        raise BadRequest(f"Unsupported charset: {charset!r}")
+
+
+def decode_with_charset(data: bytes, charset: str) -> str:
+    codec = validate_charset(charset)
+    try:
+        text = data.decode(codec, errors="strict")
+    except (UnicodeDecodeError, LookupError, ValueError) as exc:
+        raise BadRequest(f"Malformed charset: cannot decode content as {charset!r} ({exc}).")
+    return strip_bom(text)
+
+
+def strip_bom(text: str) -> str:
+    return text[1:] if text.startswith("﻿") else text
+
+
+def detect_decode(data: bytes) -> str:
+    """Best-effort encoding detection for the raw CSV bytes."""
+    for bom, codec in BOMS:
+        if data.startswith(bom):
+            try:
+                return strip_bom(data.decode(codec))
+            except UnicodeDecodeError:
+                break
+
+    try:
+        return strip_bom(data.decode("utf-8"))
+    except UnicodeDecodeError:
+        pass
+
+    try:
+        from charset_normalizer import from_bytes
+
+        best = from_bytes(data).best()
+        if best is not None:
+            encoding = best.encoding
+            try:
+                return strip_bom(data.decode(encoding, errors="strict"))
+            except (UnicodeDecodeError, LookupError):
+                return strip_bom(str(best))
+    except Exception:
+        pass
+
+    for codec in ("utf-8-sig", "utf-16", "cp1252", "latin-1"):
+        try:
+            return strip_bom(data.decode(codec, errors="strict"))
+        except (UnicodeDecodeError, LookupError, ValueError):
+            continue
+    return strip_bom(data.decode("latin-1", errors="replace"))
+
+
+# --------------------------------------------------------------------------- #
+# CSV parsing
+# --------------------------------------------------------------------------- #
+
+
+def looks_binary(data: bytes) -> bool:
+    head = data[:8192]
+    if not head:
+        return False
+    for bom, _ in BOMS:
+        if data.startswith(bom):
+            return False
+    if b"\x00" in head:
+        return True
+    control = sum(1 for b in head if b < 9 or (13 < b < 32))
+    return control / len(head) > 0.05
+
+
+def looks_markup_or_json(text: str) -> bool:
+    stripped = text.lstrip()
+    if not stripped:
+        return True
+    if stripped[0] == "<":
+        return True
+    if stripped[:1] in ("{", "["):
+        try:
+            json.loads(text)
+            return True
+        except (ValueError, RecursionError):
+            return False
+    return False
+
+
+def parse_rows(text: str, delimiter: str, limit: int | None = None) -> list[list[str]]:
+    reader = csv.reader(io.StringIO(text, newline=""), delimiter=delimiter,
+                        quotechar='"', skipinitialspace=False)
+    rows: list[list[str]] = []
+    try:
+        for row in reader:
+            rows.append(row)
+            if limit is not None and len(rows) >= limit:
+                break
+    except csv.Error:
+        pass
+    return rows
+
+
+def is_blank_row(row: list[str]) -> bool:
+    return not row or all((cell or "").strip() == "" for cell in row)
+
+
+def score_delimiter(text: str, delimiter: str):
+    """Return (consistency, column_count) for parsing `text` with `delimiter`."""
+    rows = [r for r in parse_rows(text, delimiter, limit=MAX_SAMPLE_LINES)
+            if not is_blank_row(r)]
+    if len(rows) < 2:
+        return None
+    header_len = len(rows[0])
+    if header_len < 2:
+        return None
+    counts = Counter(len(r) for r in rows)
+    matching = counts.get(header_len, 0)
+    consistency = matching / len(rows)
+    return (consistency, header_len)
+
+
+def sniff_delimiter(text: str) -> str | None:
+    best = None
+    best_delim = None
+    for delim in DELIMITERS:
+        score = score_delimiter(text, delim)
+        if score is None:
+            continue
+        if best is None or score > best:
+            best, best_delim = score, delim
+    if best is None or best[0] < 0.5:
+        return None
+    return best_delim
+
+
+def normalise_columns(header: list[str]) -> list[str]:
+    columns: list[str] = []
+    for index, raw in enumerate(header):
+        name = strip_bom((raw or "").strip())
+        if not name:
+            name = f"column_{index + 1}"
+        columns.append(name)
+    return columns
+
+
+def parse_csv(text: str) -> tuple[list[str], list[list]]:
+    if looks_markup_or_json(text):
+        raise BadRequest("Non-tabular content: the source does not look like a CSV file.")
+
+    delimiter = sniff_delimiter(text)
+    if delimiter is None:
+        raise BadRequest(
+            "Non-tabular content: unable to infer a delimiter or the file has no "
+            "header row and at least one data row."
+        )
+
+    rows = [r for r in parse_rows(text, delimiter) if not is_blank_row(r)]
+    if len(rows) < 2:
+        raise BadRequest(
+            "Non-tabular content: a valid file requires a header row and at least "
+            "one data row."
+        )
+
+    columns = normalise_columns(rows[0])
+    width = len(columns)
+    if width < 2:
+        raise BadRequest("Non-tabular content: no tabular structure detected.")
+
+    data_rows: list[list] = []
+    for raw_row in rows[1:]:
+        cells = list(raw_row[:width])
+        if len(cells) < width:
+            cells.extend([""] * (width - len(cells)))
+        data_rows.append([coerce_value(cell) for cell in cells])
+
+    if not data_rows:
+        raise BadRequest(
+            "Non-tabular content: a valid file requires a header row and at least "
+            "one data row."
+        )
+    return columns, data_rows
+
+
+# --------------------------------------------------------------------------- #
+# Type inference (deterministic, locale independent)
+# --------------------------------------------------------------------------- #
+
+INT_RE = re.compile(r"^[+-]?\d+$")
+DECIMAL_RE = re.compile(r"^[+-]?(?:\d+\.\d*|\.\d+|\d+)(?:[eE][+-]?\d+)?$")
+TIME_RE = re.compile(r"^\d{1,2}:\d{2}(?::\d{2})?(?:\.\d+)?\s*(?:[AaPp]\.?[Mm]\.?)?$")
+
+
+def coerce_value(raw):
+    if raw is None:
+        return ""
+    value = str(raw).strip()
+    if not value:
+        return value
+
+    # Time-like values stay text (08:30, 9:15, 12:00, 08:30:05, 8:30 PM).
+    if TIME_RE.match(value):
+        return str(raw)
+
+    digits = value.lstrip("+-")
+
+    if INT_RE.match(value):
+        # Preserve identifier-ish values such as "007" or "0123" as text.
+        if len(digits) > 1 and digits[0] == "0":
+            return str(raw)
+        try:
+            return int(value)
+        except ValueError:
+            return str(raw)
+
+    if DECIMAL_RE.match(value):
+        integer_part = digits.split(".")[0].split("e")[0].split("E")[0]
+        if len(integer_part) > 1 and integer_part[0] == "0":
+            return str(raw)
+        try:
+            number = float(value)
+        except (ValueError, OverflowError):
+            return str(raw)
+        if math.isnan(number) or math.isinf(number):
+            return str(raw)
+        return number
+
+    return str(raw)
+
+
+# --------------------------------------------------------------------------- #
+# Spreadsheet parsing (.xlsx / .xls)
+# --------------------------------------------------------------------------- #
+
+ZIP_MAGIC = (b"PK\x03\x04", b"PK\x05\x06", b"PK\x07\x08")
+OLE2_MAGIC = b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1"
+# Ancient BIFF2-BIFF5 workbooks are stored without an OLE2 container.
+BIFF_MAGIC = (b"\x09\x00", b"\x09\x02", b"\x09\x04", b"\x09\x08")
+
+# Members that identify a zip container as an OOXML spreadsheet.
+XLSX_MEMBERS = ("xl/workbook.xml", "xl/workbook.bin")
+
+FORMAT_CSV = "csv"
+FORMAT_XLSX = "xlsx"
+FORMAT_XLS = "xls"
+
+
+def detect_format(data: bytes) -> str:
+    """Classify raw bytes as `csv`, `xlsx` or `xls` from their signature.
+
+    The signature wins over the file name: a `.csv` that really holds a
+    workbook (or the reverse) is still ingested correctly.
+    """
+    if data.startswith(ZIP_MAGIC):
+        return FORMAT_XLSX
+    if data.startswith(OLE2_MAGIC) or data.startswith(BIFF_MAGIC):
+        return FORMAT_XLS
+    return FORMAT_CSV
+
+
+def excel_datetime(value) -> str:
+    """Render a date/time cell deterministically as ISO 8601 text."""
+    if isinstance(value, datetime.datetime):
+        if (value.hour, value.minute, value.second, value.microsecond) == (0, 0, 0, 0):
+            return value.date().isoformat()
+        return value.isoformat(sep=" ")
+    if isinstance(value, datetime.date):
+        return value.isoformat()
+    if isinstance(value, datetime.time):
+        return value.isoformat()
+    if isinstance(value, datetime.timedelta):
+        return str(value)
+    return str(value)
+
+
+def spreadsheet_value(value):
+    """Normalise one worksheet cell into a JSON-serialisable value."""
+    if value is None:
+        return ""
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, int):
+        return value
+    if isinstance(value, float):
+        if math.isnan(value) or math.isinf(value):
+            return str(value)
+        if value.is_integer() and abs(value) < 2 ** 53:
+            return int(value)
+        return value
+    if isinstance(value, (datetime.datetime, datetime.date, datetime.time,
+                          datetime.timedelta)):
+        return excel_datetime(value)
+    if isinstance(value, bytes):
+        try:
+            value = value.decode("utf-8")
+        except UnicodeDecodeError:
+            value = value.decode("latin-1")
+    # Text cells go through the same coercion as CSV so that both ingestion
+    # paths produce identical types for identical content.
+    return coerce_value(value)
+
+
+def cell_is_blank(value) -> bool:
+    return value == "" or value is None
+
+
+def grid_to_table(grid: list[list]) -> tuple[list[str], list[list]]:
+    """Turn a rectangular worksheet grid into (columns, rows).
+
+    The first non-blank row is the header; column order is the worksheet's own.
+    """
+    rows = [row for row in grid if not all(cell_is_blank(c) for c in row)]
+    if len(rows) < 2:
+        raise BadRequest(
+            "Non-tabular content: the first worksheet must have a header row "
+            "and at least one data row."
+        )
+
+    header = list(rows[0])
+    while header and cell_is_blank(header[-1]):
+        header.pop()
+    if not header:
+        raise BadRequest("Non-tabular content: the worksheet header row is empty.")
+
+    columns = normalise_columns([
+        "" if cell_is_blank(cell) else str(cell) for cell in header
+    ])
+    width = len(columns)
+
+    data_rows: list[list] = []
+    for raw_row in rows[1:]:
+        cells = list(raw_row[:width])
+        if len(cells) < width:
+            cells.extend([""] * (width - len(cells)))
+        data_rows.append(cells)
+
+    if not data_rows:
+        raise BadRequest(
+            "Non-tabular content: the first worksheet must have a header row "
+            "and at least one data row."
+        )
+    return columns, data_rows
+
+
+def parse_xlsx(data: bytes) -> tuple[list[str], list[list]]:
+    try:
+        import openpyxl
+    except ImportError:  # pragma: no cover - dependency is declared
+        raise BadRequest("Unsupported format: .xlsx support is unavailable.")
+
+    if not zipfile.is_zipfile(io.BytesIO(data)):
+        raise BadRequest("Unsupported format: the content is not a readable workbook.")
+    try:
+        with zipfile.ZipFile(io.BytesIO(data)) as archive:
+            names = set(archive.namelist())
+    except (zipfile.BadZipFile, OSError, ValueError):
+        raise BadRequest("Unsupported format: the content is not a readable workbook.")
+    if not any(member in names for member in XLSX_MEMBERS):
+        raise BadRequest("Unsupported format: the content is not a spreadsheet file.")
+
+    workbook = None
+    try:
+        workbook = openpyxl.load_workbook(
+            io.BytesIO(data), read_only=True, data_only=True
+        )
+        sheets = workbook.worksheets
+        if not sheets:
+            raise BadRequest("Non-tabular content: the workbook has no worksheets.")
+        # Only the first worksheet is ingested.
+        grid = [
+            [spreadsheet_value(cell) for cell in row]
+            for row in sheets[0].iter_rows(values_only=True)
+        ]
+    except DataGateError:
+        raise
+    except Exception as exc:
+        raise BadRequest(f"Unsupported format: cannot read the workbook ({exc}).")
+    finally:
+        if workbook is not None:
+            try:
+                workbook.close()
+            except Exception:  # pragma: no cover - defensive
+                pass
+
+    return grid_to_table(grid)
+
+
+def parse_xls(data: bytes) -> tuple[list[str], list[list]]:
+    try:
+        import xlrd
+    except ImportError:  # pragma: no cover - dependency is declared
+        raise BadRequest("Unsupported format: .xls support is unavailable.")
+
+    try:
+        book = xlrd.open_workbook(file_contents=data)
+        if book.nsheets < 1:
+            raise BadRequest("Non-tabular content: the workbook has no worksheets.")
+        sheet = book.sheet_by_index(0)
+        datemode = book.datemode
+        grid = []
+        for index in range(sheet.nrows):
+            grid.append([
+                xls_cell(cell, datemode) for cell in sheet.row(index)
+            ])
+    except DataGateError:
+        raise
+    except Exception as exc:
+        raise BadRequest(f"Unsupported format: cannot read the workbook ({exc}).")
+
+    return grid_to_table(grid)
+
+
+def xls_cell(cell, datemode):
+    import xlrd
+
+    kind = cell.ctype
+    if kind in (xlrd.XL_CELL_EMPTY, xlrd.XL_CELL_BLANK):
+        return ""
+    if kind == xlrd.XL_CELL_BOOLEAN:
+        return bool(cell.value)
+    if kind == xlrd.XL_CELL_ERROR:
+        return ""
+    if kind == xlrd.XL_CELL_DATE:
+        try:
+            parts = xlrd.xldate_as_tuple(cell.value, datemode)
+        except Exception:
+            return spreadsheet_value(cell.value)
+        year, month, day, hour, minute, second = parts
+        if (year, month, day) == (0, 0, 0):
+            return datetime.time(hour, minute, second).isoformat()
+        if (hour, minute, second) == (0, 0, 0):
+            return datetime.date(year, month, day).isoformat()
+        return datetime.datetime(year, month, day, hour, minute,
+                                 second).isoformat(sep=" ")
+    return spreadsheet_value(cell.value)
+
+
+# --------------------------------------------------------------------------- #
+# Ingestion (format dispatch)
+# --------------------------------------------------------------------------- #
+
+
+def ingest_source(data: bytes,
+                  charset: str | None = None) -> tuple[list[str], list[list], str]:
+    """Turn raw source bytes into (columns, rows, format) for any supported format."""
+    if not data or not data.strip():
+        raise BadRequest("Non-tabular content: the source is empty.")
+
+    # `charset` is only meaningful for text CSV; it is validated either way so
+    # that a bogus name is reported rather than silently ignored.
+    if charset is not None:
+        validate_charset(charset)
+
+    fmt = detect_format(data)
+    if fmt == FORMAT_XLSX:
+        columns, rows = parse_xlsx(data)
+        return columns, rows, fmt
+    if fmt == FORMAT_XLS:
+        columns, rows = parse_xls(data)
+        return columns, rows, fmt
+
+    if charset is not None:
+        text = decode_with_charset(data, charset)
+    else:
+        if looks_binary(data):
+            raise BadRequest(
+                "Unsupported format: the source is binary data in no supported "
+                "format (CSV, .xls, .xlsx)."
+            )
+        text = detect_decode(data)
+    columns, rows = parse_csv(text)
+    return columns, rows, FORMAT_CSV
+
+
+def ingest_bytes(data: bytes,
+                 charset: str | None = None) -> tuple[list[str], list[list]]:
+    """Turn raw source bytes into (columns, rows) for any supported format."""
+    columns, rows, _ = ingest_source(data, charset=charset)
+    return columns, rows
+
+
+# --------------------------------------------------------------------------- #
+# Optional ingestion enrichment
+# --------------------------------------------------------------------------- #
+
+# `enrich` is honoured on /convert only, and only for this exact spelling:
+# every other state (absent, empty, other value, repeated) leaves it off.
+ENRICH_PARAM = "enrich"
+ENRICH_VALUE = "yes"
+
+FILETYPE_CSV = "csv"
+FILETYPE_EXCEL = "excel"
+
+# The labels reported for an enriched CSV column.
+TYPE_TEXT = "text"
+TYPE_NUMBER = "number"
+TYPE_INTEGER = "integer"
+TYPE_FLOAT = "float"
+
+
+def parse_enrich_flag(args) -> bool:
+    """True only when the request carries exactly one `enrich=yes`."""
+    values = args.getlist(ENRICH_PARAM)
+    if len(values) != 1:
+        return False
+    return values[0] == ENRICH_VALUE
+
+
+def filetype_for(fmt: str) -> str:
+    """The `filetype` label reported for an ingested format."""
+    return FILETYPE_CSV if fmt == FORMAT_CSV else FILETYPE_EXCEL
+
+
+def is_missing(value) -> bool:
+    """A cell counts as missing when it holds no content at all."""
+    if value is None:
+        return True
+    if isinstance(value, str):
+        return value.strip() == ""
+    return False
+
+
+def distinct_key(value):
+    """Identity used when counting distinct values (1 and 1.0 stay apart)."""
+    return (type(value).__name__, value)
+
+
+def value_kind(value) -> str:
+    """Classify one stored cell for column type inference."""
+    if isinstance(value, bool):
+        return "other"
+    if isinstance(value, int):
+        return "integer"
+    if isinstance(value, float):
+        return "float"
+    return "other"
+
+
+def label_column(integers: int, floats: int, others: int) -> str:
+    """Label a column from the kinds of its non-missing values.
+
+    All whole numbers read as `integer`, all fractional ones as `float`, a
+    mixture of the two as `number`; anything else (including an entirely
+    empty column) is `text`.
+    """
+    if others or (integers == 0 and floats == 0):
+        return TYPE_TEXT
+    if floats == 0:
+        return TYPE_INTEGER
+    if integers == 0:
+        return TYPE_FLOAT
+    return TYPE_NUMBER
+
+
+def build_column_details(columns: list[str], rows: list[list]) -> dict:
+    """Per-column profile keyed by column name."""
+    details: dict[str, dict] = {}
+    for index, name in enumerate(columns):
+        distinct = set()
+        missing = 0
+        counts = {"integer": 0, "float": 0, "other": 0}
+        for row in rows:
+            value = row[index] if index < len(row) else ""
+            if is_missing(value):
+                missing += 1
+                continue
+            distinct.add(distinct_key(value))
+            counts[value_kind(value)] += 1
+        details[name] = {
+            "type": label_column(counts["integer"], counts["float"],
+                                 counts["other"]),
+            "distinct_count": len(distinct),
+            "missing_count": missing,
+        }
+    return details
+
+
+def build_dataset_summary(columns: list[str], rows: list[list],
+                          filetype: str) -> dict:
+    """Whole-dataset profile: what it is and how big it is."""
+    return {
+        "filetype": filetype,
+        "row_count": len(rows),
+        "column_count": len(columns),
+    }
+
+
+def build_metadata(columns: list[str], rows: list[list], fmt: str) -> dict:
+    """Compute the enrichment metadata stored alongside a dataset.
+
+    A failure here is reported as an ordinary JSON error; the caller only
+    stores the dataset once this succeeded, so enrichment never degrades a
+    stored dataset to the non-enriched form.
+    """
+    filetype = filetype_for(fmt)
+    try:
+        metadata = {
+            "dataset_summary": build_dataset_summary(columns, rows, filetype),
+        }
+        # Spreadsheets carry the summary only.
+        if filetype == FILETYPE_CSV:
+            metadata["column_details"] = build_column_details(columns, rows)
+    except DataGateError:
+        raise
+    except Exception as exc:
+        raise BadRequest(
+            f"Enrichment failed: cannot summarise the dataset ({exc})."
+        )
+    return metadata
+
+
+def enrichment_payload(record: dict) -> dict:
+    """The metadata fields a query adds for an enriched dataset (else none)."""
+    if not record.get("enriched"):
+        return {}
+    fields = {}
+    summary = record.get("dataset_summary")
+    if isinstance(summary, dict) and summary:
+        fields["dataset_summary"] = summary
+    details = record.get("column_details")
+    if isinstance(details, dict) and details:
+        fields["column_details"] = details
+    return fields
+
+
+# --------------------------------------------------------------------------- #
+# Response controls (pagination, sorting, shape)
+# --------------------------------------------------------------------------- #
+
+CONTROL_PARAMS = ("_size", "_offset", "_shape", "_sort", "_sort_desc",
+                  "_rowid", "_total")
+
+SHAPES = ("lists", "objects")
+
+
+def single_value(args, name: str) -> str | None:
+    """Return the single value for `name`, or None when absent.
+
+    A control parameter repeated in the query string is a bad request.
+    """
+    values = args.getlist(name)
+    if not values:
+        return None
+    if len(values) > 1:
+        raise BadRequest(
+            f"Invalid {name}: parameter may only be supplied once "
+            f"({len(values)} values given)."
+        )
+    return values[0]
+
+
+def parse_presence_flag(args, name: str) -> bool:
+    """True when `name` is present in the query string at all.
+
+    The value is irrelevant (`?force`, `?force=`, `?force=1` all count), but a
+    second occurrence is a bad request.
+    """
+    values = args.getlist(name)
+    if not values:
+        return False
+    if len(values) > 1:
+        raise BadRequest(
+            f"Invalid {name}: the flag may only be supplied once "
+            f"({len(values)} values given)."
+        )
+    return True
+
+
+def parse_int_param(raw: str, name: str, minimum: int) -> int:
+    text = (raw or "").strip()
+    kind = "a positive integer" if minimum > 0 else "a non-negative integer"
+    if not text or not re.fullmatch(r"[+-]?\d+", text):
+        raise BadRequest(f"Invalid {name}: expected {kind}, got {raw!r}.")
+    try:
+        value = int(text)
+    except ValueError:  # pragma: no cover - guarded by the regex above
+        raise BadRequest(f"Invalid {name}: expected {kind}, got {raw!r}.")
+    if value < minimum:
+        raise BadRequest(f"Invalid {name}: expected {kind}, got {raw!r}.")
+    return value
+
+
+def parse_toggle(args, name: str) -> bool:
+    """`_rowid`/`_total` accept only the literal value 'hide'."""
+    raw = single_value(args, name)
+    if raw is None:
+        return False
+    if raw.strip() != "hide":
+        raise BadRequest(f"Invalid {name}: the only supported value is 'hide', "
+                         f"got {raw!r}.")
+    return True
+
+
+def parse_shape(args) -> str:
+    raw = single_value(args, "_shape")
+    if raw is None:
+        return "lists"
+    shape = raw.strip()
+    if shape not in SHAPES:
+        raise BadRequest(
+            f"Invalid _shape: expected one of {', '.join(SHAPES)}, got {raw!r}."
+        )
+    return shape
+
+
+def parse_sort(args, columns: list[str]):
+    """Return (column, descending) or (None, False) when unsorted."""
+    chosen = None
+    for name in ("_sort", "_sort_desc"):
+        raw = single_value(args, name)
+        if raw is None:
+            continue
+        column = raw.strip()
+        if not column:
+            raise BadRequest(f"Invalid {name}: a column name is required.")
+        if column not in columns:
+            raise BadRequest(f"Invalid {name}: unknown column {raw!r}.")
+        # `_sort_desc` is checked last, so it wins when both are present.
+        chosen = (column, name == "_sort_desc")
+    return chosen if chosen is not None else (None, False)
+
+
+def sort_key(value):
+    """Order values deterministically across mixed types: blanks, numbers, text."""
+    if value is None:
+        return (0, 0, "")
+    if isinstance(value, bool):
+        return (1, int(value), "")
+    if isinstance(value, (int, float)):
+        return (1, value, "")
+    text = str(value)
+    if not text.strip():
+        return (0, 0, "")
+    return (2, 0, text)
+
+
+# --------------------------------------------------------------------------- #
+# Column-level filtering
+# --------------------------------------------------------------------------- #
+
+# Filters are written `<column>__<comparator>=<value>`; the comparator is the
+# part after the *last* separator so that columns containing `__` still work.
+FILTER_SEPARATOR = "__"
+
+COMPARATORS = ("exact", "contains", "less", "greater")
+
+NUMERIC_COMPARATORS = ("less", "greater")
+
+
+def filter_text(value) -> str:
+    """Render a stored cell the way `exact`/`contains` compare it."""
+    if value is None:
+        return ""
+    if isinstance(value, bool):
+        return "true" if value else "false"
+    return str(value)
+
+
+def filter_number(value):
+    """Parse a stored cell or filter value as a float, or None when not numeric."""
+    if value is None or isinstance(value, bool):
+        return None
+    if isinstance(value, (int, float)):
+        return float(value)
+    text = str(value).strip()
+    if not text:
+        return None
+    try:
+        return float(text)
+    except (TypeError, ValueError, OverflowError):
+        return None
+
+
+def parse_filters(args, columns: list[str]) -> list[tuple]:
+    """Validate `<column>__<comparator>=<value>` params into matcher tuples.
+
+    Control parameters (`_`-prefixed) and params without the separator are not
+    filters and are ignored here.
+    """
+    filters: list[tuple] = []
+    for key in args.keys():
+        if key.startswith("_") or FILTER_SEPARATOR not in key:
+            continue
+
+        values = args.getlist(key)
+        if len(values) > 1:
+            raise BadRequest(
+                f"Invalid filter {key!r}: duplicate filter key "
+                f"({len(values)} values given)."
+            )
+
+        column, _, comparator = key.rpartition(FILTER_SEPARATOR)
+        if comparator not in COMPARATORS:
+            raise BadRequest(
+                f"Invalid filter {key!r}: unknown comparator {comparator!r}, "
+                f"expected one of {', '.join(COMPARATORS)}."
+            )
+        if column not in columns:
+            raise BadRequest(f"Invalid filter {key!r}: unknown column {column!r}.")
+
+        raw = values[0]
+        number = None
+        if comparator in NUMERIC_COMPARATORS:
+            number = filter_number(raw)
+            if number is None:
+                raise BadRequest(
+                    f"Invalid filter {key!r}: __{comparator} requires a numeric "
+                    f"value, got {raw!r}."
+                )
+        filters.append((columns.index(column), comparator, raw, number))
+    return filters
+
+
+def row_matches(row: list, filters: list[tuple]) -> bool:
+    """True when `row` satisfies every filter (filters are ANDed)."""
+    for index, comparator, raw, number in filters:
+        value = row[index] if index < len(row) else ""
+        if comparator == "exact":
+            if filter_text(value) != raw:
+                return False
+        elif comparator == "contains":
+            if raw not in filter_text(value):
+                return False
+        else:
+            # Rows whose stored value is not numeric never match.
+            stored = filter_number(value)
+            if stored is None:
+                return False
+            if comparator == "less":
+                if not stored < number:
+                    return False
+            elif not stored > number:
+                return False
+    return True
+
+
+def check_deadline(deadline: float) -> None:
+    if time.perf_counter() > deadline:
+        raise QueryTimeout()
+
+
+def apply_filters(numbered: list[tuple], filters: list[tuple],
+                  deadline: float) -> list[tuple]:
+    check_deadline(deadline)
+    if not filters:
+        return numbered
+    selected = []
+    for position, item in enumerate(numbered):
+        if position % TIMEOUT_CHECK_INTERVAL == 0:
+            check_deadline(deadline)
+        if row_matches(item[1], filters):
+            selected.append(item)
+    check_deadline(deadline)
+    return selected
+
+
+# --------------------------------------------------------------------------- #
+# Query evaluation (shared by /datasets/<id> and /datasets/<id>/export)
+# --------------------------------------------------------------------------- #
+
+
+class Query:
+    """The outcome of applying filters, sorting and pagination to a dataset."""
+
+    def __init__(self, columns, window, total, shape, hide_rowid, hide_total):
+        self.columns = columns
+        self.window = window          # [(rowid, [values...]), ...]
+        self.total = total            # matching rows before pagination
+        self.shape = shape
+        self.hide_rowid = hide_rowid
+        self.hide_total = hide_total
+
+
+def evaluate_query(record: dict, args, started: float) -> Query:
+    """Run `filter -> sort -> paginate` for a stored dataset.
+
+    The order is fixed so that both the JSON and the CSV views of a dataset
+    always agree, row for row.
+    """
+    columns = list(record["columns"])
+
+    for name in CONTROL_PARAMS:
+        single_value(args, name)
+
+    shape = parse_shape(args)
+    hide_rowid = parse_toggle(args, "_rowid")
+    hide_total = parse_toggle(args, "_total")
+
+    raw_size = single_value(args, "_size")
+    size = DEFAULT_ROW_LIMIT if raw_size is None else parse_int_param(raw_size, "_size", 1)
+
+    raw_offset = single_value(args, "_offset")
+    offset = 0 if raw_offset is None else parse_int_param(raw_offset, "_offset", 0)
+
+    sort_column, descending = parse_sort(args, columns)
+    filters = parse_filters(args, columns)
+
+    # Rows are stored with their 1-based source position so that `rowid`
+    # survives filtering, sorting and pagination.
+    deadline = started + QUERY_TIMEOUT_SECONDS
+    numbered = list(enumerate(record["rows"], start=1))
+
+    # Filter first, then sort, then paginate; `total` is the filtered count
+    # before pagination.
+    numbered = apply_filters(numbered, filters, deadline)
+    total = len(numbered)
+
+    if sort_column is not None:
+        index = columns.index(sort_column)
+        numbered.sort(key=lambda item: sort_key(item[1][index]), reverse=descending)
+        check_deadline(deadline)
+
+    window = numbered[offset:offset + size]
+    return Query(columns, window, total, shape, hide_rowid, hide_total)
+
+
+def render_csv(columns: list[str], window: list[tuple]) -> bytes:
+    """Serialise a query window as RFC 4180-style CSV in source column order."""
+    buffer = io.StringIO(newline="")
+    writer = csv.writer(buffer, delimiter=",", quotechar='"',
+                        quoting=csv.QUOTE_MINIMAL, lineterminator="\n")
+    writer.writerow(list(columns))
+    for _, values in window:
+        writer.writerow([filter_text(value) for value in values])
+    return buffer.getvalue().encode("utf-8")
+
+
+def safe_filename(name: str) -> str:
+    """Make `name` safe to place inside a quoted Content-Disposition value."""
+    cleaned = "".join(ch for ch in str(name) if ch.isalnum() or ch in "-_.")
+    return cleaned or "dataset"
+
+
+# --------------------------------------------------------------------------- #
+# Uploads
+# --------------------------------------------------------------------------- #
+
+UPLOAD_FIELDS = ("file", "attachment")
+
+MALFORMED_UPLOAD = ("Malformed multipart request: the form data could not be "
+                    "parsed.")
+
+
+def is_multipart(req) -> bool:
+    mimetype = (req.mimetype or "").lower()
+    return mimetype.startswith("multipart/")
+
+
+def read_upload(req) -> tuple[bytes, str]:
+    """Return (bytes, filename) for the `file` or `attachment` part."""
+    try:
+        files = req.files
+        form = req.form
+    except DataGateError:
+        raise
+    except Exception:
+        raise BadRequest(MALFORMED_UPLOAD)
+
+    for field in UPLOAD_FIELDS:
+        storage = files.get(field)
+        if storage is None:
+            continue
+        try:
+            data = storage.read()
+        except Exception:
+            raise BadRequest(MALFORMED_UPLOAD)
+        return data, (storage.filename or "")
+
+    # Some clients send the payload as a plain (non-file) part.
+    for field in UPLOAD_FIELDS:
+        if field in form:
+            return form[field].encode("utf-8", errors="replace"), ""
+
+    raise BadRequest(
+        "Missing file field: the multipart form must include a 'file' or "
+        "'attachment' part."
+    )
+
+
+# --------------------------------------------------------------------------- #
+# Flask application
+# --------------------------------------------------------------------------- #
+
+
+def referer_hostname(referer: str):
+    """The hostname of a Referer header value, or None when unusable."""
+    try:
+        parts = urlsplit(referer.strip())
+    except ValueError:
+        return None
+    try:
+        hostname = parts.hostname
+    except ValueError:
+        return None
+    if not hostname and "//" not in referer:
+        # Tolerate a scheme-less Referer such as "example.com/page".
+        try:
+            hostname = urlsplit("//" + referer.strip()).hostname
+        except ValueError:
+            return None
+    return normalise_domain(hostname or "") or None
+
+
+def host_allowed(hostname: str, allowlist) -> bool:
+    """Match a hostname against the allowlist on domain boundaries."""
+    host = normalise_domain(hostname or "")
+    if not host:
+        return False
+    for suffix in allowlist:
+        if host == suffix or host.endswith("." + suffix):
+            return True
+    return False
+
+
+def endpoint_for(dataset_id: str) -> str:
+    """The `/datasets/<id>` endpoint, absolute when REQUIRE_TLS is set."""
+    path = f"/datasets/{dataset_id}"
+    if not SETTINGS.require_tls:
+        return path
+    host = request.host or urlsplit(request.host_url).netloc
+    return f"https://{host}{path}"
+
+
+def add_cors(response: Response) -> Response:
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Methods"] = "GET, HEAD, POST, OPTIONS"
+    response.headers["Access-Control-Allow-Headers"] = "*"
+    response.headers["Access-Control-Expose-Headers"] = "*"
+    response.headers["Access-Control-Max-Age"] = "86400"
+    return response
+
+
+def create_app() -> Flask:
+    app = Flask(__name__)
+    app.url_map.strict_slashes = False
+    app.config["JSON_SORT_KEYS"] = False
+    # A configured MAX_SOURCE_SIZE is answered with the documented 400 rather
+    # than the transport level 413, so the body cap is never the tighter one.
+    body_cap = MAX_BYTES
+    if SETTINGS.max_source_size is not None:
+        body_cap = max(body_cap, SETTINGS.max_source_size + 1024 * 1024)
+    app.config["MAX_CONTENT_LENGTH"] = body_cap
+    # Uploaded payloads may also arrive as ordinary (non-file) form parts.
+    app.config["MAX_FORM_MEMORY_SIZE"] = body_cap
+
+    def error(message: str, status: int):
+        return jsonify({"ok": False, "error": message}), status
+
+    @app.before_request
+    def _start_timer():
+        g.started_at = time.perf_counter()
+
+        # The allowlist is checked ahead of routing: an unknown path from a
+        # disallowed origin is refused just like a known one.
+        allowlist = SETTINGS.origin_allowlist
+        if not allowlist:
+            return None
+        referer = request.headers.get("Referer")
+        if referer is None or not referer.strip():
+            return error(
+                "Forbidden: a Referer header is required because an "
+                f"{ORIGIN_ALLOWLIST_VAR} is configured.",
+                403,
+            )
+        hostname = referer_hostname(referer)
+        if hostname is None:
+            return error(
+                f"Forbidden: the Referer {referer!r} has no usable hostname.",
+                403,
+            )
+        if not host_allowed(hostname, allowlist):
+            return error(
+                f"Forbidden: the Referer host {hostname!r} is not in the "
+                f"configured {ORIGIN_ALLOWLIST_VAR}.",
+                403,
+            )
+        return None
+
+    @app.after_request
+    def _cors(response: Response):
+        return add_cors(response)
+
+    @app.route("/convert", methods=["GET", "HEAD", "OPTIONS"])
+    def convert():
+        if request.method == "OPTIONS":
+            return Response(status=204)
+
+        if "source" not in request.args:
+            return error("Query parameter 'source' is required.", 400)
+
+        try:
+            source_raw = request.args.get("source", "")
+            source = validate_url(source_raw)
+
+            # `force` is a presence flag: the value (if any) does not matter,
+            # but supplying it more than once is a bad request.
+            force = parse_presence_flag(request.args, "force")
+
+            # Enrichment is opt-in through the exact spelling `enrich=yes`.
+            enrich = parse_enrich_flag(request.args)
+
+            charset = None
+            if "charset" in request.args:
+                charset = request.args.get("charset", "")
+                validate_charset(charset)
+
+            dataset_id = dataset_id_for(source_raw)
+            key = cache_key_for(source_raw, charset)
+
+            if SETTINGS.cache_enabled and not force:
+                cached = load_dataset(dataset_id)
+                if cached is not None and list(cached.get("cache_key") or []) == key:
+                    # Asking for enrichment forces a re-ingestion when the
+                    # cached dataset was stored without it; an already
+                    # enriched dataset (and any non-enriching request) may be
+                    # served straight from cache.
+                    if not enrich or cached.get("enriched"):
+                        # A cache hit answers exactly like a fresh parse.
+                        return jsonify({"ok": True,
+                                        "endpoint": endpoint_for(dataset_id)}), 200
+
+            # Re-ingestion only replaces the stored dataset once it succeeds,
+            # so a failed (forced) refresh leaves the previous data queryable
+            # and a failed enrichment never downgrades what is stored.
+            payload_bytes = fetch_source(source, SETTINGS.max_source_size)
+            enforce_size_limit(len(payload_bytes), SETTINGS.max_source_size)
+            columns, rows, fmt = ingest_source(payload_bytes, charset=charset)
+            record = {"columns": columns, "rows": rows, "source": source_raw,
+                      "cache_key": key, "filetype": filetype_for(fmt),
+                      "enriched": enrich}
+            if enrich:
+                # Metadata always describes the bytes just ingested.
+                record.update(build_metadata(columns, rows, fmt))
+            store_dataset(dataset_id, record)
+        except DataGateError as exc:
+            return error(exc.message, exc.status)
+        except Exception as exc:  # pragma: no cover - defensive
+            return error(f"Failed to convert source: {exc}", 400)
+
+        return jsonify({"ok": True, "endpoint": endpoint_for(dataset_id)}), 200
+
+    @app.route("/upload", methods=["POST", "OPTIONS"])
+    def upload():
+        if request.method == "OPTIONS":
+            return Response(status=204)
+
+        if not is_multipart(request):
+            return error(
+                "Unsupported media type: /upload requires a multipart/form-data "
+                "request carrying a 'file' or 'attachment' part.",
+                415,
+            )
+
+        try:
+            data, filename = read_upload(request)
+            enforce_size_limit(len(data), SETTINGS.max_source_size)
+
+            charset = None
+            if "charset" in request.args:
+                charset = request.args.get("charset", "")
+            elif "charset" in request.form:
+                charset = request.form.get("charset", "")
+
+            dataset_id = dataset_id_for_bytes(data)
+            # `enrich` is a /convert option only: uploads are never enriched.
+            columns, rows, fmt = ingest_source(data, charset=charset)
+            store_dataset(dataset_id, {"columns": columns, "rows": rows,
+                                       "source": filename or "upload",
+                                       "filetype": filetype_for(fmt),
+                                       "enriched": False})
+        except DataGateError as exc:
+            return error(exc.message, exc.status)
+        except Exception as exc:  # pragma: no cover - defensive
+            return error(f"Failed to ingest the uploaded file: {exc}", 400)
+
+        return jsonify({"ok": True, "endpoint": endpoint_for(dataset_id)}), 200
+
+    @app.route("/datasets/<dataset_id>", methods=["GET", "HEAD", "OPTIONS"])
+    def dataset(dataset_id: str):
+        if request.method == "OPTIONS":
+            return Response(status=204)
+
+        started = getattr(g, "started_at", time.perf_counter())
+        record = load_dataset(dataset_id)
+        if record is None:
+            return error(f"Unknown dataset id: {dataset_id!r}", 404)
+
+        try:
+            query = evaluate_query(record, request.args, started)
+        except DataGateError as exc:
+            return error(exc.message, exc.status)
+
+        columns = query.columns
+        if query.shape == "objects":
+            rows = []
+            for rowid, values in query.window:
+                row = {} if query.hide_rowid else {"rowid": rowid}
+                for column, value in zip(columns, values):
+                    row[column] = value
+                rows.append(row)
+        else:
+            rows = [list(values) for _, values in query.window]
+
+        query_ms = max(0.0, round((time.perf_counter() - started) * 1000.0, 3))
+
+        payload = {"ok": True, "columns": columns, "rows": rows}
+        # Enrichment metadata is a property of the stored dataset, so it is
+        # unaffected by filtering, sorting and pagination -- and absent
+        # altogether for a dataset ingested without enrichment.
+        payload.update(enrichment_payload(record))
+        if not query.hide_total:
+            payload["total"] = query.total
+        payload["query_ms"] = query_ms
+        return jsonify(payload), 200
+
+    @app.route("/datasets/<dataset_id>/export", methods=["GET", "HEAD", "OPTIONS"])
+    def export(dataset_id: str):
+        if request.method == "OPTIONS":
+            return Response(status=204)
+
+        started = getattr(g, "started_at", time.perf_counter())
+        record = load_dataset(dataset_id)
+        if record is None:
+            return error(f"Unknown dataset id: {dataset_id!r}", 404)
+
+        try:
+            # `_shape`, `_rowid` and `_total` are accepted but never change the
+            # CSV: it is always the source columns followed by the row window.
+            query = evaluate_query(record, request.args, started)
+        except DataGateError as exc:
+            return error(exc.message, exc.status)
+
+        body = render_csv(query.columns, query.window)
+        response = Response(body, status=200)
+        response.headers["Content-Type"] = "text/csv"
+        response.headers["Content-Disposition"] = (
+            f'attachment; filename="{safe_filename(dataset_id)}.csv"'
+        )
+        return response
+
+    @app.route("/", methods=["GET", "HEAD", "OPTIONS"])
+    def index():
+        if request.method == "OPTIONS":
+            return Response(status=204)
+        return jsonify({
+            "ok": True,
+            "service": "datagate",
+            "endpoints": [
+                "/convert?source=<url>[&charset=<name>][&force][&enrich=yes]",
+                "/upload (POST multipart, field 'file' or 'attachment')",
+                "/datasets/<id>",
+                "/datasets/<id>/export",
+            ],
+            "formats": ["csv", "xls", "xlsx"],
+            "cache_enabled": SETTINGS.cache_enabled,
+            "require_tls": SETTINGS.require_tls,
+            "max_source_size": SETTINGS.max_source_size,
+            "origin_allowlist": list(SETTINGS.origin_allowlist or []),
+            "storage_dir": SETTINGS.storage_dir,
+            "controls": list(CONTROL_PARAMS),
+            "filters": [f"<column>__{name}=<value>" for name in COMPARATORS],
+        }), 200
+
+    @app.errorhandler(HTTPException)
+    def _json_errors(exc):
+        status = getattr(exc, "code", 500) or 500
+        if status in (404, 405):
+            status, message = 404, "Not found."
+        elif status == 400:
+            message = "Bad request."
+        elif status == 413:
+            message = "Payload too large: the upload exceeds the size limit."
+        elif status == 415:
+            message = ("Unsupported media type: /upload requires a "
+                       "multipart/form-data request.")
+        elif status >= 500:
+            message = "Internal server error."
+        else:
+            message = getattr(exc, "description", None) or "Request failed."
+        return error(message, status)
+
+    @app.errorhandler(Exception)
+    def _unhandled(exc):  # pragma: no cover - defensive
+        if isinstance(exc, DataGateError):
+            return error(exc.message, exc.status)
+        code = getattr(exc, "code", None)
+        if isinstance(code, int):
+            return _json_errors(exc)
+        return error(f"Internal server error: {exc}", 500)
+
+    return app
+
+
+# --------------------------------------------------------------------------- #
+# CLI
+# --------------------------------------------------------------------------- #
+
+
+def main(argv=None) -> int:
+    argv = list(sys.argv[1:] if argv is None else argv)
+
+    parser = argparse.ArgumentParser(prog="datagate", description="datagate server")
+    sub = parser.add_subparsers(dest="command")
+    start = sub.add_parser("start", help="Start the datagate HTTP server")
+    start.add_argument("--port", type=int, default=DEFAULT_PORT)
+    start.add_argument("--address", default=DEFAULT_ADDRESS)
+
+    if not argv or argv[0].startswith("-"):
+        argv = ["start"] + argv
+
+    args = parser.parse_args(argv)
+    if args.command != "start":
+        parser.print_help()
+        return 1
+
+    app = create_app()
+    app.run(host=args.address, port=args.port, threaded=True, debug=False,
+            use_reloader=False)
+    return 0
+
+
+app = create_app()
+
+if __name__ == "__main__":
+    raise SystemExit(main())

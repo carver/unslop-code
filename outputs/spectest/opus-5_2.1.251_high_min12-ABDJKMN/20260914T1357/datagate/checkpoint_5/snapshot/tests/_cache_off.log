@@ -1,0 +1,43 @@
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:47181
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 21:44:57] "GET /convert?source=http://127.0.0.1:44849/force-noop-17.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:44:57] "GET /convert?source=http://127.0.0.1:44849/force-noop-17.csv&force HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:44:57] "GET /convert?source=http://127.0.0.1:44849/force-noop-17.csv HTTP/1.1" 200 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:52349
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 21:45:03] "GET /convert?source=http://127.0.0.1:38563/redownload-3.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:45:03] "GET /convert?source=http://127.0.0.1:38563/redownload-3.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:45:03] "GET /convert?source=http://127.0.0.1:38563/redownload-3.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:45:03] "GET /convert?source=http://127.0.0.1:38563/redownload-3.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:45:03] "GET /convert?source=http://127.0.0.1:38563/replace-4.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:45:03] "GET /datasets/d03ae9e2b82e7429 HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:45:03] "GET /convert?source=http://127.0.0.1:38563/replace-4.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:45:03] "GET /datasets/d03ae9e2b82e7429 HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:45:03] "GET /convert?source=http://127.0.0.1:38563/replace-cols-5.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:45:03] "GET /convert?source=http://127.0.0.1:38563/replace-cols-5.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:45:03] "GET /datasets/e9c130bd48c4da07 HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:45:03] "GET /convert?source=http://127.0.0.1:38563/stable-id-6.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:45:03] "GET /convert?source=http://127.0.0.1:38563/stable-id-6.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:45:03] "GET /convert?source=http://127.0.0.1:38563/still-queryable-7.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:45:03] "GET /datasets/2b37d1e1d2dd482f HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:45:03] "GET /datasets/2b37d1e1d2dd482f/export HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:45:03] "GET /convert?source=http://127.0.0.1:38563/force-noop-9.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:45:03] "GET /convert?source=http://127.0.0.1:38563/force-noop-9.csv&force HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:45:03] "GET /convert?source=http://127.0.0.1:38563/force-noop-9.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:45:03] "GET /convert?source=http://127.0.0.1:38563/force-agree-10.csv&force HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:45:03] "GET /convert?source=http://127.0.0.1:38563/force-agree-10.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:45:03] "GET /convert?source=http://127.0.0.1:38563/force-agree-10.csv&force HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:45:03] "GET /datasets/2f5a6e2da9757e54 HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:45:03] "[31m[1mGET /convert?source=http://127.0.0.1:38563/dup-disabled-11.csv&force&force HTTP/1.1[0m" 400 -
+127.0.0.1 - - [14/Sep/2026 21:45:03] "GET /convert?source=http://127.0.0.1:38563/reingest-off-12.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:45:03] "[33mGET /convert?source=http://127.0.0.1:38563/reingest-off-12.csv HTTP/1.1[0m" 404 -
+127.0.0.1 - - [14/Sep/2026 21:45:03] "[31m[1mGET /convert?source=http://127.0.0.1:38563/reingest-off-12.csv HTTP/1.1[0m" 400 -
+127.0.0.1 - - [14/Sep/2026 21:45:03] "GET /convert?source=http://127.0.0.1:38563/keep-prior-off-19.csv HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 21:45:03] "[33mGET /convert?source=http://127.0.0.1:38563/keep-prior-off-19.csv HTTP/1.1[0m" 404 -
+127.0.0.1 - - [14/Sep/2026 21:45:03] "GET /datasets/d5301b1778397451 HTTP/1.1" 200 -

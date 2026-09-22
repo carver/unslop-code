@@ -1,0 +1,79 @@
+defaults:
+  api_url: "http://localhost:8000"
+  model: "gpt-4"
+  rate_limits:
+    rpm: 60
+
+tasks:
+  data_lookup:
+    prompt:
+      system: "You are a data analysis assistant. Use the provided tools to look up data and answer questions."
+      user: "{question}"
+    generation:
+      scheme: "agentic"
+      max_iterations: 10
+      temperature: 0.0
+      max_tokens: 512
+    evaluation:
+      type: "exact_match"
+      answer_field: "answer"
+      extract: "last_number"
+    output_field: "answer"
+    tools:
+      - name: "lookup"
+        description: "Look up a value in the database by key"
+        parameters:
+          type: "object"
+          properties:
+            key:
+              type: "string"
+              description: "The database key to look up"
+          required: ["key"]
+        handler:
+          type: "static_map"
+          mapping:
+            "revenue_q1": "1250000"
+            "revenue_q2": "1480000"
+            "employees": "142"
+          default: "KEY_NOT_FOUND"
+
+      - name: "calculate"
+        description: "Evaluate a mathematical expression"
+        parameters:
+          type: "object"
+          properties:
+            expression:
+              type: "string"
+              description: "The math expression to evaluate"
+          required: ["expression"]
+        handler:
+          type: "echo"
+
+  code_exec:
+    prompt:
+      system: "You are a Python assistant. Run code with the tool before answering."
+      user: "{question}"
+    generation:
+      scheme: "agentic"
+      max_iterations: 6
+      temperature: 0.0
+      max_tokens: 512
+    evaluation:
+      type: "exact_match"
+      answer_field: "answer"
+      extract: "last_number"
+    output_field: "answer"
+    tools:
+      - name: "python"
+        description: "Run a Python snippet and return whatever it prints"
+        parameters:
+          type: "object"
+          properties:
+            code:
+              type: "string"
+              description: "The Python source to run"
+          required: ["code"]
+        handler:
+          type: "script"
+          command: "python3 -c"
+          arg_field: "code"

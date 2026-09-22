@@ -1,0 +1,103 @@
+{
+  "classes": {
+    "attribute_counts_mean": 0.0,
+    "attribute_counts_sum": 0,
+    "count": 2,
+    "method_counts_mean": 0.0,
+    "method_counts_sum": 0
+  },
+  "complexity": {
+    "cc_max": 5,
+    "cc_ratings": {
+      "A": 69,
+      "B": 0,
+      "C": 0,
+      "D": 0,
+      "E": 0,
+      "F": 0
+    },
+    "cc_sum": 142,
+    "mi_min": 41.22186680396773,
+    "mi_ratings": {
+      "A": 6,
+      "B": 0,
+      "C": 0
+    },
+    "mi_sum": 449.77566291387313,
+    "num_complex": 0
+  },
+  "file_count": 6,
+  "functions": {
+    "cc_concentration": 0.14722711267605634,
+    "cc_extreme_count": 0,
+    "cc_high_count": 0,
+    "cc_max": 5,
+    "cc_mean": 2.21875,
+    "cc_normalized": 0.001961691904163636,
+    "cc_std": 0.7861650943380503,
+    "cc_sum": 142,
+    "cc_top20": 0.31690140845070425,
+    "count": 64,
+    "depth_max": 1,
+    "extreme_cc_mean": 0.0,
+    "high_cc_mean": 0.0,
+    "lines_mean": 4.265625,
+    "lines_sum": 273
+  },
+  "graph": {
+    "cyclic_dependency_mass": 0.0,
+    "dependency_entropy": 0.2857142857142857,
+    "edge_count": 7,
+    "node_count": 7,
+    "propagation_cost": 0.21428571428571427
+  },
+  "lines": {
+    "comments": 34,
+    "loc": 268,
+    "multi_comment": 12,
+    "single_comment": 46,
+    "total_lines": 513
+  },
+  "lint": {
+    "counts": {
+      "DOC201": 6,
+      "DOC501": 2,
+      "EM101": 1,
+      "EXE001": 1,
+      "INP001": 1,
+      "PLC1901": 9,
+      "PLW1510": 1,
+      "S101": 63,
+      "S404": 1,
+      "S603": 1,
+      "TRY003": 1,
+      "UP022": 1
+    },
+    "errors": 88,
+    "fixable": 1
+  },
+  "source_files": [
+    "xjqlib/query.py",
+    "xjqlib/render.py",
+    "xjqlib/document.py"
+  ],
+  "symbols": {
+    "classes": 2,
+    "expressions": 305,
+    "expressions_top_level": 5,
+    "functions": 64,
+    "globals": 3,
+    "imports": 13,
+    "max_imports": 5,
+    "methods": 0,
+    "statements": 95,
+    "total": 69,
+    "type_aliases": 0,
+    "variables": 3
+  },
+  "waste": {
+    "single_use_functions": 60,
+    "trivial_wrappers": 2,
+    "unused_variables": 3
+  }
+}

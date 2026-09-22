@@ -1,0 +1,121 @@
+{
+  "classes": {
+    "attribute_counts_mean": 3.25,
+    "attribute_counts_sum": 52,
+    "count": 16,
+    "method_counts_mean": 0.6875,
+    "method_counts_sum": 11
+  },
+  "complexity": {
+    "cc_max": 15,
+    "cc_ratings": {
+      "A": 119,
+      "B": 8,
+      "C": 1,
+      "D": 0,
+      "E": 0,
+      "F": 0
+    },
+    "cc_sum": 267,
+    "mi_min": 21.600419483758557,
+    "mi_ratings": {
+      "A": 12,
+      "B": 0,
+      "C": 0
+    },
+    "mi_sum": 601.5194756950816,
+    "num_complex": 1
+  },
+  "file_count": 12,
+  "functions": {
+    "cc_concentration": 0.36443575964826574,
+    "cc_extreme_count": 0,
+    "cc_high_count": 1,
+    "cc_max": 15,
+    "cc_mean": 2.842696629213483,
+    "cc_normalized": 0.0067277470923833155,
+    "cc_std": 2.199684256291087,
+    "cc_sum": 253,
+    "cc_top20": 0.4308300395256917,
+    "count": 89,
+    "depth_max": 3,
+    "extreme_cc_mean": 0.0,
+    "high_cc_mean": 15.0,
+    "lines_mean": 8.50561797752809,
+    "lines_sum": 757
+  },
+  "graph": {
+    "cyclic_dependency_mass": 0.0,
+    "dependency_entropy": 0.1875945059781871,
+    "edge_count": 35,
+    "node_count": 40,
+    "propagation_cost": 0.04551282051282051
+  },
+  "lines": {
+    "comments": 7,
+    "loc": 865,
+    "multi_comment": 45,
+    "single_comment": 44,
+    "total_lines": 1247
+  },
+  "lint": {
+    "counts": {
+      "ANN401": 6,
+      "ARG001": 4,
+      "B905": 3,
+      "DOC201": 14,
+      "DOC402": 2,
+      "DOC501": 1,
+      "DOC502": 1,
+      "EM101": 1,
+      "EM102": 19,
+      "EXE001": 2,
+      "FBT001": 1,
+      "FBT003": 1,
+      "FURB122": 1,
+      "INP001": 10,
+      "PLR2004": 4,
+      "PLW1510": 1,
+      "PLW1514": 4,
+      "PT006": 1,
+      "PT018": 1,
+      "PTH123": 1,
+      "RUF043": 1,
+      "S101": 66,
+      "S404": 1,
+      "S603": 2,
+      "TC002": 5,
+      "TRY003": 20,
+      "UP035": 2
+    },
+    "errors": 175,
+    "fixable": 5
+  },
+  "source_files": [
+    "client.py",
+    "runner.py",
+    "errors.py",
+    "evaluation.py",
+    "dataset.py",
+    "config.py"
+  ],
+  "symbols": {
+    "classes": 16,
+    "expressions": 1260,
+    "expressions_top_level": 35,
+    "functions": 78,
+    "globals": 23,
+    "imports": 67,
+    "max_imports": 9,
+    "methods": 11,
+    "statements": 267,
+    "total": 128,
+    "type_aliases": 0,
+    "variables": 23
+  },
+  "waste": {
+    "single_use_functions": 65,
+    "trivial_wrappers": 2,
+    "unused_variables": 44
+  }
+}

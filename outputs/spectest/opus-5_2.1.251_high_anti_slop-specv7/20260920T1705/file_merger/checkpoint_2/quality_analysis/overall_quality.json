@@ -1,0 +1,127 @@
+{
+  "classes": {
+    "attribute_counts_mean": 2.6363636363636362,
+    "attribute_counts_sum": 58,
+    "count": 22,
+    "method_counts_mean": 0.22727272727272727,
+    "method_counts_sum": 5
+  },
+  "complexity": {
+    "cc_max": 10,
+    "cc_ratings": {
+      "A": 148,
+      "B": 9,
+      "C": 0,
+      "D": 0,
+      "E": 0,
+      "F": 0
+    },
+    "cc_sum": 347,
+    "mi_min": 27.37015593278324,
+    "mi_ratings": {
+      "A": 14,
+      "B": 0,
+      "C": 0
+    },
+    "mi_sum": 776.8861490801972,
+    "num_complex": 0
+  },
+  "file_count": 14,
+  "functions": {
+    "cc_concentration": 0.25741436925647454,
+    "cc_extreme_count": 0,
+    "cc_high_count": 0,
+    "cc_max": 10,
+    "cc_mean": 3.0535714285714284,
+    "cc_normalized": 0.002205652867394943,
+    "cc_std": 1.5176990984416356,
+    "cc_sum": 342,
+    "cc_top20": 0.35964912280701755,
+    "count": 112,
+    "depth_max": 4,
+    "extreme_cc_mean": 0.0,
+    "high_cc_mean": 0.0,
+    "lines_mean": 8.544642857142858,
+    "lines_sum": 957
+  },
+  "graph": {
+    "cyclic_dependency_mass": 0.0,
+    "dependency_entropy": 0.2245971074698195,
+    "edge_count": 63,
+    "node_count": 71,
+    "propagation_cost": 0.037826961770623745
+  },
+  "lines": {
+    "comments": 23,
+    "loc": 1165,
+    "multi_comment": 97,
+    "single_comment": 100,
+    "total_lines": 1729
+  },
+  "lint": {
+    "counts": {
+      "ANN401": 12,
+      "ARG001": 2,
+      "B905": 1,
+      "DOC201": 45,
+      "DOC402": 6,
+      "DOC501": 13,
+      "EM101": 1,
+      "EM102": 26,
+      "EXE001": 1,
+      "FBT001": 1,
+      "FURB188": 1,
+      "INP001": 2,
+      "PERF203": 1,
+      "PLC0415": 1,
+      "PLR2004": 9,
+      "PLR6201": 1,
+      "PT006": 2,
+      "PTH105": 1,
+      "PTH123": 6,
+      "S101": 54,
+      "S301": 1,
+      "S403": 1,
+      "TC001": 3,
+      "TC003": 1,
+      "TRY003": 27,
+      "UP015": 1,
+      "UP035": 9,
+      "UP037": 1
+    },
+    "errors": 230,
+    "fixable": 19
+  },
+  "source_files": [
+    "csvmerge/formats.py",
+    "csvmerge/sorting.py",
+    "csvmerge/schema.py",
+    "csvmerge/errors.py",
+    "csvmerge/jsonlio.py",
+    "merge_files.py",
+    "csvmerge/readers.py",
+    "csvmerge/coltypes.py",
+    "csvmerge/csvio.py",
+    "csvmerge/parquetio.py",
+    "csvmerge/merge.py"
+  ],
+  "symbols": {
+    "classes": 22,
+    "expressions": 1103,
+    "expressions_top_level": 22,
+    "functions": 107,
+    "globals": 23,
+    "imports": 88,
+    "max_imports": 13,
+    "methods": 5,
+    "statements": 316,
+    "total": 157,
+    "type_aliases": 0,
+    "variables": 23
+  },
+  "waste": {
+    "single_use_functions": 92,
+    "trivial_wrappers": 0,
+    "unused_variables": 28
+  }
+}

@@ -1,0 +1,7 @@
+# merge_files.py targets Python 3.8+.
+#
+# CSV / TSV / JSON Lines support uses only the standard library.
+# Partitioned output (Hive-style directories, row/byte sharding) likewise
+# needs nothing beyond the standard library.
+# Parquet input support requires pyarrow (streamed row group-wise).
+pyarrow>=14.0

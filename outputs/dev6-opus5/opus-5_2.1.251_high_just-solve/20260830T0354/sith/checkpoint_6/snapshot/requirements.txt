@@ -1,0 +1,6 @@
+# sith itself uses only the Python standard library -- no runtime
+# dependencies.  (The interpreter/environment features shell out to the
+# python executables they discover; nothing needs to be installed.)
+
+# development only: static checks over sith.py
+pyflakes

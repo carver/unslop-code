@@ -1,0 +1,94 @@
+{
+  "classes": {
+    "attribute_counts_mean": 0.0,
+    "attribute_counts_sum": 0,
+    "count": 2,
+    "method_counts_mean": 0.0,
+    "method_counts_sum": 0
+  },
+  "complexity": {
+    "cc_max": 5,
+    "cc_ratings": {
+      "A": 12,
+      "B": 0,
+      "C": 0,
+      "D": 0,
+      "E": 0,
+      "F": 0
+    },
+    "cc_sum": 24,
+    "mi_min": 55.898322468824205,
+    "mi_ratings": {
+      "A": 3,
+      "B": 0,
+      "C": 0
+    },
+    "mi_sum": 230.37042126159784,
+    "num_complex": 0
+  },
+  "file_count": 3,
+  "functions": {
+    "cc_concentration": 0.2777777777777778,
+    "cc_extreme_count": 0,
+    "cc_high_count": 0,
+    "cc_max": 5,
+    "cc_mean": 2.6666666666666665,
+    "cc_normalized": 0.006568144499178982,
+    "cc_std": 1.4142135623730951,
+    "cc_sum": 24,
+    "cc_top20": 0.375,
+    "count": 9,
+    "depth_max": 1,
+    "extreme_cc_mean": 0.0,
+    "high_cc_mean": 0.0,
+    "lines_mean": 9.11111111111111,
+    "lines_sum": 82
+  },
+  "graph": {
+    "cyclic_dependency_mass": 0.0,
+    "dependency_entropy": 0.3273771811507984,
+    "edge_count": 9,
+    "node_count": 9,
+    "propagation_cost": 0.19444444444444445
+  },
+  "lines": {
+    "comments": 1,
+    "loc": 73,
+    "multi_comment": 18,
+    "single_comment": 11,
+    "total_lines": 136
+  },
+  "lint": {
+    "counts": {
+      "DOC201": 9,
+      "DOC501": 2,
+      "EXE001": 1,
+      "INP001": 2
+    },
+    "errors": 14,
+    "fixable": 0
+  },
+  "source_files": [
+    "render.py",
+    "xmldoc.py"
+  ],
+  "symbols": {
+    "classes": 2,
+    "expressions": 65,
+    "expressions_top_level": 3,
+    "functions": 9,
+    "globals": 1,
+    "imports": 8,
+    "max_imports": 4,
+    "methods": 0,
+    "statements": 31,
+    "total": 12,
+    "type_aliases": 0,
+    "variables": 1
+  },
+  "waste": {
+    "single_use_functions": 7,
+    "trivial_wrappers": 0,
+    "unused_variables": 1
+  }
+}

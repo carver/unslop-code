@@ -1,0 +1,131 @@
+{
+  "classes": {
+    "attribute_counts_mean": 2.5454545454545454,
+    "attribute_counts_sum": 28,
+    "count": 11,
+    "method_counts_mean": 1.2727272727272727,
+    "method_counts_sum": 14
+  },
+  "complexity": {
+    "cc_max": 9,
+    "cc_ratings": {
+      "A": 466,
+      "B": 12,
+      "C": 0,
+      "D": 0,
+      "E": 0,
+      "F": 0
+    },
+    "cc_sum": 1017,
+    "mi_min": 39.48436350417682,
+    "mi_ratings": {
+      "A": 40,
+      "B": 0,
+      "C": 0
+    },
+    "mi_sum": 2707.3768984951157,
+    "num_complex": 0
+  },
+  "file_count": 40,
+  "functions": {
+    "cc_concentration": 0.23940241352379513,
+    "cc_extreme_count": 0,
+    "cc_high_count": 0,
+    "cc_max": 9,
+    "cc_mean": 2.5699745547073793,
+    "cc_normalized": 0.0005742734305760333,
+    "cc_std": 1.2209122757451376,
+    "cc_sum": 1010,
+    "cc_top20": 0.3405940594059406,
+    "count": 393,
+    "depth_max": 3,
+    "extreme_cc_mean": 0.0,
+    "high_cc_mean": 0.0,
+    "lines_mean": 5.99236641221374,
+    "lines_sum": 2355
+  },
+  "graph": {
+    "cyclic_dependency_mass": 0.0,
+    "dependency_entropy": 0.11862532568931329,
+    "edge_count": 61,
+    "node_count": 67,
+    "propagation_cost": 0.04115784712799638
+  },
+  "lines": {
+    "comments": 659,
+    "loc": 2200,
+    "multi_comment": 214,
+    "single_comment": 740,
+    "total_lines": 4102
+  },
+  "lint": {
+    "counts": {
+      "ARG001": 6,
+      "ARG005": 4,
+      "B905": 1,
+      "C901": 1,
+      "DOC201": 72,
+      "DOC402": 1,
+      "DOC501": 24,
+      "EM102": 7,
+      "ERA001": 222,
+      "FBT001": 1,
+      "FURB152": 1,
+      "INP001": 22,
+      "PLC0415": 8,
+      "PLC1901": 1,
+      "PLR0915": 1,
+      "PLR2004": 130,
+      "PT006": 1,
+      "PT018": 8,
+      "PYI041": 1,
+      "S101": 401,
+      "S104": 4,
+      "S108": 4,
+      "TRY003": 7,
+      "UP012": 2,
+      "UP035": 1
+    },
+    "errors": 931,
+    "fixable": 5
+  },
+  "source_files": [
+    "gateway/ingestion.py",
+    "gateway/config.py",
+    "gateway/filtering.py",
+    "gateway/uploads.py",
+    "gateway/caching.py",
+    "gateway/budget.py",
+    "gateway/formats.py",
+    "gateway/spreadsheets.py",
+    "gateway/tabular.py",
+    "gateway/decoding.py",
+    "datagate.py",
+    "gateway/exporting.py",
+    "gateway/controls.py",
+    "gateway/access.py",
+    "gateway/store.py",
+    "gateway/errors.py",
+    "gateway/app.py",
+    "gateway/sourcing.py"
+  ],
+  "symbols": {
+    "classes": 11,
+    "expressions": 3244,
+    "expressions_top_level": 84,
+    "functions": 379,
+    "globals": 74,
+    "imports": 110,
+    "max_imports": 15,
+    "methods": 14,
+    "statements": 843,
+    "total": 478,
+    "type_aliases": 0,
+    "variables": 74
+  },
+  "waste": {
+    "single_use_functions": 353,
+    "trivial_wrappers": 2,
+    "unused_variables": 73
+  }
+}

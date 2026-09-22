@@ -1,0 +1,1 @@
+{"source": "http://127.0.0.1:58789/quoted.csv", "columns": ["name", "note", "qty"], "rows": [["Smith, John", "says \"hi\"", 3], ["Doe, Jane", "plain", 4]], "enriched": false}

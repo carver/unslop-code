@@ -1,0 +1,272 @@
+"""Loading and validation of the YAML configuration, single-task or multi-task."""
+
+from __future__ import annotations
+
+import re
+from collections.abc import Callable, Sequence
+from dataclasses import dataclass
+from typing import Any
+
+import yaml
+
+from errors import RejectorError
+from evaluation import (
+    ANSWER_FIELD_TYPES,
+    EVALUATION_TYPES,
+    EXTRACTORS,
+    LLM_JUDGE,
+    SCRIPT,
+    EvaluationConfig,
+)
+from templates import PromptConfig
+
+SCHEMES = frozenset({"greedy", "sample", "rejection"})
+
+#: Sections of `defaults` that are merged key by key with the task's own section.
+NESTED_SECTIONS = ("prompt", "generation", "evaluation")
+
+DEFAULT_RPM = 60
+DEFAULT_MAX_TOKENS = 512
+DEFAULT_EXTRACT = "full"
+
+
+@dataclass(frozen=True)
+class GenerationConfig:
+    """Sampling parameters and the scheme that drives how many attempts a row gets."""
+
+    scheme: str
+    temperature: float
+    max_tokens: int
+    n: int
+
+    @property
+    def attempts(self) -> int:
+        """Logical generation attempts per row: `n` for rejection sampling, else 1."""
+        return self.n if self.scheme == "rejection" else 1
+
+
+@dataclass(frozen=True)
+class TaskConfig:
+    """A fully validated task definition."""
+
+    name: str
+    api_url: str
+    model: str
+    rpm: int
+    prompt: PromptConfig
+    generation: GenerationConfig
+    evaluation: EvaluationConfig | None
+    output_field: str
+
+
+@dataclass(frozen=True)
+class TaskSuite:
+    """The tasks a run will execute, plus the shape of the config they came from."""
+
+    tasks: tuple[TaskConfig, ...]
+    #: Every task name in the config, including ones `--task` left out.
+    names: tuple[str, ...]
+    multi: bool
+
+
+def load_tasks(path: str, overrides: dict[str, Any], selected: Sequence[str] | None = None) -> TaskSuite:
+    """Read the YAML config at `path`, apply CLI overrides, and validate the selected tasks."""
+    document = _read_yaml(path)
+    sections = _task_sections(path, document)
+    multi = "task" not in document
+    names = _select(sections, selected)
+    return TaskSuite(
+        tasks=tuple(
+            _build_task(name, sections[name], overrides, f"tasks.{name}" if multi else "task") for name in names
+        ),
+        names=tuple(sections),
+        multi=multi,
+    )
+
+
+def _read_yaml(path: str) -> dict[str, Any]:
+    with open(path, encoding="utf-8") as handle:
+        document = yaml.safe_load(handle)
+    if not isinstance(document, dict):
+        raise RejectorError(f"{path}: expected a YAML mapping at the top level")
+    return document
+
+
+def _task_sections(path: str, document: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    """One merged config section per task name, in the order the config lists them."""
+    single = document.get("task")
+    if isinstance(single, dict):
+        return {str(single.get("name", "task")): single}
+
+    tasks = document.get("tasks")
+    if not isinstance(tasks, dict) or not tasks:
+        raise RejectorError(f"{path}: config must contain a 'task' mapping or a non-empty 'tasks' mapping")
+
+    defaults = document.get("defaults") or {}
+    return {str(name): _with_defaults(defaults, name, section) for name, section in tasks.items()}
+
+
+def _with_defaults(defaults: dict[str, Any], name: str, section: Any) -> dict[str, Any]:
+    """Task values layered over `defaults`, merging the nested sections key by key."""
+    if not isinstance(section, dict):
+        raise RejectorError(f"tasks.{name} must be a mapping")
+
+    merged = {**defaults, **section}
+    for key in NESTED_SECTIONS:
+        nested = {**(defaults.get(key) or {}), **(section.get(key) or {})}
+        if nested:
+            merged[key] = nested
+    return merged
+
+
+def _select(sections: dict[str, dict[str, Any]], selected: Sequence[str] | None) -> list[str]:
+    """The task names to run; `--task` narrows them and unknown names are an error."""
+    if not selected:
+        return list(sections)
+    wanted = set(selected)
+    unknown = sorted(wanted - set(sections))
+    if unknown:
+        raise RejectorError(f"--task names unknown task(s): {', '.join(unknown)}")
+    return [name for name in sections if name in wanted]
+
+
+def _build_task(name: str, section: dict[str, Any], overrides: dict[str, Any], prefix: str) -> TaskConfig:
+    """Validate one task section; `prefix` names it in error messages."""
+    values = _merged(section, overrides, ("api_url", "model", "rpm"))
+    rpm = _number(values, "rpm", DEFAULT_RPM, int, prefix)
+    if rpm < 1:
+        raise RejectorError(f"{prefix}.rpm must be >= 1, got {rpm}")
+
+    model = _text(values, "model", prefix)
+    generation = _build_generation(
+        _merged(section.get("generation"), overrides, ("scheme", "temperature", "max_tokens", "n")), prefix
+    )
+    return TaskConfig(
+        name=name,
+        api_url=_text(values, "api_url", prefix).rstrip("/"),
+        model=model,
+        rpm=rpm,
+        prompt=_build_prompt(section.get("prompt"), f"{prefix}.prompt"),
+        generation=generation,
+        evaluation=_build_evaluation(section.get("evaluation"), generation.scheme, model, overrides, prefix),
+        output_field=_text(values, "output_field", prefix),
+    )
+
+
+def _merged(section: Any, overrides: dict[str, Any], keys: tuple[str, ...]) -> dict[str, Any]:
+    """Config section with the CLI overrides that apply to it layered on top."""
+    values = dict(section or {})
+    values.update({key: overrides[key] for key in keys if overrides.get(key) is not None})
+    return values
+
+
+def _text(values: dict[str, Any], key: str, prefix: str) -> str:
+    value = values.get(key)
+    if not value:
+        raise RejectorError(f"{prefix}.{key} is required")
+    return str(value)
+
+
+def _number(values: dict[str, Any], key: str, default: Any, cast: Callable[[Any], Any], prefix: str) -> Any:
+    value = values.get(key, default)
+    try:
+        return cast(value)
+    except (TypeError, ValueError):
+        raise RejectorError(f"{prefix}.{key} must be a number, got {value!r}") from None
+
+
+def _build_prompt(section: Any, prefix: str) -> PromptConfig:
+    if not isinstance(section, dict) or not section.get("user"):
+        raise RejectorError(f"{prefix}.user is required")
+    return PromptConfig(system=str(section.get("system", "")), user=str(section["user"]))
+
+
+def _build_generation(values: dict[str, Any], prefix: str) -> GenerationConfig:
+    prefix = f"{prefix}.generation"
+    scheme = str(values.get("scheme", "greedy"))
+    if scheme not in SCHEMES:
+        raise RejectorError(f"{prefix}.scheme must be one of {sorted(SCHEMES)}, got {scheme!r}")
+
+    temperature = _number(values, "temperature", 0.0, float, prefix)
+    if scheme == "greedy":
+        temperature = 0.0
+    elif temperature <= 0:
+        raise RejectorError(f"{prefix}.temperature must be > 0 for scheme '{scheme}', got {temperature}")
+
+    n = _number(values, "n", 1, int, prefix)
+    if n < 1:
+        raise RejectorError(f"{prefix}.n must be >= 1, got {n}")
+
+    return GenerationConfig(
+        scheme=scheme,
+        temperature=temperature,
+        max_tokens=_number(values, "max_tokens", DEFAULT_MAX_TOKENS, int, prefix),
+        n=n,
+    )
+
+
+def _build_evaluation(
+    section: Any, scheme: str, model: str, overrides: dict[str, Any], prefix: str
+) -> EvaluationConfig | None:
+    prefix = f"{prefix}.evaluation"
+    if section is None:
+        if scheme == "rejection":
+            raise RejectorError(f"{prefix} is required for scheme 'rejection'")
+        return None
+    if not isinstance(section, dict):
+        raise RejectorError(f"{prefix} must be a mapping")
+
+    eval_type = section.get("type")
+    if eval_type not in EVALUATION_TYPES:
+        raise RejectorError(f"{prefix}.type must be one of {sorted(EVALUATION_TYPES)}, got {eval_type!r}")
+
+    extract = str(section.get("extract", DEFAULT_EXTRACT))
+    if extract not in EXTRACTORS:
+        raise RejectorError(f"{prefix}.extract must be one of {sorted(EXTRACTORS)}, got {extract!r}")
+
+    answer_field = section.get("answer_field")
+    if eval_type in ANSWER_FIELD_TYPES and not answer_field:
+        raise RejectorError(f"{prefix}.answer_field is required for type '{eval_type}'")
+
+    return EvaluationConfig(
+        type=eval_type,
+        extract=extract,
+        answer_field=str(answer_field) if answer_field else None,
+        **_type_fields(eval_type, section, model, overrides, prefix),
+    )
+
+
+def _type_fields(
+    eval_type: str, section: dict[str, Any], model: str, overrides: dict[str, Any], prefix: str
+) -> dict[str, Any]:
+    """The configuration fields that belong to one evaluation type only."""
+    if eval_type == "regex":
+        return {"pattern": _compile_pattern(section.get("pattern"), prefix)}
+    if eval_type == SCRIPT:
+        return {
+            "command_template": _text(section, "command_template", prefix),
+            "success_exit_code": _number(section, "success_exit_code", 0, int, prefix),
+        }
+    if eval_type == LLM_JUDGE:
+        return _judge_fields(section, model, overrides, prefix)
+    return {}
+
+
+def _judge_fields(section: dict[str, Any], model: str, overrides: dict[str, Any], prefix: str) -> dict[str, Any]:
+    """Judge prompt, pass threshold and the model the judge call is sent to."""
+    if section.get("threshold") is None:
+        raise RejectorError(f"{prefix}.threshold is required for type '{LLM_JUDGE}'")
+    return {
+        "judge_prompt": _build_prompt(section.get("judge_prompt"), f"{prefix}.judge_prompt"),
+        "threshold": _number(section, "threshold", None, float, prefix),
+        "model": str(overrides.get("eval_model") or section.get("model") or model),
+    }
+
+
+def _compile_pattern(pattern: Any, prefix: str) -> re.Pattern[str]:
+    if not pattern:
+        raise RejectorError(f"{prefix}.pattern is required for type 'regex'")
+    try:
+        return re.compile(str(pattern))
+    except re.error as exc:
+        raise RejectorError(f"{prefix}.pattern is not a valid regex: {exc}") from None

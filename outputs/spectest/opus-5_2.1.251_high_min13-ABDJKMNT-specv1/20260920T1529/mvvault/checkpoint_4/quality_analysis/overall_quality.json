@@ -1,0 +1,141 @@
+{
+  "classes": {
+    "attribute_counts_mean": 2.066666666666667,
+    "attribute_counts_sum": 31,
+    "count": 15,
+    "method_counts_mean": 3.4,
+    "method_counts_sum": 51
+  },
+  "complexity": {
+    "cc_max": 15,
+    "cc_ratings": {
+      "A": 526,
+      "B": 13,
+      "C": 2,
+      "D": 0,
+      "E": 0,
+      "F": 0
+    },
+    "cc_sum": 1279,
+    "mi_min": 32.063396995084844,
+    "mi_ratings": {
+      "A": 37,
+      "B": 0,
+      "C": 0
+    },
+    "mi_sum": 2234.322876527445,
+    "num_complex": 2
+  },
+  "file_count": 37,
+  "functions": {
+    "cc_concentration": 0.2588562784521666,
+    "cc_extreme_count": 0,
+    "cc_high_count": 0,
+    "cc_max": 9,
+    "cc_mean": 2.6936542669584247,
+    "cc_normalized": 0.0005232063457011694,
+    "cc_std": 1.3171536941035942,
+    "cc_sum": 1231,
+    "cc_top20": 0.34849715678310317,
+    "count": 457,
+    "depth_max": 3,
+    "extreme_cc_mean": 0.0,
+    "high_cc_mean": 0.0,
+    "lines_mean": 6.678336980306346,
+    "lines_sum": 3052
+  },
+  "graph": {
+    "cyclic_dependency_mass": 0.0,
+    "dependency_entropy": 0.33384611860205055,
+    "edge_count": 135,
+    "node_count": 113,
+    "propagation_cost": 0.029551201011378002
+  },
+  "lines": {
+    "comments": 540,
+    "loc": 3023,
+    "multi_comment": 116,
+    "single_comment": 704,
+    "total_lines": 5148
+  },
+  "lint": {
+    "counts": {
+      "ARG001": 6,
+      "ARG005": 1,
+      "BLE001": 1,
+      "DOC201": 101,
+      "DOC402": 4,
+      "DOC501": 16,
+      "DTZ005": 3,
+      "DTZ007": 1,
+      "EM101": 2,
+      "EM102": 25,
+      "ERA001": 3,
+      "EXE001": 1,
+      "FBT002": 5,
+      "FBT003": 2,
+      "FURB118": 2,
+      "INP001": 19,
+      "N818": 1,
+      "PERF203": 1,
+      "PLC1901": 14,
+      "PLR0913": 1,
+      "PLR0917": 1,
+      "PLR2004": 59,
+      "PLR6201": 6,
+      "PLW1510": 3,
+      "PT006": 3,
+      "PT018": 4,
+      "RET503": 1,
+      "RUF005": 3,
+      "RUF031": 1,
+      "RUF100": 1,
+      "S101": 501,
+      "S310": 2,
+      "S404": 3,
+      "S603": 5,
+      "SIM105": 1,
+      "SIM300": 1,
+      "TRY003": 27
+    },
+    "errors": 831,
+    "fixable": 6
+  },
+  "source_files": [
+    "mvaultlib/history.py",
+    "mvaultlib/digest.py",
+    "mvaultlib/timestamps.py",
+    "mvaultlib/download.py",
+    "mvaultlib/cli.py",
+    "mvaultlib/sync.py",
+    "mvaultlib/pages.py",
+    "mvaultlib/catalog.py",
+    "mvaultlib/recents.py",
+    "mvaultlib/versions.py",
+    "mvaultlib/views.py",
+    "mvaultlib/viewer.py",
+    "mvaultlib/source.py",
+    "mvaultlib/errors.py",
+    "mvaultlib/server.py",
+    "mvaultlib/vault.py"
+  ],
+  "symbols": {
+    "classes": 15,
+    "expressions": 4467,
+    "expressions_top_level": 353,
+    "functions": 406,
+    "globals": 69,
+    "imports": 134,
+    "max_imports": 11,
+    "methods": 51,
+    "statements": 943,
+    "total": 541,
+    "type_aliases": 0,
+    "variables": 69
+  },
+  "waste": {
+    "single_use_functions": 369,
+    "trivial_wrappers": 7,
+    "unused_variables": 80
+  }
+}

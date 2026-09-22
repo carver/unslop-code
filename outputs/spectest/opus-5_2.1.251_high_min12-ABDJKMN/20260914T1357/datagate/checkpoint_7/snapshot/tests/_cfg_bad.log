@@ -1,0 +1,42 @@
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:35299
+[33mPress CTRL+C to quit[0m
+DATAGATE_CONFIG: /tmp/pytest-of-agent/pytest-1/test_malformed_line_fails_star0/datagate-1.conf line 1: expected KEY=VALUE, got 'REQUIRE_TLS true'
+DATAGATE_CONFIG: /tmp/pytest-of-agent/pytest-1/test_malformed_line_fails_star1/datagate-1.conf line 1: expected KEY=VALUE, got 'REQUIRE_TLS'
+DATAGATE_CONFIG: /tmp/pytest-of-agent/pytest-1/test_malformed_line_fails_star2/datagate-1.conf line 1: expected KEY=VALUE, got '=true'
+DATAGATE_CONFIG: /tmp/pytest-of-agent/pytest-1/test_malformed_line_fails_star3/datagate-1.conf line 1: expected KEY=VALUE, got '=  true'
+DATAGATE_CONFIG: /tmp/pytest-of-agent/pytest-1/test_malformed_line_fails_star4/datagate-1.conf line 2: expected KEY=VALUE, got 'garbage line'
+REQUIRE_TLS: invalid boolean 'true # yes' (expected one of 1, true, yes, on, 0, false, no, off).
+REQUIRE_TLS: invalid boolean 'maybe' (expected one of 1, true, yes, on, 0, false, no, off).
+CACHE_ENABLED: invalid boolean 'sometimes' (expected one of 1, true, yes, on, 0, false, no, off).
+MAX_SOURCE_SIZE: invalid integer byte count 'lots' (expected a non-negative number of bytes).
+MAX_SOURCE_SIZE: invalid integer byte count '1.5' (expected a non-negative number of bytes).
+MAX_SOURCE_SIZE: invalid integer byte count '-1' (expected a non-negative number of bytes).
+MAX_SOURCE_SIZE: invalid integer byte count '10KB' (expected a non-negative number of bytes).
+REQUIRE_TLS: invalid boolean '' (expected one of 1, true, yes, on, 0, false, no, off).
+REQUIRE_TLS: invalid boolean 'maybe' (expected one of 1, true, yes, on, 0, false, no, off).
+MAX_SOURCE_SIZE: invalid integer byte count 'abc' (expected a non-negative number of bytes).
+MAX_SOURCE_SIZE: invalid integer byte count '-5' (expected a non-negative number of bytes).
+CACHE_ENABLED: invalid boolean 'nope' (expected one of 1, true, yes, on, 0, false, no, off).
+DATAGATE_CONFIG: cannot read config file '/tmp/pytest-of-agent/pytest-1/test_missing_config_file_fails0/not-there.conf': [Errno 2] No such file or directory: '/tmp/pytest-of-agent/pytest-1/test_missing_config_file_fails0/not-there.conf'
+DATAGATE_CONFIG: cannot read config file '/tmp/pytest-of-agent/pytest-1/test_directory_as_config_file_0': [Errno 21] Is a directory: '/tmp/pytest-of-agent/pytest-1/test_directory_as_config_file_0'
+DATAGATE_CONFIG: cannot read config file '/tmp/pytest-of-agent/pytest-1/test_unreadable_config_file_fa0/locked.conf': [Errno 13] Permission denied: '/tmp/pytest-of-agent/pytest-1/test_unreadable_config_file_fa0/locked.conf'
+REQUIRE_TLS: invalid boolean '' (expected one of 1, true, yes, on, 0, false, no, off).
+REQUIRE_TLS: invalid boolean ' ' (expected one of 1, true, yes, on, 0, false, no, off).
+REQUIRE_TLS: invalid boolean '2' (expected one of 1, true, yes, on, 0, false, no, off).
+REQUIRE_TLS: invalid boolean '-1' (expected one of 1, true, yes, on, 0, false, no, off).
+REQUIRE_TLS: invalid boolean 'y' (expected one of 1, true, yes, on, 0, false, no, off).
+REQUIRE_TLS: invalid boolean 'n' (expected one of 1, true, yes, on, 0, false, no, off).
+REQUIRE_TLS: invalid boolean 't' (expected one of 1, true, yes, on, 0, false, no, off).
+REQUIRE_TLS: invalid boolean 'f' (expected one of 1, true, yes, on, 0, false, no, off).
+REQUIRE_TLS: invalid boolean 'truthy' (expected one of 1, true, yes, on, 0, false, no, off).
+REQUIRE_TLS: invalid boolean 'enable' (expected one of 1, true, yes, on, 0, false, no, off).
+REQUIRE_TLS: invalid boolean 'yes please' (expected one of 1, true, yes, on, 0, false, no, off).
+REQUIRE_TLS: invalid boolean 'null' (expected one of 1, true, yes, on, 0, false, no, off).
+REQUIRE_TLS: invalid boolean 'tru' (expected one of 1, true, yes, on, 0, false, no, off).
+REQUIRE_TLS: invalid boolean 'onn' (expected one of 1, true, yes, on, 0, false, no, off).
+REQUIRE_TLS: invalid boolean 'true,false' (expected one of 1, true, yes, on, 0, false, no, off).
+REQUIRE_TLS: invalid boolean 'maybe' (expected one of 1, true, yes, on, 0, false, no, off).
+CACHE_ENABLED: invalid boolean 'maybe' (expected one of 1, true, yes, on, 0, false, no, off).

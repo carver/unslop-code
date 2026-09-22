@@ -1,0 +1,60 @@
+
+
+============================= test session starts ==============================
+platform linux -- Python 3.12.14, pytest-9.1.1, pluggy-1.6.0 -- /tmp/uv-cache/archive-v0/8vFUC_BteLQu7ftJ/bin/python
+cachedir: .pytest_cache
+metadata: {'Python': '3.12.14', 'Platform': 'Linux-7.0.12-x86_64-with-glibc2.41', 'Packages': {'pytest': '9.1.1', 'pluggy': '1.6.0'}, 'Plugins': {'timeout': '2.4.0', 'anyio': '4.14.2', 'json-report': '1.5.0', 'json-ctrf': '0.5.3', 'metadata': '3.1.1'}}
+rootdir: /workspace
+configfile: pytest.ini
+plugins: timeout-2.4.0, anyio-4.14.2, json-report-1.5.0, json-ctrf-0.5.3, metadata-3.1.1
+timeout: 30.0s
+timeout method: signal
+timeout func_only: False
+collecting ... collected 42 items
+
+.evaluation_tests/test_checkpoint_6.py::test_post_create PASSED          [  2%]
+.evaluation_tests/test_checkpoint_6.py::test_patch_title PASSED          [  4%]
+.evaluation_tests/test_checkpoint_6.py::test_delete_one PASSED           [  7%]
+.evaluation_tests/test_checkpoint_6.py::test_post_migrates_v2 PASSED     [  9%]
+.evaluation_tests/test_checkpoint_6.py::test_post_migrates_v1 PASSED     [ 11%]
+.evaluation_tests/test_checkpoint_6.py::test_post_missing[title] PASSED  [ 14%]
+.evaluation_tests/test_checkpoint_6.py::test_post_missing[timecode] PASSED [ 16%]
+.evaluation_tests/test_checkpoint_6.py::test_missing_id[PATCH-payload0] PASSED [ 19%]
+.evaluation_tests/test_checkpoint_6.py::test_missing_id[DELETE-payload1] PASSED [ 21%]
+.evaluation_tests/test_checkpoint_6.py::test_bad_timecode[] PASSED       [ 23%]
+.evaluation_tests/test_checkpoint_6.py::test_bad_timecode[-1] PASSED     [ 26%]
+.evaluation_tests/test_checkpoint_6.py::test_bad_timecode[1:ab] PASSED   [ 28%]
+.evaluation_tests/test_checkpoint_6.py::test_bad_timecode[1:2:3:4] PASSED [ 30%]
+.evaluation_tests/test_checkpoint_6.py::test_bad_timecode[1.5] PASSED    [ 33%]
+.evaluation_tests/test_checkpoint_6.py::test_unknown_id[PATCH-payload0] PASSED [ 35%]
+.evaluation_tests/test_checkpoint_6.py::test_unknown_id[DELETE-payload1] PASSED [ 38%]
+.evaluation_tests/test_checkpoint_6.py::test_bad_json PASSED             [ 40%]
+.evaluation_tests/test_checkpoint_6.py::test_migration_atomic[catalog0-entries-bad-v1] PASSED [ 42%]
+.evaluation_tests/test_checkpoint_6.py::test_migration_atomic[catalog1-episodes-bad-v2] PASSED [ 45%]
+.evaluation_tests/test_checkpoint_6.py::test_post_body PASSED            [ 47%]
+.evaluation_tests/test_checkpoint_6.py::test_post_order_ids PASSED       [ 50%]
+.evaluation_tests/test_checkpoint_6.py::test_delete_keeps_order PASSED   [ 52%]
+.evaluation_tests/test_checkpoint_6.py::test_timecodes[90-90] PASSED     [ 54%]
+.evaluation_tests/test_checkpoint_6.py::test_timecodes[1:30-90] PASSED   [ 57%]
+.evaluation_tests/test_checkpoint_6.py::test_timecodes[1:01:30-3690] PASSED [ 59%]
+.evaluation_tests/test_checkpoint_6.py::test_timecodes[90:00-5400] PASSED [ 61%]
+.evaluation_tests/test_checkpoint_6.py::test_timecodes[01:30-90] PASSED  [ 64%]
+.evaluation_tests/test_checkpoint_6.py::test_timecodes[0-0] PASSED       [ 66%]
+.evaluation_tests/test_checkpoint_6.py::test_timecodes[00:00:00-0] PASSED [ 69%]
+.evaluation_tests/test_checkpoint_6.py::test_timecodes[99:59:59-359999] PASSED [ 71%]
+.evaluation_tests/test_checkpoint_6.py::test_v3_backup_before_post PASSED [ 73%]
+.evaluation_tests/test_checkpoint_6.py::test_patch_variants[payload0-expected0] PASSED [ 76%]
+.evaluation_tests/test_checkpoint_6.py::test_patch_variants[payload1-expected1] PASSED [ 78%]
+.evaluation_tests/test_checkpoint_6.py::test_v2_backup_is_original PASSED [ 80%]
+.evaluation_tests/test_checkpoint_6.py::test_v2_migrates_others PASSED   [ 83%]
+.evaluation_tests/test_checkpoint_6.py::test_v2_uses_v3_routes PASSED    [ 85%]
+.evaluation_tests/test_checkpoint_6.py::test_v1_converts_keys_and_source PASSED [ 88%]
+.evaluation_tests/test_checkpoint_6.py::test_v1_shared_removed_ts PASSED [ 90%]
+.evaluation_tests/test_checkpoint_6.py::test_v1_route_switch PASSED      [ 92%]
+.evaluation_tests/test_checkpoint_6.py::test_patch_delete_after_v2 PASSED [ 95%]
+.evaluation_tests/test_checkpoint_6.py::test_patch_after_v1_post_route_switch PASSED [ 97%]
+.evaluation_tests/test_checkpoint_6.py::test_mixed_vaults PASSED         [100%]
+
+--------------------------------- JSON report ----------------------------------
+report saved to: .scbench/pytest-report.json
+============================= 42 passed in 15.69s ==============================

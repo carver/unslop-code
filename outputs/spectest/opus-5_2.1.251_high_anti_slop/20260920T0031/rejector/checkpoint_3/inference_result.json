@@ -1,0 +1,28 @@
+{
+  "artifacts_dir": "agent",
+  "checkpoint_path": "/home/carver/code/claudedev/unslop-code-bench/outputs/spectest/opus-5_2.1.251_high_anti_slop/20260920T0031/rejector/checkpoint_3",
+  "completed": "2026-09-20T01:22:33.214875",
+  "elapsed": 915.146408,
+  "error_message": null,
+  "had_error": false,
+  "snapshot_dir": "snapshot",
+  "started": "2026-09-20T01:07:18.068467",
+  "usage": {
+    "cost": 5.926803,
+    "current_tokens": {
+      "cache_read": 5690250,
+      "cache_write": 139952,
+      "input": 16911,
+      "output": 63775,
+      "reasoning": 0
+    },
+    "net_tokens": {
+      "cache_read": 5690250,
+      "cache_write": 139952,
+      "input": 16911,
+      "output": 63775,
+      "reasoning": 0
+    },
+    "steps": 50
+  }
+}

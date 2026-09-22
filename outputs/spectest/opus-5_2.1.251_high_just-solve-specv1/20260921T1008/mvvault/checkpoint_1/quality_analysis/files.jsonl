@@ -1,0 +1,1 @@
+{"file_path": "mvault.py", "loc": 361, "total_lines": 518, "comments": 28, "multi_comment": 8, "single_comment": 43, "lint_errors": 97, "lint_fixable": 30, "mi": 25.931480885612963, "depth": 1, "is_entry_language": true, "import_count": 7, "global_count": 10, "symbol_count": 43, "single_use_count": 23, "trivial_wrapper_count": 3, "unused_variable_count": 9}

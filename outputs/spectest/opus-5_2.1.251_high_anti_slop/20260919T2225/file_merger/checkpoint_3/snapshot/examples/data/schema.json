@@ -1,0 +1,16 @@
+{
+  "columns": [
+    {
+      "name": "created_at",
+      "type": "timestamp"
+    },
+    {
+      "name": "id",
+      "type": "int"
+    },
+    {
+      "name": "region",
+      "type": "string"
+    }
+  ]
+}

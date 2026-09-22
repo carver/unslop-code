@@ -1,0 +1,1 @@
+{"source": "http://127.0.0.1:45917/tab.csv", "columns": ["a", "b", "c"], "rows": [[1, 2, "three"], [4, 5, "six"]], "enriched": false}

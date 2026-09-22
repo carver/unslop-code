@@ -1,0 +1,122 @@
+{
+  "classes": {
+    "attribute_counts_mean": 3.142857142857143,
+    "attribute_counts_sum": 44,
+    "count": 14,
+    "method_counts_mean": 2.9285714285714284,
+    "method_counts_sum": 41
+  },
+  "complexity": {
+    "cc_max": 41,
+    "cc_ratings": {
+      "A": 253,
+      "B": 12,
+      "C": 0,
+      "D": 0,
+      "E": 0,
+      "F": 1
+    },
+    "cc_sum": 664,
+    "mi_min": 19.889866522867756,
+    "mi_ratings": {
+      "A": 17,
+      "B": 0,
+      "C": 0
+    },
+    "mi_sum": 956.8491955935729,
+    "num_complex": 1
+  },
+  "file_count": 17,
+  "functions": {
+    "cc_concentration": 0.2509124976578602,
+    "cc_extreme_count": 0,
+    "cc_high_count": 0,
+    "cc_max": 9,
+    "cc_mean": 2.6355555555555554,
+    "cc_normalized": 0.0011657576162593958,
+    "cc_std": 1.3497942230001003,
+    "cc_sum": 593,
+    "cc_top20": 0.3625632377740304,
+    "count": 225,
+    "depth_max": 3,
+    "extreme_cc_mean": 0.0,
+    "high_cc_mean": 0.0,
+    "lines_mean": 5.475555555555555,
+    "lines_sum": 1232
+  },
+  "graph": {
+    "cyclic_dependency_mass": 0.06493506493506493,
+    "dependency_entropy": 0.21428571428571427,
+    "edge_count": 77,
+    "node_count": 84,
+    "propagation_cost": 0.03542742398164085
+  },
+  "lines": {
+    "comments": 139,
+    "loc": 1298,
+    "multi_comment": 53,
+    "single_comment": 214,
+    "total_lines": 2085
+  },
+  "lint": {
+    "counts": {
+      "ARG001": 18,
+      "B905": 1,
+      "BLE001": 1,
+      "DOC201": 46,
+      "DOC402": 5,
+      "DOC501": 1,
+      "EM102": 4,
+      "ERA001": 35,
+      "EXE001": 1,
+      "FBT001": 4,
+      "INP001": 8,
+      "PERF203": 1,
+      "PLC0415": 2,
+      "PLC1901": 1,
+      "PLR6301": 1,
+      "PLW1510": 1,
+      "RUF005": 1,
+      "S101": 170,
+      "S404": 1,
+      "S603": 1,
+      "TC001": 1,
+      "TC003": 1,
+      "TRY003": 4,
+      "UP006": 26,
+      "UP035": 10,
+      "UP037": 10,
+      "UP045": 19
+    },
+    "errors": 374,
+    "fixable": 56
+  },
+  "source_files": [
+    "sithlib/results.py",
+    "sithlib/symbols.py",
+    "sithlib/runtime.py",
+    "sithlib/context.py",
+    "sithlib/source.py",
+    "sithlib/engine.py",
+    "sithlib/analysis.py"
+  ],
+  "symbols": {
+    "classes": 14,
+    "expressions": 1917,
+    "expressions_top_level": 8,
+    "functions": 184,
+    "globals": 27,
+    "imports": 51,
+    "max_imports": 8,
+    "methods": 41,
+    "statements": 502,
+    "total": 266,
+    "type_aliases": 0,
+    "variables": 27
+  },
+  "waste": {
+    "single_use_functions": 175,
+    "trivial_wrappers": 1,
+    "unused_variables": 33
+  }
+}

@@ -1,0 +1,1 @@
+{"source": "http://127.0.0.1:41891/off.csv", "columns": ["name", "age"], "rows": [["Carol", 41], ["Dave", 52], ["Erin", 19]], "enriched": false}

@@ -1,0 +1,28 @@
+{
+  "artifacts_dir": "agent",
+  "checkpoint_path": "outputs/spectest/opus-5_2.1.251_high_min13-ABDJKMNT/20260919T0808/datagate/checkpoint_1",
+  "completed": "2026-09-19T08:16:32.989412",
+  "elapsed": 456.421328,
+  "error_message": null,
+  "had_error": false,
+  "snapshot_dir": "snapshot",
+  "started": "2026-09-19T08:08:56.568084",
+  "usage": {
+    "cost": 2.3031124999999997,
+    "current_tokens": {
+      "cache_read": 1747857,
+      "cache_write": 48100,
+      "input": 3832,
+      "output": 37067,
+      "reasoning": 0
+    },
+    "net_tokens": {
+      "cache_read": 1747857,
+      "cache_write": 48100,
+      "input": 3832,
+      "output": 37067,
+      "reasoning": 0
+    },
+    "steps": 32
+  }
+}

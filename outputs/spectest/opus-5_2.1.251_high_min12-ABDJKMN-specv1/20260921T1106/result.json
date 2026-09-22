@@ -1,0 +1,172 @@
+{
+  "model": "opus-5",
+  "thinking": "high",
+  "prompt": "min12-ABDJKMN",
+  "agent_type": "claude_code",
+  "agent_version": "2.1.251",
+  "num_problems": 1,
+  "num_checkpoints": 6,
+  "expected_checkpoints": 6,
+  "costs": {
+    "checkpoint": {
+      "mean": 4.197289416666667,
+      "stddev": 1.6465076098504812,
+      "min": 2.007344,
+      "max": 6.217811500000002,
+      "median": 4.226177999999999,
+      "count": 6
+    },
+    "problem": {
+      "mean": 25.183736500000002,
+      "stddev": null,
+      "min": 25.183736500000002,
+      "max": 25.183736500000002,
+      "median": 25.183736500000002,
+      "count": 1
+    },
+    "total": 25.183736500000002
+  },
+  "time": {
+    "checkpoint": {
+      "mean": 892.5070548333333,
+      "stddev": 305.17815059976226,
+      "min": 479.046676,
+      "max": 1217.605205,
+      "median": 929.3218625,
+      "count": 6
+    },
+    "problem": {
+      "mean": 5355.042329,
+      "stddev": null,
+      "min": 5355.042329,
+      "max": 5355.042329,
+      "median": 5355.042329,
+      "count": 1
+    }
+  },
+  "tokens": {
+    "input": 42440,
+    "output": 363601,
+    "cache_read": 20398511,
+    "cache_write": 566267,
+    "reasoning": 0,
+    "problem": {
+      "input": 42440.0,
+      "output": 363601.0,
+      "cache_read": 20398511.0,
+      "cache_write": 566267.0,
+      "reasoning": 0.0
+    },
+    "checkpoint": {
+      "input": 7073.333333333333,
+      "output": 60600.166666666664,
+      "cache_read": 3399751.8333333335,
+      "cache_write": 94377.83333333333,
+      "reasoning": 0.0
+    }
+  },
+  "steps": {
+    "checkpoint": {
+      "mean": 37.833333333333336,
+      "stddev": 16.845375230806425,
+      "min": 18.0,
+      "max": 61.0,
+      "median": 36.0,
+      "count": 6
+    },
+    "problem": {
+      "mean": 227.0,
+      "stddev": null,
+      "min": 227.0,
+      "max": 227.0,
+      "median": 227.0,
+      "count": 1
+    }
+  },
+  "checkpoints_solved": 3,
+  "checkpoints_iso_solved": 4,
+  "checkpoints_core_solved": 6,
+  "problem_solved": 0.0,
+  "problem_partial": 1.0,
+  "pct_checkpoints_solved": 50.0,
+  "pct_checkpoints_iso_solved": 66.66666666666666,
+  "pct_problems_solved": 0.0,
+  "pct_problems_partial": 100.0,
+  "pct_checkpoints_core_solved": 100.0,
+  "pass_rates": {
+    "problem": {
+      "core": 1.0,
+      "total": 0.9958211871100886,
+      "error": 0.9553571428571428,
+      "functionality": 1.0,
+      "regression": 0.9976285963382737
+    },
+    "checkpoint": {
+      "core": 1.0,
+      "total": 0.9958211871100886,
+      "error": 0.9553571428571428,
+      "functionality": 1.0,
+      "regression": 0.9976285963382737
+    }
+  },
+  "cc": {
+    "high_count": {
+      "mean": 6.666666666666667,
+      "stddev": 3.777124126457412,
+      "min": 2.0,
+      "max": 10.0,
+      "median": 8.0,
+      "count": 6
+    },
+    "high_mean": {
+      "mean": 12.084656084656086,
+      "stddev": 0.5635628541866148,
+      "min": 11.0,
+      "max": 12.5,
+      "median": 12.253968253968253,
+      "count": 6
+    },
+    "max": {
+      "mean": 15.333333333333334,
+      "stddev": 2.6583202716502514,
+      "min": 11.0,
+      "max": 17.0,
+      "median": 17.0,
+      "count": 6
+    }
+  },
+  "ratios": {
+    "rubric": {
+      "mean": null,
+      "stddev": null,
+      "min": null,
+      "max": null,
+      "median": null,
+      "count": 0
+    },
+    "lint": {
+      "mean": 0.25291165433351376,
+      "stddev": 0.016485283983187347,
+      "min": 0.23568989756979314,
+      "max": 0.2734324499030381,
+      "median": 0.2484156650807664,
+      "count": 6
+    }
+  },
+  "verbosity": {
+    "mean": 0.1996547602362635,
+    "stddev": 0.012203180958281603,
+    "min": 0.18493803622497618,
+    "max": 0.21391213389121339,
+    "median": 0.2016417309463202,
+    "count": 6
+  },
+  "erosion": {
+    "mean": 0.07547995242384747,
+    "stddev": 0.022086339085845896,
+    "min": 0.03301606548226877,
+    "max": 0.09355703175319477,
+    "median": 0.08231870149223523,
+    "count": 6
+  }
+}

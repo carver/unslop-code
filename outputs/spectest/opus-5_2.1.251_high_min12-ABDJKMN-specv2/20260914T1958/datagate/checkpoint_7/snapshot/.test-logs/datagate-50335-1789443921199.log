@@ -1,0 +1,67 @@
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:50335
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [15/Sep/2026 03:45:22] "[33mGET /datasets/readiness-probe HTTP/1.1[0m" 404 -
+127.0.0.1 - - [15/Sep/2026 03:45:22] "GET /convert?source=http://127.0.0.1:37041/cache-default.csv HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:45:22] "GET /convert?source=http://127.0.0.1:37041/cache-default.csv HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:45:22] "GET /datasets/13d5bb8a33a54ee0 HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:45:22] "GET /convert?source=http://127.0.0.1:37041/cache-same-id.csv HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:45:22] "GET /convert?source=http://127.0.0.1:37041/cache-same-id.csv HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:45:22] "GET /convert?source=http://127.0.0.1:37041/cache-same-id.csv HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:45:22] "GET /convert?source=http://127.0.0.1:37041/cache-same-id.csv HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:45:22] "GET /convert?source=http://127.0.0.1:37041/cache-no-refetch.csv HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:45:22] "GET /convert?source=http://127.0.0.1:37041/cache-no-refetch.csv HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:45:22] "GET /convert?source=http://127.0.0.1:37041/cache-no-refetch.csv HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:45:22] "GET /convert?source=http://127.0.0.1:37041/cache-no-refetch.csv HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:45:22] "GET /convert?source=http://127.0.0.1:37041/cache-gone.csv HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:45:22] "GET /convert?source=http://127.0.0.1:37041/cache-gone.csv HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:45:22] "GET /datasets/3c4d85b40c8736cf HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:45:22] "GET /convert?source=http://127.0.0.1:37041/cache-identical.csv HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:45:22] "GET /convert?source=http://127.0.0.1:37041/cache-identical.csv HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:45:22] "GET /convert?source=http://127.0.0.1:37041/cache-identical-data.csv HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:45:22] "GET /datasets/d81d12c6210be7b8 HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:45:22] "GET /convert?source=http://127.0.0.1:37041/cache-identical-data.csv HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:45:22] "GET /datasets/d81d12c6210be7b8 HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:45:28] "GET /convert?source=http://127.0.0.1:37041/cache-force-bare.csv&force HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:45:28] "GET /convert?source=http://127.0.0.1:37041/cache-force-replace.csv HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:45:28] "GET /convert?source=http://127.0.0.1:37041/cache-force-replace.csv&force HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:45:28] "GET /datasets/f1717aecf194ade4 HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:45:28] "GET /convert?source=http://127.0.0.1:37041/cache-force-per-request.csv HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:45:28] "GET /convert?source=http://127.0.0.1:37041/cache-force-per-request.csv&force HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:45:28] "GET /convert?source=http://127.0.0.1:37041/cache-force-per-request.csv HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:45:28] "[31m[1mGET /convert?source=http://127.0.0.1:37041/cache-force-repeat.csv&force&force HTTP/1.1[0m" 400 -
+127.0.0.1 - - [15/Sep/2026 03:45:28] "[31m[1mGET /convert?source=http://127.0.0.1:37041/cache-force-value.csv&force=1 HTTP/1.1[0m" 400 -
+127.0.0.1 - - [15/Sep/2026 03:45:28] "[31m[1mGET /convert?source=http://127.0.0.1:37041/cache-force-value.csv&force=0 HTTP/1.1[0m" 400 -
+127.0.0.1 - - [15/Sep/2026 03:45:28] "[31m[1mGET /convert?source=http://127.0.0.1:37041/cache-force-value.csv&force=true HTTP/1.1[0m" 400 -
+127.0.0.1 - - [15/Sep/2026 03:45:28] "[31m[1mGET /convert?source=http://127.0.0.1:37041/cache-force-value.csv&force=false HTTP/1.1[0m" 400 -
+127.0.0.1 - - [15/Sep/2026 03:45:28] "[31m[1mGET /convert?source=http://127.0.0.1:37041/cache-force-value.csv&force=yes HTTP/1.1[0m" 400 -
+127.0.0.1 - - [15/Sep/2026 03:45:28] "[31m[1mGET /convert?source=http://127.0.0.1:37041/cache-force-value.csv&force=on HTTP/1.1[0m" 400 -
+127.0.0.1 - - [15/Sep/2026 03:45:28] "[31m[1mGET /convert?source=http://127.0.0.1:37041/cache-force-value.csv&force=force HTTP/1.1[0m" 400 -
+127.0.0.1 - - [15/Sep/2026 03:45:28] "[31m[1mGET /convert?source=http://127.0.0.1:37041/cache-force-value.csv&force=x HTTP/1.1[0m" 400 -
+127.0.0.1 - - [15/Sep/2026 03:45:28] "[31m[1mGET /convert?source=http://127.0.0.1:37041/cache-force-empty.csv&force= HTTP/1.1[0m" 400 -
+127.0.0.1 - - [15/Sep/2026 03:45:28] "GET /convert?source=http://127.0.0.1:37041/cache-force-value-noop.csv HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:45:28] "[31m[1mGET /convert?source=http://127.0.0.1:37041/cache-force-value-noop.csv&force=1 HTTP/1.1[0m" 400 -
+127.0.0.1 - - [15/Sep/2026 03:45:28] "GET /datasets/14d7359294ddb4d1 HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:45:32] "GET /convert?source=http://127.0.0.1:37041/cache-force-fail.csv HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:45:32] "[33mGET /convert?source=http://127.0.0.1:37041/cache-force-fail.csv&force HTTP/1.1[0m" 404 -
+127.0.0.1 - - [15/Sep/2026 03:45:32] "GET /datasets/4787784558e1952a HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:45:32] "GET /convert?source=http://127.0.0.1:37041/cache-force-fail-then-hit.csv HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:45:32] "[33mGET /convert?source=http://127.0.0.1:37041/cache-force-fail-then-hit.csv&force HTTP/1.1[0m" 404 -
+127.0.0.1 - - [15/Sep/2026 03:45:32] "GET /convert?source=http://127.0.0.1:37041/cache-force-fail-then-hit.csv HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:45:32] "GET /datasets/a57e268a2361fc30 HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:45:32] "GET /convert?source=http://127.0.0.1:37041/cache-force-parse-fail.csv HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:45:32] "[31m[1mGET /convert?source=http://127.0.0.1:37041/cache-force-parse-fail.csv&force HTTP/1.1[0m" 400 -
+127.0.0.1 - - [15/Sep/2026 03:45:32] "GET /datasets/bfa357c01993b194 HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:45:32] "GET /convert?source=http://127.0.0.1:37041/cache-key-charset.csv HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:45:32] "GET /convert?source=http://127.0.0.1:37041/cache-key-charset.csv&charset=utf-8 HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:45:32] "GET /convert?source=http://127.0.0.1:37041/cache-key-charset.csv HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:45:32] "GET /convert?source=http://127.0.0.1:37041/cache-distinct-1.csv HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:45:32] "GET /convert?source=http://127.0.0.1:37041/cache-distinct-2.csv HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:45:32] "GET /datasets/be5008349c4fb878 HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:45:32] "GET /convert?source=http://127.0.0.1:37041/cache-validate.csv HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:45:32] "[31m[1mGET /convert?source=http://127.0.0.1:37041/cache-validate.csv&charset=not-a-charset HTTP/1.1[0m" 400 -
+127.0.0.1 - - [15/Sep/2026 03:45:32] "[33mGET /convert?source=http://127.0.0.1:37041/cache-failure-not-cached.csv HTTP/1.1[0m" 404 -
+127.0.0.1 - - [15/Sep/2026 03:45:32] "GET /convert?source=http://127.0.0.1:37041/cache-failure-not-cached.csv HTTP/1.1" 200 -
+127.0.0.1 - - [15/Sep/2026 03:45:32] "GET /datasets/1ba93a377a8644f9 HTTP/1.1" 200 -

@@ -1,0 +1,52 @@
+"""Turning a cursor position in a file into ranked completions."""
+
+import keyword
+import os
+
+from . import symbols
+from .evaluator import Evaluator
+from .matching import matches
+from .modules import Context, Project
+from .source import locate
+
+
+def complete(path, line, column, fuzzy=False):
+    """The completion records for the cursor at 1-based `line`, 0-based `column`."""
+    project = Project(os.path.dirname(os.path.abspath(path)))
+    module = project.module(path)
+    cursor = locate(module.lines, line, column)
+    evaluator = Evaluator(project)
+    context = Context(module, cursor.line, cursor.indent)
+
+    entries, words = _candidates(evaluator, cursor, context)
+    matched = sorted(
+        [(name, symbols.KEYWORD) for name in words if matches(name, cursor.prefix, fuzzy)]
+        + [(name, None) for name in entries if matches(name, cursor.prefix, fuzzy)],
+        key=lambda candidate: symbols.sort_key(*candidate),
+    )
+    return [
+        _completion(evaluator, entries, name, kind, len(cursor.prefix))
+        for name, kind in matched
+    ]
+
+
+def _candidates(evaluator, cursor, context):
+    """The entries a cursor can complete, and the keywords it may also accept."""
+    if cursor.receiver is None:
+        return evaluator.visible_entries(context), keyword.kwlist
+    return _members(evaluator, evaluator.infer(cursor.receiver, context)), []
+
+
+def _members(evaluator, values):
+    """The attributes of every type a receiver may hold, merged into one set."""
+    found = {}
+    for value in values:
+        found.update(evaluator.members(value))
+    return found
+
+
+def _completion(evaluator, entries, name, kind, prefix_length):
+    if kind == symbols.KEYWORD:
+        return symbols.as_completion(name, kind, name, prefix_length)
+    kind, description = evaluator.entry_display(entries[name])
+    return symbols.as_completion(name, kind, description, prefix_length)

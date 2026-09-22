@@ -1,0 +1,102 @@
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:39783
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:05:19] "GET /datasets/b4c6de5525d7eff4 HTTP/1.1" 200 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:44605
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:05:21] "GET /datasets/61628ffde4f621d3 HTTP/1.1" 200 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:37301
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:05:22] "GET /datasets/8f8add0a1ca375be?_size=1&_sort=age HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:05:22] "GET /datasets/8f8add0a1ca375be/export HTTP/1.1" 200 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:58373
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:05:23] "GET /convert?source=http://127.0.0.1:46587/persist-cache-4.csv HTTP/1.1" 200 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:33009
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:05:24] "[33mGET /datasets/61628ffde4f621d3 HTTP/1.1[0m" 404 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:54735
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:05:25] "GET /datasets/492d5ea496056f1a HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:05:25] "GET /datasets/e7f1cdc787bef2e5 HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:05:25] "GET /datasets/9c4c009b67b52ece HTTP/1.1" 200 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:45467
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:05:27] "GET /datasets/61628ffde4f621d3 HTTP/1.1" 200 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:47555
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:05:28] "GET /datasets/2f91831126adff8c HTTP/1.1" 200 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:50869
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:20:08] "GET /datasets/69ab9c4081583b9d HTTP/1.1" 200 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:50081
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:20:09] "GET /datasets/61628ffde4f621d3 HTTP/1.1" 200 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:46725
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:20:10] "GET /datasets/8f8add0a1ca375be?_size=1&_sort=age HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:20:10] "GET /datasets/8f8add0a1ca375be/export HTTP/1.1" 200 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:54773
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:20:11] "GET /convert?source=http://127.0.0.1:34649/persist-cache-27.csv HTTP/1.1" 200 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:50227
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:20:12] "[33mGET /datasets/61628ffde4f621d3 HTTP/1.1[0m" 404 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:56627
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:20:14] "GET /datasets/492d5ea496056f1a HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:20:14] "GET /datasets/e7f1cdc787bef2e5 HTTP/1.1" 200 -
+127.0.0.1 - - [14/Sep/2026 22:20:14] "GET /datasets/9c4c009b67b52ece HTTP/1.1" 200 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:59235
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:20:16] "GET /datasets/61628ffde4f621d3 HTTP/1.1" 200 -
+ * Serving Flask app 'datagate'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:41409
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [14/Sep/2026 22:20:17] "GET /datasets/5db757903cfc2835 HTTP/1.1" 200 -

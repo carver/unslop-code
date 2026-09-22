@@ -1,0 +1,103 @@
+# Task Directions
+
+Fully implement the following spec. Use the approach:
+- Environment setup
+- Write tests from the spec
+- Implement
+- Declare complete
+
+Specifically:
+
+# Environment
+
+Keep using the same virtual environment you started with, update `requirements.txt` with any new dependencies you need.
+Touch an IN_PROGRESS file. Delete any COMPLETED file.
+
+When killing a process never run a pkill. Instead, pgrep.
+Make sure only one process is found, then kill that one by PID.
+Why? It's too easy to pkill your own Bash argv.
+
+For long-lived processes, log to a file or /dev/null instead of an undrained pipe.
+
+# Testing
+
+Split the spec file into minimal possible logical phrases and minimal context, and iterate through each phrase.
+For each phrase, add a test section with a comment of the phrase & context.
+
+If the spec is non-trivially under-specified, such that alternative interpretations would change the behavior of a conforming implementation on some input, then never ask for clarification.
+Instead, make your best choice at how to interpret the intention of the spec.
+Then, add a numbered entry to an AMBIGUITIES.md file, starting with T1.
+The entry must have sections for Spec Text, Alternatives, Choice, and Risk.
+The entry will quote the relevant spec source verbatim, explain the reasonable alternative interpretations, and your choice & why it seems to best fit the spec.
+The "### Risk: N" section
+Risk is a number from 0 to 100: the chance that the spec's author, who has an implementation of their own and writes the hidden tests against it, prefers a different reading from your choice on some tested input.
+Reason about what the author's implementation most likely does and what fixture they would naturally write, not only about which reading the prose supports best.
+If Risk is above 0, name the reading the author most likely prefers in one line.
+Use the whole range: a flat number on every entry is useless.
+
+If a previous ambiguity is resolved by the current spec, annotate the entry instead of removing it.
+
+You run tests only to validate the tests themselves: collection succeeds, helpers and generators work, and each failure is because behavior is missing, not because the test is broken. Quick, targeted runs.
+
+Never run the full suite to completion or long hypothesis runs; a green suite is the implementer's job, not yours.
+
+# Implement
+- Follow best coding practices:
+  - Group functions into files based on related functionality
+  - Keep your code clean
+- No god functions/classes.
+- Make sure the code is documented appropriately so that it is easy to pick up.
+- Minimize the following gotchas:
+  - Extra defensive checks or try/catch blocks that are abnormal.
+  - Casts to get around type checking
+  - Variables that are only used a single time after declaration.
+  - Extra comments that a human wouldn't add.
+  - Trivial wrappers
+  - Heavy nesting
+  - If/Else ladders
+  - A ton of helper methods
+
+# Declare complete
+
+touch a COMPLETED file. rm the IN_PROGRESS file.
+
+# Spec
+## Optional Dataset Enrichment
+
+`/convert` supports optional ingestion enrichment with `enrich=yes`.
+
+### Enrichment trigger
+
+Only a single, exact `enrich=yes` enables enrichment.
+All other states keep enrichment off.
+Success response remains:
+
+```json
+{"ok": true, "endpoint": "/datasets/<id>"}
+```
+
+### Enriched query output
+
+For enriched CSV datasets, add:
+
+- `dataset_summary` with at least `filetype`, `row_count`, `column_count`
+- `column_details` keyed by column name with at least `type`, `distinct_count`, `missing_count`
+
+Type labels: `text`, `number`, `integer`, `float`.
+
+For enriched spreadsheet datasets, add only `dataset_summary` with `filetype: "excel"`.
+
+Non-enriched responses omit both metadata fields (no `null`/empty objects).
+`rows`, `columns`, `ok`, `query_ms`, and `total` do not change.
+
+### Cache and enrichment
+
+- `enrich=yes` on a cached non-enriched dataset forces re-ingestion and upgrades stored state.
+- `enrich=yes` on a cached enriched dataset may use cache.
+- Requests without re-ingestion do not change stored enrichment state.
+- Re-ingestion recomputes metadata from current source bytes.
+- `enrich` applies only on `/convert`.
+
+### Error handling
+
+Enrichment failures return standard JSON errors and must not downgrade to non-enriched storage.

@@ -1,0 +1,1 @@
+{"source": "http://127.0.0.1:45917/sortable.csv", "columns": ["name", "score", "city"], "rows": [["delta", 10, "Zurich"], ["alpha", 30, "Oslo"], ["charlie", 10, "Bern"], ["bravo", 20, "Lima"]], "enriched": false}

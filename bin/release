@@ -6,8 +6,8 @@ Zenodo skip the release without telling anyone), commits that file alone, tags t
 main with the tag, and creates the GitHub release with generated notes. Pushing main publishes
 every local commit on it. Other uncommitted work in the tree stays where it is, staged or not.
 Refuses before changing anything if: the version is not vX.Y.Z, the tag exists here or on origin,
-the branch is not main, CITATION.cff has uncommitted edits or lists several licenses (Zenodo reads
-only one), or origin/main has commits this clone lacks. Zenodo archives only releases made after
+the branch is not main, gh or uvx is missing, CITATION.cff has uncommitted edits or lists several
+licenses (Zenodo reads only one), or origin/main has commits this clone lacks. Zenodo archives only releases made after
 the repository is switched on at zenodo.org/account/settings/github, and nothing here can see that
 switch. So until CITATION.cff
 carries a doi, which proves an earlier release got through, pass --zenodo-enabled to say it is on.
@@ -19,6 +19,7 @@ import datetime
 import pathlib
 import re
 import shlex
+import shutil
 import subprocess
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
@@ -41,6 +42,9 @@ def git(*args):
 
 
 def refuse_unless_ready(version, text, zenodo_enabled):
+    missing = [tool for tool in ("gh", VALIDATE[0]) if shutil.which(tool) is None]
+    if missing:
+        raise SystemExit(f"release: needs {' and '.join(missing)} on PATH; install it first")
     if not re.fullmatch(r"v\d+\.\d+\.\d+", version):
         raise SystemExit(f"release: the version is vX.Y.Z, such as v0.2.0, not {version}")
     if git("branch", "--show-current") != "main":
@@ -87,7 +91,12 @@ def release(version, today, zenodo_enabled=False, dry_run=False):
         raise SystemExit(f"release: the stamped {CFF} does not validate; restored it")
     todo = steps(version)
     while todo:
-        if subprocess.run(todo[0], cwd=ROOT).returncode:
+        try:
+            failed = subprocess.run(todo[0], cwd=ROOT).returncode != 0
+        except OSError as error:
+            print(f"release: {shlex.join(todo[0])}: {error}")
+            failed = True
+        if failed:
             rest = "\n".join("    " + shlex.join(step) for step in todo)
             raise SystemExit(f"release: a step failed. Fix the cause, then finish with:\n{rest}")
         todo.pop(0)

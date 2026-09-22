@@ -164,3 +164,24 @@ def test_a_single_license_string_is_fine(repo):
     git(repo, "commit", "-q", "-am", "one license")
     mod.release("v0.1.0", "2026-09-19", zenodo_enabled=True)
     assert git(repo, "tag") == "v0.1.0"
+
+
+def test_refuses_before_changing_anything_when_gh_is_missing(repo, monkeypatch):
+    monkeypatch.setattr(mod.shutil, "which", lambda name: None if name == "gh" else f"/usr/bin/{name}")
+    with pytest.raises(SystemExit, match="gh"):
+        mod.release("v0.1.0", "2026-09-19", zenodo_enabled=True)
+    assert (repo / "CITATION.cff").read_text() == CFF and git(repo, "tag") == ""
+
+
+def test_a_command_that_vanishes_mid_run_still_names_the_steps_left(repo, tmp_path, monkeypatch):
+    real_run = mod.subprocess.run
+
+    def run(cmd, *args, **kwargs):
+        if cmd[0] == "gh":
+            raise FileNotFoundError(2, "No such file or directory", "gh")
+        return real_run(cmd, *args, **kwargs)
+
+    monkeypatch.setattr(mod.subprocess, "run", run)
+    with pytest.raises(SystemExit, match="gh release create v0.1.0"):
+        mod.release("v0.1.0", "2026-09-19", zenodo_enabled=True)
+    assert git(repo, "tag") == "v0.1.0"

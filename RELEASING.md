@@ -54,7 +54,8 @@ So the first release takes `--zenodo-enabled`, which is you saying the switch is
 
 ## Every release
 
-Run from the repository root, on main.
+Run from the repository root, on main, with `gh` (logged in to GitHub) and `uv` installed. The
+tool checks both are on the PATH before it changes anything.
 
     bin/release v0.1.0 --dry-run --zenodo-enabled   # checks, then prints the plan
     bin/release v0.1.0 --zenodo-enabled             # the first release

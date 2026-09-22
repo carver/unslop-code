@@ -127,6 +127,8 @@ prompt and `save_dir` relative to it, which is where `bin/queue` and `bin/scb-ex
                                              # also the pre-commit hook, once install.py has pointed git at .githooks/
     bin/queue add-strict configs/runs/<name>.yaml  # enqueue it under bin/scb-strict: halts at the first non-strict checkpoint
     bin/queue solo <id>                      # run one queued job while the rest wait (stash, start, pause --wait, re-queue)
+    bin/release vX.Y.Z [--dry-run]           # stamp CITATION.cff, commit it alone, tag, push main, create the GitHub
+                                             # release that Zenodo archives; the full procedure is in RELEASING.md
     bin/build-prompt BEG                     # configs/prompts/min4-BEG.jinja from the chunks in
                                              # configs/prompts/min4-chunks/ (--list for the index)
 
@@ -263,6 +265,14 @@ Two levers, measured in both orders on the six dev problems with Opus 5, two run
   expect header and cell whitespace kept verbatim. The spec never mentions whitespace; the
   agent trims it anyway, and when asked afterwards concedes the spec gives no license. Left
   in as a benchmark failure (datagate diary, 2026-09-14).
+
+## How to cite
+
+Use GitHub's "Cite this repository" button, which reads `CITATION.cff` and exports APA or
+BibTeX. No DOI yet, so cite the commit hash you read. The numbers here change week to week.
+
+If you use the benchmark itself, cite the
+[SlopCodeBench paper](https://arxiv.org/abs/2603.24755) too.
 
 ## License
 

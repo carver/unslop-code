@@ -7,7 +7,8 @@ disable-model-invocation: true
 # Watch the queue
 
 Input: pueue up (`~/.local/bin/pueued -d` if `bin/queue` fails loudly) and the id of the running
-job (`bin/queue`). Output: every finished run recapped to the user and, for a dev problem,
+job (`bin/queue`: the live queue per channel and the last two done jobs, about 1KB; the old
+535KB pueue table is gone). Output: every finished run recapped to the user and, for a dev problem,
 ledgered and committed, with the next job's wait armed. The loop runs until the queue is empty
 or the user stops it.
 
@@ -19,7 +20,7 @@ is backgrounded. Until it wakes, other work is fine; polling the job is not.
 
 ## 2. Recap
 
-On wake: `bin/run-recap <run_dir>`. It prints the ledger row with WHAT CHANGED and CAUSES left
+On wake: `bin/run-recap <run_dir> --succinct`. It prints the ledger row with WHAT CHANGED and CAUSES left
 open, the failure summary, the miss matrix against the problem's other runs at the same spec,
 the registry entries near each miss (`bin/miss-report --brief`: candidates ranked by the words
 they share with the test's name, source and failure output, to read and not to cite; a just-solve

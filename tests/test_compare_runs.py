@@ -38,10 +38,15 @@ def test_run_label_drops_the_shared_model_prefix():
 
 
 def test_parse_args_keeps_the_problem_value_out_of_the_run_list():
-    runs, problem, md = cr.parse_args(["--problem", "datagate", "outputs/a", "--md", "outputs/b"])
+    runs, problem, md, _ = cr.parse_args(["--problem", "datagate", "outputs/a", "--md", "outputs/b"])
     assert [r.name for r in runs] == ["a", "b"]
     assert (problem, md) == ("datagate", True)
 
 
 def test_parse_args_defaults():
-    assert cr.parse_args(["outputs/a"])[1:] == (None, False)
+    assert cr.parse_args(["outputs/a"])[1:] == (None, False, False)
+
+
+def test_parse_args_takes_succinct():
+    runs, problem, md, succinct = cr.parse_args(["a", "--succinct"])
+    assert [r.name for r in runs] == ["a"] and succinct and not md

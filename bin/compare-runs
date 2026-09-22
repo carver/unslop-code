@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Put several runs of one problem side by side: scores, cost, quality, and which hidden tests each missed.
 
-Usage: bin/compare-runs <run_dir>... [--problem P] [--md]
+Usage: bin/compare-runs <run_dir>... [--problem P] [--md] [--succinct]
 
 Table one has a row per run: per-checkpoint passed/total, strict checkpoints, Claude Code
 cost, and the quality means. Table two is the miss matrix: every hidden test any run
@@ -49,23 +49,26 @@ def fmt(v, d=3):
 
 
 def parse_args(argv):
-    """(run paths, problem or None, md) from the command line; --problem takes a value."""
-    runs, problem, md = [], None, False
+    """(run paths, problem or None, md, succinct) from the command line; --problem takes a value.
+    --succinct keys the score table by the run's number, so each run's label prints once, in the legend."""
+    runs, problem, md, succinct = [], None, False, False
     it = iter(argv)
     for a in it:
         if a == "--problem":
             problem = next(it)
         elif a == "--md":
             md = True
+        elif a == "--succinct":
+            succinct = True
         elif a.startswith("--"):
             raise SystemExit(f"compare-runs: unknown option {a}")
         else:
             runs.append(pathlib.Path(a).resolve())
-    return runs, problem, md
+    return runs, problem, md, succinct
 
 
 def main():
-    runs, problem, md = parse_args(sys.argv[1:])
+    runs, problem, md, succinct = parse_args(sys.argv[1:])
     sep = " | " if md else "  "
     rows_by_run = {}
     for run in runs:
@@ -79,10 +82,11 @@ def main():
     print(sep.join(hdr))
     if md:
         print("|".join(["---"] * len(hdr)))
-    for run, rows in rows_by_run.items():
+    for number, (run, rows) in enumerate(rows_by_run.items(), start=1):
         scores = " ".join(f"{r.get('passed_tests')}/{r.get('total_tests')}" for r in rows)
         strict = sum(r.get("strict_pass_rate", r.get("pass_rate")) == 1.0 for r in rows)
-        print(sep.join([run_label(run), scores, f"{strict}/{len(rows)}", f"{sum(r.get('cost') or 0 for r in rows):.2f}",
+        name = str(number) if succinct else run_label(run)
+        print(sep.join([name, scores, f"{strict}/{len(rows)}", f"{sum(r.get('cost') or 0 for r in rows):.2f}",
                         fmt(mean(r.get("erosion") for r in rows)), fmt(mean(r.get("verbosity") for r in rows)),
                         fmt(mean(r.get("ast_grep_pct") for r in rows)), fmt(mean(r.get("cloned_pct") for r in rows))]))
     print()

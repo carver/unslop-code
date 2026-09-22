@@ -2,7 +2,8 @@
 """The run queue: one benchmark run at a time, in order, surviving this shell and session.
 
     bin/queue add <run-config.yaml> [n_checkpoints]   enqueue `scb-extend --new` for the config
-    bin/queue                                          status (pueue status)
+    bin/queue [--all]                                  the live queue per channel, then the done jobs
+                                                       folded to a count and the last two (--all: every one)
     bin/queue log [id]                                 a job's output (pueue log)
     bin/queue resume <run_dir> [n] [--problem NAME]    continue a run that stopped between checkpoints
                                                        (scb-extend's resume mode; the run's problem and
@@ -57,6 +58,7 @@ count from the catalog. Jobs run through pueue (install.py installs it), whose d
 group runs one task at a time, so the 5-hour window is drawn on by one run only.
 """
 import contextlib
+import collections
 import json
 import os
 import pathlib
@@ -368,6 +370,49 @@ def print_queue():
             print(f"{i:>3} {state_of(t):<8} {t.get('label') or t['command'][:60]}")
 
 
+LAST_DONE = 2
+
+
+def result_of(task):
+    """A done task's outcome as one word: Success, Killed, DependencyFailed, Failed:<code>."""
+    result = task["status"]["Done"]["result"]
+    return result if isinstance(result, str) else ":".join(f"{k}:{v}" for k, v in result.items())
+
+
+def print_status(all_done=False):
+    """The live queue: per channel, running then queued in start order then stashed, one line each;
+    then the done jobs folded to a count by outcome and the last LAST_DONE of them (every one with
+    --all). pueue's own table pads every job since the daemon started to a 200-column line."""
+    tasks = tasks_now()
+    live = {i: t for i, t in tasks.items() if state_of(t) in ("Running", "Queued", "Stashed")}
+    groups = sorted({group_of(t) for t in live.values()}, key=lambda g: (g != MAIN, g))
+    if not groups:
+        print("nothing running, queued or stashed")
+    for group in groups:
+        print(f"[{group}]")
+        in_group = {int(i) for i, t in live.items() if group_of(t) == group}
+        running = sorted(i for i in in_group if state_of(tasks[str(i)]) == "Running")
+        stashed = sorted(i for i in in_group if state_of(tasks[str(i)]) == "Stashed")
+        for i in running + queued_order(tasks, group) + stashed:
+            t = tasks[str(i)]
+            print(f"{i:>3} {state_of(t):<8} {t.get('label') or t['command'][:60]}")
+    done = sorted((i for i, t in tasks.items() if state_of(t) == "Done"),
+                  key=lambda i: tasks[i]["status"]["Done"]["end"], reverse=True)
+    if not done:
+        return
+    counts = collections.Counter(result_of(tasks[i]).split(":")[0] for i in done)
+    order = ("Success", "Failed", "Killed", "DependencyFailed")
+    ranked = sorted(counts, key=lambda w: (w not in order, order.index(w) if w in order else w))
+    tally = ", ".join(f"{counts[word]} {word}" for word in ranked)
+    shown = done if all_done else done[:LAST_DONE]
+    print(f"done: {len(done)} ({tally}){':' if all_done else f'; the last {len(shown)}:'}")
+    for i in shown:
+        t = tasks[i]
+        print(f"{int(i):>3} {result_of(t):<8} {t.get('label') or t['command'][:60]}")
+    if not all_done:
+        print("bin/queue --all lists every done job; bin/queue log <id> shows one")
+
+
 def same_channel(tasks, task_id, other_id):
     """The channel two tasks share; order only means something inside one."""
     groups = {group_of(tasks.get(str(i), {})) for i in (task_id, other_id)}
@@ -604,8 +649,8 @@ def main():
         wait_job(int(args[1]))
     elif args[:1] == ["kill"] and len(args) >= 2 and set(args[2:]) <= {"--keep-paused", "--delete-run"}:
         kill_job(int(args[1]), keep_paused="--keep-paused" in args, delete_run="--delete-run" in args)
-    elif not args:
-        subprocess.run([PUEUE, "status"], check=True)
+    elif args in ([], ["--all"]):
+        print_status(all_done=bool(args))
     else:
         subprocess.run([PUEUE, *args], check=True)
 

@@ -502,3 +502,50 @@ def test_a_new_channel_runs_one_job_at_a_time(private_queue):
     q.ensure_group("side")  # asking twice is fine
     groups = json.loads(subprocess.run([q.PUEUE, "status", "--json"], capture_output=True, text=True).stdout)["groups"]
     assert groups["side"]["parallel_tasks"] == 1
+
+
+def task(state, label, group=None, result=None, end=None):
+    status = state if result is None else {state: {"result": result, "end": end or "2026-09-21T10:00:00-07:00"}}
+    return {"status": status, "label": label, "command": "cmd", "group": group or "default", "priority": 0}
+
+
+TASKS = {
+    "1": task("Done", "old-success", result="Success", end="2026-09-01T00:00:00-07:00"),
+    "2": task("Done", "failed-run", result={"Failed": 2}, end="2026-09-21T09:00:00-07:00"),
+    "3": task("Done", "killed-run", result="Killed"),
+    "4": task("Running", "the-running-one"),
+    "5": task("Queued", "next-up"),
+    "6": task("Stashed", "parked"),
+    "7": task("Queued", "side-job", group="specpatch"),
+}
+
+
+def test_status_lists_running_queued_and_stashed_per_channel_and_folds_the_done_ones(monkeypatch, capsys):
+    monkeypatch.setattr(q, "tasks_now", lambda: TASKS)
+    q.print_status()
+    assert capsys.readouterr().out.splitlines() == [
+        "[default]",
+        "  4 Running  the-running-one",
+        "  5 Queued   next-up",
+        "  6 Stashed  parked",
+        "[specpatch]",
+        "  7 Queued   side-job",
+        "done: 3 (1 Success, 1 Failed, 1 Killed); the last 2:",
+        "  3 Killed   killed-run",
+        "  2 Failed:2 failed-run",
+        "bin/queue --all lists every done job; bin/queue log <id> shows one",
+    ]
+
+
+def test_status_with_all_lists_every_done_job_newest_first(monkeypatch, capsys):
+    monkeypatch.setattr(q, "tasks_now", lambda: TASKS)
+    q.print_status(all_done=True)
+    out = capsys.readouterr().out.splitlines()
+    assert out[out.index("done: 3 (1 Success, 1 Failed, 1 Killed):") + 1:] == [
+        "  3 Killed   killed-run", "  2 Failed:2 failed-run", "  1 Success  old-success"]
+
+
+def test_status_on_an_empty_queue_says_so(monkeypatch, capsys):
+    monkeypatch.setattr(q, "tasks_now", lambda: {"1": task("Done", "x", result="Success")})
+    q.print_status()
+    assert capsys.readouterr().out.splitlines()[0] == "nothing running, queued or stashed"

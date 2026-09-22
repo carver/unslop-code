@@ -87,13 +87,14 @@ prompt and `save_dir` relative to it, which is where `bin/queue` and `bin/scb-ex
     bin/fork-run <run_dir> --spec vN --keep k  # copy a run keeping checkpoints 1..k, pointed at spec vN;
                                              # --queue continues it with bin/queue resume-strict <copy>
     bin/queue resume-strict <run_dir>        # continue a run under bin/scb-strict: halt at the first non-strict checkpoint
-    bin/test-history <problem> <test>        # pass, fail or not reached, in every run of the problem, oldest first
+    bin/test-history <problem> <test>        # pass, fail or not reached, in every run of the problem, oldest first;
+                                             # --succinct: one line per state, names without the version and effort
     bin/test-failure <run_dir> <test>        # the assertion lines pytest printed for a failing test, per checkpoint;
                                              # --full for the whole section
     bin/queue-watch                          # event stream for a Monitor: checkpoint results, halts, DONE
                                              # lines and job status changes across the whole queue
     bin/ledger-row <run_dir>                 # after every run: the ledger row and failure summary to fill in
-    bin/run-recap <run_dir>                  # ledger-row, then the miss matrix against the problem's other runs
+    bin/run-recap <run_dir> [--succinct]     # ledger-row, then the miss matrix against the problem's other runs
                                              # at the same spec, the registry entries near each miss
                                              # and the implementation-only quality table
     bin/reeval <run_dir> <problem> <ckpt> --tag T  # re-score one checkpoint under the current problem config; keeps the old evaluation as before-T
@@ -102,7 +103,8 @@ prompt and `save_dir` relative to it, which is where `bin/queue` and `bin/scb-ex
                                              # and averaged; fail%, quality, cost, all lower-is-better
     bin/queue wait <id>                      # block until a job ends, print its STRICT-RUN/EXTEND lines and run_dir;
                                              # run it in the background so the wake-up names the run directory
-    bin/queue add configs/runs/<name>.yaml   # enqueue a run (one at a time); bin/queue = status
+    bin/queue add configs/runs/<name>.yaml   # enqueue a run (one at a time); bin/queue = the live queue per channel
+                                             # and the last two done jobs (--all: every done job)
     bin/lint [--fix]                         # what CI lints (ruff.toml lists the rules and the bin scripts)
                                              # also the pre-commit hook, once install.py has pointed git at .githooks/
     bin/queue add-strict configs/runs/<name>.yaml  # enqueue it under bin/scb-strict: halts at the first non-strict checkpoint

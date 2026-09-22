@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
 """One test's outcome in every run of a problem, oldest first: which runs failed it, which passed.
-    bin/test-history <problem> <substring-of-test-id> [--outputs DIR]
+    bin/test-history <problem> <substring-of-test-id> [--outputs DIR] [--succinct]
 Reads each run's <problem>/checkpoint_N/evaluation.json under outputs/; a run that never reached
 the test's checkpoint shows as "-". Made for the question every spec pitch asks: is this miss a
-coin (some runs pass, some fail) or a reading every run shares.
+coin (some runs pass, some fail) or a reading every run shares. --succinct groups the runs by
+state on one line each and names runs without the harness version and effort level every run
+carries (opus-5 min12-ABDJKMN/20260914T2119), for an agent's context.
 """
 import argparse
 import json
 import pathlib
+import re
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 
@@ -41,11 +44,21 @@ def history(problem, needle, outputs):
     return rows
 
 
+VERSION_EFFORT = re.compile(r"_[\d.]+_(?:low|medium|high|max)_")
+
+
+def short_label(label):
+    """'opus-5_2.1.251_high_min12-ABDJKMN/20260914T2119' -> 'opus-5 min12-ABDJKMN/20260914T2119': the
+    harness version and effort level drop out, since every run here carries them."""
+    return VERSION_EFFORT.sub(" ", label, count=1)
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("problem")
     parser.add_argument("needle", help="substring of the pytest id, e.g. alias_cycle")
     parser.add_argument("--outputs", type=pathlib.Path, default=ROOT / "outputs")
+    parser.add_argument("--succinct", action="store_true", help="one line per state, shared prefix dropped")
     args = parser.parse_args(argv)
     rows = history(args.problem, args.needle, args.outputs)
     tests = sorted({t for _, _, hits in rows for t in hits})
@@ -53,7 +66,15 @@ def main(argv=None):
         raise SystemExit(f"test-history: no test matching {args.needle!r} in any run of {args.problem}")
     for test in tests:
         states = [hits.get(test, "-") for _, _, hits in rows]
-        print(f"{test}: {states.count('pass')} pass, {states.count('FAIL')} fail, {states.count('-')} not reached")
+        tally = f"{states.count('pass')} pass, {states.count('FAIL')} fail, {states.count('-')} not reached"
+        if args.succinct:
+            print(f"{test}: {tally}")
+            for state in ("FAIL", "pass", "-"):
+                named = [short_label(label) for (label, _, _), s in zip(rows, states, strict=True) if s == state]
+                if named:
+                    print(f"  {state}: {', '.join(named)}")
+            continue
+        print(f"{test}: {tally}")
         for (label, _, _), state in zip(rows, states, strict=True):
             print(f"  {state:4} {label}")
 

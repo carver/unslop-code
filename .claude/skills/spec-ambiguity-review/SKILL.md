@@ -79,7 +79,7 @@ Pause and succinctly summarize the proposed changes for me to approve. We might 
 
 ## 2b. Pitch, then wait
 
-Before any patch: `bin/test-history <problem> <test>` for every miss, so the pitch says whether
+Before any patch: `bin/test-history <problem> <test> --succinct` for every miss, so the pitch says whether
 it is a coin (some runs pass) or a shared reading, and which runs registered it (`bin/registry-scores
 <run> --grep <word>` on each, with the entry id and Risk). The pitch carries the verbatim spec
 line, a registry-style entry (alternatives, the tests' reading with the fixture and the reference's

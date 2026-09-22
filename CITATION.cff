@@ -5,6 +5,7 @@ type: software
 authors:
   - family-names: Carver
     given-names: Jason
+    orcid: "https://orcid.org/0009-0004-5744-0522"
 repository-code: "https://github.com/carver/unslop-code"
 url: "https://github.com/carver/unslop-code"
 license: GPL-3.0-or-later

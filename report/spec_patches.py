@@ -16,6 +16,7 @@ specs/patch-entries.json). The build stops while any pick is unconfirmed.
 import difflib
 import html
 import json
+import math
 import os
 import re
 import statistics
@@ -263,13 +264,8 @@ def stepped(points):
 
 BANDS = (("b1", "spec bugs addressed"), ("b3", "spec bugs still unfound"), ("b2", "changes that fix no known bug"))
 STACK_H = 300
-
-
-def nice_step(top, most=5):
-    """The smallest of 1, 2, 2.5 and 5 times a power of ten that covers `top` in at most `most` steps."""
-    power = 10 ** (len(str(int(top))) - 2) if top >= 10 else 1
-    return next(step * scale for scale in (power, power * 10, power * 100) for step in (1, 2, 2.5, 5)
-                if top / (step * scale) <= most)
+LOG_TICKS = (1, 2, 5, 10, 20, 50, 100, 200, 500, 1000)
+LOG_FLOOR = 0.5  # drawn as 0, half a decade under 1
 
 
 def legend():
@@ -282,18 +278,23 @@ def stacked_chart(title, levels, x_domain, x_ticks, x_label, tips, size=(CHART_W
     (x0, x1), (width, height) = x_domain, size
     plot_w, plot_h = width - LEFT - RIGHT, height - TOP - BOTTOM
     y_max = y_max or max(sum(values) for _, values in levels)
-    unit = nice_step(y_max)
-    y_max = unit * -(-y_max // unit)
-    y_ticks = [unit * i for i in range(round(y_max / unit) + 1)]
+    y_max = next(t for t in LOG_TICKS if t >= y_max)
+    y_ticks = [t for t in LOG_TICKS if t <= y_max]
 
     def sx(value):
         return round(LEFT + plot_w * (value - x0) / (x1 - x0), 1)
 
     def sy(value):
-        return round(TOP + plot_h * (1 - value / y_max), 1)
+        # Log scale, with LOG_FLOOR standing in for zero one step below the first decade: a few bugs
+        # per run stay readable under many times as many other changes.
+        span = math.log10(y_max) - math.log10(LOG_FLOOR)
+        above_floor = math.log10(max(value, LOG_FLOOR)) - math.log10(LOG_FLOOR)
+        return round(TOP + plot_h * (1 - above_floor / span), 1)
 
     grid = "".join(f'<line class="grid" x1="{LEFT}" y1="{sy(t)}" x2="{width - RIGHT}" y2="{sy(t)}"/>'
-                   f'<text class="tick" x="{LEFT - 6}" y="{sy(t) + 3}" text-anchor="end">{t:g}</text>' for t in y_ticks)
+                   f'<text class="tick" x="{LEFT - 6}" y="{sy(t) + 3}" text-anchor="end">{label}</text>'
+                   for t, label in [(LOG_FLOOR, "0"), *((t, f"{t:g}") for t in y_ticks)])
+    grid += f'<text class="tick" x="{width - RIGHT}" y="{TOP - 3}" text-anchor="end">log scale</text>'
     xs = "".join(f'<text class="tick" x="{sx(t)}" y="{height - BOTTOM + 14}" text-anchor="middle">{t}</text>'
                  for t in x_ticks)
     edges = [[(risk, sum(values[:k])) for risk, values in levels] for k in range(len(BANDS) + 1)]
@@ -421,9 +422,11 @@ asked the question.</p>
        (0, 25, 50, 75, 100), "% of the run's registry read (dashed: random order)", gain_tips,
        reference=((0, 0), (100, 100 * ceiling)), size=(CHART_W, STACK_H))}
 </div>
-<p class="risk-key">Left: averages per run, in spec changes. The two lower bands always add up to the run's bugs;
-the top band is every other entry clarified. It is an upper bound on waste: an entry counts as a bug only if it is
-one we patched, and a high-Risk entry we never patched may still be a real ambiguity that no test probes.</p>
+<p class="risk-key">Left: averages per run, in spec changes, on a log axis so that a few bugs stay readable
+under many times as many other changes; read a band's edges, not its height. The two lower bands always add up
+to the run's bugs; the top band is every other entry clarified. It is an upper bound on waste: an entry counts
+as a bug only if it is one we patched, and a high-Risk entry we never patched may still be a real ambiguity
+that no test probes.</p>
 <details class="numbers"><summary>The numbers</summary><div class="scroll"><table>
 <thead><tr><th>Risk ≥</th><th>entries addressed</th><th>a bug's entry</th><th>share</th>
 <th>bug instances left</th></tr></thead>

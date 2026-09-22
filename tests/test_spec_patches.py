@@ -1,4 +1,5 @@
 """report/spec_patches.py: the spec-patches page, built from specs/ with the Risk scores behind a toggle."""
+import re
 import sys
 from pathlib import Path
 
@@ -134,10 +135,6 @@ def test_the_per_problem_section_is_one_card_per_problem_in_order_of_difficulty_
     assert len(tops) == 2 and tops[0] == tops[1]
 
 
-def test_nice_step_keeps_the_axis_close_to_the_data():
-    assert [sp.nice_step(top) for top in (4.7, 20, 76, 108, 260)] == [1, 5, 20, 25, 100]
-
-
 def test_highlights_quote_the_figures_of_the_curves_they_talk_about():
     def curve(top20, ceiling, unfound, instances):
         gain = [(p, ceiling if p == 100 else top20 if p == 20 else 0) for p in range(101)]
@@ -150,3 +147,15 @@ def test_highlights_quote_the_figures_of_the_curves_they_talk_about():
     assert "finds 48% of its bugs, against 12% in random order" in text
     assert "60% of mvvault's bug instances" in text
     assert sp.problem_highlights({"rejector": curves["rejector"]}) == ""  # nothing to compare
+
+
+def test_the_stacked_chart_uses_a_log_axis_so_a_few_bugs_are_readable_under_many_changes():
+    levels = [(45, [0.0, 5.0, 1.0]), (0, [3.0, 2.0, 80.0])]
+    svg = sp.stacked_chart("t", levels, (50, 0), [50, 0], "x", ["a", "b"])
+    ticks = re.findall(r'<text class="tick" x="[\d.]+" y="[\d.]+" text-anchor="end">([^<]+)</text>', svg)[:-1]
+    assert ticks == ["0", "1", "2", "5", "10", "20", "50", "100"]
+    at = [float(y) for y in re.findall(r'<text class="tick" x="[\d.]+" y="([\d.]+)" text-anchor="end">', svg)][:-1]
+    ys = dict(zip(ticks, at, strict=True))
+    assert ys["1"] - ys["10"] == ys["10"] - ys["100"]  # a decade is a decade, wherever it sits
+    assert ys["0"] > ys["1"]  # zero has a place below the first decade, so an empty band still draws
+    assert "log scale" in svg

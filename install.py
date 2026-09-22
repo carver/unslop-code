@@ -7,7 +7,7 @@ Installs pueue (a persistent one-at-a-time task queue; bin/queue wraps it) into
 problem-set patches in patches/scb-problems/ to the cached problems (~/.cache/scbench/problems,
 or SCBENCH_PROBLEMS_PATH), skipping any already applied; a re-downloaded cache gets them back.
 Then builds the harness the runs use: a clone of slop-code-bench at harness/ (not tracked),
-pinned to HARNESS_COMMIT with the six source patches from patches/ applied in README order,
+pinned to HARNESS_COMMIT with the seven source patches from patches/ applied in README order,
 and its venv at ~/.venvs/scbench-harness, which bin/scb runs. The clone at slop-code-bench/
 is for developing the harness and is left alone: on 2026-09-11 a branch switch there dropped
 the patches under a running queue, which is why runs read a checkout of their own. Last, points
@@ -38,6 +38,7 @@ HARNESS_PATCHES = [
         "resume-invalidate-infra-failed-checkpoints",
         "container-init-and-timeout-kill",
         "retry-keeps-every-attempt-transcript",
+        "exec-log-masks-secrets",
     )
 ]
 

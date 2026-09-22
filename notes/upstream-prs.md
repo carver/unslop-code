@@ -164,7 +164,7 @@ import. Not drafted; whether we patch the spec toward the test is with the user
 Listed in `README.md` with what each fixes: stream-parser string message; stop-after-
 checkpoint; agent death detection and prompt context variables; resume invalidates
 infra-failed checkpoints; container init and timeout kill; retry keeps every attempt's
-transcript. Each is PR-shaped as it stands. Two have branches in `slop-code-bench/`:
+transcript; the exec log masks secrets. Each is PR-shaped as it stands. Two have branches in `slop-code-bench/`:
 
 - Stream-parser string message. **Landed upstream 2026-09-18**: #23 (`c2a53b4`) carries both
   commits from #35 (`8c58ef8` test, `9463b69` fix; the test class on main matches our branch
@@ -218,7 +218,9 @@ Findings without a patch yet:
   token, key, secret, password, credential), and drop `verbose=True` on that line. The
   `containers.create(environment=...)` path has no log line of its own, so only the exec
   builder needs the copy. A test: build one exec command with a token in the env and
-  assert the captured log record has no token in it.
+  assert the captured log record has no token in it. Since 2026-09-22 we carry that fix
+  and test as `patches/exec-log-masks-secrets.patch` (it keeps `verbose=True`), so a PR
+  can start from it.
 - `retry()` resets the usage tracker, so a checkpoint that timed out and continued
   under-reports its cost (v7 datagate ckpt 6 recorded $3 of roughly $15).
 - A collection pass that fails (uv exit 2 during a network blip) marks the checkpoint

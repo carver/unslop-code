@@ -32,10 +32,11 @@ def test_apply_patch_once_then_already_applied_then_failure(tmp_path):
     assert (tree / "greeting.txt").read_text() == "goodbye\n"
 
 
-def test_harness_patches_are_the_six_in_readme_order():
+def test_harness_patches_are_the_seven_in_readme_order():
     names = [p.name for p in mod.HARNESS_PATCHES]
     assert names[0] == "claude-code-stream-parser-string-message.patch" and names[1] == "stop-after-checkpoint.patch"
-    assert len(names) == 6 and all(p.exists() for p in mod.HARNESS_PATCHES)
+    assert names[-1] == "exec-log-masks-secrets.patch"
+    assert len(names) == 7 and all(p.exists() for p in mod.HARNESS_PATCHES)
 
 
 def test_install_hooks_points_the_repo_at_the_tracked_hooks(tmp_path):

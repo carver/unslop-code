@@ -151,7 +151,7 @@ Project skills (`.claude/skills/`, all user-invoked) tie those together:
 ### Running the Benchmark
 
 Runs use the harness checkout at `harness/`: a clone of slop-code-bench pinned to
-`06b5c06` with six source patches applied, built with its venv by `python3 install.py`
+`06b5c06` with seven source patches applied, built with its venv by `python3 install.py`
 (idempotent; re-run it after a sandbox recreate). `slop-code-bench/` is the development
 clone for upstream work and carries no obligations; on 2026-09-11 a branch switch there
 dropped the patches under a running queue, which is why runs read a checkout of their own.
@@ -189,6 +189,10 @@ The patches, in the order install.py applies them:
   of the work before the crash survived only in the copied Claude session
   file under `agent/workspace/projects/` (min4-ABCHJK datagate ckpt1,
   2026-09-04).
+- `patches/exec-log-masks-secrets.patch` — the "Built docker exec command"
+  debug line in `infer.log` masks secret environment values the way the
+  harness's other logs do. Before, it wrote the raw `--env` arguments, so every
+  run's `infer.log` carried the OAuth token (2026-09-22).
 - `patches/resume-only-problem.patch` — `scb run --resume` honours
   `SCB_RESUME_ONLY_PROBLEM=<problem>` and resumes that problem alone. Upstream's
   `--problem` merges into the run's saved list on resume, so a queue job for one

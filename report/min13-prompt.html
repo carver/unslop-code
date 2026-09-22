@@ -1,4 +1,4 @@
-<title>Spectest prompt: min12-ABDJKMN</title>
+<title>Spectest prompt: min13-ABDJKMNT</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
 :root {
@@ -42,7 +42,7 @@ code.slot::after { content: " }}"; opacity: 0.6; }
 .note { margin: 32px 0 0; padding-top: 14px; border-top: 1px solid var(--rule); font-family: "Instrument Sans", "Helvetica Neue", Arial, sans-serif; font-size: 13.5px; color: var(--ink-2); }
 </style>
 <div class="sheet">
-  <p class="meta"><b>configs/prompts/min12-ABDJKMN.jinja</b><span>423 words of prose</span><span>spectest prompt</span></p>
+  <p class="meta"><b>configs/prompts/min13-ABDJKMNT.jinja</b><span>504 words of prose</span><span>spectest+antislop prompt</span></p>
 <h1>Task Directions</h1>
 <div class="p"><p>Fully implement the following spec. Use the approach:</p></div>
 <ul><li>Environment setup</li><li>Write tests from the spec</li><li>Implement</li><li>Declare complete</li></ul>
@@ -63,6 +63,7 @@ code.slot::after { content: " }}"; opacity: 0.6; }
 <div class="p"><p>You run tests only to validate the tests themselves: collection succeeds, helpers and generators work<code class="tpl">if is_continuation</code>, and each failure is because behavior is missing, not because the test is broken<code class="tpl">endif</code>. Quick, targeted runs.</p></div>
 <div class="p"><p>Never run the full suite to completion or long hypothesis runs; a green suite is the implementer&#x27;s job, not yours.</p></div>
 <h2>Implement</h2>
+<ul><li>Follow best coding practices:<ul><li>Group functions into files based on related functionality</li><li>Keep your code clean</li></ul></li><li>No god functions/classes.</li><li>Make sure the code is documented appropriately so that it is easy to pick up.</li><li>Minimize the following gotchas:<ul><li>Extra defensive checks or try/catch blocks that are abnormal.</li><li>Casts to get around type checking</li><li>Variables that are only used a single time after declaration.</li><li>Extra comments that a human wouldn&#x27;t add.</li><li>Trivial wrappers</li><li>Heavy nesting</li><li>If/Else ladders</li><li>A ton of helper methods</li></ul></ul>
 <h2>Declare complete</h2>
 <div class="p"><p>touch a COMPLETED file. rm the IN_PROGRESS file.</p></div>
 <h2>Spec</h2>

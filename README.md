@@ -37,7 +37,8 @@ Some important entry points to understand and use the repository.
   `python3 report/spec_patches.py` from `specs/`, with the agents' Risk scores per line and, at the top, what
   clarifying every entry from the highest Risk down would fix),
   the delimiter patch (`patch-infer-delimiter.html`), the enrich patch (`patch-enrich-single.html`) and the min12 prompt rendered
-  (`min12-prompt.html`). The build scripts sit beside the pages they generate.
+  (`min12-prompt.html`) and the spectest+antislop prompt (`min13-prompt.html`), both by
+  `python3 report/prompt_page.py <prompt name>`. The build scripts sit beside the pages they generate.
 - `notes/` — credential plumbing and incident log (`credential-setup.md`), control
   isolation audit, spec-delivery mechanism, per-run comparisons
   (`dev6-opus5.md`, `dev6-fable5.md`), leaderboard/paper reference, compiled results.

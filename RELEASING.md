@@ -29,9 +29,12 @@ Decide these before the first DOI exists.
 - [ ] Double-blind venues. A public repository with your name and a DOI deanonymizes a
       submission. arXiv and most ML venues do not mind, and anonymized mirrors exist for the ones
       that do. Pick the kind of venue before the DOI spreads.
-- [ ] Run data. `outputs/` is git-ignored, so no release archive holds it. A paper would need a
-      separate Zenodo dataset deposit. Scrub it first, because `outputs/**/infer.log` holds a
-      live OAuth token.
+- [ ] Run data. Since 2026-09-22 the runs behind the uplift grid are committed under
+      `outputs/` by `bin/add-run`, so a release archive holds them: the code snapshots, the
+      scores and the small quality files, with tokens redacted. `outputs/README.md` lists what
+      they leave out and how to rebuild it. Agent transcripts are not in git. A paper that
+      wants them needs a separate Zenodo dataset deposit. Scan them with gitleaks before it:
+      no token was left in `outputs/` after the 2026-09-22 redaction, but the scan is cheap.
 
 ## Once, before the first release
 

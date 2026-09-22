@@ -50,4 +50,7 @@ export UV_PROJECT_ENVIRONMENT="${UV_PROJECT_ENVIRONMENT:-$HOME/.venvs/scbench-ha
 # --resume). The agent itself already runs as 1000:1000; make everything match.
 export HUID="${HUID:-$(id -u)}"
 export HGID="${HGID:-$(id -g)}"
+# The harness appends this to the run's harness_provenance.jsonl at every start and resume.
+SCB_HARNESS_PROVENANCE="$(python3 "$here/bin/harness-provenance" "$@")"
+export SCB_HARNESS_PROVENANCE
 exec uv run --project "$here/harness" slop-code "$@"

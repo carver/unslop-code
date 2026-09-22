@@ -1,0 +1,61 @@
+#!/usr/bin/env python3
+"""Print, as one JSON object, which harness build a `bin/scb` call runs.
+    bin/harness-provenance [scb args...]
+
+bin/scb puts the output in SCB_HARNESS_PROVENANCE, and the harness (with
+patches/run-records-harness-provenance.patch) appends it to the run's
+harness_provenance.jsonl at every start and resume. Fields:
+
+- harness_commit: HEAD of the checkout at harness/.
+- patches: install.py's patch list, each by name and sha256, in the order it applies them.
+- tree_diff_sha256: sha256 of the checkout's changes against HEAD, tracked and untracked,
+  leaving out what git ignores. Two launches with the same value ran the same code.
+- argv: the scb arguments. recorded: the UTC time of the launch.
+"""
+import datetime
+import hashlib
+import json
+import pathlib
+import subprocess
+import sys
+import types
+
+ROOT = pathlib.Path(__file__).resolve().parent.parent
+HARNESS = ROOT / "harness"
+install = types.ModuleType("install_tool")
+install.__file__ = str(ROOT / "install.py")
+exec(compile((ROOT / "install.py").read_text(), str(ROOT / "install.py"), "exec"), install.__dict__)
+
+
+def harness_patches():
+    return install.HARNESS_PATCHES
+
+
+def git(tree, *args):
+    return subprocess.run(["git", "-C", str(tree), *args], capture_output=True, check=True).stdout
+
+
+def tree_diff_sha256(tree):
+    digest = hashlib.sha256(git(tree, "diff", "--binary", "HEAD"))
+    for name in sorted(git(tree, "ls-files", "--others", "--exclude-standard", "-z").split(b"\0")):
+        if name:
+            digest.update(b"\0untracked\0" + name + b"\0" + (pathlib.Path(tree) / name.decode()).read_bytes())
+    return digest.hexdigest()
+
+
+def provenance(tree, patches, argv):
+    return {
+        "harness_commit": git(tree, "rev-parse", "HEAD").decode().strip(),
+        "patches": [{"name": p.name, "sha256": hashlib.sha256(p.read_bytes()).hexdigest()} for p in patches],
+        "tree_diff_sha256": tree_diff_sha256(tree),
+        "argv": list(argv),
+        "recorded": datetime.datetime.now(datetime.UTC).isoformat(timespec="seconds"),
+    }
+
+
+def main():
+    print(json.dumps(provenance(HARNESS, harness_patches(), sys.argv[1:])))
+
+
+if __name__ == "__main__":
+    main()

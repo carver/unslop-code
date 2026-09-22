@@ -151,7 +151,7 @@ Project skills (`.claude/skills/`, all user-invoked) tie those together:
 ### Running the Benchmark
 
 Runs use the harness checkout at `harness/`: a clone of slop-code-bench pinned to
-`06b5c06` with seven source patches applied, built with its venv by `python3 install.py`
+`06b5c06` with eight source patches applied, built with its venv by `python3 install.py`
 (idempotent; re-run it after a sandbox recreate). `slop-code-bench/` is the development
 clone for upstream work and carries no obligations; on 2026-09-11 a branch switch there
 dropped the patches under a running queue, which is why runs read a checkout of their own.
@@ -193,6 +193,11 @@ The patches, in the order install.py applies them:
   debug line in `infer.log` masks secret environment values the way the
   harness's other logs do. Before, it wrote the raw `--env` arguments, so every
   run's `infer.log` carried the OAuth token (2026-09-22).
+- `patches/run-records-harness-provenance.patch` — every start and resume
+  appends `SCB_HARNESS_PROVENANCE` to the run's `harness_provenance.jsonl`.
+  `bin/scb` fills it from `bin/harness-provenance`: the harness commit, each
+  patch's sha256, a hash of the checkout's changes and the scb arguments, so a
+  run names the build that made it (2026-09-22).
 - `patches/resume-only-problem.patch` — `scb run --resume` honours
   `SCB_RESUME_ONLY_PROBLEM=<problem>` and resumes that problem alone. Upstream's
   `--problem` merges into the run's saved list on resume, so a queue job for one

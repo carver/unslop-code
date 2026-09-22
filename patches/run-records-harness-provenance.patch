@@ -1,0 +1,92 @@
+--- a/src/slop_code/entrypoints/commands/run_agent.py
++++ b/src/slop_code/entrypoints/commands/run_agent.py
+@@ -1,5 +1,7 @@
+ from __future__ import annotations
+ 
++import json
++import os
+ import shutil
+ from pathlib import Path
+ from typing import cast
+@@ -589,6 +591,20 @@
+     )
+ 
+ 
++PROVENANCE_ENV = "SCB_HARNESS_PROVENANCE"
++PROVENANCE_FILENAME = "harness_provenance.jsonl"
++
++
++def _append_launcher_provenance(run_dir: Path) -> None:
++    """Append the launcher's record of the harness build (a JSON object in
++    SCB_HARNESS_PROVENANCE) to the run, one line per start or resume."""
++    record = os.environ.get(PROVENANCE_ENV)
++    if not record:
++        return
++    with (run_dir / PROVENANCE_FILENAME).open("a") as f:
++        f.write(json.dumps(json.loads(record), sort_keys=True) + "\n")
++
++
+ def _prepare_run_artifacts(
+     run_dir: Path,
+     env_spec: EnvironmentSpecType,
+@@ -617,6 +633,7 @@
+             f,
+         )
+     problem_catalog.save_run_catalog_manifest(run_dir, catalog_manifest)
++    _append_launcher_provenance(run_dir)
+ 
+     # Build docker image if needed
+     if isinstance(env_spec, docker_runtime.DockerEnvironmentSpec):
+--- a/tests/entrypoints/commands/test_run_agent.py
++++ b/tests/entrypoints/commands/test_run_agent.py
+@@ -1,5 +1,6 @@
+ """Tests for run_agent command helper functions."""
+ 
++import json
+ from pathlib import Path
+ from unittest.mock import MagicMock
+ from unittest.mock import patch
+@@ -573,6 +574,43 @@
+         )
+         assert saved_manifest == {"version": "v1.0.0", "commit": "abc123"}
+ 
++    @staticmethod
++    def _prepare(run_dir):
++        run_cfg = MagicMock()
++        run_cfg.model_dump.return_value = {}
++        env_spec = MagicMock()
++        env_spec.model_dump.return_value = {"type": "local", "name": "local"}
++        agent_config = MagicMock()
++        agent_config.docker_template = None
++        _prepare_run_artifacts(
++            run_dir=run_dir,
++            env_spec=env_spec,
++            agent_config=agent_config,
++            run_cfg=run_cfg,
++            catalog_manifest=CatalogManifest(version="v1.0.0", commit="abc123"),
++        )
++
++    def test_appends_the_launchers_provenance_once_per_start(
++        self, tmp_path, monkeypatch
++    ):
++        """Each start or resume adds the SCB_HARNESS_PROVENANCE record as one line."""
++        monkeypatch.setenv("SCB_HARNESS_PROVENANCE", '{"commit": "06b5c06", "n": 1}')
++        self._prepare(tmp_path)
++        monkeypatch.setenv("SCB_HARNESS_PROVENANCE", '{"commit": "06b5c06", "n": 2}')
++        self._prepare(tmp_path)
++        lines = (tmp_path / "harness_provenance.jsonl").read_text().splitlines()
++        assert [json.loads(line)["n"] for line in lines] == [1, 2]
++
++    def test_writes_no_provenance_without_the_variable(self, tmp_path, monkeypatch):
++        monkeypatch.delenv("SCB_HARNESS_PROVENANCE", raising=False)
++        self._prepare(tmp_path)
++        assert not (tmp_path / "harness_provenance.jsonl").exists()
++
++    def test_refuses_provenance_that_is_not_json(self, tmp_path, monkeypatch):
++        monkeypatch.setenv("SCB_HARNESS_PROVENANCE", "not json")
++        with pytest.raises(ValueError):
++            self._prepare(tmp_path)
++
+ 
+ class TestDiscoverProblems:
+     """Tests for _discover_problems helper function."""

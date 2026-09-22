@@ -6,9 +6,10 @@ Zenodo skip the release without telling anyone), commits that file alone, tags t
 main with the tag, and creates the GitHub release with generated notes. Pushing main publishes
 every local commit on it. Other uncommitted work in the tree stays where it is, staged or not.
 Refuses before changing anything if: the version is not vX.Y.Z, the tag exists here or on origin,
-the branch is not main, CITATION.cff has uncommitted edits, or origin/main has commits this clone
-lacks. Zenodo archives only releases made after the repository is switched on at
-zenodo.org/account/settings/github, and nothing here can see that switch. So until CITATION.cff
+the branch is not main, CITATION.cff has uncommitted edits or lists several licenses (Zenodo reads
+only one), or origin/main has commits this clone lacks. Zenodo archives only releases made after
+the repository is switched on at zenodo.org/account/settings/github, and nothing here can see that
+switch. So until CITATION.cff
 carries a doi, which proves an earlier release got through, pass --zenodo-enabled to say it is on.
 If a step fails after the commit, the error lists the commands left to run by hand.
 --dry-run runs the checks, then prints the stamped lines and the commands.
@@ -51,6 +52,11 @@ def refuse_unless_ready(version, text, zenodo_enabled):
     git("fetch", "--quiet", "origin", "main")
     if subprocess.run(["git", "merge-base", "--is-ancestor", "origin/main", "HEAD"], cwd=ROOT).returncode:
         raise SystemExit("release: origin/main has commits this clone lacks; pull first")
+    if re.search(r"^license:[ \t]*(\[|\n[ \t]+-)", text, re.MULTILINE):
+        raise SystemExit(
+            f"release: {CFF} lists several licenses. Zenodo reads one license string and fails the "
+            "archive on a list (zenodo/zenodo#2515), though cffconvert accepts it. Name one license there"
+        )
     if not re.search(r"^doi:", text, re.MULTILINE) and not zenodo_enabled:
         raise SystemExit(
             f"release: {CFF} has no doi, so this looks like the first release. Switch the repository on at "

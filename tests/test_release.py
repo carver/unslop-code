@@ -148,3 +148,19 @@ def test_refuses_when_origin_main_has_commits_this_clone_lacks(repo, tmp_path):
     git(other, "push", "-q")
     with pytest.raises(SystemExit, match="pull"):
         mod.release("v0.1.0", "2026-09-19", zenodo_enabled=True)
+
+
+@pytest.mark.parametrize("licenses", ["license:\n  - CC-BY-4.0\n  - MIT\n", "license: [CC-BY-4.0, MIT]\n"])
+def test_refuses_a_license_list_zenodo_cannot_read(repo, licenses):
+    """cffconvert accepts a list, but Zenodo's reader takes one string and drops the release."""
+    (repo / "CITATION.cff").write_text(CFF.replace("authors:", licenses + "authors:", 1))
+    git(repo, "commit", "-q", "-am", "two licenses")
+    with pytest.raises(SystemExit, match="one license"):
+        mod.release("v0.1.0", "2026-09-19", zenodo_enabled=True)
+
+
+def test_a_single_license_string_is_fine(repo):
+    (repo / "CITATION.cff").write_text(CFF.replace("authors:", "license: CC-BY-4.0\nauthors:", 1))
+    git(repo, "commit", "-q", "-am", "one license")
+    mod.release("v0.1.0", "2026-09-19", zenodo_enabled=True)
+    assert git(repo, "tag") == "v0.1.0"

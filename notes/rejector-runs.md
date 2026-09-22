@@ -23,6 +23,7 @@ The control is the dev6 sweep's just-solve run (`notes/dev6-opus5.md`).
 | min13-ABDJKMNT on v1, repeat (halted at the last checkpoint) | `…min13-ABDJKMNT-specv1/20260920T2113` | same config as the first run, under bin/scb-strict in the specpatch channel; second of two | 21/21, 34/34, 50/50, 67/67, 78/79 | complete 2026-09-20; 1 miss, test_tpm_gate again by the 10-second timeout, the same missed wake-up (`rejlib/ratelimit.py:107`, `await asyncio.sleep(wait)`); every other test passes; 4/5 strict, $40, 119 min, overlapped by the main queue, so the minutes are not comparable. Quality: erosion 0.046, verbosity 0.141, ast 0.064, cloned 0.033; final checkpoint, implementation only (32% of LOC): ast 0.116, erosion 0.026, cloned 0.019 |
 | anti-slop on v1 | `…anti_slop-specv1/20260921T1502` | the upstream anti_slop prompt on spec v1, a baseline for the grid's patched cell; first of two | 21/21, 34/34, 49/50, 67/67, 77/79 | complete 2026-09-21; 3 misses, named and not traced (a baseline): test_first_number_extract at checkpoint 3 (the reply-order race patch `03` narrows and cannot close; 14 pass, 2 fail before this run), test_costs (`3.0 == 1.0`, a different failure from the cents rounding patch `07` settles) and test_tpm_gate (the timeout every prompt has hit); the other six v1 sentences held; 3/5 strict, $32, 84 min. Quality: erosion 0.111, verbosity 0.139, ast 0.106, cloned 0.023; final checkpoint, implementation only (46% of LOC): ast 0.176, erosion 0.088, cloned 0.023 |
 | anti-slop on v1, repeat | `…anti_slop-specv1/20260921T1637` | same config as the first run; second of two | 21/21, 34/34, 50/50, 67/67, 78/79 | complete 2026-09-21; 1 miss, test_tpm_gate (the timeout; 8 pass, 9 fail over all runs now), the same as min13's only miss on v1 twice; all eight v1 sentences held; 4/5 strict, $33, 103 min. Quality: erosion 0.097, verbosity 0.193, ast 0.140, cloned 0.017; final checkpoint, implementation only (58% of LOC): ast 0.199, erosion 0.070, cloned 0.021 |
+| just-solve on v1 | `…just-solve-specv1/20260921T1830` | benchmark's own prompt on spec v1, a baseline for the grid's patched cell; first of two | 21/21, 34/34, 50/50, 67/67, 79/79 | complete 2026-09-21; 0 misses, the first 79/79 on rejector under any prompt; test_tpm_gate passed (9 pass, 9 fail over all runs); 5/5 strict, $32, 115 min. Quality: erosion 0.830, verbosity 0.287, ast 0.216, cloned 0.070; final checkpoint, implementation only (51% of LOC): ast 0.354, erosion 0.714, cloned 0.048 |
 
 ## Test failure summaries
 
@@ -37,6 +38,14 @@ The control is the dev6 sweep's just-solve run (`notes/dev6-opus5.md`).
   - 76/79, three above the control and level with min12's repeat, on three of the control's
     six. Cell: 73 and 76 against min12's 75 and 76; the score gap on rejector is inside the
     bare prompt's own spread. Erosion 0.559 and 0.716 against 0.192 and 0.151.
+
+### just-solve on v1 (2026-09-21)
+
+  - 79/79, strict at all five checkpoints: the first perfect run on rejector under any prompt,
+    from 73 and 76 on v0, above min13's 78 and 78 and anti-slop's 77 and 78 on v1, all of which
+    lost test_tpm_gate. A baseline, so nothing traced. It wrote tests, 49% of 3762 lines; $32
+    and 115 min. Implementation only: erosion 0.714, ast 0.354, cloned 0.048, the usual
+    just-solve figures. First of two.
 
 ### anti-slop (the upstream anti_slop prompt, 2026-09-20)
 
@@ -206,3 +215,7 @@ than the cents rounding) and test_tpm_gate. Six of the eight v1 sentences drew n
 anti-slop on v1, repeat (job 281, 2026-09-21): 78/79, the pair 77 and 78 against min13's 78 and 78.
 One miss, test_tpm_gate, the timeout min13 also lost twice on v1. All eight sentences held. On v1
 anti-slop and min13 are level on this problem; the just-solve pair (282, 283) closes the cell.
+
+just-solve on v1, first run (job 282, 2026-09-21): 79/79, every checkpoint strict, from 73 and 76
+on v0. The first run of any prompt to pass test_tpm_gate on v1 (min13 and anti-slop lost it in
+all four runs). A baseline, not traced. The repeat (283) is the last job in the queue.

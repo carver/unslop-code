@@ -24,6 +24,7 @@ The control is the dev6 sweep's just-solve run (`notes/dev6-opus5.md`).
 | anti-slop on v1 | `…anti_slop-specv1/20260921T1502` | the upstream anti_slop prompt on spec v1, a baseline for the grid's patched cell; first of two | 21/21, 34/34, 49/50, 67/67, 77/79 | complete 2026-09-21; 3 misses, named and not traced (a baseline): test_first_number_extract at checkpoint 3 (the reply-order race patch `03` narrows and cannot close; 14 pass, 2 fail before this run), test_costs (`3.0 == 1.0`, a different failure from the cents rounding patch `07` settles) and test_tpm_gate (the timeout every prompt has hit); the other six v1 sentences held; 3/5 strict, $32, 84 min. Quality: erosion 0.111, verbosity 0.139, ast 0.106, cloned 0.023; final checkpoint, implementation only (46% of LOC): ast 0.176, erosion 0.088, cloned 0.023 |
 | anti-slop on v1, repeat | `…anti_slop-specv1/20260921T1637` | same config as the first run; second of two | 21/21, 34/34, 50/50, 67/67, 78/79 | complete 2026-09-21; 1 miss, test_tpm_gate (the timeout; 8 pass, 9 fail over all runs now), the same as min13's only miss on v1 twice; all eight v1 sentences held; 4/5 strict, $33, 103 min. Quality: erosion 0.097, verbosity 0.193, ast 0.140, cloned 0.017; final checkpoint, implementation only (58% of LOC): ast 0.199, erosion 0.070, cloned 0.021 |
 | just-solve on v1 | `…just-solve-specv1/20260921T1830` | benchmark's own prompt on spec v1, a baseline for the grid's patched cell; first of two | 21/21, 34/34, 50/50, 67/67, 79/79 | complete 2026-09-21; 0 misses, the first 79/79 on rejector under any prompt; test_tpm_gate passed (9 pass, 9 fail over all runs); 5/5 strict, $32, 115 min. Quality: erosion 0.830, verbosity 0.287, ast 0.216, cloned 0.070; final checkpoint, implementation only (51% of LOC): ast 0.354, erosion 0.714, cloned 0.048 |
+| just-solve on v1, repeat | `…just-solve-specv1/20260921T2034` | same config as the first run; second of two | 21/21, 33/34, 50/50, 67/67, 78/79 | complete 2026-09-21; 2 misses, named and not traced (a baseline): test_first_number_extract at checkpoint 2 (the reply-order race patch `03` narrows and cannot close) and test_tpm_gate (the timeout; 9 pass, 10 fail over all runs); the other six v1 sentences held; 3/5 strict, $26, 122 min. Quality: erosion 0.534, verbosity 0.160, ast 0.108, cloned 0.039; final checkpoint, implementation only (50% of LOC): ast 0.202, erosion 0.673, cloned 0.070 |
 
 ## Test failure summaries
 
@@ -46,6 +47,12 @@ The control is the dev6 sweep's just-solve run (`notes/dev6-opus5.md`).
     lost test_tpm_gate. A baseline, so nothing traced. It wrote tests, 49% of 3762 lines; $32
     and 115 min. Implementation only: erosion 0.714, ast 0.354, cloned 0.048, the usual
     just-solve figures. First of two.
+  - repeat (78): the pair is 79 and 78 against 73 and 76 on v0, min13's 78 and 78 and
+    anti-slop's 77 and 78. Two misses, the race and the tpm timeout, both seen under every
+    prompt. Not traced. $26 and 122 min. Implementation only: erosion 0.673, ast 0.202,
+    cloned 0.070; the mean of the two runs is 0.694, 0.278, 0.059. That closes the v1 cell:
+    just-solve 79 and 78, anti-slop 77 and 78, min13 78 and 78, the three prompts within
+    one test of each other on a spec whose eight sentences all held.
 
 ### anti-slop (the upstream anti_slop prompt, 2026-09-20)
 
@@ -219,3 +226,9 @@ anti-slop and min13 are level on this problem; the just-solve pair (282, 283) cl
 just-solve on v1, first run (job 282, 2026-09-21): 79/79, every checkpoint strict, from 73 and 76
 on v0. The first run of any prompt to pass test_tpm_gate on v1 (min13 and anti-slop lost it in
 all four runs). A baseline, not traced. The repeat (283) is the last job in the queue.
+
+just-solve on v1, repeat (job 283, 2026-09-21): 78/79, the pair 79 and 78. The misses are the
+reply-order race at checkpoint 2 and test_tpm_gate, both the benchmark's regulars. A baseline, not
+traced. The v1 cell is complete for all three prompts that ran it (min12 was not queued on
+rejector): just-solve 79 and 78, anti-slop 77 and 78, min13 78 and 78. The queue is empty; the
+test-set batch stays stashed.

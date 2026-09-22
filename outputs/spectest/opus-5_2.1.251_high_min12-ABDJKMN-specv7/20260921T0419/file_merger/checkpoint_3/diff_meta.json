@@ -1,0 +1,33 @@
+{
+ "base": "empty",
+ "from_checksum": "7c63a2440553fa018373471d6ffe3b10",
+ "to_checksum": "b2cddbf9ead447b0c2c77ebf30d414d2",
+ "from_timestamp": "2026-09-21T04:58:49.295267",
+ "to_timestamp": "2026-09-21T05:09:16.500010",
+ "files": [
+  "tests/test_output.py",
+  "tests/test_exit_codes.py",
+  "tests/test_casting.py",
+  "tests/test_partition_sharding.py",
+  "tests/test_partition_fields.py",
+  "tests/test_integration.py",
+  "tests/test_sorting.py",
+  "tests/test_dialect.py",
+  "COMPLETED",
+  "tests/test_tsv.py",
+  "AMBIGUITIES.md",
+  "tests/test_hetero.py",
+  "tests/test_performance.py",
+  "tests/test_parquet.py",
+  "tests/test_formats.py",
+  "tests/conftest.py",
+  "tests/test_schema.py",
+  "tests/test_cli.py",
+  "requirements.txt",
+  "tests/test_partition_output.py",
+  "tests/test_schema_strategy.py",
+  "tests/test_jsonl.py",
+  "merge_files.py"
+ ],
+ "sha256": "25bf6e5078bf07439e1ca7f39980ce5f9aa39695dc76ace752459355d395b56b"
+}

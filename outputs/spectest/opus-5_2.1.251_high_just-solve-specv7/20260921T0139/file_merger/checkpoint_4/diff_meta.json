@@ -1,0 +1,17 @@
+{
+ "base": "empty",
+ "from_checksum": "2b25a97d55e5c309144b38d7520bf8f3",
+ "to_checksum": "fc213de06e587e8d4f821a242a8889a1",
+ "from_timestamp": "2026-09-21T02:26:06.101920",
+ "to_timestamp": "2026-09-21T02:50:49.134472",
+ "files": [
+  "data/a.csv",
+  "README.md",
+  "test_merge_files.py",
+  "requirements.txt",
+  "merge_files.py",
+  "data/b.csv",
+  "data/schema.json"
+ ],
+ "sha256": "c60a9863ecdcde4beb09cad39309fbb8a0f8469ca911b0eaf6db424d90e87853"
+}

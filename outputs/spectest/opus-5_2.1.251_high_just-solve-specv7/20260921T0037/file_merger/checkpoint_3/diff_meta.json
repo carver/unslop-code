@@ -1,0 +1,16 @@
+{
+ "base": "empty",
+ "from_checksum": "77082959325ad869162d8c83602576f4",
+ "to_checksum": "64748795b277402105c3a80a3447b82e",
+ "from_timestamp": "2026-09-21T01:08:43.457748",
+ "to_timestamp": "2026-09-21T01:16:50.289025",
+ "files": [
+  "tests/test_formats.py",
+  "tests/test_partition.py",
+  "merge_files.py",
+  "requirements.txt",
+  "README.md",
+  "tests/test_merge.py"
+ ],
+ "sha256": "9236a1dff6297c70b9ad2539f16a4c30ffa1903ae26aefced9756f5615bf6a41"
+}

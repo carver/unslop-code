@@ -1,0 +1,31 @@
+{
+ "base": "empty",
+ "from_checksum": "90f067c8ae6c1c4c722331768d4aa95a",
+ "to_checksum": "745707c55ee7fa7d6552d25f4eab0154",
+ "from_timestamp": "2026-09-21T15:02:43.277194",
+ "to_timestamp": "2026-09-21T15:17:48.927717",
+ "files": [
+  "README.md",
+  "tests/test_run.py",
+  "client.py",
+  "errors.py",
+  "jsonl.py",
+  "tests/test_config.py",
+  "requirements.txt",
+  "config.py",
+  "examples/task.yaml",
+  "runner.py",
+  "requirements-dev.txt",
+  "tests/test_evaluation.py",
+  "tests/test_cli.py",
+  "examples/data.jsonl",
+  "tests/conftest.py",
+  "evaluation.py",
+  "examples/rejection.yaml",
+  "rejector.py",
+  "tests/mock_server.py",
+  "prompts.py",
+  ".gitignore"
+ ],
+ "sha256": "7158a3a378ed38a3b7611e5018001b30cae65e0408503df2d204fbc5c43c4ea4"
+}

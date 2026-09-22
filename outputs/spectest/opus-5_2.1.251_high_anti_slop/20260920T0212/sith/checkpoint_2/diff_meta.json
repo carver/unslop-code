@@ -1,0 +1,32 @@
+{
+ "base": "empty",
+ "from_checksum": "79f887c67ca20003ba4d4fa180bfeb58",
+ "to_checksum": "b411b2f4af0198734b3c4c07b235441a",
+ "from_timestamp": "2026-09-20T02:24:55.867746",
+ "to_timestamp": "2026-09-20T03:00:02.580121",
+ "files": [
+  "sithlib/parsing.py",
+  "sithlib/scopes.py",
+  "sithlib/symbols.py",
+  "sithlib/matching.py",
+  "sithlib/classes.py",
+  "sithlib/imports.py",
+  "sithlib/engine.py",
+  "sithlib/modules.py",
+  "sithlib/runtime.py",
+  "sithlib/errors.py",
+  "sith.py",
+  "sithlib/source.py",
+  "sithlib/bindings.py",
+  "sithlib/narrowing.py",
+  "sithlib/navigation.py",
+  "requirements.txt",
+  "sithlib/values.py",
+  "tests/test_completion.py",
+  "tests/test_navigation.py",
+  "sithlib/evaluator.py",
+  "sithlib/definitions.py",
+  "sithlib/__init__.py"
+ ],
+ "sha256": "a1fe443df405e1f08efb7edaf644a7ff43ea26f1b400f770f42b08d954b30989"
+}

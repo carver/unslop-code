@@ -1,0 +1,25 @@
+{
+ "base": "empty",
+ "from_checksum": "1bb7c32eb1b75e7bb2141db923002672",
+ "to_checksum": "0db7cc8162b077f9af55f151fd1d4671",
+ "from_timestamp": "2026-09-20T02:12:12.150235",
+ "to_timestamp": "2026-09-20T02:24:26.697427",
+ "files": [
+  "sithlib/symbols.py",
+  "sithlib/inference.py",
+  "sithlib/scopes.py",
+  "sith.py",
+  "sithlib/engine.py",
+  "sithlib/matching.py",
+  "tests/test_completion.py",
+  "sithlib/__init__.py",
+  "requirements.txt",
+  "sithlib/errors.py",
+  "sithlib/source.py",
+  "sithlib/index.py",
+  "sithlib/parsing.py",
+  "sithlib/attributes.py",
+  "sithlib/runtime.py"
+ ],
+ "sha256": "bf4cfb29e8c910f08d2f69cc5a11889868c9cd8f03103304e5b8ca04e7c0bfa8"
+}

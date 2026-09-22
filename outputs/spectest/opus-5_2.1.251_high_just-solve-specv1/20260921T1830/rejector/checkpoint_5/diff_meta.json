@@ -1,0 +1,33 @@
+{
+ "base": "empty",
+ "from_checksum": "c2c9a8d991593f3b9be4c00fd52a69c5",
+ "to_checksum": "df88d04492372adbde73bc50c58b86b2",
+ "from_timestamp": "2026-09-21T20:04:11.492295",
+ "to_timestamp": "2026-09-21T20:31:25.055176",
+ "files": [
+  "examples/multi.yaml",
+  "README.md",
+  "tests/test_part5.py",
+  "tests/test_part3.py",
+  "examples/icl/gsm8k_detailed.jsonl",
+  "examples/icl.yaml",
+  "tests/test_part2.py",
+  "examples/agentic.yaml",
+  "examples/completions.yaml",
+  "examples/data/gsm8k.jsonl",
+  "examples/data/mmlu.jsonl",
+  "rejector.py",
+  "tests/test_rejector.py",
+  "examples/data/code_gen.jsonl",
+  "examples/rejection.yaml",
+  "examples/data/review.jsonl",
+  "tests/mock_server.py",
+  "examples/data/data_lookup.jsonl",
+  "examples/sample.yaml",
+  "requirements.txt",
+  "tests/test_part4.py",
+  "examples/greedy.yaml",
+  "examples/data.jsonl"
+ ],
+ "sha256": "a36f26d812f2e514ecae7fcc7ad9fc0d16ae0bcdf867b04cf8da2456a1e31f98"
+}

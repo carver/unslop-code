@@ -1,0 +1,31 @@
+{
+ "base": "empty",
+ "from_checksum": "6245ad2e0c2c9ee6e3d7ee371d95f5bd",
+ "to_checksum": "1a07236dc01da0e0125716139744d890",
+ "from_timestamp": "2026-09-19T10:41:08.374512",
+ "to_timestamp": "2026-09-19T10:48:51.660399",
+ "files": [
+  "mvault.py",
+  "mvaultlib/sync.py",
+  "pytest.ini",
+  "requirements.txt",
+  "COMPLETED",
+  "tests/test_source_schema.py",
+  "mvaultlib/history.py",
+  "tests/test_init.py",
+  "mvaultlib/errors.py",
+  "tests/test_persistence_order.py",
+  "mvaultlib/catalog.py",
+  "tests/conftest.py",
+  "tests/test_entry_fields.py",
+  "tests/test_sync_rules.py",
+  "mvaultlib/timestamps.py",
+  "tests/test_cli.py",
+  "mvaultlib/__init__.py",
+  "tests/test_determinism.py",
+  "tests/test_errors.py",
+  "AMBIGUITIES.md",
+  "mvaultlib/source.py"
+ ],
+ "sha256": "3f102b9eb7824e2346ada4be82b4f82176c09dc9ae249a995be54345aabb3d40"
+}

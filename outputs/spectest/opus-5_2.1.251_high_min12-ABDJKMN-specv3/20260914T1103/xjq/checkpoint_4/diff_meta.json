@@ -1,0 +1,24 @@
+{
+ "base": "empty",
+ "from_checksum": "2680fd9fbdf1a066882b0a1a5ab250df",
+ "to_checksum": "2d61f99d3ec94450f9c351b93951f72a",
+ "from_timestamp": "2026-09-14T11:28:43.942492",
+ "to_timestamp": "2026-09-14T11:40:14.525361",
+ "files": [
+  "tests/test_cli.py",
+  "tests/test_first_compact.py",
+  "tests/test_text.py",
+  "tests/test_errors.py",
+  "requirements.txt",
+  "xjq.py",
+  "AMBIGUITIES.md",
+  "tests/conftest.py",
+  "COMPLETED",
+  "tests/test_behavior.py",
+  "tests/test_infile.py",
+  "tests/test_json.py",
+  "tests/test_output.py",
+  "tests/test_css.py"
+ ],
+ "sha256": "a1284da72dded6a1a2e6de84aa48ef8f565a16b59c28e6d7de298432f166ef53"
+}

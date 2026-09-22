@@ -1,0 +1,32 @@
+{
+ "base": "empty",
+ "from_checksum": "e28908561c1231c3a9336346883ac838",
+ "to_checksum": "f31fe3093cdd3e78f0acdf0deb8ca4a5",
+ "from_timestamp": "2026-09-19T03:11:35.352362",
+ "to_timestamp": "2026-09-19T03:30:51.391220",
+ "files": [
+  "tests/test_memory.py",
+  "csvmerge/sorting.py",
+  "tests/test_examples.py",
+  "tests/test_sorting.py",
+  "tests/test_usage_and_output.py",
+  "merge_files.py",
+  "csvmerge/records.py",
+  "AMBIGUITIES.md",
+  "tests/test_inference.py",
+  "csvmerge/cli.py",
+  "csvmerge/schema.py",
+  "csvmerge/errors.py",
+  "tests/conftest.py",
+  "tests/test_schema_explicit.py",
+  "csvmerge/pipeline.py",
+  "requirements.txt",
+  "tests/test_dialect.py",
+  "csvmerge/csvio.py",
+  "csvmerge/casting.py",
+  "tests/test_casting.py",
+  "csvmerge/__init__.py",
+  "COMPLETED"
+ ],
+ "sha256": "82f166ada124bd5fe999dc08c8805d7b4b3c35ce8278bbc38d4cdf3942e316c1"
+}

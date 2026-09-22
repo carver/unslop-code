@@ -1,0 +1,16 @@
+{
+ "base": "empty",
+ "from_checksum": "6b926972da1776466d04a2d46b9e6ff5",
+ "to_checksum": "ea0f15255713f163703e3d6744e9ca83",
+ "from_timestamp": "2026-09-20T12:46:40.329682",
+ "to_timestamp": "2026-09-20T12:50:05.238011",
+ "files": [
+  "textnodes.py",
+  "render.py",
+  "xjq.py",
+  "requirements.txt",
+  "cssquery.py",
+  "xmldoc.py"
+ ],
+ "sha256": "fc457c9e9cd62e8ab0fc44d7b38fe913e046c836146a12336690f43f1096ecdb"
+}

@@ -1,0 +1,25 @@
+{
+ "base": "empty",
+ "from_checksum": "c8fb2a8f25b587c0049f7ef1c1b2ae2b",
+ "to_checksum": "2e6a05472f43e7d13620368cc898b47f",
+ "from_timestamp": "2026-09-15T03:37:07.892394",
+ "to_timestamp": "2026-09-15T03:50:10.676592",
+ "files": [
+  "COMPLETED",
+  "tests/test_source_validation.py",
+  "AMBIGUITIES.md",
+  "tests/test_cli.py",
+  "tests/test_history.py",
+  "tests/test_ordering_persistence.py",
+  "tests/test_legacy_versions.py",
+  "tests/conftest.py",
+  "tests/test_init.py",
+  "tests/test_migrate.py",
+  "tests/test_legacy_sync.py",
+  "tests/test_scenarios.py",
+  "tests/test_sync.py",
+  "mvault.py",
+  "requirements.txt"
+ ],
+ "sha256": "97fa2d9a4b87d4b4b7e37e9e6358596f021bdb682603938a9786716a9db7de01"
+}

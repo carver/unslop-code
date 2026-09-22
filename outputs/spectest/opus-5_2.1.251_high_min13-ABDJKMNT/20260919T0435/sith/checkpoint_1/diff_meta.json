@@ -1,0 +1,33 @@
+{
+ "base": "empty",
+ "from_checksum": "4a7f81308979c159c8fad643fb590082",
+ "to_checksum": "26d47421d2fd2b709dd32f837bfd4d06",
+ "from_timestamp": "2026-09-19T04:35:48.653441",
+ "to_timestamp": "2026-09-19T04:55:43.634243",
+ "files": [
+  "sithlib/resolve.py",
+  "pytest.ini",
+  "sithlib/source.py",
+  "tests/test_cursor_position.py",
+  "sith.py",
+  "tests/conftest.py",
+  "sithlib/engine.py",
+  "sithlib/scopes.py",
+  "tests/test_types_and_descriptions.py",
+  "requirements.txt",
+  "tests/test_attribute_completion.py",
+  "tests/test_name_completion.py",
+  "COMPLETED",
+  "sithlib/symbols.py",
+  "sithlib/__init__.py",
+  "sithlib/modules.py",
+  "tests/test_imports_and_errors.py",
+  "tests/test_keywords_and_matching.py",
+  "tests/test_ordering.py",
+  "sithlib/cursor.py",
+  "AMBIGUITIES.md",
+  "tests/test_cli_and_output.py",
+  "sithlib/matching.py"
+ ],
+ "sha256": "004b230f85da3a800affca8820f662bb110650339960eea441307bdbcfe94d8e"
+}

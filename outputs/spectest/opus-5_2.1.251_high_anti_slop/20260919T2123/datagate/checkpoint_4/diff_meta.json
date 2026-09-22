@@ -1,0 +1,31 @@
+{
+ "base": "empty",
+ "from_checksum": "967fe3166c51f1632cdd67e8039959d7",
+ "to_checksum": "798ad8f0c8a8645630b779cdfff166de",
+ "from_timestamp": "2026-09-19T21:44:57.379688",
+ "to_timestamp": "2026-09-19T21:52:48.723505",
+ "files": [
+  "tests/test_export.py",
+  "app.py",
+  "ingestion.py",
+  "tests/test_datagate.py",
+  "tests/test_upload.py",
+  "tests/conftest.py",
+  "exporting.py",
+  "pytest.ini",
+  "fetching.py",
+  "README.md",
+  "tests/helpers.py",
+  "datagate.py",
+  "tests/test_formats.py",
+  "csv_parsing.py",
+  "querying.py",
+  "requirements-dev.txt",
+  "filtering.py",
+  "requirements.txt",
+  "store.py",
+  "spreadsheets.py",
+  "errors.py"
+ ],
+ "sha256": "591474737c143476c161949d6ab24c8963734dbcaa612cf116d90baccb8fa56e"
+}

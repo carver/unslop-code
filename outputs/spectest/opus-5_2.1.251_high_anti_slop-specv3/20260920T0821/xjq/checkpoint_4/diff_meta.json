@@ -1,0 +1,21 @@
+{
+ "base": "empty",
+ "from_checksum": "b95095b6fb2550fad40cb4767f8023a3",
+ "to_checksum": "310cad2901b4f9ae970435024fa122ba",
+ "from_timestamp": "2026-09-20T08:33:58.236247",
+ "to_timestamp": "2026-09-20T08:37:26.380639",
+ "files": [
+  "errors.py",
+  "query.py",
+  "README.md",
+  "json_xml.py",
+  "document.py",
+  "xjq.py",
+  "render.py",
+  "css.py",
+  "test_xjq.py",
+  "text.py",
+  "requirements.txt"
+ ],
+ "sha256": "1eccc03999272a029586cbe29ce1a6eb1360f69584b50a52afccdf0d660c6d14"
+}

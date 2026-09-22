@@ -1,0 +1,20 @@
+{
+ "base": "empty",
+ "from_checksum": "a88a41cf29df4f07d6b09126793a6e08",
+ "to_checksum": "5f6ec3c619c6b7567bbf6e9286c58314",
+ "from_timestamp": "2026-09-20T19:08:08.827028",
+ "to_timestamp": "2026-09-20T19:12:30.404237",
+ "files": [
+  "vault/cli.py",
+  "vault/timestamps.py",
+  "vault/sync.py",
+  "vault/source.py",
+  "requirements.txt",
+  "vault/history.py",
+  "vault/catalog.py",
+  "vault/__init__.py",
+  "README.md",
+  "mvault.py"
+ ],
+ "sha256": "6b35263146b6869b74db6962579e353adb409fb0bc162492f1634a4038f3977c"
+}

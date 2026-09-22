@@ -1,0 +1,21 @@
+{
+ "base": "empty",
+ "from_checksum": "ea0cc1604c633de94953e970d55e0b24",
+ "to_checksum": "77b308d8c9874a705af8b98c57031a1b",
+ "from_timestamp": "2026-09-20T17:55:33.142198",
+ "to_timestamp": "2026-09-20T18:11:13.730297",
+ "files": [
+  "tests/test_merge_files.py",
+  "csvmerge/sorting.py",
+  "README.md",
+  "csvmerge/values.py",
+  "csvmerge/csvio.py",
+  "csvmerge/__init__.py",
+  "csvmerge/errors.py",
+  "requirements.txt",
+  "csvmerge/records.py",
+  "merge_files.py",
+  "csvmerge/schema.py"
+ ],
+ "sha256": "9f464c16ddbf382f67ac592cdaea32f4b04ef0e283fa41aa3e709e3b026e6327"
+}

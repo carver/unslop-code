@@ -1,0 +1,31 @@
+{
+ "base": "empty",
+ "from_checksum": "3ceb600ab598ee4622bcd064e42fb954",
+ "to_checksum": "cff8292169549213550e95690674afa5",
+ "from_timestamp": "2026-09-15T09:12:37.856433",
+ "to_timestamp": "2026-09-15T09:37:34.231083",
+ "files": [
+  "test_imports.py",
+  "test_settings.py",
+  "test_interpreter.py",
+  "test_context.py",
+  "test_search_names.py",
+  "COMPLETED",
+  "sith.py",
+  "conftest.py",
+  "test_refactor_inline.py",
+  "AMBIGUITIES.md",
+  "test_signatures.py",
+  "test_env.py",
+  "test_stubs.py",
+  "test_sith.py",
+  "test_refactor_extract.py",
+  "test_errors.py",
+  "test_references.py",
+  "test_project_config.py",
+  "requirements.txt",
+  "test_infer_goto.py",
+  "test_refactor_rename.py"
+ ],
+ "sha256": "ea462a0a20e19d6f0108745f332f23bdea8aa3a2934cf79d33b66058aeb82e4a"
+}

@@ -1,0 +1,23 @@
+{
+ "base": "empty",
+ "from_checksum": "cbb4371787864fb58c1316acaeeb7ba3",
+ "to_checksum": "cf94f5fd2bb1d4aa11d94baea624af2b",
+ "from_timestamp": "2026-09-21T05:31:45.665775",
+ "to_timestamp": "2026-09-21T05:37:31.409560",
+ "files": [
+  "tests/test_mvault.py",
+  "requirements.txt",
+  "vault/source.py",
+  "vault/timestamps.py",
+  "vault/__init__.py",
+  "README.md",
+  "vault/cli.py",
+  "vault/entries.py",
+  "tests/test_history.py",
+  "vault/sync.py",
+  "mvault.py",
+  "vault/history.py",
+  "vault/catalog.py"
+ ],
+ "sha256": "1d1a132e333746c15baa2a8eaf99856386647dff5c0adf8ddfe920f24b1e9aa0"
+}

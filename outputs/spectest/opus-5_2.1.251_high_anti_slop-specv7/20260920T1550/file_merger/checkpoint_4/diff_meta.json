@@ -1,0 +1,32 @@
+{
+ "base": "empty",
+ "from_checksum": "6e1d5981430af14063c4b63c8769b66e",
+ "to_checksum": "5c22591561220b6fc95ee321dde0f89d",
+ "from_timestamp": "2026-09-20T16:44:01.055544",
+ "to_timestamp": "2026-09-20T17:03:13.521197",
+ "files": [
+  "external_sort.py",
+  "streams.py",
+  "nested_types.py",
+  "output.py",
+  "inference.py",
+  "test_merge_files.py",
+  "field_paths.py",
+  "partitions.py",
+  "column_types.py",
+  "csv_io.py",
+  "jsonl_io.py",
+  "merge_files.py",
+  "errors.py",
+  "casting.py",
+  "records.py",
+  "README.md",
+  "rows.py",
+  "schema.py",
+  "parquet_io.py",
+  "sources.py",
+  "requirements.txt",
+  "type_specs.py"
+ ],
+ "sha256": "0190f1b0a6c66d290c7630b23c434bb070f97a486a80a1586928d16e47dcbc1f"
+}

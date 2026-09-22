@@ -1,0 +1,27 @@
+{
+ "base": "empty",
+ "from_checksum": "8be61d87ba5c9dcb39482c0269e1c06e",
+ "to_checksum": "4d9f483df5bc33f2d383b7c2fee14902",
+ "from_timestamp": "2026-08-30T03:54:48.740104",
+ "to_timestamp": "2026-08-30T03:59:58.792949",
+ "files": [
+  "README.md",
+  "tests/fixtures/headeronly.csv",
+  "tests/fixtures/tab.csv",
+  "tests/run_tests.py",
+  "tests/fixtures/quoted.csv",
+  "requirements.txt",
+  "tests/fixtures/notcsv.json",
+  "tests/fixtures/latin1.csv",
+  "tests/fixtures/semi.csv",
+  "datagate.py",
+  "tests/fixtures/notcsv.html",
+  "tests/fixtures/basic.csv",
+  "tests/fixtures/big.csv",
+  "tests/fixtures/ragged.csv",
+  "tests/fixtures/prose.txt",
+  ".gitignore",
+  "tests/fixtures/bom.csv"
+ ],
+ "sha256": "7dca192a4521dde8de4f6d8eca807320b519547b02a96fd9d73bec4ab3270ec3"
+}

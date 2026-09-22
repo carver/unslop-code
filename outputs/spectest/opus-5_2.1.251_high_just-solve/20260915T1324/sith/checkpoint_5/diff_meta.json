@@ -1,0 +1,16 @@
+{
+ "base": "empty",
+ "from_checksum": "d77950a2cb28760ed501961a113da2df",
+ "to_checksum": "2a5e1150c1c1c8d3c06b04a6eca89074",
+ "from_timestamp": "2026-09-15T15:16:08.024942",
+ "to_timestamp": "2026-09-15T15:45:02.388852",
+ "files": [
+  "README.md",
+  "tests/test_sith_extra.py",
+  "requirements.txt",
+  "tests/test_sith_refactor.py",
+  "sith.py",
+  "tests/test_sith.py"
+ ],
+ "sha256": "179d1bf0ada5778e9bfd5fda3cfb9a8657be8805660834234605d8dc2aa9360b"
+}

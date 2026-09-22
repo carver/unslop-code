@@ -1,0 +1,32 @@
+{
+ "base": "empty",
+ "from_checksum": "1723efc391c9643f768f69721a804d85",
+ "to_checksum": "4af71c6db6cb44607bee28a5c817da1f",
+ "from_timestamp": "2026-09-15T01:12:01.731954",
+ "to_timestamp": "2026-09-15T01:38:02.778610",
+ "files": [
+  "tests/test_ordering.py",
+  "tests/conftest.py",
+  "tests/test_dataclass.py",
+  "tests/test_infer_goto_positions.py",
+  "tests/test_cli_and_output.py",
+  "README.md",
+  "tests/test_cursor_position.py",
+  "tests/test_imports.py",
+  "tests/test_name_completion.py",
+  "tests/test_errors_and_tolerance.py",
+  "COMPLETED",
+  "tests/test_definition_choices.py",
+  "AMBIGUITIES.md",
+  "tests/test_keywords_and_matching.py",
+  "sith.py",
+  "requirements.txt",
+  "tests/test_definition_output.py",
+  "tests/test_narrowing.py",
+  "tests/test_attribute_completion.py",
+  "tests/test_infer.py",
+  "tests/test_completion_inference.py",
+  "tests/test_goto.py"
+ ],
+ "sha256": "f306d39a2c03cb29c2a7d3c0498d02761260551d7548c5afa32271c810168d4b"
+}

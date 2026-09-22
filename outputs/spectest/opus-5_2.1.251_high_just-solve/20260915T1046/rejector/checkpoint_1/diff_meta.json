@@ -1,0 +1,18 @@
+{
+ "base": "empty",
+ "from_checksum": "fa8f483c3927858686767bb1aa95d4ff",
+ "to_checksum": "b9eedda58fdef1c67a710162a935fbbc",
+ "from_timestamp": "2026-09-15T10:46:09.049377",
+ "to_timestamp": "2026-09-15T10:58:57.740303",
+ "files": [
+  "tests/test_all.py",
+  "README.md",
+  "examples/rejection.yaml",
+  "examples/task.yaml",
+  "requirements.txt",
+  "examples/data.jsonl",
+  "tests/mock_server.py",
+  "rejector.py"
+ ],
+ "sha256": "c646161d4e434d9850efea48fe9a6b7459d20d130bb5ebf511d63a8bd47fa619"
+}

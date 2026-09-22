@@ -1,0 +1,13 @@
+{
+ "base": "previous",
+ "from_checksum": "50ed1be2a0f58665600a5dab5c907b49",
+ "to_checksum": "82559bcbd9d87550150331f6d1bee8cb",
+ "from_timestamp": "2026-08-30T04:21:25.459688",
+ "to_timestamp": "2026-08-30T04:28:23.350821",
+ "files": [
+  "README.md",
+  "tests/run_tests.py",
+  "datagate.py"
+ ],
+ "sha256": "07048dcb83283ced05e2e248cd67ac211c5e24cd70a3e34638328cf84d3c94db"
+}

@@ -1,0 +1,32 @@
+{
+ "base": "empty",
+ "from_checksum": "9b773a8196d0a00888dc619d52d78f19",
+ "to_checksum": "fb4a0d7c3190053cc81d6c01c345d0bd",
+ "from_timestamp": "2026-09-20T00:31:26.714059",
+ "to_timestamp": "2026-09-20T00:49:14.019303",
+ "files": [
+  "examples/data.jsonl",
+  "requirements-dev.txt",
+  "README.md",
+  "runner.py",
+  "tests/mock_server.py",
+  "config.py",
+  "tests/test_runner.py",
+  "errors.py",
+  "tests/test_evaluation.py",
+  "examples/greedy.yaml",
+  "api.py",
+  "rejector.py",
+  "tests/conftest.py",
+  "tests/test_dataset.py",
+  "tests/test_config.py",
+  "requirements.txt",
+  "evaluation.py",
+  "examples/rejection.yaml",
+  "tests/test_cli.py",
+  "tests/data.jsonl",
+  "tests/test_api.py",
+  "dataset.py"
+ ],
+ "sha256": "42f78d4aacb73d78d5e192146a120700b28620d75ce5ef84d8dc1216142c8826"
+}

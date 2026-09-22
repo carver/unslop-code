@@ -1,0 +1,24 @@
+{
+ "base": "empty",
+ "from_checksum": "b6bc4aac7528f4efcf546e5a26516e91",
+ "to_checksum": "d0d26a852ceced8043182359d9937aef",
+ "from_timestamp": "2026-09-21T02:52:23.167712",
+ "to_timestamp": "2026-09-21T03:07:19.227811",
+ "files": [
+  "tests/test_casting.py",
+  "merge_files.py",
+  "COMPLETED",
+  "tests/test_sorting.py",
+  "AMBIGUITIES.md",
+  "tests/test_interpretations.py",
+  "requirements.txt",
+  "tests/test_output.py",
+  "tests/test_cli_interface.py",
+  "tests/conftest.py",
+  "tests/test_schema_resolution.py",
+  "tests/test_dialect_and_resources.py",
+  "tests/test_csv_assumptions.py",
+  "pytest.ini"
+ ],
+ "sha256": "c020b436498027993a4dcbee5a6d92da744b1cda1fcb4a8f82b14b82365588ea"
+}

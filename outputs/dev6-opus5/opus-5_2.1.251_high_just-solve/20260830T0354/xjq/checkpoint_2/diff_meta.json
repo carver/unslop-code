@@ -1,0 +1,12 @@
+{
+ "base": "previous",
+ "from_checksum": "15874f731e9a4c42ca1573b1256511a7",
+ "to_checksum": "3a95deb1c83a5183e733cd80e82b3500",
+ "from_timestamp": "2026-08-30T13:04:18.144839",
+ "to_timestamp": "2026-08-30T13:10:44.034052",
+ "files": [
+  "requirements.txt",
+  "xjq.py"
+ ],
+ "sha256": "dc0b44ef544215ba991e13b688c7ced0fa149164640092b02504cddb88f002a1"
+}

@@ -1,0 +1,30 @@
+{
+ "base": "empty",
+ "from_checksum": "dcf5486bbe445d080ea00020ab7ea6c9",
+ "to_checksum": "f6389b6a5cd53ac3d156f2dd48703597",
+ "from_timestamp": "2026-09-20T17:30:25.515822",
+ "to_timestamp": "2026-09-20T17:37:38.265281",
+ "files": [
+  ".gitignore",
+  "README.md",
+  "csvmerge/errors.py",
+  "csvmerge/__init__.py",
+  "tests/test_multi_format.py",
+  "csvmerge/csvio.py",
+  "requirements.txt",
+  "csvmerge/merge.py",
+  "tests/test_merge_files.py",
+  "csvmerge/schema.py",
+  "csvmerge/formats.py",
+  "csvmerge/sorting.py",
+  "csvmerge/coltypes.py",
+  "tests/test_partitioned_output.py",
+  "csvmerge/readers.py",
+  "csvmerge/sharding.py",
+  "csvmerge/partitioning.py",
+  "csvmerge/parquetio.py",
+  "csvmerge/jsonlio.py",
+  "merge_files.py"
+ ],
+ "sha256": "27dc4bf3eb615799d1ecf3353980a5566b81ad462a1a618981d11367bdfe001c"
+}

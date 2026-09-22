@@ -1,0 +1,28 @@
+{
+ "base": "empty",
+ "from_checksum": "05a59a08a71f02c783db55b6a3a48c7d",
+ "to_checksum": "ef50a0421aea01d0518d9108d02fb31e",
+ "from_timestamp": "2026-09-14T19:13:10.461581",
+ "to_timestamp": "2026-09-14T19:22:00.440661",
+ "files": [
+  "tests/test_startup_cli.py",
+  "pytest.ini",
+  "tests/test_controls.py",
+  "tests/test_upload.py",
+  "tests/test_export.py",
+  "tests/test_csv_parsing.py",
+  "requirements.txt",
+  "tests/test_determinism.py",
+  "COMPLETED",
+  "datagate.py",
+  "tests/test_convert_ingestion.py",
+  "tests/test_envelope_and_cors.py",
+  "tests/test_dataset_query.py",
+  "AMBIGUITIES.md",
+  "tests/test_cache.py",
+  "tests/test_multiformat.py",
+  "tests/conftest.py",
+  "tests/test_filtering.py"
+ ],
+ "sha256": "eee65dd957f148441d969fdfa1964880ad58eacaea5bfb2e4840de922f8a3f9f"
+}

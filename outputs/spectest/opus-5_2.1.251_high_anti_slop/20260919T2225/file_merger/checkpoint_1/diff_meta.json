@@ -1,0 +1,27 @@
+{
+ "base": "empty",
+ "from_checksum": "0708865702c302214db306ea801b695f",
+ "to_checksum": "ae47fa08ddc0c2a55c797672377b6b05",
+ "from_timestamp": "2026-09-19T22:25:05.823590",
+ "to_timestamp": "2026-09-19T22:36:12.632787",
+ "files": [
+  "tests/test_merge_files.py",
+  "csvmerge/dialect.py",
+  "csvmerge/csvio.py",
+  "examples/east.csv",
+  "requirements.txt",
+  "merge_files.py",
+  "csvmerge/casting.py",
+  "README.md",
+  "csvmerge/errors.py",
+  "csvmerge/schema.py",
+  "csvmerge/types.py",
+  "examples/schema.json",
+  "examples/west.csv",
+  "csvmerge/records.py",
+  "csvmerge/__init__.py",
+  "csvmerge/sorting.py",
+  "csvmerge/merge.py"
+ ],
+ "sha256": "eae7980e92f09008a1ab4ced17fbb9166de056d4fff074afc9b951039e47133c"
+}

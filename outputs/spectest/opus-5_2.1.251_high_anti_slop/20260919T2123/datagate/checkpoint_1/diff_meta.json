@@ -1,0 +1,22 @@
+{
+ "base": "empty",
+ "from_checksum": "d053cb32f84b4e29a21f95c535f8e591",
+ "to_checksum": "0095454d57608c0bb14a7fd5603b2579",
+ "from_timestamp": "2026-09-19T21:23:37.456819",
+ "to_timestamp": "2026-09-19T21:33:14.460277",
+ "files": [
+  "fetching.py",
+  "requirements-dev.txt",
+  "store.py",
+  "tests/conftest.py",
+  "requirements.txt",
+  "datagate.py",
+  "errors.py",
+  "app.py",
+  "tests/test_datagate.py",
+  "pytest.ini",
+  "csv_parsing.py",
+  "README.md"
+ ],
+ "sha256": "4f7b3362beb9fc9adcc5770e7015ec4eb0a5c2329189beb7a5f5d13936fe59a5"
+}

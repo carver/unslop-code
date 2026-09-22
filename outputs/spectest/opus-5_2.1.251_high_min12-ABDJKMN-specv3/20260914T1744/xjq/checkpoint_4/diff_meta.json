@@ -1,0 +1,15 @@
+{
+ "base": "empty",
+ "from_checksum": "90a791ecfa1744ad33fffa064c1d5110",
+ "to_checksum": "feb4647204516bf0b686ee5ee1c3f3ee",
+ "from_timestamp": "2026-09-14T18:13:22.231083",
+ "to_timestamp": "2026-09-14T18:28:25.279509",
+ "files": [
+  "requirements.txt",
+  "xjq.py",
+  "test_xjq.py",
+  "COMPLETED",
+  "AMBIGUITIES.md"
+ ],
+ "sha256": "9cd45ef9ec2b5aeffef7e2f738edd6513561b43bfed103e7e90a5471a4fe39a5"
+}

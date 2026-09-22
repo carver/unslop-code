@@ -1,0 +1,27 @@
+{
+ "base": "empty",
+ "from_checksum": "4adc91020df410bdc23f4937c46c220b",
+ "to_checksum": "51e556df69679b98306e5ca1b5a752ab",
+ "from_timestamp": "2026-09-14T14:16:00.315042",
+ "to_timestamp": "2026-09-14T14:24:11.985422",
+ "files": [
+  "tests/_server.log",
+  "tests/_locale.log",
+  "AMBIGUITIES.md",
+  "tests/test_controls.py",
+  "tests/test_ambiguities.py",
+  "COMPLETED",
+  "tests/test_filters.py",
+  "tests/_defaults.log",
+  ".gitignore",
+  "requirements.txt",
+  "tests/_restart.log",
+  "datagate.py",
+  "tests/_cli.log",
+  "tests/_timeout.log",
+  "pytest.ini",
+  "tests/conftest.py",
+  "tests/test_spec.py"
+ ],
+ "sha256": "19af86a2588956eda47d12717e5565bfdb295eda90488f8794581a0f65581080"
+}

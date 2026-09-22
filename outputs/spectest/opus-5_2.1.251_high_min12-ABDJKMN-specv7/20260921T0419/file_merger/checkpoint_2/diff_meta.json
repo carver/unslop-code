@@ -1,0 +1,30 @@
+{
+ "base": "empty",
+ "from_checksum": "2f304a457284a4d860f817a8985c0a09",
+ "to_checksum": "0f94e0ffc12dc90d315a388ffa598d3e",
+ "from_timestamp": "2026-09-21T04:37:51.613460",
+ "to_timestamp": "2026-09-21T04:57:16.724031",
+ "files": [
+  "tests/test_dialect.py",
+  "tests/test_schema_strategy.py",
+  "tests/test_exit_codes.py",
+  "tests/test_cli.py",
+  "tests/test_casting.py",
+  "tests/test_integration.py",
+  "tests/test_formats.py",
+  "tests/test_tsv.py",
+  "tests/test_output.py",
+  "tests/test_performance.py",
+  "COMPLETED",
+  "tests/conftest.py",
+  "tests/test_schema.py",
+  "tests/test_sorting.py",
+  "tests/test_jsonl.py",
+  "requirements.txt",
+  "tests/test_hetero.py",
+  "AMBIGUITIES.md",
+  "merge_files.py",
+  "tests/test_parquet.py"
+ ],
+ "sha256": "f7a060a81a369ae4868fd7d3b37456958001b03297f615fbba7ca198ba21676c"
+}

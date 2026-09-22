@@ -1,0 +1,20 @@
+{
+ "base": "empty",
+ "from_checksum": "b1665e1100e3765365a9cd242db50ed6",
+ "to_checksum": "48e2fc2aca58fceb257357bf5c02c63e",
+ "from_timestamp": "2026-09-20T15:50:31.451895",
+ "to_timestamp": "2026-09-20T16:09:37.994245",
+ "files": [
+  "requirements.txt",
+  "merge_files.py",
+  "column_types.py",
+  "rows.py",
+  "errors.py",
+  "csv_io.py",
+  "external_sort.py",
+  "test_merge_files.py",
+  "README.md",
+  "schema.py"
+ ],
+ "sha256": "cf74a56916b70609c382f4f4361c1cbc65a218c61e4f041a6faff2d9dfcbbd71"
+}

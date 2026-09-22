@@ -1,0 +1,29 @@
+{
+ "base": "empty",
+ "from_checksum": "b98a44bb7804d2abcf0f01994d0e8925",
+ "to_checksum": "9aa1919e5239491305a838ce3c048e3c",
+ "from_timestamp": "2026-09-19T01:11:14.584592",
+ "to_timestamp": "2026-09-19T01:19:54.021031",
+ "files": [
+  "tests/conftest.py",
+  "AMBIGUITIES.md",
+  "tests/test_output.py",
+  "xjq.py",
+  "xjq_core/__init__.py",
+  "xjq_core/extraction.py",
+  "xjq_core/rendering.py",
+  "README.md",
+  "xjq_core/parsing.py",
+  "tests/test_css.py",
+  "tests/test_behavior.py",
+  "COMPLETED",
+  "xjq_core/query.py",
+  "xjq_core/css.py",
+  "requirements.txt",
+  "tests/test_cli.py",
+  "xjq_core/errors.py",
+  "tests/test_text_flags.py",
+  "tests/test_errors.py"
+ ],
+ "sha256": "87a76a70cd03b6254dc820b89943d6bd23cc408fb73721dbfb9de864abcf1562"
+}

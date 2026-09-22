@@ -1,0 +1,30 @@
+{
+ "base": "empty",
+ "from_checksum": "f5b99f2fe88652e0991d2913a88bbf68",
+ "to_checksum": "62ed5e7b1d68f7584123e265f5473eba",
+ "from_timestamp": "2026-09-20T04:32:20.666197",
+ "to_timestamp": "2026-09-20T04:40:11.097084",
+ "files": [
+  "COMPLETED",
+  "tests/test_convert.py",
+  "tests/test_parsing.py",
+  "gateway/sourcing.py",
+  "gateway/ingestion.py",
+  "requirements.txt",
+  "tests/test_cli.py",
+  "gateway/decoding.py",
+  "AMBIGUITIES.md",
+  "tests/test_envelope.py",
+  "tests/test_datasets.py",
+  "tests/test_determinism.py",
+  "tests/conftest.py",
+  "tests/test_cors.py",
+  "gateway/store.py",
+  "gateway/app.py",
+  "gateway/__init__.py",
+  "gateway/tabular.py",
+  "datagate.py",
+  "gateway/errors.py"
+ ],
+ "sha256": "91933d85de1c7d7cba9d7fd211f530adf912f6640183de6ab415e6a63dcd599a"
+}

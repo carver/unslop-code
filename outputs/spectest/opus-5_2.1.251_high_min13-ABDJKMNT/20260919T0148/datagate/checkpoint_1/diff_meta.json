@@ -1,0 +1,33 @@
+{
+ "base": "empty",
+ "from_checksum": "1f450f87c9dd6e6147def4a9e6ae97fe",
+ "to_checksum": "8676703646a7fd804b5cb65ef15e5faf",
+ "from_timestamp": "2026-09-19T01:48:08.561372",
+ "to_timestamp": "2026-09-19T01:55:33.670396",
+ "files": [
+  "README.md",
+  "datagate_core/decoding.py",
+  "requirements.txt",
+  "tests/test_envelope.py",
+  "tests/test_parsing.py",
+  "AMBIGUITIES.md",
+  "tests/test_inference.py",
+  "datagate_core/inference.py",
+  "datagate_core/__init__.py",
+  "tests/test_datasets.py",
+  "tests/test_convert.py",
+  "datagate_core/conversion.py",
+  "tests/test_encoding.py",
+  "datagate_core/fetching.py",
+  "datagate_core/parsing.py",
+  "tests/test_cli.py",
+  "datagate_core/server.py",
+  "datagate.py",
+  "datagate_core/errors.py",
+  "tests/test_determinism.py",
+  "datagate_core/store.py",
+  "tests/conftest.py",
+  "COMPLETED"
+ ],
+ "sha256": "5bc221cda59315ac582ccbceb4d5686e61c888e2b86817d864b0115fd93a5e46"
+}

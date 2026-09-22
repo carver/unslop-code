@@ -1,0 +1,18 @@
+{
+ "base": "empty",
+ "from_checksum": "7afd7a32815bf74b9b4e4d01877c22af",
+ "to_checksum": "68ba406f0dacaac6d2a804a18f187c83",
+ "from_timestamp": "2026-09-07T00:12:47.514817",
+ "to_timestamp": "2026-09-07T00:24:11.327795",
+ "files": [
+  "requirements.txt",
+  "datagate.py",
+  "test_export_upload.py",
+  "test_controls.py",
+  "test_enrich.py",
+  "test_cache.py",
+  "test_filters.py",
+  "test_datagate.py"
+ ],
+ "sha256": "24df2a6f39a2082376fe2a5936cc23596b21c62cb9ed69958c8038bb1ff5d6bd"
+}

@@ -1,0 +1,19 @@
+{
+ "base": "empty",
+ "from_checksum": "4098d3a64c565ecfbe9c62f9e863d57c",
+ "to_checksum": "ffb55ec8b1f43751114fb48dbd1b44c4",
+ "from_timestamp": "2026-09-14T13:57:58.760424",
+ "to_timestamp": "2026-09-14T14:06:58.771750",
+ "files": [
+  "tests/test_ambiguities.py",
+  ".gitignore",
+  "tests/test_spec.py",
+  "requirements.txt",
+  "AMBIGUITIES.md",
+  "tests/conftest.py",
+  "datagate.py",
+  "COMPLETED",
+  "pytest.ini"
+ ],
+ "sha256": "b7f0b9c908b4c747fd82a42441a87ce2c582d0b28dd3a46bee001f2f8c75e654"
+}

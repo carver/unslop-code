@@ -1,0 +1,22 @@
+{
+ "base": "empty",
+ "from_checksum": "7c31bf2e84d8ad4da4781c20b3ddd769",
+ "to_checksum": "478030d3609f6adf97a621b595b10ffb",
+ "from_timestamp": "2026-09-14T19:58:46.399878",
+ "to_timestamp": "2026-09-14T20:09:08.863480",
+ "files": [
+  "tests/test_startup.py",
+  "tests/conftest.py",
+  "tests/test_csv_parsing.py",
+  "tests/test_convert.py",
+  "AMBIGUITIES.md",
+  "datagate.py",
+  "pytest.ini",
+  "requirements.txt",
+  "tests/test_datasets.py",
+  "tests/test_determinism.py",
+  "tests/test_envelope_and_cors.py",
+  "COMPLETED"
+ ],
+ "sha256": "005341deb5754b9526fdb96b33949944ac4ca5576d15ab1fa130d8ccc4d9806d"
+}

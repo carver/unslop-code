@@ -1,0 +1,32 @@
+{
+ "base": "empty",
+ "from_checksum": "cedcdfda8c7178dd997c954b0fc846f1",
+ "to_checksum": "481c2637eb8512f789e97af2d4628d03",
+ "from_timestamp": "2026-09-21T12:26:45.818416",
+ "to_timestamp": "2026-09-21T12:47:12.184134",
+ "files": [
+  "COMPLETED",
+  "tests/test_viewer_links.py",
+  "tests/test_sync_options.py",
+  "tests/test_download.py",
+  "tests/conftest.py",
+  "tests/test_init.py",
+  "tests/test_viewer_static.py",
+  "mvault.py",
+  "tests/test_sync_source.py",
+  "tests/test_history.py",
+  "tests/test_legacy_load.py",
+  "requirements.txt",
+  "tests/test_annotations.py",
+  "tests/test_version_errors.py",
+  "tests/test_ordering_persistence.py",
+  "tests/test_digest.py",
+  "tests/test_viewer_detail.py",
+  "tests/test_viewer.py",
+  "tests/test_migrate.py",
+  "tests/test_post_summary.py",
+  "AMBIGUITIES.md",
+  "tests/test_cli.py"
+ ],
+ "sha256": "0667c636be9d9bfb411ce357a58e80caaa82bcef3febca888cefc48eaee06283"
+}

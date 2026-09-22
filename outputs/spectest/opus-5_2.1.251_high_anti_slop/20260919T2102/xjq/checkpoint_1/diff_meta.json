@@ -1,0 +1,17 @@
+{
+ "base": "empty",
+ "from_checksum": "4a87174ac0da1478e41644956bf5422a",
+ "to_checksum": "b9e64ef61c9f8af36dbe8f8f5ee9721e",
+ "from_timestamp": "2026-09-19T21:02:06.450060",
+ "to_timestamp": "2026-09-19T21:03:43.524811",
+ "files": [
+  "xjqlib/errors.py",
+  "xjqlib/document.py",
+  "xjqlib/query.py",
+  "requirements.txt",
+  "xjqlib/__init__.py",
+  "xjqlib/rendering.py",
+  "xjq.py"
+ ],
+ "sha256": "ce4d96ff64b85fcfcf8e1b11af739b8d387ad61f187bcd96f0ce702173a711ab"
+}

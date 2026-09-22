@@ -1,0 +1,23 @@
+{
+ "base": "empty",
+ "from_checksum": "0abf7ed23b30fe62fc259abac9844b7d",
+ "to_checksum": "7aac6a8309b99bf93c885f2472a7316c",
+ "from_timestamp": "2026-09-20T09:01:01.534262",
+ "to_timestamp": "2026-09-20T09:06:13.520950",
+ "files": [
+  "sheets.py",
+  "filters.py",
+  "tabular.py",
+  "errors.py",
+  "store.py",
+  "requirements.txt",
+  "query.py",
+  "uploads.py",
+  "app.py",
+  "datagate.py",
+  "README.md",
+  "fetcher.py",
+  "test_datagate.py"
+ ],
+ "sha256": "eca68b8069f213ea1fccbccb1d3c826aca95c6181764b8ee86e33aba7bc8c2b5"
+}

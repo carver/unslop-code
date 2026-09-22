@@ -1,0 +1,16 @@
+{
+ "base": "previous",
+ "from_checksum": "bfa43080aa8477d102934b5729fee7b9",
+ "to_checksum": "adce38921e7a984a0ec5bdd57ceef93d",
+ "from_timestamp": "2026-08-30T09:17:21.157659",
+ "to_timestamp": "2026-08-30T10:10:19.520812",
+ "files": [
+  "examples/data/structured.jsonl",
+  "examples/limits.yaml",
+  "rejector.py",
+  "tests/mock_server.py",
+  "README.md",
+  "tests/run_tests.py"
+ ],
+ "sha256": "ddeb72b5384ff6974cde15315a88f9242112d6ea0f145dd256a274e6f39034ec"
+}

@@ -1,0 +1,21 @@
+{
+ "base": "empty",
+ "from_checksum": "c15e0d01ca9d18f36eba48eb7d79e752",
+ "to_checksum": "a32d12cc85c02b61f71e719b8a8109a9",
+ "from_timestamp": "2026-09-20T17:05:33.443712",
+ "to_timestamp": "2026-09-20T17:14:55.370557",
+ "files": [
+  "README.md",
+  "csvmerge/csvio.py",
+  "csvmerge/sorting.py",
+  "csvmerge/coltypes.py",
+  ".gitignore",
+  "tests/test_merge_files.py",
+  "merge_files.py",
+  "csvmerge/__init__.py",
+  "csvmerge/merge.py",
+  "requirements.txt",
+  "csvmerge/schema.py"
+ ],
+ "sha256": "3854298ca236bc142c441fede0b46e72e27964d4e3fa8b27dda1ebab2c24be83"
+}

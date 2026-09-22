@@ -1,0 +1,30 @@
+{
+ "base": "empty",
+ "from_checksum": "0ee861f52fe9044ac6d72452f6bfc17e",
+ "to_checksum": "b023073a8cea264f4ccb307cca7b165c",
+ "from_timestamp": "2026-09-20T14:50:40.508239",
+ "to_timestamp": "2026-09-20T14:56:08.995698",
+ "files": [
+  "gateway/parsing.py",
+  "tests/test_datasets.py",
+  "datagate.py",
+  "gateway/values.py",
+  "gateway/__init__.py",
+  "README.md",
+  "gateway/app.py",
+  "tests/test_envelope.py",
+  "tests/conftest.py",
+  "tests/test_query.py",
+  "tests/test_convert.py",
+  "gateway/results.py",
+  "requirements-dev.txt",
+  "gateway/errors.py",
+  "requirements.txt",
+  "gateway/filters.py",
+  "tests/test_filters.py",
+  "gateway/fetching.py",
+  "gateway/store.py",
+  "gateway/query.py"
+ ],
+ "sha256": "766a201ce41b9590ce0b80ff46cdc4a6da714e90358452e9c85c5802b66021ff"
+}

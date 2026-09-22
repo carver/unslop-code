@@ -1,0 +1,33 @@
+{
+ "base": "empty",
+ "from_checksum": "d816b047fe6f5dc3247d43d1f2852d7d",
+ "to_checksum": "0457aaf7172d9c3dfd8bbb1652e358b3",
+ "from_timestamp": "2026-09-21T03:07:59.855768",
+ "to_timestamp": "2026-09-21T03:35:36.572653",
+ "files": [
+  "tests/test_casting_hetero.py",
+  "tests/test_input_types.py",
+  "tests/test_csv_assumptions.py",
+  "COMPLETED",
+  "tests/test_perf_and_usage.py",
+  "requirements.txt",
+  "tests/test_interpretations.py",
+  "tests/test_casting.py",
+  "tests/test_schema_resolution.py",
+  "tests/test_compression.py",
+  "tests/test_source_dialects.py",
+  "tests/test_cli_interface.py",
+  "tests/test_dialect_and_resources.py",
+  "tests/test_interpretations2.py",
+  "tests/test_sorting.py",
+  "tests/test_schema_hetero.py",
+  "tests/test_output_hetero.py",
+  "merge_files.py",
+  "AMBIGUITIES.md",
+  "tests/test_output.py",
+  "pytest.ini",
+  "tests/test_sorting_hetero.py",
+  "tests/conftest.py"
+ ],
+ "sha256": "976713f522958b92a461586a024e798a8cd162ea4fbede0edf976b1be9152ecc"
+}

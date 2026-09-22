@@ -1,0 +1,23 @@
+{
+ "base": "empty",
+ "from_checksum": "98e5582052a5c8af775e97023b704dc4",
+ "to_checksum": "f88065d20f315e706a2697b22e3a8b67",
+ "from_timestamp": "2026-09-21T04:19:10.867782",
+ "to_timestamp": "2026-09-21T04:37:04.589854",
+ "files": [
+  "AMBIGUITIES.md",
+  "tests/test_performance.py",
+  "tests/test_schema.py",
+  "tests/test_integration.py",
+  "tests/test_dialect.py",
+  "merge_files.py",
+  "requirements.txt",
+  "COMPLETED",
+  "tests/test_output.py",
+  "tests/conftest.py",
+  "tests/test_sorting.py",
+  "tests/test_casting.py",
+  "tests/test_cli.py"
+ ],
+ "sha256": "c6faba0b590f131ffc88f4026394bc3483fff50cc21e4d19abed8d44e900f01c"
+}

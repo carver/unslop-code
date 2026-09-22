@@ -1,0 +1,27 @@
+{
+ "base": "empty",
+ "from_checksum": "26f7115a946cbc13528701d074f4854a",
+ "to_checksum": "671b4030daad0c906358b9dabc50fd01",
+ "from_timestamp": "2026-09-20T13:10:32.273962",
+ "to_timestamp": "2026-09-20T13:14:00.127359",
+ "files": [
+  "README.md",
+  "datagate/values.py",
+  "tests/test_convert.py",
+  "tests/test_query.py",
+  "datagate/query.py",
+  "datagate/store.py",
+  "datagate/errors.py",
+  "datagate/app.py",
+  "tests/test_datasets.py",
+  ".gitignore",
+  "datagate/fetching.py",
+  "datagate/__init__.py",
+  "requirements.txt",
+  "datagate.py",
+  "datagate/parsing.py",
+  "requirements-dev.txt",
+  "tests/conftest.py"
+ ],
+ "sha256": "288ca82389153c40b2ef5ac32004e5913d1531e71f759efed540c3fbf097c321"
+}

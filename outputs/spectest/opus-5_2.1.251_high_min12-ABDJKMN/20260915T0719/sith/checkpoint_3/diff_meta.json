@@ -1,0 +1,18 @@
+{
+ "base": "empty",
+ "from_checksum": "9a5c40cee326ee9208922e00a761945d",
+ "to_checksum": "226806975361e068f0ea24786d046cb1",
+ "from_timestamp": "2026-09-15T08:00:58.079428",
+ "to_timestamp": "2026-09-15T08:20:11.046282",
+ "files": [
+  "test_infer_goto.py",
+  "AMBIGUITIES.md",
+  "requirements.txt",
+  "test_imports.py",
+  "sith.py",
+  "test_sith.py",
+  "conftest.py",
+  "COMPLETED"
+ ],
+ "sha256": "ff8623b77b215ca828c43afab7a1d1ba7e5e1bc436b11d1ccf7da995afe8d11b"
+}

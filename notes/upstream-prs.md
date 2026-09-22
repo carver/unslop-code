@@ -248,3 +248,17 @@ with the repo URL, and the paper's fields (authors, title, arXiv URL, the Zenodo
 the paper's) move under `preferred-citation:` with `type: article`, which is the CFF way to say
 "cite the paper, not the code". Found 2026-09-19 while writing our own cff. Nothing blocks it:
 a one-file PR via the fork, validated with cffconvert before and after.
+
+## Harness: a resumed checkpoint's diff.json marks every file created
+
+`Session.restore_from_snapshot_dir` (`execution/session.py`) copies the previous checkpoint's
+snapshot into the workspace but never calls `workspace.update_snapshot()`. The workspace's
+"before" snapshot is still the fresh, empty one, so the first checkpoint of a resumed session
+writes a diff.json with every file "created". `bin/scb-strict` resumes at every checkpoint, so
+this hits every checkpoint after the first in our strict runs: 366 of the 392 in the committed
+uplift-grid runs, against 26 in the one run from 2026-08-30 that ran in a single process
+(checked by rebuilding each diff both ways, `bin/diffs`). Still so on upstream main 31ceea3
+(2026-09-22). The fix is one line after the copy loop: `self.workspace.update_snapshot()`.
+Harness tools that read diff.json, such as the rubric carry-forward, then see the whole
+codebase as new at every resumed checkpoint. Found 2026-09-22. Nothing blocks it beyond a test
+that resumes and checks the diff.

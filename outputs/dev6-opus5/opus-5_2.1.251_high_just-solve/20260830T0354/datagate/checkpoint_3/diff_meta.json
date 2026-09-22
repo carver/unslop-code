@@ -1,0 +1,14 @@
+{
+ "base": "previous",
+ "from_checksum": "507fabf14f60a369be6157bc08eaff12",
+ "to_checksum": "129d847ef59fa6c2310399fc8518d67e",
+ "from_timestamp": "2026-08-30T04:03:51.346772",
+ "to_timestamp": "2026-08-30T04:09:44.987026",
+ "files": [
+  "README.md",
+  "tests/run_tests.py",
+  "datagate.py",
+  "tests/fixtures/filter.csv"
+ ],
+ "sha256": "a8098d299603d76500dd435352d8e6aae3e3c991ea15d13a1861f2b44d73f384"
+}

@@ -1,0 +1,19 @@
+{
+ "base": "empty",
+ "from_checksum": "028033aa3b217df8c8d1e58a7b0b53e4",
+ "to_checksum": "ef3772047c8acb806ebc685adc6ad825",
+ "from_timestamp": "2026-09-09T07:15:34.925731",
+ "to_timestamp": "2026-09-09T07:25:34.230988",
+ "files": [
+  "tests/test_file_first_compact.py",
+  "tests/test_xjq.py",
+  "AMBIGUITIES.md",
+  "xjq.py",
+  "tests/conftest.py",
+  "COMPLETED",
+  "tests/test_json_input.py",
+  "requirements.txt",
+  "tests/test_css_text.py"
+ ],
+ "sha256": "e83b5ea1a71a86027b1063b72288f4d0c02852eea309cdf905f9ebb2dc3b5c07"
+}

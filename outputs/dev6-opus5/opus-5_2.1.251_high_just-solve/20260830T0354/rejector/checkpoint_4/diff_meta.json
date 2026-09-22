@@ -1,0 +1,17 @@
+{
+ "base": "previous",
+ "from_checksum": "0284671d59af2400f4925a35a0a2856c",
+ "to_checksum": "bfa43080aa8477d102934b5729fee7b9",
+ "from_timestamp": "2026-08-30T08:41:52.549017",
+ "to_timestamp": "2026-08-30T09:17:21.157659",
+ "files": [
+  "examples/data/data_lookup.jsonl",
+  "examples/agentic.yaml",
+  "rejector.py",
+  "tests/mock_server.py",
+  "examples/completions.yaml",
+  "README.md",
+  "tests/run_tests.py"
+ ],
+ "sha256": "bee2b8a93eb53d5c54a3ca95190e75c24d372c248a4fe6352300ea469447e266"
+}

@@ -1,0 +1,25 @@
+{
+ "base": "empty",
+ "from_checksum": "fe6b09c58d64c0d3fe180a6e623d5ad5",
+ "to_checksum": "7a7166e924201bd4ba6e77f1f9cf4fb6",
+ "from_timestamp": "2026-09-20T22:12:41.777885",
+ "to_timestamp": "2026-09-20T22:33:02.269067",
+ "files": [
+  "requirements.txt",
+  "sithlib/engine.py",
+  "sithlib/builder.py",
+  "sithlib/project.py",
+  "sithlib/scopes.py",
+  "sith.py",
+  "README.md",
+  "sithlib/parsing.py",
+  "tests/test_sith.py",
+  "sithlib/results.py",
+  "sithlib/values.py",
+  "sithlib/__init__.py",
+  "sithlib/errors.py",
+  "sithlib/inference.py",
+  "sithlib/source.py"
+ ],
+ "sha256": "39b84417ffdd41f53ccf151846d8dc0599a44ad9e9fabe570ce1822bd4cbcb62"
+}

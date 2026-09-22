@@ -16,7 +16,7 @@ erosion / ast% are the cell means of the quality scores (lower is better); $ is 
 | xjq (v3) | 160, 160 | 160, 161 | 167, 167 | 167, 167 |
 | file_merger (v7) | 116, 138 | 139, 139 | 146, 144 | 147, 144 |
 | mvvault (v1) | 221, 214 | 220, 223 | 224, 227 | 226, 223 |
-| rejector (v1) | 73, 76 | 75, 76 | | 79, 78 |
+| rejector (v1) | 73, 76 | 75, 76 | 79, 78 | 79, 78 |
 | sith | 191, 194 | 205, 204 | | |
 
 ## Quality (erosion / ast%) and cost
@@ -27,7 +27,7 @@ erosion / ast% are the cell means of the quality scores (lower is better); $ is 
 | xjq | 0.376 / 0.184, $5 | 0.031 / 0.032, $10 | 0.043 / 0.028, $11 | 0.410 / 0.196, $6 |
 | file_merger | 0.718 / 0.221, $19 | 0.199 / 0.100, $22 | 0.216 / 0.069, $22 | 0.552 / 0.153, $17 |
 | mvvault | 0.520 / 0.265, $14 | 0.060 / 0.078, $27 | 0.069 / 0.087, $28 | 0.333 / 0.355, $15 |
-| rejector | 0.637 / 0.214, $35 | 0.172 / 0.114, $28 | | 0.682 / 0.162, $29 |
+| rejector | 0.637 / 0.214, $35 | 0.172 / 0.114, $28 | 0.192 / 0.099, $33 | 0.682 / 0.162, $29 |
 | sith | 0.626 / 0.274, $51 | 0.375 / 0.136, $39 | | |
 
 ## Two more arms (2026-09-20)
@@ -49,7 +49,8 @@ day: all four prompts have a pair there (jobs 253 to 260). On v6 the pairs were 
 | sith | 189, 202 | 195, 211 | |
 
 anti-slop patched: datagate v2 393 and 396, xjq v3 167 and 167, file_merger v7 146 and 147, mvvault v1 222
-and 224, rejector v1 77 and 78. min12 has no patched runs on rejector (not queued; usage was tight).
+and 224, rejector v1 77 and 78. min12 on rejector v1: 79 and 78 (jobs 284, 285, 2026-09-22), the last
+patched pair on the dev grid.
 
 Erosion / ast% and cost, as above:
 
@@ -84,11 +85,11 @@ Erosion / ast% and cost, as above:
   just-solve's 8.3%. The loss is file_merger's checkpoint-2 TSV and mixed-format family, twelve
   tests in both runs (127, 127 against 139, 139), and about six on mvvault; datagate gains five
   and sith is level. On the patched specs it turns round: over the five patched problems
-  (mvvault v1 and rejector v1 joined on 2026-09-21) 0.7% failed against just-solve's 1.0% and
-  anti-slop's 1.3%, and min12's 0.8% over its four; the prompts inside two thirds of a point of
-  each other. mvvault v1 is 227 and 225 for min13, 224 and 227 for min12, 226 and 223 for
+  (mvvault v1 and rejector v1 joined on 2026-09-21) 0.7% failed against min12's 0.8%,
+  just-solve's 1.0% and anti-slop's 1.3%, the four prompts inside two thirds of a point of each
+  other, every cell paired. mvvault v1 is 227 and 225 for min13, 224 and 227 for min12, 226 and 223 for
   just-solve, 222 and 224 for anti-slop; rejector v1 is 78 and 78 for min13, 79 and 78 for
-  just-solve, 77 and 78 for anti-slop.
+  just-solve, 77 and 78 for anti-slop, 79 and 78 for min12.
   xjq is 167 for every run of every prompt; file_merger v7 is 147 and 147 for min13 against
   min12's 146 and 144; datagate 393 and 401 against 400 and 400. On v6 min13 had 147 and 145,
   the sub-second question (registry T8) that v7's sentence settled, and min12 147 and 147; its
@@ -97,7 +98,7 @@ Erosion / ast% and cost, as above:
   (`notes/solve-rate-min13-vs-antislop.md`). Causes per run are in each problem's ledger.
 - **min13 is the dearest arm at v0**, $27 and 97 minutes against min12's $24 and 87, most of it
   on sith (184 minutes) and mvvault (114). On the five patched specs it is $24 and 74 minutes against
-  just-solve's $16 and 61; min12 is $20 and 72 over its four.
+  min12's $23 and 87 and just-solve's $16 and 61.
 
 ## Reading
 

@@ -218,7 +218,7 @@ Two levers, measured in both orders on the six dev problems with Opus 5, two run
 - **Order does not matter.** Prompt-then-spec and spec-then-prompt land on the same score; the
   quality gap is the prompt's either way.
 - **The price is time more than money.** Averaged over six problems at v0, min12 costs $24 a
-  run to just-solve's $23 and takes 87 minutes to its 80; on the patched specs 72 minutes to
+  run to just-solve's $23 and takes 87 minutes to its 80; on the patched specs 87 minutes to
   61. Small problems pay 1.5x to 2x in both; the large ones pay less, where the bare prompt's
   long runs are the expense. The page: `report/uplift-grid.html` (`python3 report/uplift_grid.py`).
 - **Erosion may not climb under min12.** The paper's Figure 5 has every prompt on every GPT

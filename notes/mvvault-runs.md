@@ -31,6 +31,7 @@ existing snapshot with `bin/reeval`, and every later run scores it that way nati
 | just-solve on v1, repeat | `…just-solve-specv1/20260921T1008` | same config as the first run; second of two | 37/37, 67/67, 113/115, 153/155, 181/185, 223/227 | complete 2026-09-21; 4 misses, none traced (a baseline): the two digest grouping tests from checkpoint 3 (test_digest_v1_entries_group, test_digest_v2_groups) and the two literal `../..` path-traversal cases at checkpoint 5, the same failure as anti-slop's first v1 run; the first run's one miss passed; test_migration_atomic passed; 2/6 strict, $14, 44 min. Quality: erosion 0.289, verbosity 0.402, ast 0.359, cloned 0.036; final checkpoint, implementation only (100% of LOC): ast 0.278, erosion 0.306, cloned 0.037 |
 | min12-ABDJKMN on v1 | `…min12-ABDJKMN-specv1/20260921T1106` | min12 on spec v1, for the grid's patched cell and the user's question whether min12 misses test_migration_atomic more or less than min13; first of two | 37/37, 67/67, 115/115, 154/155, 184/185, 224/227 | complete 2026-09-21; 3 misses, both readings the registry carries: test_missing_vault_route (T46, Risk 35, chose `/?missing=<name>` and wrote that a test asserting the bare `/` would fail; dropped draft `06`) and test_migration_atomic x2 (T15, Risk 40, "missing fields tolerated", so an entry without `width` migrates and the viewer answers 302 where the test wants 500); all six v1 sentences held; 3/6 strict, $25, 89 min. Quality: erosion 0.075, verbosity 0.200, ast 0.098, cloned 0.066; final checkpoint, implementation only (26% of LOC): ast 0.235, erosion 0.102, cloned 0.048 |
 | min12-ABDJKMN on v1, repeat | `…min12-ABDJKMN-specv1/20260921T1251` | same config as the first run; second of two | 37/37, 67/67, 115/115, 155/155, 185/185, 227/227 | complete 2026-09-21; 0 misses; it asked the first run's two questions and chose the tests' side both times (T16, Risk 35, strict on malformed entry data; T42, Risk 25, a bare `/` with the name kept on the server); test_migration_atomic passed; 6/6 strict, $31, 114 min. Quality: erosion 0.063, verbosity 0.208, ast 0.077, cloned 0.108; final checkpoint, implementation only (22% of LOC): ast 0.227, erosion 0.215, cloned 0.040 |
+| opus-5-5 min13-ABDJKMNT-specv1 | `…opus-5-5_2.1.280_high_min13-ABDJKMNT-specv1/20260923T0834` | the min13 v1 config on Opus 5.5 under Claude Code 2.1.280 (agent and model both changed); first of two | 37/37, 67/67, 115/115, 152/155, 182/185, 222/227 | complete 2026-09-23; 5 misses: three listing tests at 4 (the page lists entries in a `<table>`, the tests look for each entry's `<li>`) and test_migration_atomic's two cases at 6 (a reading: T18 chose the structural check, so an entry missing `width` migrates and redirects); 3/6 strict, $13, 64 min. Quality: erosion 0.020, verbosity 0.115, ast 0.047, cloned 0.032; final checkpoint, implementation only (25% of LOC): ast 0.109, erosion 0.066, cloned 0.015 |
 
 ## Test failure summaries
 
@@ -316,3 +317,20 @@ string", with the vault's name kept on the server for the next landing render.
 test_migration_atomic passed, so min12 stands at two misses in four runs and min13 at one in four.
 That closes the v1 cell for all four prompts: just-solve 226 and 223, anti-slop 222 and 224, min12
 224 and 227, min13 227 and 225. The grid rebuild that was waiting on this run is due.
+
+min13 on v1 under Opus 5.5 (job 287, 2026-09-23, Claude Code 2.1.280): 222/227, 3/6 strict, $13 and
+64 min, against the Opus 5 pair's 227 and 225. Two causes:
+  - three checkpoint-4 listing tests (test_v1_downloaded_mark, test_v3_downloaded_mark,
+    test_v3_removed_mark): the listing is a `<table>` with one `<tr>` per entry, and the tests' `_entry_row`
+    wants the entry link inside an `<li>` ("Missing list item for …"). The spec's listing rules
+    (checkpoint_4.md:63) name no markup, and no registry entry asks. Among the logged runs only
+    the sonnet-4.6 control (just-solve v0) failed these three tests the same way. An unwritten test
+    assumption, not a reading the spec offers; a candidate for notes/upstream-prs.md, not pitched.
+  - test_migration_atomic, both cases: T18, Risk 25, "What counts as malformed v1/v2 data". It lists
+    strict (every schema field present) and chooses structural, the v3 loader's checks, so the
+    entry without `width` migrates and the POST redirects (303) where the test wants 500. Its Risk
+    text names the alternative: "The author may also check the types of `width`/`height`". A
+    reading, the tolerant side, as min12's first v1 run chose (T15). History (bin/test-history):
+    16 pass, 5 fail for the v1 case, 15 and 6 for the v2 case.
+Implementation only: ast 0.109, erosion 0.066, cloned 0.015 (Opus 5 pair: ast 0.103 and 0.154,
+erosion 0.000 both). Agent and model both changed, so no model effect can be read off one run.

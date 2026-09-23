@@ -32,6 +32,7 @@ existing snapshot with `bin/reeval`, and every later run scores it that way nati
 | min12-ABDJKMN on v1 | `…min12-ABDJKMN-specv1/20260921T1106` | min12 on spec v1, for the grid's patched cell and the user's question whether min12 misses test_migration_atomic more or less than min13; first of two | 37/37, 67/67, 115/115, 154/155, 184/185, 224/227 | complete 2026-09-21; 3 misses, both readings the registry carries: test_missing_vault_route (T46, Risk 35, chose `/?missing=<name>` and wrote that a test asserting the bare `/` would fail; dropped draft `06`) and test_migration_atomic x2 (T15, Risk 40, "missing fields tolerated", so an entry without `width` migrates and the viewer answers 302 where the test wants 500); all six v1 sentences held; 3/6 strict, $25, 89 min. Quality: erosion 0.075, verbosity 0.200, ast 0.098, cloned 0.066; final checkpoint, implementation only (26% of LOC): ast 0.235, erosion 0.102, cloned 0.048 |
 | min12-ABDJKMN on v1, repeat | `…min12-ABDJKMN-specv1/20260921T1251` | same config as the first run; second of two | 37/37, 67/67, 115/115, 155/155, 185/185, 227/227 | complete 2026-09-21; 0 misses; it asked the first run's two questions and chose the tests' side both times (T16, Risk 35, strict on malformed entry data; T42, Risk 25, a bare `/` with the name kept on the server); test_migration_atomic passed; 6/6 strict, $31, 114 min. Quality: erosion 0.063, verbosity 0.208, ast 0.077, cloned 0.108; final checkpoint, implementation only (22% of LOC): ast 0.227, erosion 0.215, cloned 0.040 |
 | opus-5-5 min13-ABDJKMNT-specv1 | `…opus-5-5_2.1.280_high_min13-ABDJKMNT-specv1/20260923T0834` | the min13 v1 config on Opus 5.5 under Claude Code 2.1.280 (agent and model both changed); first of two | 37/37, 67/67, 115/115, 152/155, 182/185, 222/227 | complete 2026-09-23; 5 misses: three listing tests at 4 (the page lists entries in a `<table>`, the tests look for each entry's `<li>`) and test_migration_atomic's two cases at 6 (a reading: T18 chose the structural check, so an entry missing `width` migrates and redirects); 3/6 strict, $13, 64 min. Quality: erosion 0.020, verbosity 0.115, ast 0.047, cloned 0.032; final checkpoint, implementation only (25% of LOC): ast 0.109, erosion 0.066, cloned 0.015 |
+| opus-5-5 min13-ABDJKMNT-specv2 | `…opus-5-5_2.1.280_high_min13-ABDJKMNT-specv2/20260923T1126` | min13 on spec v2 (v1 plus 08, each listed entry an `<li>`) on Opus 5.5 under Claude Code 2.1.280; first of two | 37/37, 67/67, 115/115, 155/155, 185/185, 227/227 | complete 2026-09-23; 0 misses; 6/6 strict, $13, 58 min. Quality: erosion 0.082, verbosity 0.114, ast 0.037, cloned 0.017; final checkpoint, implementation only (26% of LOC): ast 0.086, erosion 0.061, cloned 0.007 |
 
 ## Test failure summaries
 
@@ -334,3 +335,15 @@ min13 on v1 under Opus 5.5 (job 287, 2026-09-23, Claude Code 2.1.280): 222/227, 
     16 pass, 5 fail for the v1 case, 15 and 6 for the v2 case.
 Implementation only: ast 0.109, erosion 0.066, cloned 0.015 (Opus 5 pair: ast 0.103 and 0.154,
 erosion 0.000 both). Agent and model both changed, so no model effect can be read off one run.
+
+## Spec v2 (2026-09-23)
+
+v1 plus `08-listing-entry-is-li.patch` (checkpoint 4, "Each `<li>` entry includes a link to …"), from
+job 287's three listing misses. Opus 5.5 only so far; no Opus 5 run has read v2.
+
+min13 on v2 under Opus 5.5 (job 289, 2026-09-23): 227/227, all six checkpoints strict, $13 and 58 min.
+The listing renders `<li>` rows (mvaultlib/viewer/pages.py) and the three listing tests pass.
+test_migration_atomic passed too: its registry's T18, "Validation depth for 'malformed' legacy entry
+data", Risk 15, chose the stricter checks where job 287's T18 chose structural. That second fix is a
+coin the v2 sentence didn't touch. Implementation only: ast 0.086, erosion 0.061, cloned 0.007.
+First of two; the second is job 291.

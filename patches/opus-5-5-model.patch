@@ -1,0 +1,31 @@
+diff --git a/configs/models/opus-5-5.yaml b/configs/models/opus-5-5.yaml
+new file mode 100644
+index 0000000..ed3cc70
+--- /dev/null
++++ b/configs/models/opus-5-5.yaml
+@@ -0,0 +1,25 @@
++internal_name: claude-opus-5-5
++provider: anthropic
++pricing:
++  input: 4
++  output: 20
++  cache_read: 0.2
++  cache_write: 5
++aliases:
++  - claude-opus-5-5
++  - opus-5-5
++
++agent_specific:
++  mini_swe:
++    model_name: anthropic/claude-opus-5-5
++    model_class: litellm
++
++  codex:
++    thinking: high
++
++  opencode:
++    provider_name: anthropic
++
++provider_slugs:
++  bedrock: anthropic.claude-opus-5-5
++  foundry: claude-opus-5-5

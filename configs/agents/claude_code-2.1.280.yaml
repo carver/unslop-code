@@ -1,0 +1,46 @@
+# Claude Code 2.1.280 (the host's on 2026-09-23) for the Opus 5.5 runs, which 2.1.251 predates.
+# Everything else is claude_code-2.1.251.yaml's, so only the agent and the model change.
+#
+# Matches the paper's published setup except the wall clock: no turn cap, and the per-checkpoint
+# timeout is set so it never fires on wall clock in practice (24 hours per attempt, 10 retries).
+# The paper's two hours was raised 2026-09-01 for the spectest series, where checkpoints grow with
+# the suite (v7 datagate: 42, 26, 56, 67, 66 min, ckpt6 past 80) and a kill mid-implementation
+# costs a --continue retry on a half-edited workspace. A stuck run is noticed by hand long before
+# the limit; the numbers stay only because keeping the limit is easier than removing it.
+# How each limit actually behaves for the claude_code agent (agent.py, runner):
+#   step_limit 0     -> no --max-turns flag. The dev6 control run of 2026-08-29 used the repo
+#                       default of 100 and hit it on 4/33 checkpoints; see baseline-report.md.
+#   timeout 86400    -> hard kill of the checkpoint's claude process, per attempt. The runner
+#                       retries a timed-out attempt with --continue (same workspace and session),
+#                       max_retries times, before the checkpoint errors out. Spend is bounded by
+#                       the rate-limit window, not by this.
+#   max_retries 10   -> attempts per checkpoint before a hard failure (repo default 2).
+#   cost_limit       -> not enforced for claude_code (only other agents check it per checkpoint);
+#                       kept at 20 so the value still documents the intended ceiling.
+#   net_cost_limit   -> checked between checkpoints against the problem's cumulative cost; 100 keeps
+#                       headroom above the priciest Opus-class problem (sith at $52). Protects the
+#                       rate-limit window from a runaway problem without touching normal runs.
+#                       (raised 60 -> 100 on 2026-08-30: Opus 5 spent $51.77 on sith)
+type: claude_code
+binary: claude
+permission_mode: bypassPermissions
+version: 2.1.280
+timeout: 86400
+# Print mode kills still-running background tasks 600s after the parent ends its turn and takes
+# the parent's last text as the final result. That silently produced a zero-implementation
+# checkpoint in the v5 run (datagate checkpoint_2: parent ended its turn "waiting" on the test
+# sub-agent, which was killed mid-pytest). 0 = wait indefinitely; a true hang is still bounded
+# by the 86400s checkpoint timeout above.
+env:
+  CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS: "0"
+# Monitor events never reach a print-mode session (background Bash completions do). On the second
+# v11 xjq run the agent armed Monitor on its test shards, was told not to poll or sleep, and spent
+# 1,020 no-op turns waiting for an event that never came: $103 for one checkpoint (notes/xjq-runs.md,
+# 2026-09-07). Without the tool it waits with a blocking command, as the first run did.
+disallowed_tools:
+  - Monitor
+cost_limits:
+  cost_limit: 20
+  step_limit: 0
+  net_cost_limit: 100
+  max_retries: 10

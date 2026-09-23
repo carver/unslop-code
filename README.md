@@ -174,7 +174,7 @@ Project skills (`.claude/skills/`, all user-invoked) tie those together:
 ### Running the Benchmark
 
 Runs use the harness checkout at `harness/`: a clone of slop-code-bench pinned to
-`06b5c06` with eight source patches applied, built with its venv by `python3 install.py`
+`06b5c06` with nine patches applied, built with its venv by `python3 install.py`
 (idempotent; re-run it after a sandbox recreate). `slop-code-bench/` is the development
 clone for upstream work and carries no obligations; on 2026-09-11 a branch switch there
 dropped the patches under a running queue, which is why runs read a checkout of their own.
@@ -221,6 +221,10 @@ The patches, in the order install.py applies them:
   `bin/scb` fills it from `bin/harness-provenance`: the harness commit, each
   patch's sha256, a hash of the checkout's changes and the scb arguments, so a
   run names the build that made it (2026-09-22).
+- `patches/opus-5-5-model.patch` — adds `configs/models/opus-5-5.yaml`, Claude
+  Opus 5.5 at its list price ($4 in, $20 out, $0.20 cache read per MTok; the $5
+  cache write assumes Opus 5's 1.25x ratio), which the pinned commit predates
+  (2026-09-23).
 
 `patches/resume-only-problem.patch` is not applied: it is missing from install.py's list,
 and has been since install.py started building the harness on 2026-09-10. It would make

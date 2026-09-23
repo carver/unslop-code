@@ -51,11 +51,15 @@ def test_a_patch_that_creates_a_file_reports_already_applied_once_the_file_is_th
     (tree / "added.txt").write_text("other\n")
     assert mod.apply_patch(patch, tree).startswith("failed: ")
 
-def test_harness_patches_are_the_eight_in_readme_order():
+def test_harness_patches_are_the_nine_in_readme_order():
     names = [p.name for p in mod.HARNESS_PATCHES]
     assert names[0] == "claude-code-stream-parser-string-message.patch" and names[1] == "stop-after-checkpoint.patch"
-    assert names[-2:] == ["exec-log-masks-secrets.patch", "run-records-harness-provenance.patch"]
-    assert len(names) == 8 and all(p.exists() for p in mod.HARNESS_PATCHES)
+    assert names[-3:] == [
+        "exec-log-masks-secrets.patch",
+        "run-records-harness-provenance.patch",
+        "opus-5-5-model.patch",
+    ]
+    assert len(names) == 9 and all(p.exists() for p in mod.HARNESS_PATCHES)
 
 
 def test_install_hooks_points_the_repo_at_the_tracked_hooks(tmp_path):

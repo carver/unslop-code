@@ -1,0 +1,28 @@
+rejector: under llm_judge, extracted_answer is the text taken from the judge's reply (checkpoint 2)
+
+rejector v1, 2026-09-20: the user's wording (e81b2a7), no judge run.
+
+Sentences: "`result` includes `judge_score`" and, from part 1, "`result.extracted_answer` is the
+extracted comparison value, or `null` when there is no evaluation or no output". The
+`llm_judge` block has its own `extract: "first_number"`, applied to the judge's reply.
+test_llm_judge_pass wants `extracted_answer == "8"` beside `judge_score == 8`; the reference's
+evaluator returns a (passed, extracted) pair for every mode. 9 pass, 3 fail over all twelve runs
+(sonnet-4.6 and fable-5 just-solve, and min13-ABDJKMNT 20260919T1228, which printed null). That
+run's T22, Risk 40, chose null: "`extracted_answer` describes something pulled out of the
+generated response; neither new mode extracts anything from it, and Part 2 introduces
+`judge_score` precisely because the judge's value needed a home", and named the tests' reading as
+the likely alternative: "An author whose evaluator returns a uniform `(passed, extracted)` pair
+would naturally leak the judge's extracted string into `extracted_answer`".
+
+--- a/rejector/checkpoint_2.md
++++ b/rejector/checkpoint_2.md
+@@ -134,7 +134,8 @@
+ - the judge request is a separate API call through the same server
+ - if `evaluation.model` is omitted, use the task's model
+ - score `>= threshold` passes
+-- `result` includes `judge_score`
++- `result` includes `judge_score`, and `result.extracted_answer` is the text
++  `extract` took from the judge's reply (`"8"` for a score of `8`)
+ - `meta` includes a `judge_meta` object with the judge request's token usage,
+   latency, model, and finish reason
+ - judge calls count toward throughput, `total_api_calls`, and per-task API

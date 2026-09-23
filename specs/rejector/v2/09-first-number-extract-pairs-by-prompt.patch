@@ -1,0 +1,55 @@
+rejector: test_first_number_extract pairs replies by prompt, not arrival order (test patch)
+
+Test patch, not a spec sentence: it changes a hidden test, and no agent reads it. 2026-09-23,
+the user's call. rejector v2 = v1 plus this.
+
+The race. test_first_number_extract (checkpoint 2) queues two replies with
+`mock_api.enqueue_responses`, and the mock serves the queue first come, first served. The test's
+two rows go out concurrently, as checkpoint 1 requires ("Requests may run concurrently up to
+`max_concurrent`"). When the second row's request lands first it gets "8", the extracted answers
+swap, and both rows fail. v1's `03` ("Send requests in input order") moved checkpoint 5's order
+rule to checkpoint 1, which orders the sends but not their arrival. bin/test-history: 20 pass,
+2 fail, a different run each time.
+
+The fix. conftest.py already has `prompt_response_handler`, which picks the reply by the request's
+rendered user prompt. The task's template is `{text}`, so each row's prompt is its own text. The
+assertions are unchanged: row 0 still wants 8 and row 1 still wants 7.5, so the output order is
+still tested; only the pairing of reply to request stops depending on timing.
+
+The other four tests on `enqueue_responses` are left alone. test_output_order_matches_input
+compares only the echoed inputs; test_greedy_icl_num_solutions,
+test_rejection_single_solution_without_icl_keeps_legacy_n_semantics and
+test_agentic_meta_token_aggregation have one row each, whose requests go out one after another,
+so the queue's order is the row's own. All four are 22 pass, 0 fail.
+
+--- a/rejector/tests/test_checkpoint_2.py
++++ b/rejector/tests/test_checkpoint_2.py
+@@ -15,6 +15,7 @@
+     CompletionResponse,
+     judge_handler,
+     make_response,
++    prompt_response_handler,
+     rejection_handler,
+ )
+ from _helpers import (
+@@ -230,11 +231,15 @@
+ 
+ def test_first_number_extract(entrypoint_argv, mock_api, tmp_path):
+     """Extract method 'first_number' finds first integer or decimal in response."""
+-    responses = [
+-        make_response("I would rate this an 8 out of 10"),
+-        make_response("Score: 7.5"),
+-    ]
+-    mock_api.enqueue_responses(responses)
++    # Keyed by each row's prompt: the rows' requests may reach the mock in either order.
++    mock_api.set_response_handler(
++        prompt_response_handler(
++            {
++                "Good work": make_response("I would rate this an 8 out of 10"),
++                "Decent work": make_response("Score: 7.5"),
++            }
++        )
++    )
+ 
+     config = make_multi_task_config(
+         api_url=mock_api.url,

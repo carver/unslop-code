@@ -1,0 +1,23 @@
+rejector: a malformed ICL line is reported as not valid JSON (checkpoint 3)
+
+rejector v1, 2026-09-20: the user's wording (e81b2a7), no judge run.
+
+Sentence: "malformed lines or missing keys must terminate the run with exit code 1 before any API
+requests are sent". test_invalid_icl_file_fails_before_any_api_requests also asserts `"not valid
+JSON" in result.stderr`; the reference prints "ICL file '<path>' line <n> is not valid JSON.". The
+failing runs exit 1 before any request, as asked, and say "invalid JSON (Expecting ',' delimiter)".
+5 pass, 4 fail. No spec line gives any error's wording, and no registry asks. Same kind as mvvault
+01: the test wants a literal phrase the spec never states.
+
+--- a/rejector/checkpoint_3.md
++++ b/rejector/checkpoint_3.md
+@@ -58,7 +58,8 @@
+ - file paths are relative to the config file directory
+ - file-backed setups must be valid JSONL where each non-empty line has
+   `{"input": <object>, "output": <string>}`; malformed lines or missing keys
+-  must terminate the run with exit code 1 before any API requests are sent
++  must terminate the run with exit code 1 before any API requests are sent;
++  malformed line errors include `not valid JSON`
+ - `icl.k` defaults to all examples in the selected setup
+ - if `k` is smaller than the number of examples in the setup, use the first
+   `k`

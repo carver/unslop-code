@@ -1,0 +1,29 @@
+rejector: requests go out in input order, so replies pair with their rows (checkpoint 1)
+
+rejector v1, 2026-09-20: the user's wording (e81b2a7), no judge run.
+
+The benchmark's mistake, stated late. The mock API hands out queued replies first come, first
+served. test_first_number_extract (checkpoint 2) queues "an 8 out of 10" then "Score: 7.5" for two
+rows and wants row one to score 8; the failing runs' row one got 7.5, the second reply. 5 pass,
+4 fail, and not the same runs twice: a race. Checkpoint 1 requires concurrency ("The tool must
+issue requests concurrently") and says nothing about order of dispatch. Checkpoint 5 does:
+"rows are still paired with outputs in input order even when requests overlap; concurrent
+execution must not cause a later input row to consume the response intended for an earlier row".
+That is the rule the checkpoint-2 test needs, three checkpoints late, and a checkpoint's agent
+sees only its own spec. No registry carries the question. The sentence below borrows checkpoint
+5's words for the section where the dispatcher is written. It narrows the race and cannot close
+it: with a first-come mock, two requests sent a millisecond apart can still arrive swapped, so
+the test stays flaky by design (upstream: key the mock's replies by prompt, not by arrival).
+
+--- a/rejector/checkpoint_1.md
++++ b/rejector/checkpoint_1.md
+@@ -251,7 +251,8 @@
+ The tool must issue requests concurrently. Use the configured `rpm` as the
+ server's approximate request capacity and keep enough work in flight to avoid
+ an obviously sequential pipeline. Target at least 80% of the configured
+-`rpm`.
++`rpm`. Send requests in input order: concurrent execution must not cause a
++later input row to consume the response intended for an earlier row.
+ 
+ # Examples
+ 

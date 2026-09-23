@@ -1,0 +1,24 @@
+rejector: the dry run's time estimate is not rounded to one decimal (checkpoint 5)
+
+rejector v1, 2026-09-20: the user's wording (e81b2a7), no judge run.
+
+The benchmark's mistake: the example misleads. "estimate time in minutes as `total_inputs *
+avg_attempts / rpm`" and the example prints `"est_time_minutes": 9.3`. test_dry_run has one row
+at rpm 60 and wants `0.016 <= est_time_minutes <= 0.017`; the reference does not round it. 0 pass,
+9 fail: every run rounds to the example's one decimal and prints 0.0. Registered as rounding
+questions (min13 20260919T1228 T104 Risk 30: "`est_time_minutes` is rounded to one decimal, as
+shown"; min12 20260915T0516 T97 Risk 40), and the same entries saw the danger for money ("two-
+decimal dollars collapse to `0.0` on the small fixtures a test suite actually runs") without
+carrying it over to minutes.
+
+--- a/rejector/checkpoint_5.md
++++ b/rejector/checkpoint_5.md
+@@ -235,7 +235,7 @@
+ - estimate cost using the configured cost rates
+ - estimate time in minutes as `total_inputs * avg_attempts / rpm`, where
+   `avg_attempts` is `1` for `greedy` and `sample` and `n` for rejection
+-  worst-case planning
++  worst-case planning; prefer precision over rounding
+ - print the estimate JSON to stdout and exit `0`
+ 
+ Example:

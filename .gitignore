@@ -6,3 +6,5 @@ __pycache__/
 problems
 specs/*/*/problems/
 todo.md
+notes/glossary.*
+notes/talk-outline.*

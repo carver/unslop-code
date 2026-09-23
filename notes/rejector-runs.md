@@ -28,6 +28,7 @@ The control is the dev6 sweep's just-solve run (`notes/dev6-opus5.md`).
 | min12-ABDJKMN on v1 | `…min12-ABDJKMN-specv1/20260922T0514` | min12 on spec v1, the one patched pair the dev grid was missing; first of two | 21/21, 33/34, 50/50, 67/67, 79/79 | complete 2026-09-22; 1 miss, test_first_number_extract at checkpoint 2 only (passed at 3, 4 and 5): the reply-order race that patch `03`'s sentence narrows and cannot close; no registry entry asks about pairing order (T37 and T47 are about scheduling and round_robin); test_tpm_gate passed; all eight sentences held; 4/5 strict, $34, 166 min. Quality: erosion 0.198, verbosity 0.188, ast 0.109, cloned 0.076; final checkpoint, implementation only (28% of LOC): ast 0.305, erosion 0.629, cloned 0.031 |
 | min12-ABDJKMN on v1, repeat | `…min12-ABDJKMN-specv1/20260922T0809` | same config as the first run; second of two | 21/21, 34/34, 50/50, 67/67, 78/79 | complete 2026-09-22; 1 miss, test_tpm_gate by timeout (T96, Risk 30, chose the tests' reading, so the missed wake-up again: a bug, not a reading; 10 pass, 11 fail over all runs); all eight sentences held; 4/5 strict, $32, 126 min. Quality: erosion 0.185, verbosity 0.241, ast 0.089, cloned 0.150; final checkpoint, implementation only (25% of LOC): ast 0.335, erosion 0.605, cloned 0.057 |
 | opus-5-5 min13-ABDJKMNT-specv1 | `…opus-5-5_2.1.280_high_min13-ABDJKMNT-specv1/20260923T0953` | the min13 v1 config on Opus 5.5 under Claude Code 2.1.280 (agent and model both changed); first of two | 21/21, 34/34, 50/50, 67/67, 79/79 | complete 2026-09-23; 0 misses; 5/5 strict, $17, 85 min. Quality: erosion 0.104, verbosity 0.129, ast 0.050, cloned 0.047; final checkpoint, implementation only (30% of LOC): ast 0.091, erosion 0.109, cloned 0.009 |
+| opus-5-5 min13-ABDJKMNT-specv2 | `…opus-5-5_2.1.280_high_min13-ABDJKMNT-specv2/20260923T1508` | min13 on rejector v2 (v1 plus test patch 09) on Opus 5.5 under Claude Code 2.1.280; the only v2 run | 21/21, 34/34, 50/50, 67/67, 78/79 | complete 2026-09-23; 1 miss, test_dry_run at 5 (the config loader rejects the test's empty `prompt.system`, which no spec line requires); 4/5 strict, $17, 84 min. Quality: erosion 0.056, verbosity 0.092, ast 0.040, cloned 0.018; final checkpoint, implementation only (29% of LOC): ast 0.097, erosion 0.086, cloned 0.005 |
 
 ## Test failure summaries
 
@@ -265,3 +266,17 @@ strict, $17 and 85 min, against the Opus 5 pair's 78 and 78. Both regulars passe
 (now 11 pass, 11 fail over all runs) and the reply-order race. Implementation only: ast 0.091, erosion
 0.109, cloned 0.009 (Opus 5 pair: ast 0.192 and 0.116, erosion 0.030 and 0.026). Agent and model both
 changed. First of two.
+
+## Spec v2 (2026-09-23)
+
+v1 plus `09-first-number-extract-pairs-by-prompt.patch`, a test patch: test_first_number_extract pairs its
+two replies by each row's prompt instead of by arrival order (specs/README.md). No spec text changed.
+
+min13 on v2 under Opus 5.5 (job 292, 2026-09-23, the only v2 run): 78/79, 4/5 strict, $17 and 84 min.
+test_first_number_extract passed. The miss is test_dry_run at checkpoint 5, a new cause: the test's
+dry-run task sets `system=""`, and the run's `taskrunner/config_values.py` exits 1 with "'prompt.system'
+must be a non-empty string". The spec shows only non-empty system prompts and never says they must be;
+the registry has no entry on empty prompts. Every earlier run on a patched spec passed this test (nine of
+nine) and miss-signatures finds no other run with this failure. The agent's own added validation, the
+kind of misfire that stays a benchmark failure. Implementation only: ast 0.097, erosion 0.086, cloned
+0.005. Opus 5.5 on rejector now: 79 on v1, 78 on v2.

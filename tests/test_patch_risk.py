@@ -233,3 +233,20 @@ def test_curve_refuses_unconfirmed_pairs(tmp_path):
     (specs / "patch-entries.json").write_text("{}")
     with pytest.raises(SystemExit, match="unconfirmed"):
         pr.curve(["rejector"], specs, tmp_path / "outputs")
+
+
+TEST_PATCH = """rejector: a hidden test pairs replies by prompt (test patch)
+--- a/rejector/tests/test_checkpoint_2.py
++++ b/rejector/tests/test_checkpoint_2.py
+@@ -1,1 +1,1 @@
+-    mock_api.enqueue_responses(responses)
++    mock_api.set_response_handler(handler)
+"""
+
+
+def test_a_patch_that_changes_only_tests_is_a_test_patch_and_has_no_sentences(tmp_path):
+    specs = make_tree(tmp_path)
+    (specs / "rejector" / "v2" / "03-pairs-by-prompt.patch").write_text(TEST_PATCH)
+    assert pr.is_test_patch(TEST_PATCH) and not pr.is_test_patch(ORDER_PATCH)
+    assert [p.name for p in pr.spec_patches(specs / "rejector" / "v2")] == ["01-three.patch", "02-order.patch"]
+    assert {s["patch"] for s in pr.sentences("rejector", specs)} == {"01-three.patch", "02-order.patch"}

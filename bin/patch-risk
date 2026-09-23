@@ -77,11 +77,23 @@ def hunks(patch_text):
     return out
 
 
+def is_test_patch(patch_text):
+    """A patch whose every target is under the problem's tests/: it fixes a hidden test and adds no spec
+    sentence, so no run's registry could have asked its question. Spec versions carry both kinds for now."""
+    targets = re.findall(r"^\+\+\+ b/(\S+)", patch_text, re.M)
+    return bool(targets) and all("/tests/" in t for t in targets)
+
+
+def spec_patches(version_dir):
+    """The version's patches that change spec text, in filename order; test patches left out."""
+    return [p for p in sorted(version_dir.glob("*.patch")) if not is_test_patch(p.read_text())]
+
+
 def sentences(problem, specs):
     """One record per hunk of every patch in the problem's latest version."""
     tests = json.loads((specs / "patch-tests.json").read_text()).get(problem, {})
     out = []
-    for patch in sorted(latest_version(problem, specs).glob("*.patch")):
+    for patch in spec_patches(latest_version(problem, specs)):
         text = patch.read_text()
         listed = tests.get(patch.name, [])
         for number, (checkpoint, removed, added, context) in enumerate(hunks("\n" + text), start=1):

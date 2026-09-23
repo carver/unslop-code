@@ -44,9 +44,9 @@ patch_risk = load_patch_risk()
 
 
 def patch_files(specs=SPECS):
-    """{problem: [patch paths of its latest version]} for every problem with tests listed, in that order."""
+    """{problem: [spec patch paths of its latest version]} for every problem with tests listed, in that order."""
     problems = json.loads((specs / "patch-tests.json").read_text())
-    return {p: sorted(patch_risk.latest_version(p, specs).glob("*.patch")) for p in problems}
+    return {p: patch_risk.spec_patches(patch_risk.latest_version(p, specs)) for p in problems}
 
 
 def history(problem, patch_name, specs=SPECS):

@@ -1,0 +1,43 @@
+mvvault: each listed entry is one `<li>` (checkpoint 4)
+
+Draft, 2026-09-23, for mvvault v2 (v1 plus this). No judge run. The wording is a first pass.
+
+An unwritten test assumption. The tests find each entry on the category listing by its link
+and then take the link's enclosing `<li>`; the spec names no markup for the listing.
+
+The tests. test_checkpoint_4.py `_entry_row` does `soup.find("a", href=...)`, then
+`anchor.find_parent("li")`, and asserts the result is not None ("Missing list item for …").
+Three tests go through it: test_v1_downloaded_mark, test_v3_downloaded_mark and
+test_v3_removed_mark. Each then compares two rows' signatures (the `<li>`'s classes and text,
+minus the title), so a downloaded or removed mark has to be inside the `<li>`. The reference
+solution (solutions/checkpoint_4/mvault.py) renders `<ul>` of `<li>`.
+
+The spec. checkpoint_4.md:63 "Listing Rules" says what a listing shows (order, current title,
+downloaded state, "Visual distinction | Downloaded and undownloaded states must be
+distinguishable", the v3 removed indicator) and "Entry navigation | Each listed entry includes a
+link to `/catalog/<name>/<category>/<id>`". Nothing says list, list item or `<ul>`. A table
+with one `<tr>` per entry meets every row.
+
+The runs. bin/test-history: test_v1_downloaded_mark 19 pass, 2 fail. The two fails are the
+sonnet-4.6 control (just-solve v0, 20260829T1910) and Opus 5.5 min13 on v1
+(opus-5-5_2.1.280_high_min13-ABDJKMNT-specv1/20260923T0834), which rendered a `<table>`
+(vaultlib/viewer/pages.py: one `<tr class=…>` per entry, the state marks as classes and cells).
+All three tests fail together in both runs. No registry entry asks the question: the Opus 5.5
+registry (74 entries) has none on listing markup. Nobody read it and chose wrong; the passing
+runs chose `<li>` without being told.
+
+Over-correction to avoid: naming `<ul>`, or classes, or where the marks go. The tests need only
+that the link sits inside an `<li>` that also carries the entry's state; "one `<li>`" per
+entry is what makes the marks land inside it. If that reads as too loose, "one `<li>` holding
+its link and its marks" says it outright.
+
+--- a/mvvault/checkpoint_4.md
++++ b/mvvault/checkpoint_4.md
+@@ -72,7 +72,7 @@
+ | Visual distinction | Downloaded and undownloaded states must be distinguishable |
+ | Removed indicator (v3 only) | Entries with latest `removed` value `true` are visually distinct from active entries |
+ | Removed indicator (v1/v2) | Not applicable; no `removed` field exists |
+-| Entry navigation | Each listed entry includes a link to `/catalog/<name>/<category>/<id>` |
++| Entry navigation | Each `<li>` entry includes a link to `/catalog/<name>/<category>/<id>` |
+ 
+ ## `digest` and Post-Sync Viewer Links

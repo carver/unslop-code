@@ -33,6 +33,7 @@ existing snapshot with `bin/reeval`, and every later run scores it that way nati
 | min12-ABDJKMN on v1, repeat | `…min12-ABDJKMN-specv1/20260921T1251` | same config as the first run; second of two | 37/37, 67/67, 115/115, 155/155, 185/185, 227/227 | complete 2026-09-21; 0 misses; it asked the first run's two questions and chose the tests' side both times (T16, Risk 35, strict on malformed entry data; T42, Risk 25, a bare `/` with the name kept on the server); test_migration_atomic passed; 6/6 strict, $31, 114 min. Quality: erosion 0.063, verbosity 0.208, ast 0.077, cloned 0.108; final checkpoint, implementation only (22% of LOC): ast 0.227, erosion 0.215, cloned 0.040 |
 | opus-5-5 min13-ABDJKMNT-specv1 | `…opus-5-5_2.1.280_high_min13-ABDJKMNT-specv1/20260923T0834` | the min13 v1 config on Opus 5.5 under Claude Code 2.1.280 (agent and model both changed); first of two | 37/37, 67/67, 115/115, 152/155, 182/185, 222/227 | complete 2026-09-23; 5 misses: three listing tests at 4 (the page lists entries in a `<table>`, the tests look for each entry's `<li>`) and test_migration_atomic's two cases at 6 (a reading: T18 chose the structural check, so an entry missing `width` migrates and redirects); 3/6 strict, $13, 64 min. Quality: erosion 0.020, verbosity 0.115, ast 0.047, cloned 0.032; final checkpoint, implementation only (25% of LOC): ast 0.109, erosion 0.066, cloned 0.015 |
 | opus-5-5 min13-ABDJKMNT-specv2 | `…opus-5-5_2.1.280_high_min13-ABDJKMNT-specv2/20260923T1126` | min13 on spec v2 (v1 plus 08, each listed entry an `<li>`) on Opus 5.5 under Claude Code 2.1.280; first of two | 37/37, 67/67, 115/115, 155/155, 185/185, 227/227 | complete 2026-09-23; 0 misses; 6/6 strict, $13, 58 min. Quality: erosion 0.082, verbosity 0.114, ast 0.037, cloned 0.017; final checkpoint, implementation only (26% of LOC): ast 0.086, erosion 0.061, cloned 0.007 |
+| opus-5-5 min13-ABDJKMNT-specv2, repeat | `…opus-5-5_2.1.280_high_min13-ABDJKMNT-specv2/20260923T1341` | same config as the first Opus 5.5 v2 run; second of two | 37/37, 67/67, 115/115, 155/155, 185/185, 227/227 | complete 2026-09-23; 0 misses; 6/6 strict, $13, 70 min. Quality: erosion 0.050, verbosity 0.116, ast 0.046, cloned 0.026; final checkpoint, implementation only (25% of LOC): ast 0.100, erosion 0.129, cloned 0.000 |
 
 ## Test failure summaries
 
@@ -346,4 +347,7 @@ The listing renders `<li>` rows (mvaultlib/viewer/pages.py) and the three listin
 test_migration_atomic passed too: its registry's T18, "Validation depth for 'malformed' legacy entry
 data", Risk 15, chose the stricter checks where job 287's T18 chose structural. That second fix is a
 coin the v2 sentence didn't touch. Implementation only: ast 0.086, erosion 0.061, cloned 0.007.
-First of two; the second is job 291.
+First of two.
+
+Repeat (job 291): 227/227 again, 6/6 strict, $13 and 70 min. Pair: 227 and 227, twelve of twelve
+checkpoints strict. Implementation only: ast 0.100, erosion 0.129, cloned 0.000.

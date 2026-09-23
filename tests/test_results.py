@@ -27,6 +27,11 @@ def test_cell_key_strips_prefix_and_falls_back_to_the_suffix_for_the_spec():
         "v0",
         "opus-5",
     )
+    assert rs.cell_key(Path("/o/spectest/opus-5-5_2.1.280_high_min13-ABDJKMNT-specv1/20260923T1200")) == (
+        "min13-ABDJKMNT",
+        "v1",
+        "opus-5.5",
+    )
     assert rs.cell_key(Path("/o/dev6/sonnet-4.6_2.1.44_high_just-solve/20260829T1910")) == (
         "just-solve",
         "v0",

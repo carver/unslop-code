@@ -28,7 +28,6 @@ summarize.__file__ = str(HERE / "summarize")
 sys.modules["summarize"] = summarize
 exec(compile((HERE / "summarize").read_text(), str(HERE / "summarize"), "exec"), summarize.__dict__)
 
-PREFIX = "opus-5_2.1.251_high_"
 CATALOG = pathlib.Path(os.path.expanduser("~/.cache/scbench/problems"))
 
 
@@ -55,11 +54,11 @@ def run_dirs(outputs=ROOT / "outputs"):
     )
 
 
-MODEL_NAMES = {"fable-5-1": "fable-5.1"}  # registry alias -> the version spelling the table uses
+# registry alias -> the version spelling the table uses
+MODEL_NAMES = {"fable-5-1": "fable-5.1", "opus-5-5": "opus-5.5"}
 
 
 SUFFIX = re.compile(r"-(disambiguated|specv\d+)$")
-RUN_PREFIX = re.compile(r"^[^_]+_[^_]+_(?:low|medium|high|xhigh|max|ultra)_")
 
 
 def spec_of(run_dir):
@@ -83,7 +82,7 @@ def spec_of(run_dir):
 
 
 def cell_key(run_dir):
-    name = RUN_PREFIX.sub("", run_dir.parent.name, count=1)
+    name = summarize.RUN_PREFIX.sub("", run_dir.parent.name, count=1)
     model = run_dir.parent.name.split("_")[0]
     return SUFFIX.sub("", name), spec_of(run_dir), MODEL_NAMES.get(model, model)
 
@@ -118,7 +117,7 @@ def collect(dirs, checkpoints=checkpoint_names):
                         problem,
                         prompt,
                         spec,
-                        run.parent.name.removeprefix(PREFIX) + "/" + run.name,
+                        summarize.run_label(run),
                         reached,
                         total,
                         f"{last['passed_tests']}/{last['total_tests']}",

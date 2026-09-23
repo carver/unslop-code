@@ -85,3 +85,15 @@ def test_missing_uvx_preserves_existing_metrics(tmp_path, monkeypatch, capsys):
     assert summarize.load_rows(tmp_path) == [row]
     assert not (ck / 'quality_analysis/scb_check.json').exists()
     assert 'uvx' in capsys.readouterr().err
+
+
+def test_run_label_drops_the_opus_5_prefix_and_keeps_any_other_model():
+    assert summarize.run_label(Path("/o/spectest/opus-5_2.1.251_high_min13-ABDJKMNT/20260919T1228")) == (
+        "min13-ABDJKMNT/20260919T1228"
+    )
+    assert summarize.run_label(
+        Path("/o/spectest/opus-5-5_2.1.280_high_min13-ABDJKMNT-specv2/20260923T0729")
+    ) == "opus-5-5 min13-ABDJKMNT-specv2/20260923T0729"
+    assert summarize.run_label(Path("/o/dev6-fable51/fable-5-1_2.1.251_high_just-solve/20260911T0000")) == (
+        "fable-5-1 just-solve/20260911T0000"
+    )

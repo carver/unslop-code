@@ -20,11 +20,7 @@ summarize.__file__ = str(HERE / "summarize")
 sys.modules["summarize"] = summarize
 exec(compile((HERE / "summarize").read_text(), str(HERE / "summarize"), "exec"), summarize.__dict__)
 
-COMMON_PREFIX = "opus-5_2.1.251_high_"
-
-
-def run_label(run_dir):
-    return run_dir.parent.name.removeprefix(COMMON_PREFIX) + "/" + run_dir.name
+run_label = summarize.run_label
 
 
 def misses(problem_dir):

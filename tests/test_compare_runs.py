@@ -35,6 +35,10 @@ def test_run_label_drops_the_shared_model_prefix():
         cr.run_label(Path("/o/spectest/opus-5_2.1.251_high_spectest-v8A-disambiguated/20260902T2341"))
         == "spectest-v8A-disambiguated/20260902T2341"
     )
+    assert (
+        cr.run_label(Path("/o/spectest/opus-5-5_2.1.280_high_min13-ABDJKMNT-specv1/20260923T1200"))
+        == "opus-5-5 min13-ABDJKMNT-specv1/20260923T1200"
+    )
 
 
 def test_parse_args_keeps_the_problem_value_out_of_the_run_list():

@@ -9,6 +9,7 @@ computed from the checkpoint snapshot on first use and cached next to it, since
 """
 import json
 import os
+import re
 import sys
 import pathlib
 import collections
@@ -19,6 +20,25 @@ PRICE = {"input": 3.0, "output": 15.0, "cache_read": 0.30, "cache_write": 3.75} 
 # Leaderboard row for Sonnet 4.6 / Claude Code 2.1.44 / thinking high, means over all 196
 # holdout checkpoints (notes/leaderboard-reference.md). A per-problem run is not comparable.
 LEADERBOARD = {"erosion": 0.741, "verbosity": 0.316, "ast-grep": 0.298, "cloned": 0.093}
+
+# Run families are named <model>_<agent version>_<effort>_<prompt>. Most runs are Opus 5 on Claude
+# Code 2.1.251 at high, so labels drop that prefix; any other run keeps its model in front.
+BASELINE_PREFIX = "opus-5_2.1.251_high_"
+RUN_PREFIX = re.compile(r"^([^_]+)_[^_]+_(?:low|medium|high|xhigh|max|ultra)_")
+
+
+def run_family(run_dir):
+    """'opus-5_2.1.251_high_min13-ABDJKMNT' -> 'min13-ABDJKMNT';
+    'opus-5-5_2.1.280_high_min13-ABDJKMNT-specv2' -> 'opus-5-5 min13-ABDJKMNT-specv2'."""
+    family = pathlib.Path(run_dir).parent.name
+    if family.startswith(BASELINE_PREFIX):
+        return family.removeprefix(BASELINE_PREFIX)
+    return RUN_PREFIX.sub(r"\1 ", family, count=1)
+
+
+def run_label(run_dir):
+    return f"{run_family(run_dir)}/{pathlib.Path(run_dir).name}"
+
 
 def cost(r):
     return sum(PRICE[k] * (r.get(k) or 0) / 1e6 for k in PRICE)

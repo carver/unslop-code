@@ -45,3 +45,19 @@ def test_the_quality_clause_skips_checkpoints_without_scores_and_a_run_with_no_i
     assert lr.quality_clause(rows, split) == (
         "Quality: erosion 0.200, verbosity 0.300, ast 0.080, cloned 0.100; "
         "final checkpoint, implementation only (- of LOC): ast -, erosion -, cloned -")
+
+
+def test_a_run_on_another_model_keeps_the_model_in_its_row_and_heading(tmp_path, monkeypatch, capsys):
+    run = tmp_path / "opus-5-5_2.1.280_high_min13-ABDJKMNT-specv1" / "20260923T1200"
+    row = {"problem": "rejector", "checkpoint": "checkpoint_1", "idx": 1, "passed_tests": 5, "total_tests": 5,
+           "strict_pass_rate": 1.0, "cost": 2.0, "elapsed": 600, "ended": "2026-09-23T13:00:00"}
+    monkeypatch.setattr(lr.summarize, "load_rows", lambda _: [row])
+    monkeypatch.setattr(lr.scb_split, "split_reports", lambda _: None)
+    monkeypatch.setattr(lr, "quality_clause", lambda rows, split: "QUALITY")
+    monkeypatch.setattr(sys, "argv", ["ledger-row", str(run)])
+    lr.main()
+    out = capsys.readouterr().out
+    assert out.startswith(
+        "| opus-5-5 min13-ABDJKMNT-specv1 | `…opus-5-5_2.1.280_high_min13-ABDJKMNT-specv1/20260923T1200` |"
+    )
+    assert "### opus-5-5 min13-ABDJKMNT-specv1\n" in out

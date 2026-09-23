@@ -71,9 +71,10 @@ def main():
     cost = sum(r.get("cost") or 0 for r in rows)
     minutes = sum(summarize.elapsed(r) for r in rows) / 60
     fails = failures(run / problem)
-    name = run.parent.name.removeprefix("opus-5_2.1.251_high_")
+    name = summarize.run_family(run)
+    path = run.parent.name.removeprefix(summarize.BASELINE_PREFIX)
     quality = quality_clause(rows, scb_split.split_reports(run / problem / rows[-1]["checkpoint"] / "snapshot"))
-    print(f"| {name} | `…{name}/{run.name}` | WHAT CHANGED | {scores} | complete {rows[-1].get('ended', '')[:10]}; "
+    print(f"| {name} | `…{path}/{run.name}` | WHAT CHANGED | {scores} | complete {rows[-1].get('ended', '')[:10]}; "
           f"{len(fails)} misses (CAUSES); {strict}/{len(rows)} strict, ${cost:.0f}, {minutes:.0f} min. {quality} |")
     print()
     print(f"### {name}")

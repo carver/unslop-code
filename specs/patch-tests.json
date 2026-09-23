@@ -113,6 +113,11 @@
   ],
   "07-annotation-timecode-shown-in-seconds.patch": [
    "test_post_create"
+  ],
+  "08-listing-entry-is-li.patch": [
+   "test_v1_downloaded_mark",
+   "test_v3_downloaded_mark",
+   "test_v3_removed_mark"
   ]
  },
  "rejector": {

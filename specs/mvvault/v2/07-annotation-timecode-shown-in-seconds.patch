@@ -1,0 +1,24 @@
+mvvault: a rendered annotation shows its timecode in raw seconds (checkpoint 6)
+
+mvvault v1, 2026-09-20: the user's wording (88f31a1), no judge run.
+
+Sentence: "Read-after-write behavior | Later `GET` to same entry detail page reflects create,
+update, or delete result by visibly rendering stored annotations". test_post_create posts
+timecode "1:30" and looks for `90` in the page's text. 6 pass, 5 fail: anti-slop and both min13
+runs print `1:30`. min13 20260919T1041 T70 "What a rendered annotation shows", Risk 15, weighed
+clock text against raw seconds, chose clock text with the seconds in the link's href and a
+data attribute ("so both a clock-formatted and a raw-seconds expectation find their value in the
+page"), and named raw seconds as the author's likely preference; the test reads visible text, so
+the hedge did not count. TASTE, flagged for the user: `1:30` is the kinder page.
+
+--- a/mvvault/checkpoint_6.md
++++ b/mvvault/checkpoint_6.md
+@@ -74,7 +74,7 @@
+ | Container type | Ordered list |
+ | List order | Creation order |
+ | Save behavior | `catalog.bak` written before persisting annotation changes |
+-| Read-after-write behavior | Later `GET` to same entry detail page reflects create, update, or delete result by visibly rendering stored annotations |
++| Read-after-write behavior | Later `GET` to same entry detail page reflects create, update, or delete result by visibly rendering stored annotations, each `timecode` as raw seconds |
+ 
+ ## Annotation Auto-Migration
+ 

@@ -1,0 +1,16 @@
+# min13-ABDJKMNT-specv2 on mvvault, against spec v2, specs/mvvault/v2/ built by bin/spec-patch. Copied from the -opus5 config by hand.
+# Opus 5.5 on Claude Code 2.1.280; prompt, spec and thinking as the -opus5 config. Paths are relative to the repo
+# root, which bin/queue and bin/scb-extend run from.
+#
+#   SCBENCH_PROBLEMS_PATH=$PWD/specs/mvvault/v2/problems bin/scb-extend --new configs/runs/min13-ABDJKMNT-specv2-mvvault-opus55.yaml mvvault 6
+agent: configs/agents/claude_code-2.1.280.yaml
+environment: docker-python3.12-uv
+prompt: configs/prompts/min13-ABDJKMNT.jinja
+model:
+  provider: claude_code_oauth
+  name: opus-5-5
+thinking: high
+problems:
+  - mvvault
+save_dir: outputs
+save_template: spectest/${model.name}_${agent.version}_${thinking}_min13-ABDJKMNT-specv2/${now:%Y%m%dT%H%M}

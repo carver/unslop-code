@@ -1,0 +1,54 @@
+mvvault: the browser is opened at the bind host as given (checkpoint 4)
+
+mvvault v1, 2026-09-20: the user's wording (88f31a1), no judge run.
+
+Kept by the user's call (2026-09-20): this one is the benchmark's mistake, not the agent's, and
+an agent should not lose a test for making the better choice. That is the difference from
+datagate's whitespace tests, which the user reads as a misfire by the agent and left as a
+benchmark failure. The sentence asks for the tests' behaviour; it does not claim that behaviour
+is right.
+
+Sentences: "`serve` without `<name>` | Start server and open browser to `/`" and "`--host=<host>`
+| Override bind host". test_serve_custom_addr starts `serve --host=0.0.0.0 --port=<port>` and
+wants the URL handed to the browser to be `http://0.0.0.0:<port>/`. 4 pass, 7 fail over every
+mvvault run: the failing runs open `http://127.0.0.1:<port>/`.
+
+What 0.0.0.0 means. It is a bind address, "listen on every interface", not a destination. As a
+destination it works by accident of the platform: on Linux and macOS a connection to 0.0.0.0 is
+treated as a connection to the local machine, so the page usually loads; on Windows the address
+is rejected as a destination and the page does not load. Chrome began blocking web pages'
+requests to 0.0.0.0 in 2024 because the address was being used to reach local services; whether
+that reaches a URL typed into the address bar was not checked. (General knowledge, not tested
+here.) Development servers that bind a wildcard commonly print or open the loopback address
+instead.
+
+What the code does. The reference builds the URL from the bind host with no special case
+(solutions/checkpoint_4/mvault.py, _serve_open_url):
+    base = f"{VIEWER_SCHEME}://{options.host}:{options.port}"
+so it opens 0.0.0.0 because that is what it was given. A failing run, min12-ABDJKMN
+20260915T0327 (mvault.py:1516), maps the wildcards to loopback on purpose:
+    shown_host = DEFAULT_VIEWER_HOST if host in ("", "0.0.0.0", "::") else host
+which works on every platform. The four passing runs pass by not thinking about it.
+
+What the test checks. No browser runs and no page is loaded: tests/conftest.py
+(browser_open_recorder) puts a sitecustomize on PYTHONPATH that replaces `webbrowser.open` with a
+logger, and the test compares the logged string. It checks that the bind host is passed through
+untouched, which the reference does by having no special case.
+
+No run saw a question here. A search of every mvvault registry for 0.0.0.0, wildcard and
+bind-host wording finds nothing; the nearest entry (min13-ABDJKMNT 20260919T1041, T48 "When and
+how `serve` opens the browser", Risk 20) weighs which path is opened, not which host. So this
+sentence cannot settle a doubt the tester already has; it has to raise the point itself. Worth
+reading the v1 run's registry for whether the tester pushes back on it.
+
+--- a/mvvault/checkpoint_4.md
++++ b/mvvault/checkpoint_4.md
+@@ -15,7 +15,7 @@
+ | Default bind address | `127.0.0.1:8840` |
+ | `serve` without `<name>` | Start server and open browser to `/` |
+ | `serve <name>` | Start server and open browser to default category page for vault |
+-| `--host=<host>` | Override bind host |
++| `--host=<host>` | Override bind host; the browser URL uses this host as given |
+ | `--port=<port>` | Override bind port |
+ 
+ ## `/` Routes

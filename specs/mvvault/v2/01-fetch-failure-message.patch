@@ -1,0 +1,25 @@
+mvvault: a source metadata fetch failure says so in its message (checkpoint 1)
+
+mvvault v1, 2026-09-20: the user's wording (88f31a1), no judge run.
+
+Sentence: the error table's row "Source metadata fetch failure | stderr | non-zero | Error
+message; malformed source entries are included in this case", with "`sync` must fail as a source
+metadata fetch failure" above it. Tests test_sync_rejects_source_entry_missing_tracked_field and
+test_sync_rejects_source_entry_with_wrong_field_type want stderr to contain "Source metadata
+fetch failure" (case-insensitive); the reference prints `Source metadata fetch failure: {exc}`.
+0 pass, 11 fail over every mvvault run: each rejects the entry, exits non-zero, leaves the vault
+alone, and words the message itself ("'episodes' entry in ... is missing the 'title' field").
+The three rows above this one say "Message includes vault name"; this row gives no such detail.
+Two tests, carried as regressions through all six checkpoints.
+
+--- a/mvvault/checkpoint_1.md
++++ b/mvvault/checkpoint_1.md
+@@ -150,7 +150,7 @@
+ | `sync` with non-existent vault | stderr | non-zero | Message includes vault name |
+ | `sync` with invalid vault | stderr | non-zero | Message includes vault name |
+ | No subcommand | stderr | non-zero | Usage text |
+-| Source metadata fetch failure | stderr | non-zero | Error message; malformed source entries are included in this case |
++| Source metadata fetch failure | stderr | non-zero | Message includes `Source metadata fetch failure`; malformed source entries are included in this case |
+ 
+ ## `mvault` Determinism
+ 

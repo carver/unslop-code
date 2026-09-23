@@ -247,6 +247,18 @@
    "opus-5_2.1.251_high_min12-ABDJKMN/20260914T2119": "T77",
    "opus-5_2.1.251_high_min12-ABDJKMN/20260915T0327": "T85"
   },
+  "08-listing-entry-is-li.patch#1": {
+   "opus-5-5_2.1.280_high_min13-ABDJKMNT-specv1/20260923T0834": null,
+   "opus-5_2.1.251_high_min11-ABDFJKMN/20260907T1659": null,
+   "opus-5_2.1.251_high_min12-ABDJKMN/20260914T2119": null,
+   "opus-5_2.1.251_high_min12-ABDJKMN/20260915T0327": null,
+   "opus-5_2.1.251_high_min13-ABDJKMNT/20260918T1850": null,
+   "opus-5_2.1.251_high_min13-ABDJKMNT/20260919T1041": null,
+   "opus-5_2.1.251_high_min13-ABDJKMNT-specv1/20260920T1529": null,
+   "opus-5_2.1.251_high_min13-ABDJKMNT-specv1/20260920T1737": null,
+   "opus-5_2.1.251_high_min12-ABDJKMN-specv1/20260921T1106": null,
+   "opus-5_2.1.251_high_min12-ABDJKMN-specv1/20260921T1251": null
+  },
   "_notes": [
    "01-fetch-failure-message.patch#1 all 5 runs: patch header states 0/11 runs raised this — every run rejects the entry and words the message itself without ever questioning whether the literal phrase 'Source metadata fetch failure' must appear. Nearest candidate, min13/20260918T1850 T8 'What counts as a source metadata fetch failure', asks a scope question (which failure classes fold into this category) not the wording question; its own risk note ('only message wording differs') is a side-effect observation, not the ambiguity itself. Targeted greps for wording/verbatim/exact-message language found nothing in any of the 5 registries.",
    "02-urllib-request.patch#1 both runs: per patch header this settles no spec sentence (tests just reroute urllib.request); a match requires an entry asking which HTTP client/library to use. Searched both registries for urllib/requests/HTTP client/library/transport — no such entry in either.",

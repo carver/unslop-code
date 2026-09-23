@@ -1,0 +1,27 @@
+mvvault: HTTP goes through the standard library's urllib.request (checkpoint 1)
+
+mvvault v1, 2026-09-20: the user's wording (88f31a1), no judge run.
+
+Not a reading of any sentence: the spec names no HTTP client. The tests reach a v1 vault's
+derived source, https://media.example.com/channel/<source_id>, by putting a sitecustomize.py on
+PYTHONPATH that wraps `urllib.request.urlopen` (tests/conftest.py, legacy_source_env). A solution
+that fetches with `requests` or `httpx` asks DNS for media.example.com and exits 1. Seven tests
+fail together (the five v1 cases at checkpoint 2, test_sync_v1_download_url at 3, test_sync_links
+at 4) in exactly the four opus runs that import `requests`: just-solve's repeat, anti-slop and
+both min13 runs; min12 used urllib twice. The largest block of mvvault misses. Upstream side:
+notes/upstream-prs.md, "mvvault's v1 tests only reroute `urllib.request.urlopen`".
+Checkpoint 1 only, by the user's cut: the draft also put a row in checkpoint 3's Download Rules,
+where the download code is written. If a v1 run fetches media with another client, that row
+is the first thing to try.
+
+--- a/mvvault/checkpoint_1.md
++++ b/mvvault/checkpoint_1.md
+@@ -60,7 +60,7 @@
+ |---|---|
+ | Syntax | `%%%ENTRYPOINT:entry_command%%% sync <name>` |
+ | Vault input | Existing valid vault at `<name>/` |
+-| Source request | HTTP `GET` to vault `source` URL |
++| Source request | HTTP `GET` to vault `source` URL, made with `urllib.request` |
+ | Source response shape | JSON object with `episodes`, `streams`, and `clips` arrays |
+ | Success effect | Update catalog with new, changed, removed, and restored entries |
+ | Missing or invalid vault | Error to stderr including `<name>`; exit non-zero |

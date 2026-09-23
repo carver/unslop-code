@@ -1,0 +1,24 @@
+mvvault: an entry that sync creates carries annotations: [] (checkpoint 2)
+
+mvvault v1, 2026-09-20: the user's wording (88f31a1), no judge run.
+
+Sentences: the version table's "`3` | Native format | ... `removed`; `annotations`" and the two
+migration rows "`annotations` | Add `[]` to every entry". Nothing says what `sync` writes on an
+entry it creates. test_sync_v1_adds_new_entries_in_v3_shape reads `entry["annotations"]` on an
+entry added by a sync after auto-migration: KeyError in the just-solve control and min12's first
+run (the test's other five failures are the `requests` block, patch 02). Registered by both
+prompts: min12 20260915T0327 T12 Risk 35, min13 20260919T1041 T12 Risk 45, both choosing "always
+present" and passing; min12's first run chose migration-only.
+Checkpoint 2 only: checkpoint 1's tests never look at `annotations`, and the v3 shape is
+introduced here.
+
+--- a/mvvault/checkpoint_2.md
++++ b/mvvault/checkpoint_2.md
+@@ -132,6 +132,7 @@
+ | v1 vault | Auto-migrate to v3 in memory, apply sync updates, write v3 catalog to disk |
+ | v2 vault | Auto-migrate to v3 in memory, apply sync updates, write v3 catalog to disk |
+ | v3 vault | Normal sync behavior |
++| Entries created by `sync` | Written in v3 shape, with `annotations` as `[]` |
+ | Source URL for v1 | Derive from `source_id` using the standard derivation |
+ | Backup before write | Standard backup rules apply; backup contains the **original** pre-migration catalog |
+ 

@@ -34,6 +34,23 @@ def test_apply_patch_once_then_already_applied_then_failure(tmp_path):
     assert (tree / "greeting.txt").read_text() == "goodbye\n"
 
 
+NEW_FILE_PATCH = """--- /dev/null
++++ b/added.txt
+@@ -0,0 +1 @@
++new
+"""
+
+
+def test_a_patch_that_creates_a_file_reports_already_applied_once_the_file_is_there(tmp_path):
+    tree = tmp_path / "tree"
+    tree.mkdir()
+    patch = tmp_path / "add.patch"
+    patch.write_text(NEW_FILE_PATCH)
+    assert mod.apply_patch(patch, tree) == "applied"
+    assert mod.apply_patch(patch, tree) == "already applied"
+    (tree / "added.txt").write_text("other\n")
+    assert mod.apply_patch(patch, tree).startswith("failed: ")
+
 def test_harness_patches_are_the_eight_in_readme_order():
     names = [p.name for p in mod.HARNESS_PATCHES]
     assert names[0] == "claude-code-stream-parser-string-message.patch" and names[1] == "stop-after-checkpoint.patch"

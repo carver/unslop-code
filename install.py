@@ -59,6 +59,10 @@ def apply_patch(patch, tree):
         return "applied"
     if "Reversed" in r.stdout or "previously applied" in r.stdout:
         return "already applied"
+    # -N says nothing of the kind when the file a patch creates exists: reverse it dry to check.
+    undo = ["patch", "-p1", "-R", "--dry-run", "-f", "-s", "-d", str(tree)]
+    if subprocess.run(undo, stdin=patch.open(), capture_output=True).returncode == 0:
+        return "already applied"
     return f"failed: {(r.stdout + r.stderr).strip()[-300:]}"
 
 

@@ -7,8 +7,8 @@ Improving code quality against the excellent [Slop Code Bench](https://github.co
 Progress:
 
 - Opus 5.0 solved basically all code quality
-- Achieved perfect strict solves on 2 problems of the 5 attempted
-- Two more saw ~10x reduction in failing tests
+- Got perfect strict solves on 4 problems of the 5 attempted
+- The last problem saw ~5x reduction in failing tests
 
 See reports/ for summarized results and info.
 
@@ -19,24 +19,27 @@ This is especially true when evaluating only the implementation, without test co
 
 ## Correctness
 
-I identified ambiguities using a new prompt.
+I identified ambiguities in the specification, using a new prompt.
 I paired the ambiguities with failed tests, to patch the spec where appropriate.
 
-Related, if the tests made implementation assumptions (like using urllib instead of requests), then the implementation would fail due to no fault of the agent.
+Also, if the tests made implementation assumptions (like using urllib instead of requests), then the implementation would fail due to no fault of the agent.
 Those implementation requirements became a part of the spec.
 
 I patched the spec for datagate, file_merger, xjq, mvvault, and rejector (chosen at random from the larger set).
-file_merger and xjq got full strict solves.
+datagate, file_merger, xjq, and mvvault got full strict solves.
 
-Why didn't this get to perfect strict solves on 5/5 problems?
+There used to be more genuine implementation bugs, or spec mis-reads, by Opus 5. But Opus 5.5 erased all but one of them.
 
-There were three broad categories:
+### Where did rejector miss?
 
-- The spec was clear enough and the agent intepreted poorly
-- The implementation had a legitimate bug
-- The test made assumptions that were too cumbersome to be clarified in the spec (for example, that requests would arrive in a certain order)
+The implementation required that the "system prompt" field be non-empty.
+The spec never required that.
+One test had an empty prompt.
+The implementation triggered a failure, where success was expected.
 
-The rest of this doc is generated & maintained by LLMs.
+*(Note to self: this could be an argument to add min13 chunk F back in. It was occasionally helpful in datagate, and probably would help here.)*
+
+The rest of this doc is generated & maintained primarily by LLMs...
 
 ## Navigating
 

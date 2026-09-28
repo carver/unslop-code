@@ -75,7 +75,7 @@ writes the behaviour: a checkpoint's prompt carries only that checkpoint's spec,
 added to checkpoint 1 is invisible to the agent at checkpoint 5 (xjq v3 needed a checkpoint-5
 copy of its rule).
 
-Pause and succinctly summarize the proposed changes for me to approve. We might discuss in several rounds. Then when I approve all patches, continue.
+Succinctly summarize the proposed changes for me to approve. We might discuss in several rounds. Then when I approve all patches, continue.
 
 ## 2b. Pitch, then wait
 

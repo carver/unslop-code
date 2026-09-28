@@ -58,15 +58,20 @@ artifacts) or "noise" (flips between runs, like a detector on a tiny sample).
 - **Write the cause only after reading it.** A cause named before tracing the code is often
   wrong. If it was not traced, the ledger says "not traced".
 
-## 2. Propose the patch
+## 2. Propose a patch
 
-Make the next version folder, `specs/<problem>/vN/`, by copying the current version's patches
-and adding `NN-<slug>.patch`, a unified diff against the cached problem
-(`~/.cache/scbench/problems/<problem>`), paths `a/<problem>/checkpoint_N.md`. One hunk
-per sentence, the smallest wording that nudges toward the hidden reading, matching what the
-reference solution in `solutions/` does. Header comment lists sentence, entry id, tests.
-Done when `bin/spec-patch <problem> vN` applies the folder and prints the changed lines. Never edit
-an older version's folder: runs already made against it must stay comparable.
+One hunk per sentence, the smallest wording that nudges toward the hidden reading, matching what the
+reference solution in `solutions/` does.
+
+Start with: `bin/test-history <problem> <test> --succinct` for every miss, so the pitch says whether
+it is a coin (some runs pass) or a shared reading, and which runs registered it (`bin/registry-scores
+<run> --grep <word>` on each, with the entry id and Risk). The pitch carries the verbatim spec
+line, a registry entry (alternatives, the tests' reading with the fixture and the reference's
+code, why it is open), the runs' choices, and one or two candidate sentences with the
+over-correction to avoid (v1's "JSONL does not outrank CSV" was read as CSV outranking JSONL).
+If no matching registry is available, say so and if possible generate a simulated one marked SIMULATED.
+The user picks the wording, often shorter, and may skip the judges;
+draft the patch into `specs/drafts/` uncommitted, it's header comment listing sentence, entry id, tests.
 
 Two things the wording must respect. State a relation positively: "JSONL and CSV are inferred
 peers" was read as intended, while "JSONL does not outrank CSV" was read as CSV outranking
@@ -75,19 +80,20 @@ writes the behaviour: a checkpoint's prompt carries only that checkpoint's spec,
 added to checkpoint 1 is invisible to the agent at checkpoint 5 (xjq v3 needed a checkpoint-5
 copy of its rule).
 
-Succinctly summarize the proposed changes for me to approve. We might discuss in several rounds. Then when I approve all patches, continue.
+Succinctly summarize the proposed changes for me to approve.
+We might discuss in several rounds. Then when I commit all patches, continue.
 
-## 2b. Pitch, then wait
+## 2b. Generate the patched version
 
-Before any patch: `bin/test-history <problem> <test> --succinct` for every miss, so the pitch says whether
-it is a coin (some runs pass) or a shared reading, and which runs registered it (`bin/registry-scores
-<run> --grep <word>` on each, with the entry id and Risk). The pitch carries the verbatim spec
-line, a registry-style entry (alternatives, the tests' reading with the fixture and the reference's
-code, why it is open), the runs' choices, and one or two candidate sentences with the
-over-correction to avoid (v1's "JSONL does not outrank CSV" was read as CSV outranking JSONL).
-Then stop. The user picks the wording, often shorter, and may skip the judges; draft the patch
-into `specs/drafts/` uncommitted when asked ("draft it, I'll edit"), and read it back with
-`refresh-mount` before building the folder, since they edit and commit it on the host.
+When reviewing my approvals and commits, and read it back with `refresh-mount`, since I edit and commit it on the host.
+
+Make the next version folder, `specs/<problem>/vN/`: copy the current version's patches,
+`git mv` the committed & approved drafts in,
+and add `NN-<slug>.patch`, a unified diff against the cached problem
+(`~/.cache/scbench/problems/<problem>`), paths `a/<problem>/checkpoint_N.md`.
+Never edit an older version's folder: runs already made against it must stay comparable.
+
+Done when `bin/spec-patch <problem> vN` applies the folder and prints the changed lines.
 
 ## 3. Judge, edit, repeat
 

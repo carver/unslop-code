@@ -55,8 +55,8 @@ artifacts) or "noise" (flips between runs, like a detector on a tiny sample).
   (`notes/upstream-prs.md`).
 - **Quote entries verbatim** (`--full`). A composite "registry-style entry" hides what the run
   actually weighed; the user asked for the real ones every time.
-- **Write the cause only after reading it.** Four ledger sentences this session named a cause that
-  the code then contradicted. If it was not traced, the ledger says "not traced".
+- **Write the cause only after reading it.** A cause named before tracing the code is often
+  wrong. If it was not traced, the ledger says "not traced".
 
 ## 2. Propose the patch
 

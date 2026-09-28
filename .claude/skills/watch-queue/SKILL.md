@@ -7,8 +7,7 @@ disable-model-invocation: true
 # Watch the queue
 
 Input: pueue up (`~/.local/bin/pueued -d` if `bin/queue` fails loudly) and the id of the running
-job (`bin/queue`: the live queue per channel and the last two done jobs, about 1KB; the old
-535KB pueue table is gone). Output: every finished run recapped to the user and, for a dev problem,
+job (`bin/queue`: the live queue per channel and the last two done jobs, about 1KB). Output: every finished run recapped to the user and, for a dev problem,
 ledgered and committed, with the next job's wait armed. The loop runs until the queue is empty
 or the user stops it.
 

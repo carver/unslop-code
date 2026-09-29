@@ -37,6 +37,9 @@ a { color: var(--js); text-underline-offset: 2px; }
 .sw { width: 12px; height: 12px; border-radius: 50%; border: 2.5px solid var(--c); background: var(--panel); flex: none; }
 .sw.fill { background: var(--c); }
 .sw.soft { opacity: 0.45; }
+.sw.dash { border-style: dashed; background: var(--panel); }
+.legend button { display: inline-flex; align-items: center; gap: 7px; font: inherit; color: inherit; background: none; border: 0; padding: 2px 0; cursor: pointer; }
+.legend button[aria-pressed="false"] { opacity: 0.4; text-decoration: line-through; }
 .squares { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; }
 /* Seven lines to a trajectory card, so two cards to a row and one on a phone. */
 .squares.duo { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -113,13 +116,7 @@ svg .hit { fill: transparent; }
 
   <section>
     <h2>Quality along the run</h2>
-    <div class="legend" style="margin-bottom:12px">
-      <span><i class="sw fill" style="--c:var(--aslop)"></i>anti-slop, this repo</span>
-      <span><i class="sw fill" style="--c:var(--min)"></i>spectest, this repo</span>
-      <span><i class="sw fill" style="--c:var(--anti)"></i>spectest+antislop, this repo</span>
-      <span><i class="sw fill soft" style="--c:var(--aslop)"></i>paper Anti-Slop</span>
-      <span><i class="sw fill soft" style="--c:var(--ink-3)"></i>paper Plan-First</span>
-    </div>
+    <div class="legend" id="trajectory-legend" style="margin-bottom:12px"></div>
     <div class="squares duo" id="trajectory"></div>
     <p class="note" id="trajectory-note" style="margin-top:12px"></p>
   </section>
@@ -368,6 +365,25 @@ function spreadLabels(items, gap, lo, hi) {
   return items;
 }
 
+// The along-the-run legend toggles its series on every card; HIDDEN_SERIES holds the keys turned off.
+const HIDDEN_SERIES = new Set();
+const TRAJECTORY_LEGEND = [
+  ...QUALITY_PROMPTS.map(prompt => ({ key: prompt, label: `${label(prompt)}, this repo`, sw: `fill" style="--c:${color(prompt)}` })),
+  ...PAPER_DRAWN.map(name => ({ key: `paper ${name}`, label: `paper ${name}`, sw: `fill soft" style="--c:${PAPER.color[name]}` })),
+  { key: "human", label: "paper human repos over 10k stars", sw: `dash" style="--c:var(--ink-3)` },
+];
+const trajectoryLegend = document.getElementById("trajectory-legend");
+trajectoryLegend.innerHTML = TRAJECTORY_LEGEND.map(e =>
+  `<button type="button" aria-pressed="true" data-series="${esc(e.key)}"><i class="sw ${e.sw}"></i>${esc(e.label)}</button>`).join("");
+trajectoryLegend.addEventListener("click", ev => {
+  const button = ev.target.closest("button");
+  if (!button) return;
+  const shown = HIDDEN_SERIES.has(button.dataset.series);
+  if (shown) HIDDEN_SERIES.delete(button.dataset.series); else HIDDEN_SERIES.add(button.dataset.series);
+  button.setAttribute("aria-pressed", String(shown));
+  document.getElementById("trajectory").innerHTML = TRAJECTORY.map(trajectoryPanel).join("");
+});
+
 function trajectoryPanel(tm) {
   // One card: the phases on x, `tm.key` on y. Where the paper plots the metric, its three
   // prompts on GPT 5.5 sit faint under our lines; elsewhere our lines stand alone.
@@ -379,21 +395,22 @@ function trajectoryPanel(tm) {
   const series = [];
   if (tm.paper) {
     const vals = PAPER_HUMAN[tm.key];
-    series.push({ label: "human, 10k+ stars", vals, color: "var(--ink-3)", soft: false, dash: true, tip: i => `paper v2 Figure 4, Major tier: human repositories over 10k stars, sampled commits along each history\n${phases[i]}: ${tm.name} ${tm.fmt(vals[i])}` });
+    series.push({ key: "human", label: "human, 10k+ stars", vals, color: "var(--ink-3)", soft: false, dash: true, tip: i => `paper v2 Figure 4, Major tier: human repositories over 10k stars, sampled commits along each history\n${phases[i]}: ${tm.name} ${tm.fmt(vals[i])}` });
   }
   if (tm.paper)
     for (const [name, vals] of PAPER_DRAWN.map(name => [name, PAPER[tm.key][name]]))
-      series.push({ label: name, vals, color: PAPER.color[name], soft: true, tip: i => `paper v2 Figure 5, ${PAPER_MODEL}, ${name} prompt\n${phases[i]}: ${tm.name} ${tm.fmt(vals[i])}` });
+      series.push({ key: `paper ${name}`, label: name, vals, color: PAPER.color[name], soft: true, tip: i => `paper v2 Figure 5, ${PAPER_MODEL}, ${name} prompt\n${phases[i]}: ${tm.name} ${tm.fmt(vals[i])}` });
   for (const prompt of QUALITY_PROMPTS) {
     const t = T.prompts[prompt], vals = t ? t[tm.key] : null;
     if (!vals || vals.every(v => v == null)) continue;
-    series.push({ label: label(prompt), vals, color: color(prompt), soft: false, tip: i => `${label(prompt)} at ${T.spec}, ${t.runs} runs\n${phases[i]}: ${tm.name} ${tm.fmt(vals[i])} over ${t.ckpts[i]} checkpoints` });
+    series.push({ key: prompt, label: label(prompt), vals, color: color(prompt), soft: false, tip: i => `${label(prompt)} at ${T.spec}, ${t.runs} runs\n${phases[i]}: ${tm.name} ${tm.fmt(vals[i])} over ${t.ckpts[i]} checkpoints` });
   }
   const last = s => s.vals[phases.length - 1];
-  const labels = spreadLabels(series.map(s => ({ s, y: y(last(s)) })), 13, top + 4, H - bottom);
+  const drawn = series.filter(s => !HIDDEN_SERIES.has(s.key));
+  const labels = spreadLabels(drawn.map(s => ({ s, y: y(last(s)) })), 13, top + 4, H - bottom);
   const grid = tm.ticks.map(v => `<line class="gridline" x1="${left}" y1="${y(v)}" x2="${W - right}" y2="${y(v)}"></line><text class="num" x="${left - 6}" y="${y(v) + 4}" text-anchor="end" style="fill:var(--ink-2);font-size:11px">${v.toFixed(1)}</text>`).join("");
   const xlab = phases.map((ph, i) => `<text x="${x(i)}" y="${H - bottom + 16}" text-anchor="middle">${esc(ph)}</text>`).join("");
-  const lines = series.map(s => {
+  const lines = drawn.map(s => {
     const pts = s.vals.map((v, i) => v == null ? null : [x(i), y(v)]).filter(Boolean);
     const path = `<polyline points="${pts.map(p => p.join(",")).join(" ")}" fill="none" stroke="${s.color}" stroke-width="${s.soft ? 1.5 : 2.5}" stroke-linejoin="round" stroke-linecap="round" ${s.soft ? 'opacity="0.45"' : ""} ${s.dash ? 'stroke-dasharray="6 4"' : ""}></polyline>`;
     const marks = s.vals.map((v, i) => v == null ? "" :
@@ -402,7 +419,7 @@ function trajectoryPanel(tm) {
     return path + marks;
   }).join("");
   const ends = labels.map(({ s, ly }) => `<text x="${W - right + 8}" y="${ly + 4}" style="font-size:11.5px;${s.soft ? "fill:var(--ink-3)" : "fill:var(--ink);font-weight:500"}">${esc(s.label)}</text>`).join("");
-  const summary = series.map(s => `${s.label} ${s.vals.map(v => v == null ? "–" : tm.fmt(v)).join(" ")}`).join("; ");
+  const summary = drawn.map(s => `${s.label} ${s.vals.map(v => v == null ? "–" : tm.fmt(v)).join(" ")}`).join("; ");
   const ours = implOnly() ? "this repo's prompts bold and implementation only" : "this repo's prompts bold";
   const sub = tm.paper ? `the paper's quality prompts on ${PAPER_MODEL} faint, its human repos over 10k stars dashed, ${ours}` : `${ours}; the paper has no such figure`;
   return `

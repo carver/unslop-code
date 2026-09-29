@@ -41,7 +41,7 @@ Only `rejector` had any error.
 
 I did my best to patch only genuine ambiguities.
 Of course, one could patch the spec repeatedly to solve every implementation bug.
-So I'll show my work:
+So I'll show my work (best viewed by opening the html files locally):
 
 One detailed example:
 [What to do with repeated HTTP query parameters?](report/patch-enrich-single.html)

@@ -26,7 +26,9 @@ Surprisingly, improved quality has no effect on correctness!
 
 ## Correctness
 
-Writing tests from the specification gives a moderate improvement. Patching the checkpoint specs squashed most of the implementation bugs.
+Using a new prompt to write tests from the specification gives a moderate improvement.
+
+Patching the checkpoint specifications themselves is the big win. That squashes most of the rest of the implementation bugs.
 
 <img width="303" height="233" alt="image" src="https://github.com/user-attachments/assets/db1a0739-76fe-4abf-a958-2af276960c1f" />
 

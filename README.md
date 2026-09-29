@@ -6,7 +6,7 @@ Improving code quality against the excellent [Slop Code Bench](https://github.co
 
 Progress:
 
-- Opus 5.0 solved basically all code quality
+- Opus 5.5 solved basically all code quality
 - With tweaking, Opus 5.5 got perfect strict solves on 4 of 5 attempted problems
 - The fifth problem saw ~5x reduction in failing tests
 
@@ -14,18 +14,32 @@ See reports/ for summarized results and info.
 
 ## Quality
 
-Opus 5.0, using the anti-slop prompt, meets or beats human quality on Erosion and Verbosity.
-This is especially true when evaluating the implementation, skipping test code.
+Opus 5.5, using the anti-slop prompt, meets or beats human quality on Erosion and Verbosity. (lower is better)
+
+<img width="1196" height="365" alt="image" src="https://github.com/user-attachments/assets/11e13cb6-5260-4293-b64f-43ecba0d763a" />
+
+Erosion absolutely crushes human benchmarks. Verbosity matches the best-of human repositories. It no longer seems to climb across checkpoints.
+
+Surprisingly, improved quality has no effect on correctness!
+
+<img width="299" height="180" alt="image" src="https://github.com/user-attachments/assets/973160f7-b9ff-4cda-aca5-aa078af026be" />
 
 ## Correctness
 
-I identified ambiguities in the specification, using a new prompt.
-I paired the ambiguities with failed tests, to patch the spec where appropriate.
+Writing tests from the specification gives a moderate improvement. Patching the checkpoint specs squashed most of the implementation bugs.
 
-With Opus 5.5, and the improved spec, code correctness goes to nearly 100%.
-Only one of the 5 attempted problems (`rejector`) had any error.
+<img width="303" height="233" alt="image" src="https://github.com/user-attachments/assets/db1a0739-76fe-4abf-a958-2af276960c1f" />
 
-### Spec changes
+Note that the original "just solve" prompt has practically the same correctness, just by patching the spec.
+
+With Opus 5.5, and the improved spec, 4/5 attempted problems have a perfect strict solve.
+Only `rejector` had any error.
+
+### Spec patches
+
+I did my best to patch only genuine ambiguities.
+Of course, one could patch the spec repeatedly to solve every implementation bug.
+So I'll show my work:
 
 One detailed example:
 [What to do with repeated HTTP query parameters?](report/patch-enrich-single.html)
@@ -42,7 +56,7 @@ datagate, file_merger, xjq, and mvvault got full strict solves.
 
 There used to be more genuine implementation bugs, or spec mis-reads, from Opus 5. But Opus 5.5 erased all but one of them.
 
-### Where did rejector miss?
+### Where did the `rejector` problem fail tests?
 
 Opus 5.5 wrote an implementation that required a non-empty "system prompt" field.
 The spec never mentioned empty system prompts.

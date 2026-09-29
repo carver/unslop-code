@@ -7,35 +7,46 @@ Improving code quality against the excellent [Slop Code Bench](https://github.co
 Progress:
 
 - Opus 5.0 solved basically all code quality
-- Got perfect strict solves on 4 problems of the 5 attempted
-- The last problem saw ~5x reduction in failing tests
+- With tweaking, Opus 5.5 got perfect strict solves on 4 of 5 attempted problems
+- The fifth problem saw ~5x reduction in failing tests
 
 See reports/ for summarized results and info.
 
 ## Quality
 
 Opus 5.0, using the anti-slop prompt, meets or beats human quality on Erosion and Verbosity.
-This is especially true when evaluating only the implementation, without test code.
+This is especially true when evaluating the implementation, skipping test code.
 
 ## Correctness
 
 I identified ambiguities in the specification, using a new prompt.
 I paired the ambiguities with failed tests, to patch the spec where appropriate.
 
-Also, if the tests made implementation assumptions (like using urllib instead of requests), then the implementation would fail due to no fault of the agent.
-Those implementation requirements became a part of the spec.
+With Opus 5.5, and the improved spec, code correctness goes to nearly 100%.
+Only one of the 5 attempted problems (`rejector`) had any error.
+
+### Spec changes
+
+One detailed example:
+[What to do with repeated HTTP query parameters?](report/patch-enrich-single.html)
+
+Here are [all the spec changes in the five problems](report/spec-patches.html)
+
+Occasionally, the tests made implementation assumptions, like using urllib instead of requests.
+They would monkeypatch urllib, in order to run the test, then the test would fail due to no fault of the agent.
+This was resolved by requiring an urllib implementation in the spec.
+Though a more general test might be the even better answer here.
 
 I patched the spec for datagate, file_merger, xjq, mvvault, and rejector (chosen at random from the larger set).
 datagate, file_merger, xjq, and mvvault got full strict solves.
 
-There used to be more genuine implementation bugs, or spec mis-reads, by Opus 5. But Opus 5.5 erased all but one of them.
+There used to be more genuine implementation bugs, or spec mis-reads, from Opus 5. But Opus 5.5 erased all but one of them.
 
 ### Where did rejector miss?
 
-The implementation required that the "system prompt" field be non-empty.
-The spec never required that.
-One test had an empty prompt.
-The implementation triggered a failure, where success was expected.
+Opus 5.5 wrote an implementation that required a non-empty "system prompt" field.
+The spec never mentioned empty system prompts.
+A test with an empty prompt failed.
 
 *(Note to self: this could be an argument to add min13 chunk F back in. It was occasionally helpful in datagate, and probably would help here.)*
 

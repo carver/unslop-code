@@ -54,8 +54,9 @@ Some important entry points to understand and use the repository.
   of reading the live page back, and the file in the repo says the same thing):
   the baseline (`scbench-baseline.html`), the five datagate sentences (`five-sentences.html`),
   the uplift grid (`uplift-grid.html`), the spec patches per problem (`spec-patches.html`, built by
-  `python3 report/spec_patches.py` from `specs/`, with the agents' Risk scores per line and, at the top, what
-  clarifying every entry from the highest Risk down would fix),
+  `python3 report/spec_patches.py` from `specs/`, with the agents' Risk scores per line), what
+  clarifying every entry from the highest Risk down would fix (`risk-score.html`, built by
+  `python3 report/risk_score.py`),
   the delimiter patch (`patch-infer-delimiter.html`), the enrich patch (`patch-enrich-single.html`) and the min12 prompt rendered
   (`min12-prompt.html`) and the spectest+antislop prompt (`min13-prompt.html`), both by
   `python3 report/prompt_page.py <prompt name>`; the code pairs just-solve against spectest

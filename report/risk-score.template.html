@@ -1,0 +1,71 @@
+<title>SCBench Risk Score</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root {
+  color-scheme: light;
+  --bg: #f3f4f6; --paper: #fcfcfd; --ink: #1a1d24; --ink-2: #5a6070; --ink-3: #8b91a0; --rule: #d8dbe2;
+  --accent: #3b4b9a; --series-1: #2a78d6; --series-2: #eb6834; --series-3: #1baf7a;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #15171b; --paper: #1c1f25; --ink: #e8eaef; --ink-2: #a3a9b6; --ink-3: #6f7583; --rule: #2e323a;
+    --accent: #8f9de6; --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #15171b; --paper: #1c1f25; --ink: #e8eaef; --ink-2: #a3a9b6; --ink-3: #6f7583; --rule: #2e323a;
+  --accent: #8f9de6; --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: "Familjen Grotesk", "Helvetica Neue", Arial, sans-serif; font-size: 15.5px; line-height: 1.5; padding-block: 32px 64px; padding-inline: 20px; }
+.wrap { max-width: 880px; margin: 0 auto; }
+.mono { font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; }
+h1 { font-size: 30px; font-weight: 600; letter-spacing: -0.01em; margin: 0 0 8px; text-wrap: balance; }
+.lede { color: var(--ink-2); max-width: 66ch; margin: 0 0 20px; }
+section { margin: 0 0 48px; }
+h2 { font-size: 22px; font-weight: 600; margin: 0 0 6px; padding-top: 18px; border-top: 2px solid var(--ink); display: flex; gap: 10px; align-items: baseline; }
+.foot { color: var(--ink-3); font-size: 13px; max-width: 70ch; border-top: 1px solid var(--rule); padding-top: 14px; }
+.risk-key { color: var(--ink-2); font-size: 14.5px; max-width: 70ch; margin: 0 0 18px; }
+.risk-key p { margin: 0 0 8px; }
+.lede a, .risk-key a { color: var(--accent); }
+h2.plain { border-top: 0; padding-top: 0; margin-bottom: 10px; }
+#risk-charts { margin: 8px 0 34px; }
+.charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap: 18px 24px; align-items: start; margin: 0 0 14px; }
+.stack { display: grid; gap: 18px; }
+.chart { margin: 0; position: relative; background: var(--paper); border: 1px solid var(--rule); padding: 10px 10px 6px; }
+.chart figcaption { font-size: 13.5px; font-weight: 600; margin: 0 0 4px 4px; }
+.chart svg { display: block; width: 100%; height: auto; touch-action: pan-y; }
+.chart .grid { stroke: var(--rule); stroke-width: 1; }
+.chart .tick { fill: var(--ink-3); font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; font-size: 9.5px; }
+.chart .series { fill: none; stroke-width: 2; stroke-linejoin: round; }
+.chart .s1 { stroke: var(--series-1); } .chart .s2 { stroke: var(--series-2); }
+.chart .band { stroke: var(--paper); stroke-width: 1.5; stroke-linejoin: round; }
+.chart .b1 { fill: var(--series-1); } .chart .b2 { fill: var(--series-2); } .chart .b3 { fill: var(--series-3); }
+.chart .key { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12.5px; color: var(--ink-2); margin: 0 0 6px 4px; }
+.chart .key span { display: inline-flex; gap: 6px; align-items: center; }
+.key-swatch { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+.key-swatch.b1 { background: var(--series-1); } .key-swatch.b2 { background: var(--series-2); } .key-swatch.b3 { background: var(--series-3); }
+.chart .dot { stroke: var(--paper); stroke-width: 2; }
+.chart .dot.s1 { fill: var(--series-1); } .chart .dot.s2 { fill: var(--series-2); }
+.chart .reference { stroke: var(--ink-3); stroke-width: 1.5; stroke-dasharray: 4 4; }
+.chart .cross { stroke: var(--ink-3); stroke-width: 1; }
+.chart .tip { font-size: 12.5px; color: var(--ink); background: var(--bg); border: 1px solid var(--rule); padding: 5px 8px; margin: 4px 4px 2px; }
+#risk-by-problem { margin: 0 0 34px; }
+.key.shared { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12.5px; color: var(--ink-2); margin: 0 0 12px; }
+.key.shared span { display: inline-flex; gap: 6px; align-items: center; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 18px; align-items: start; }
+.card { display: grid; gap: 8px; }
+.card h3 { font-size: 14.5px; font-weight: 500; color: var(--ink-2); margin: 0; }
+.card h3 .mono { color: var(--ink); font-weight: 600; }
+.card .chart figcaption { font-size: 12.5px; }
+.highlights { margin: 22px 0 0; padding: 14px 18px 8px; background: var(--paper); border: 1px solid var(--rule); max-width: 74ch; }
+.highlights h3 { font-size: 15px; font-weight: 600; margin: 0 0 6px; }
+.highlights p { margin: 0 0 8px; font-size: 14.5px; color: var(--ink-2); }
+.numbers { font-size: 13px; color: var(--ink-2); margin: 0 0 16px; }
+.numbers summary { cursor: pointer; width: fit-content; }
+.numbers .scroll { overflow-x: auto; }
+.numbers table { border-collapse: collapse; margin-top: 8px; font-variant-numeric: tabular-nums; }
+.numbers th, .numbers td { text-align: right; padding: 3px 12px; border-bottom: 1px solid var(--rule); font-weight: 400; }
+.numbers th { color: var(--ink-3); }

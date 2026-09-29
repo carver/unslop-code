@@ -212,6 +212,16 @@ Erosion / ast% and cost, as above:
   one problem with a clear min12 climb is rejector (0.09 to 0.22). The page draws the paper's
   nine lines from the figure's vector paths (`report/paper_figure5.py`) with our two on top,
   on one y axis; the paper's panels each have their own.
+- **The paper's figures and tables this page reads (listed 2026-09-28).** Search these before
+  saying the paper lacks something. v1 (arXiv 2603.24755v1) Table 2: the human tiers at HEAD,
+  erosion, ast-grep and clones; the page's human bars are our rescore of its Major tier
+  (`report/human-split.json`). v2 Figure 4 (`figures/agent_human_trajectory.pdf`): verbosity and
+  erosion by phase for its agents and four star tiers of human repositories, up to 30 sampled
+  commits per history; the Major line (over 10k stars) is the dashed human line on the Erosion
+  and Verbosity cards (`report/paper_figure4.py`). Its Final erosion, 0.375, is not the headline's
+  0.31: other repositories, other scb-check. v2 Figure 5 (`figures/prompt_strategy_trajectories.pdf`):
+  the three prompts on three GPT models (`report/paper_figure5.py`). Source:
+  `curl -sL -o scb-v2.tar https://arxiv.org/e-print/2603.24755v2 && tar -xf scb-v2.tar`.
 - **Cloned lines in the headline (added 2026-09-19).** At v0 over six problems: just-solve 0.04,
   min12 0.17, the rescored human repositories 0.10 (v1 Table 2 says 0.07). On the share scale min12
   is 843% of just-solve and the humans 376%, the one score where both sit above the bare prompt;

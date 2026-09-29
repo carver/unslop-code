@@ -649,7 +649,7 @@ function caseBars() {
   const it = (prompt, kind) => ({ key: `${prompt}|${kind}`, label: `${label(prompt)}, ${kind}`, v: avg(patched, prompt, kind, m.key), color: color(prompt), soft: kind === "v0",
     tip: `${label(prompt)}, ${kind}${coverage(patched, prompt, kind)}\n${per(prompt, kind)}` });
   const items = ["v0", "patched"].flatMap(kind => G.prompts.map(prompt => it(prompt, kind))).filter(x => x.v != null);
-  return bars(items.length ? `Hidden tests failed, ${items.length} cases` : "Hidden tests failed", `mean of ${patched.join(", ")}${partialNote(patched)}${patchedNote()}`, m, items, 168);
+  return bars("Hidden tests failed", `mean of ${patched.join(", ")}${partialNote(patched)}${patchedNote()}`, m, items, 168);
 }
 
 function drawHeadline() {

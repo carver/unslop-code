@@ -221,6 +221,13 @@ const PAPER = {
   color: { "Baseline": "var(--js)", "Anti-Slop": "var(--aslop)", "Plan-First": "var(--ink-3)" },
 };
 const PAPER_DRAWN = ["Anti-Slop", "Plan-First"];
+// arXiv 2603.24755v2 Figure 4: the same two scores along the history of its Major tier, human
+// repositories with over 10k stars, up to 30 sampled commits each placed in the same five phases.
+// Read off the figure's vector paths by report/paper_figure4.py.
+const PAPER_HUMAN = {
+  erosion: [0.23, 0.315, 0.347, 0.367, 0.375],
+  verbosity: [0.124, 0.178, 0.19, 0.19, 0.185],
+};
 const problems = Object.keys(G.problems);
 const patched = problems.filter(p => G.problems[p].patched);
 const COUNT_WORDS = ["no", "one", "two", "three", "four", "five", "six"];
@@ -370,6 +377,10 @@ function trajectoryPanel(tm) {
   const x = i => left + (i / (phases.length - 1)) * (W - left - right);
   const y = v => top + (1 - v / ymax) * (H - top - bottom);
   const series = [];
+  if (tm.paper) {
+    const vals = PAPER_HUMAN[tm.key];
+    series.push({ label: "human, 10k+ stars", vals, color: "var(--ink-3)", soft: false, dash: true, tip: i => `paper v2 Figure 4, Major tier: human repositories over 10k stars, sampled commits along each history\n${phases[i]}: ${tm.name} ${tm.fmt(vals[i])}` });
+  }
   if (tm.paper)
     for (const [name, vals] of PAPER_DRAWN.map(name => [name, PAPER[tm.key][name]]))
       series.push({ label: name, vals, color: PAPER.color[name], soft: true, tip: i => `paper v2 Figure 5, ${PAPER_MODEL}, ${name} prompt\n${phases[i]}: ${tm.name} ${tm.fmt(vals[i])}` });
@@ -384,7 +395,7 @@ function trajectoryPanel(tm) {
   const xlab = phases.map((ph, i) => `<text x="${x(i)}" y="${H - bottom + 16}" text-anchor="middle">${esc(ph)}</text>`).join("");
   const lines = series.map(s => {
     const pts = s.vals.map((v, i) => v == null ? null : [x(i), y(v)]).filter(Boolean);
-    const path = `<polyline points="${pts.map(p => p.join(",")).join(" ")}" fill="none" stroke="${s.color}" stroke-width="${s.soft ? 1.5 : 2.5}" stroke-linejoin="round" stroke-linecap="round" ${s.soft ? 'opacity="0.45"' : ""}></polyline>`;
+    const path = `<polyline points="${pts.map(p => p.join(",")).join(" ")}" fill="none" stroke="${s.color}" stroke-width="${s.soft ? 1.5 : 2.5}" stroke-linejoin="round" stroke-linecap="round" ${s.soft ? 'opacity="0.45"' : ""} ${s.dash ? 'stroke-dasharray="6 4"' : ""}></polyline>`;
     const marks = s.vals.map((v, i) => v == null ? "" :
       `<circle class="hit" cx="${x(i)}" cy="${y(v)}" r="10" data-tip="${esc(s.tip(i))}"></circle>` +
       `<circle class="mark${s.soft ? "" : " fill"}" cx="${x(i)}" cy="${y(v)}" r="${s.soft ? 2.5 : 4}" style="--c:${s.color};stroke:${s.color}${s.soft ? ";opacity:0.45;fill:" + s.color : ""}" tabindex="0" data-tip="${esc(s.tip(i))}" aria-label="${esc(s.tip(i))}"></circle>`).join("");
@@ -393,7 +404,7 @@ function trajectoryPanel(tm) {
   const ends = labels.map(({ s, ly }) => `<text x="${W - right + 8}" y="${ly + 4}" style="font-size:11.5px;${s.soft ? "fill:var(--ink-3)" : "fill:var(--ink);font-weight:500"}">${esc(s.label)}</text>`).join("");
   const summary = series.map(s => `${s.label} ${s.vals.map(v => v == null ? "–" : tm.fmt(v)).join(" ")}`).join("; ");
   const ours = implOnly() ? "this repo's prompts bold and implementation only" : "this repo's prompts bold";
-  const sub = tm.paper ? `the paper's quality prompts on ${PAPER_MODEL} faint, ${ours}` : `${ours}; the paper has no such figure`;
+  const sub = tm.paper ? `the paper's quality prompts on ${PAPER_MODEL} faint, its human repos over 10k stars dashed, ${ours}` : `${ours}; the paper has no such figure`;
   return `
   <div class="card">
     <h3>${esc(tm.name)}</h3>
@@ -627,13 +638,13 @@ function render() {
     }).join(", ");
     document.getElementById("trajectory-note").innerHTML =
       `<b>Reading.</b> Figure 5 of the paper's second revision (arXiv 2603.24755v2) is redrawn from its vector paths for ${PAPER_MODEL}, the strongest of its three models: erosion on its top row, verbosity on the bottom (the share of lines flagged by ast-grep, the clone detector or the trivial-wrapper check, so it covers the two cards after it). ` +
-      `Its Anti-Slop prompt is our anti-slop arm, drawn in that arm's colour, and Plan-First has no counterpart here. Its Baseline prompt is just-solve; neither is drawn, since they sit far above the rest, but the Baseline figures are quoted below. Every paper erosion line climbs from Start to Final, on all three of its models, and the paper reads that as prompting not slowing the decay. ` +
+      `Its Anti-Slop prompt is our anti-slop arm, drawn in that arm's colour, and Plan-First has no counterpart here. The dashed line is the paper's Figure 4: its Major tier, human repositories over 10k stars, scored at up to 30 sampled commits along each history and placed in the same phases; erosion goes ${esc(f(PAPER_HUMAN.erosion[0]))} to ${esc(f(PAPER_HUMAN.erosion[4]))} and verbosity ${esc(f(PAPER_HUMAN.verbosity[0]))} to ${esc(f(PAPER_HUMAN.verbosity[4]))}. Its Final is not the headline's human bar, which is our own rescore of the v1 Major tier at HEAD. Figure 5's Baseline prompt is just-solve; neither is drawn, since they sit far above the rest, but the Baseline figures are quoted below. Every paper erosion line climbs from Start to Final, on all three of its models, and the paper reads that as prompting not slowing the decay. ` +
       `Our lines are the v0 runs from the headline, each checkpoint placed in the paper's phase (first is Start, last is Final, the rest split into thirds) and pooled over every run of the prompt. ` +
       `Erosion: ${ours("erosion")}, where the paper's Baseline goes ${esc(climb("erosion", "Baseline"))} and its Anti-Slop ${esc(climb("erosion", "Anti-Slop"))}. ` +
       `Verbosity: ${ours("verbosity")}, against the paper's Baseline ${esc(climb("verbosity", "Baseline"))} and Anti-Slop ${esc(climb("verbosity", "Anti-Slop"))}. ` +
       `ast-grep and cloned lines have no paper figure: ${ours("ast")} for ast-grep, ${ours("cloned")} for cloned lines, the last being the test-file dilution, since the spectest prompts' tests are the cloned part. ` +
       `Two runs per problem and four to seven checkpoints, so read the wiggles as noise.` +
-      (implOnly() ? ` The paper's lines score whole repositories, tests included; only our lines are implementation only.` : "");
+      (implOnly() ? ` The paper's lines score whole repositories (v2 does not say it leaves tests out); only our lines are implementation only.` : "");
   }
   document.getElementById("squares").innerHTML = SQUARE_METRICS.map(square).join("");
   document.getElementById("panels").innerHTML = METRICS.map(panel).concat(locPanel()).join("");

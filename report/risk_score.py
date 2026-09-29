@@ -230,8 +230,8 @@ readings, the one it chose, and a Risk from 0 to 100, its own estimate that the 
 It writes that number before it has seen any test. Suppose a spec author clarified every entry at or above some
 Risk. The charts pool {curve['runs']} runs with {curve['entries']} scored entries. A bug is one of the
 {curve['bugs']} readings patched in the <a href="spec-patches.html">spec patches</a>; it counts once for each run
-that read its line unpatched, whichever way the run read it: {instances} bug instances. {floor} of {instances}
-stay unfound at any level, because those runs never asked the question.</p>
+that read its line unpatched, whichever way the run read it: {instances} bug instances.
+{floor} of {instances} stay unfound at any level, because those runs never asked the question.</p>
 </div>
 <div class="charts">
 {stacked_chart("One run's registry: spec changes made, and what they fix", levels, (high, 0), x_ticks,

@@ -1,10 +1,13 @@
 """install.py: a patch applies once, reports itself already applied after, and names a failure."""
+import os
 import subprocess
 import sys
 import types
 
 import pytest
 from pathlib import Path
+
+from conftest import without_repo_vars
 
 SCRIPT = Path(__file__).resolve().parent.parent / "install.py"
 mod = types.ModuleType("install_tool")
@@ -63,10 +66,10 @@ def test_harness_patches_are_the_nine_in_readme_order():
 
 
 def test_install_hooks_points_the_repo_at_the_tracked_hooks(tmp_path):
-    subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
+    subprocess.run(["git", "init", "-q", str(tmp_path)], check=True, env=without_repo_vars(os.environ))
     mod.install_hooks(tmp_path)
     query = ["git", "-C", str(tmp_path), "config", "core.hooksPath"]
-    got = subprocess.run(query, capture_output=True, text=True).stdout
+    got = subprocess.run(query, capture_output=True, text=True, env=without_repo_vars(os.environ)).stdout
     assert got.strip() == ".githooks"
 
 

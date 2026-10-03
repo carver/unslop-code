@@ -1,5 +1,6 @@
 """bin/add-run: a run goes into git redacted, allowlisted, with diff metadata, and rebuildable."""
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -7,6 +8,7 @@ import types
 from pathlib import Path
 
 import pytest
+from conftest import without_repo_vars
 
 ROOT = Path(__file__).resolve().parent.parent
 SCRIPT = ROOT / "bin" / "add-run"
@@ -20,7 +22,8 @@ RUN = "outputs/spectest/opus-5_2.1.251_high_min12/20260922T1200"
 
 
 def git(repo, *args):
-    return subprocess.run(["git", "-C", str(repo), *args], capture_output=True, text=True, check=True).stdout
+    return subprocess.run(["git", "-C", str(repo), *args], capture_output=True, text=True, check=True,
+                          env=without_repo_vars(os.environ)).stdout
 
 
 def write(path, text):

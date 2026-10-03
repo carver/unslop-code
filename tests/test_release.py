@@ -6,6 +6,7 @@ import types
 from pathlib import Path
 
 import pytest
+from conftest import without_repo_vars
 
 SCRIPT = Path(__file__).resolve().parent.parent / "bin" / "release"
 mod = types.ModuleType("release")
@@ -27,7 +28,8 @@ RELEASED = CFF.replace("authors:", 'version: "0.1.0"\ndate-released: 2026-09-19\
 
 
 def git(cwd, *args):
-    return subprocess.run(["git", "-C", str(cwd), *args], check=True, capture_output=True, text=True).stdout.strip()
+    return subprocess.run(["git", "-C", str(cwd), *args], check=True, capture_output=True, text=True,
+                          env=without_repo_vars(os.environ)).stdout.strip()
 
 
 @pytest.fixture

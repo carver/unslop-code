@@ -1,10 +1,13 @@
 """bin/harness-provenance: the record bin/scb hands each run names the harness build it ran."""
 import hashlib
 import json
+import os
 import subprocess
 import sys
 import types
 from pathlib import Path
+
+from conftest import without_repo_vars
 
 ROOT = Path(__file__).resolve().parent.parent
 SCRIPT = ROOT / "bin" / "harness-provenance"
@@ -15,7 +18,8 @@ exec(compile(SCRIPT.read_text(), str(SCRIPT), "exec"), mod.__dict__)
 
 
 def git(tree, *args):
-    return subprocess.run(["git", "-C", str(tree), *args], capture_output=True, text=True, check=True).stdout.strip()
+    return subprocess.run(["git", "-C", str(tree), *args], capture_output=True, text=True, check=True,
+                          env=without_repo_vars(os.environ)).stdout.strip()
 
 
 def make_harness(tmp_path):

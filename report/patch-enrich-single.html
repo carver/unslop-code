@@ -101,7 +101,7 @@ Success response remains:
   <div class="readings">
     <div class="reading" style="--c: var(--reject)">
       <h3>The first value decides</h3>
-      <p>The sentence is an equality test on a value. Web frameworks hand back the first value of a repeated parameter, so <code>enrich=yes&amp;enrich=no</code> is <code>enrich=yes</code> and enrichment is on. The spec spells out a 400 for a repeated <code>force</code> and says nothing of the kind here, so a repeat is not an error either.</p>
+      <p>The sentence is an equality test on a value. Flask hands back the first value of a repeated parameter, so <code>enrich=yes&amp;enrich=no</code> is <code>enrich=yes</code> and enrichment is on. The spec spells out a 400 for a repeated <code>force</code> and says nothing of the kind here, so a repeat is not an error either.</p>
       <div class="ex">GET /convert?source=…&amp;enrich=yes&amp;enrich=no
 GET /datasets/&lt;id&gt;
 200 {…, "dataset_summary": {…}, "column_details": {…}}</div>
@@ -114,7 +114,7 @@ GET /datasets/&lt;id&gt;
 200 {"columns": […], "rows": […], "total": 1}</div>
     </div>
   </div>
-  <p>The hidden tests want the second. The reference implementation reads the whole list of values and enriches only when the list is exactly <code>["yes"]</code>. The first reading is the one an agent reaches by asking what the framework does.</p>
+  <p>The hidden tests want the second. The reference implementation reads the whole list of values and enriches only when the list is exactly <code>["yes"]</code>. The first reading is the one an agent reaches by asking what Flask does. Asking Django or Starlette instead fails too: they hand back the last value, which turns <code>enrich=no&amp;enrich=yes</code> on.</p>
 
   <h2>Ambiguity analysis</h2>
   <p class="subhead">A run that chose the first value</p>

@@ -147,8 +147,10 @@ prompt and `save_dir` relative to it, which is where `bin/queue` and `bin/scb-ex
                                              # and the implementation-only quality table
     bin/reeval <run_dir> <problem> <ckpt> --tag T  # re-score one checkpoint under the current problem config; keeps the old evaluation as before-T
     bin/results [--write]                    # every complete run, one row per problem/prompt/spec -> notes/results.md
-    bin/grid [--json]                        # the 2x2 uplift grid (just-solve vs min12, v0 vs patched), per problem
-                                             # and averaged; fail%, quality, cost, all lower-is-better
+    bin/grid [--json]                        # the uplift grid (four prompts, v0 vs patched), per problem
+                                             # and averaged; fail%, quality, cost, all lower-is-better. --json is the
+                                             # data report/uplift-grid.html embeds as G: cells, means, trajectory,
+                                             # human baselines; read it rather than the page
     bin/grid --runs                          # the run directories behind the grid's cells, one per line
     bin/add-run <run_dir>... [--remove]      # commit runs to git: redact, allowlist, gitleaks, diff meta, verify
     bin/diffs meta|rebuild <run_dir>...      # diff.json stays out of git; rebuild it byte for byte from diff_meta.json
